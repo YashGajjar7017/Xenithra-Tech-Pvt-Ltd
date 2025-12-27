@@ -1,13 +1,13 @@
-⚡ Xenithra Editor
-<p align="center"> <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=28&pause=1000&color=00FFD1&center=true&vCenter=true&width=700&lines=Code+at+Light+Speed;VS+Code+Power+Without+VS+Code+Weight;Built+for+Developers+Who+Hate+Lag" /> </p> <p align="center"> <img src="https://img.shields.io/badge/⚡_Ultra_Fast-00FFD1?style=for-the-badge"/> <img src="https://img.shields.io/badge/🧠_Low_Memory-0A0A0A?style=for-the-badge"/> <img src="https://img.shields.io/badge/🚀_Next_Gen_Editor-6F00FF?style=for-the-badge"/> </p>
-🔥 What is Xenithra?
+<h1>⚡ Xenithra Editor</h1>
+<p align="center"> <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=28&pause=1000&color=00FFD1&center=true&vCenter=true&width=700&lines=Code+at+Light+Speed;VS+Code+Power+Without+VS+Code+Weight;Built+for+Developers+Who+Hate+Lag" /> </p> <p align="center"> <img src="https://img.shields.io/badge/⚡_Ultra_Fast-00FFD1?style=for-the-badge"/> <img src="https://img.shields.io/badge/🧠_Low_Memory-0A0A0A?style=for-the-badge"/> <img src="https://img.shields.io/badge/🚀_Next_Gen_Editor-6F00FF?style=for-the-badge"/> </p><br><hr><br>
+<h2>🔥 What is Xenithra?</h2>
 
 Xenithra is a next-generation compiler-style code editor designed to be
 dramatically faster than VS Code, with near-instant startup, minimal RAM usage, and zero unnecessary bloat.
 
 🧠 Think of VS Code as a loaded SUV — Xenithra is a Formula-1 car.
 
-🧬 Why Xenithra Exists
+<ul>🧬 Why Xenithra Exists</ul>
 
 Modern editors are powerful — but heavy.
 They trade speed for plugins, memory, and background services.
