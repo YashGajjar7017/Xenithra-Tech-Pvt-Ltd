@@ -68,8 +68,12 @@ How to contribute:
 4. Open a PR with explanation
 
 <br><hr><br>
-##📝 License
+## 📝 License
 
 MIT License — use it, modify it, ship it.
 <br><hr><br>
-<p align="center"> <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=16&pause=1000&color=00FFD1&center=true&vCenter=true&width=700&lines=Built+for+Speed.;Designed+for+Focus.;Crafted+for+Developers." /> </p> ```
+<p align="center"> <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=16&pause=1000&color=00FFD1&center=true&vCenter=true&width=700&lines=Built+for+Speed.;Designed+for+Focus.;Crafted+for+Developers." /> </p>
+<br><hr><br>
+
+## Contant US
+Email : ``` xenithra.technology.in@gmail.com```
