@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { createRoot } from 'react-dom/client'
 // import '/css/NovaGlass.css'
 
 const NovaGlassCodeStudio = () => {
@@ -294,3 +295,8 @@ int main(void)
 }
 
 export default NovaGlassCodeStudio
+
+// Render the app
+const container = document.getElementById('root')
+const root = createRoot(container)
+root.render(<NovaGlassCodeStudio />)

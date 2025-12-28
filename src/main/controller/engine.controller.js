@@ -145,15 +145,20 @@ const features = (req, res) => {
     res.send('<html><body><center><h2>Features are loading! but you can\'t wait for that</h2></center></body></html>');
 };
 
-// const session = (req, res) => {
-//     // Check if user is authenticated
-//     if (!req.session.authenticated || !req.session.user) {
-//         return res.redirect('/Account/login');
-//     }
-
-//     // Show start page first, then redirect to compiler page
-//     res.redirect('/start');
-// };
+// Safe session handler
+const sessionHandler = (req, res) => {
+    // If session middleware is not initialized or user is not authenticated, redirect to login
+    try {
+        if (!req.session || !req.session.user) {
+            return res.redirect('/Account/login');
+        }
+        // If authenticated, redirect to start page
+        return res.redirect('/start');
+    } catch (err) {
+        console.error('Session handler error:', err);
+        return res.redirect('/Account/login');
+    }
+};
 
 const sessionToken = (req, res) => {
     res.sendFile(path.join(rootDir, 'views', 'Servcies', 'session.ejs'));
@@ -237,12 +242,19 @@ const uploadFile = (req, res) => {
     }
 };
 
-// Export reusable utilities for use in other modules
-// module.const utils = {
-//     fileReader,
-//     cryptoUtils,
-//     jwtUtils,
-//     sessionUtils,
-//     generateToken
-// };
-module.exports = {ComplierPage,startPage,features,session,sessionToken,sessionShare,fileupload,account,accountNumber,uploadFile,cryptoUtils,jwtUtils,sessionUtils}
+// Export reusable utilities and handlers
+module.exports = {
+    ComplierPage,
+    startPage,
+    features,
+    session: sessionHandler,
+    sessionToken,
+    sessionShare,
+    fileupload,
+    account,
+    accountNumber,
+    uploadFile,
+    cryptoUtils,
+    jwtUtils,
+    sessionUtils
+};

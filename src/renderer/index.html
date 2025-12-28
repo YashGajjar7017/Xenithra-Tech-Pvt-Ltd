@@ -2,16 +2,32 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Electron</title>
+    <title>NovaGlass Code Studio</title>
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     />
+    <!-- Enable NovaGlass stylesheet -->
+    <!-- Use a small runtime helper so CSS loads both in dev (served at /css/...) and when opened via file:// (./css/...) -->
+    <script>
+      (function () {
+        try {
+          var link = document.createElement('link');
+          link.rel = 'stylesheet';
+          // Dev server serves public files at "/css/...", packaged file:// uses relative path to Public folder outside src/renderer
+          link.href = location.protocol === 'file:' ? '../../Public/css/NovaGlass.css' : '/css/NovaGlass.css';
+          link.onerror = function (e) { console.error('CSS load error for', link.href, e); };
+          document.head.appendChild(link);
+        } catch (err) {
+          console.error('Failed to attach NovaGlass stylesheet', err);
+        }
+      })();
+    </script>
   </head>
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/Beta_Index.jsx"></script>
   </body>
 </html>

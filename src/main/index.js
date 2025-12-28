@@ -2,12 +2,13 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { createRequire } from 'module'
 
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1200,
+    height: 1170,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -19,6 +20,7 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    mainWindow.maximize()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -51,6 +53,18 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // Start local API server (if available)
+  try {
+    const requireMain = createRequire(import.meta.url)
+    const api = requireMain('./api.js')
+    if (api && typeof api.start === 'function') {
+      // Default to 8000 to match expected port; can be overridden with API_PORT env var
+      api.start(process.env.API_PORT || 8000)
+    }
+  } catch (err) {
+    console.warn('Could not start local API server:', err.message)
+  }
 
   createWindow()
 
