@@ -1,195 +1,247 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OTP</title>
-    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600&disply=swap");
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter',sans-serif;
-        }
-        body{
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #e0e0e0;
-        }
-        .container{
-            width: 400px;
-            height: auto;
-            padding: 40px 30px;
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 15px;
-        }
-        h4{
-            font-size: 20px;
-            color: #121212;
-        }
-        .input_field_box input:focus{
-            outline: 1.5px solid #00b991;
-            outline-offset:2px;
-        }
-        form button{
-            margin-top: 25px;
-            width: 92%;
-            color: #525252;
-            font-size: 16px;
-            padding: 10px 0;
-            font-weight: 600;
-            border: none;
-            border-radius: 6px;
-            pointer-events: auto;
-            cursor: pointer;
-            background: #f5c504;
-            transition: all 0.2s ease;
-        }
-        form button.active{
-            background: #ffcc00;
-            pointer-events: auto;
-            color: #000000;
-        }
-        form button:hover{
-            background: #e6b801;
-        }
-        .form{
-            width: 100%;
-            height: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top:20px;
-        }
-        .input_field_box{
-            width: 100%;
-            height: auto;
-            display: flex;
-            flex-direction: row;
-            justify-content: space-evenly;
-        }
-        .input_field_box input{
-            border: none;
-            max-width: 15%;
-            height: 60px;
-            text-align: center;
-            border-radius: 5px;
-            background: #f0f0f0;
-            font-size: 25px;
-        }
-        .input_field_box input::-webkit-inner-spin-button,
-        .input_field_box input::-webkit-outer-spin-button{
-            display: none;
-        }
-        .email-input{
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .email-input input{
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600&disply=swap');
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+      }
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e0e0e0;
+      }
+      .container {
+        width: 400px;
+        height: auto;
+        padding: 40px 30px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 15px;
+      }
+      h4 {
+        font-size: 20px;
+        color: #121212;
+      }
+      .input_field_box input:focus {
+        outline: 1.5px solid #00b991;
+        outline-offset: 2px;
+      }
+      form button {
+        margin-top: 25px;
+        width: 92%;
+        color: #525252;
+        font-size: 16px;
+        padding: 10px 0;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        pointer-events: auto;
+        cursor: pointer;
+        background: #f5c504;
+        transition: all 0.2s ease;
+      }
+      form button.active {
+        background: #ffcc00;
+        pointer-events: auto;
+        color: #000000;
+      }
+      form button:hover {
+        background: #e6b801;
+      }
+      .form {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+      }
+      .input_field_box {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+      }
+      .input_field_box input {
+        border: none;
+        max-width: 15%;
+        height: 60px;
+        text-align: center;
+        border-radius: 5px;
+        background: #f0f0f0;
+        font-size: 25px;
+      }
+      .input_field_box input::-webkit-inner-spin-button,
+      .input_field_box input::-webkit-outer-spin-button {
+        display: none;
+      }
+      .email-input {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .email-input input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container py-5 d-flex justify-content-center align-items-center">
-        <h4>Enter Your 6 Digit OTP</h4>
-        <form class="form">
-            <div class="email-input">
-                <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
-            </div>
-            <div class="input_field_box">
-                <input type="number" id="otp1" class="otp-input form-control text-center d-inline-block" maxlength="1" required style="width:56px;">
-                <input type="number" id="otp2" class="otp-input form-control text-center d-inline-block" maxlength="1" required style="width:56px;">
-                <input type="number" id="otp3" class="otp-input form-control text-center d-inline-block" maxlength="1" required style="width:56px;">
-                <input type="number" id="otp4" class="otp-input form-control text-center d-inline-block" maxlength="1" required style="width:56px;">
-                <input type="number" id="otp5" class="otp-input form-control text-center d-inline-block" maxlength="1" required style="width:56px;">
-                <input type="number" id="otp6" class="otp-input form-control text-center d-inline-block" maxlength="1" required style="width:56px;">
-            </div>
-            <button type="submit" id="verifyBtn" class="btn btn-primary mt-3">Verify OTP</button>
-        </form>
+      <h4>Enter Your 6 Digit OTP</h4>
+      <form class="form">
+        <div class="email-input">
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            placeholder="Enter your email"
+            required
+          />
+        </div>
+        <div class="input_field_box">
+          <input
+            type="number"
+            id="otp1"
+            class="otp-input form-control text-center d-inline-block"
+            maxlength="1"
+            required
+            style="width: 56px"
+          />
+          <input
+            type="number"
+            id="otp2"
+            class="otp-input form-control text-center d-inline-block"
+            maxlength="1"
+            required
+            style="width: 56px"
+          />
+          <input
+            type="number"
+            id="otp3"
+            class="otp-input form-control text-center d-inline-block"
+            maxlength="1"
+            required
+            style="width: 56px"
+          />
+          <input
+            type="number"
+            id="otp4"
+            class="otp-input form-control text-center d-inline-block"
+            maxlength="1"
+            required
+            style="width: 56px"
+          />
+          <input
+            type="number"
+            id="otp5"
+            class="otp-input form-control text-center d-inline-block"
+            maxlength="1"
+            required
+            style="width: 56px"
+          />
+          <input
+            type="number"
+            id="otp6"
+            class="otp-input form-control text-center d-inline-block"
+            maxlength="1"
+            required
+            style="width: 56px"
+          />
+        </div>
+        <button type="submit" id="verifyBtn" class="btn btn-primary mt-3">Verify OTP</button>
+      </form>
     </div>
 
     <script>
-        const inputs = document.querySelectorAll('.input_field_box input');
-        const emailInput = document.getElementById('email');
-        const verifyBtn = document.getElementById('verifyBtn');
+      const inputs = document.querySelectorAll('.input_field_box input')
+      const emailInput = document.getElementById('email')
+      const verifyBtn = document.getElementById('verifyBtn')
 
-        // Auto-focus next input
-        inputs.forEach((input, index) => {
-            input.addEventListener('input', (e) => {
-                if (e.target.value.length === 1 && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
-                }
-            });
+      // Auto-focus next input
+      inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+          if (e.target.value.length === 1 && index < inputs.length - 1) {
+            inputs[index + 1].focus()
+          }
+        })
 
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && index > 0 && e.target.value === '') {
-                    inputs[index - 1].focus();
-                }
-            });
-        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && index > 0 && e.target.value === '') {
+            inputs[index - 1].focus()
+          }
+        })
+      })
 
-        // Handle form submission
-        document.querySelector('.form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+      // Handle form submission
+      document.querySelector('.form').addEventListener('submit', async (e) => {
+        e.preventDefault()
 
-            const email = emailInput.value;
-            const otp = Array.from(inputs).map(input => input.value).join('');
+        const email = emailInput.value
+        const otp = Array.from(inputs)
+          .map((input) => input.value)
+          .join('')
 
-            if (!email || otp.length !== 6) {
-                alert('Please enter email and complete 6-digit OTP');
-                return;
+        if (!email || otp.length !== 6) {
+          alert('Please enter email and complete 6-digit OTP')
+          return
+        }
+
+        try {
+          const response = await fetch('/api/otp/verify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: email,
+              otp: otp,
+              purpose: 'signup_verification'
+            })
+          })
+
+          const data = await response.json()
+
+          if (response.ok) {
+            alert('Signup verified successfully! Welcome to the platform.')
+            // Store tokens and redirect to dashboard
+            if (data.data && data.data.accessToken) {
+              localStorage.setItem('accessToken', data.data.accessToken)
+              localStorage.setItem('refreshToken', data.data.refreshToken)
+              localStorage.setItem(
+                'user',
+                JSON.stringify({
+                  username: data.data.username,
+                  email: data.data.email,
+                  userId: data.data.userId
+                })
+              )
             }
-
-            try {
-                const response = await fetch('/api/otp/verify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        otp: otp,
-                        purpose: 'signup_verification'
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert('Signup verified successfully! Welcome to the platform.');
-                    // Store tokens and redirect to dashboard
-                    if (data.data && data.data.accessToken) {
-                        localStorage.setItem('accessToken', data.data.accessToken);
-                        localStorage.setItem('refreshToken', data.data.refreshToken);
-                        localStorage.setItem('user', JSON.stringify({
-                            username: data.data.username,
-                            email: data.data.email,
-                            userId: data.data.userId
-                        }));
-                    }
-                    window.location.href = '/index.html';
-                } else {
-                    alert(data.error || 'OTP verification failed');
-                }
-            } catch (error) {
-                console.error('OTP verification error:', error);
-                alert('OTP verification failed. Please try again.');
-            }
-        });
+            window.location.href = '/index.html'
+          } else {
+            alert(data.error || 'OTP verification failed')
+          }
+        } catch (error) {
+          console.error('OTP verification error:', error)
+          alert('OTP verification failed. Please try again.')
+        }
+      })
     </script>
-</body>
+  </body>
 </html>

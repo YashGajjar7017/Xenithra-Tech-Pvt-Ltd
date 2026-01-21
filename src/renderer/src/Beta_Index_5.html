@@ -1,761 +1,786 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Xenithra Technologies Pvt Ltd</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-        "Segoe UI", sans-serif;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, #ff00c8 0, transparent 55%),
-        radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%);
-      color: #e5f2ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0px;
-    }
-
-    .app {
-      display: flex;
-      width: 100%;
-      height: 100vh;
-      position: relative;
-      background: radial-gradient(circle at top, rgba(14, 23, 48, 0.92), rgba(4, 7, 18, 0.98));
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow:
-        0 0 40px rgba(0, 0, 0, 0.7),
-        0 0 80px rgba(255, 0, 200, 0.45),
-        0 0 120px rgba(0, 229, 255, 0.45);
-      backdrop-filter: blur(26px) saturate(180%);
-      overflow: hidden;
-    }
-
-    .app::before {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      background:
-        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.18), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.12), transparent 55%);
-      mix-blend-mode: screen;
-      opacity: 0.55;
-      pointer-events: none;
-    }
-
-    .border-neon {
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 2px;
-      background: conic-gradient(
-        from 180deg,
-        rgba(255, 0, 200, 0.9),
-        rgba(0, 229, 255, 0.9),
-        rgba(255, 234, 0, 0.8),
-        rgba(255, 0, 200, 0.9)
-      );
-      -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      opacity: 0.8;
-      animation: borderFlow 16s linear infinite;
-      pointer-events: none;
-    }
-    @keyframes borderFlow {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    .shell {
-      position: relative;
-      display: flex;
-      flex: 1;
-      border-radius: inherit;
-      overflow: hidden;
-      z-index: 1;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 230px;
-      padding: 20px 16px;
-      background: linear-gradient(
-        165deg,
-        rgba(11, 26, 56, 0.96),
-        rgba(2, 6, 20, 0.96)
-      );
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(24px);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-      font-weight: 650;
-      font-size: 19px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-    .logo-box {
-      width: 32px;
-      height: 32px;
-      border-radius: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 10px;
-      font-size: 18px;
-      background: radial-gradient(circle at 30% 0, #ffffff, #ffe6ff);
-      box-shadow:
-        0 0 18px rgba(255, 0, 200, 0.8),
-        0 0 10px rgba(255, 255, 255, 0.7);
-      color: #2b0136;
-    }
-
-    .subtitle {
-      font-size: 11px;
-      margin-bottom: 16px;
-      opacity: 0.85;
-    }
-
-    .pill-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      margin-bottom: 10px;
-      opacity: 0.6;
-    }
-
-    .sidebar button {
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.15), rgba(6, 10, 30, 0.94));
-      color: #fdfdfd;
-      text-align: left;
-      padding: 7px 13px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-bottom: 8px;
-      backdrop-filter: blur(20px);
-      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-    }
-    .sidebar button::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, #ff00c8, #ffea00, #00e5ff, #ff00c8);
-      background-size: 240% 240%;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      z-index: -1;
-      filter: blur(1px);
-    }
-    .sidebar button:hover::before {
-      opacity: 0.75;
-      animation: gradientSweep 1.8s linear infinite;
-    }
-    .sidebar button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(0, 229, 255, 0.55);
-      background: rgba(6, 10, 30, 0.96);
-    }
-    @keyframes gradientSweep {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    /* Main */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background:
-        radial-gradient(circle at top left, rgba(255, 0, 200, 0.16), transparent 60%),
-        radial-gradient(circle at bottom right, rgba(0, 229, 255, 0.18), rgba(1, 2, 8, 0.98));
-    }
-
-    /* Topbar */
-    .topbar {
-      display: flex;
-      align-items: center;
-      padding: 10px 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: linear-gradient(
-        90deg,
-        rgba(4, 9, 24, 0.96),
-        rgba(10, 2, 26, 0.96)
-      );
-      backdrop-filter: blur(24px);
-    }
-
-    .topbar-title {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      color: #e8f5ff;
-    }
-
-    .topbar button {
-      margin-left: 10px;
-      padding: 5px 15px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 12px;
-      color: #fff;
-      position: relative;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      backdrop-filter: blur(20px);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    }
-
-    .topbar button::before {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      background: conic-gradient(
-        from 180deg,
-        #ff00c8,
-        #ffea00,
-        #00e5ff,
-        #ff00c8
-      );
-      background-size: 200% 200%;
-      opacity: 0;
-      transition: opacity 0.18s ease;
-      z-index: -1;
-    }
-    .topbar button::after {
-      content: "";
-      position: absolute;
-      inset: 1px;
-      border-radius: inherit;
-      background: rgba(7, 10, 30, 0.97);
-      z-index: -1;
-    }
-
-    .topbar button:hover::before {
-      opacity: 1;
-      animation: spinBorder 2.2s linear infinite;
-    }
-    .topbar button:hover {
-      transform: translateY(-1px);
-      box-shadow:
-        0 0 18px rgba(255, 0, 200, 0.9),
-        0 0 26px rgba(0, 229, 255, 0.9);
-    }
-    @keyframes spinBorder {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .btn-run {
-      background: linear-gradient(120deg, #00e676, #00b0ff, #00e676);
-      background-size: 220% 220%;
-      box-shadow: 0 0 22px rgba(0, 230, 118, 0.9);
-      animation: runGlow 2.3s ease-in-out infinite alternate;
-    }
-    @keyframes runGlow {
-      0% {
-        background-position: 0% 50%;
-        box-shadow: 0 0 16px rgba(0, 230, 118, 0.7);
+  <head>
+    <meta charset="UTF-8" />
+    <title>Xenithra Technologies Pvt Ltd</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      100% {
-        background-position: 100% 50%;
-        box-shadow: 0 0 30px rgba(0, 230, 118, 1);
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'SF Pro Text',
+          'Segoe UI',
+          sans-serif;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, #ff00c8 0, transparent 55%),
+          radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%);
+        color: #e5f2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0px;
       }
-    }
 
-    .lang-select {
-      margin-left: auto;
-      font-size: 12px;
-      color: #e0f7fa;
-      opacity: 0.9;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+      .app {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+        position: relative;
+        background: radial-gradient(circle at top, rgba(14, 23, 48, 0.92), rgba(4, 7, 18, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow:
+          0 0 40px rgba(0, 0, 0, 0.7),
+          0 0 80px rgba(255, 0, 200, 0.45),
+          0 0 120px rgba(0, 229, 255, 0.45);
+        backdrop-filter: blur(26px) saturate(180%);
+        overflow: hidden;
+      }
 
-    /* Custom dropdown */
-    .dropdown {
-      position: relative;
-    }
-    .dropdown-toggle {
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      background: rgba(5, 9, 26, 0.96);
-      color: #e0f7fa;
-      font-size: 11px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s ease, transform 0.15s ease;
-    }
-    .dropdown-toggle span.arrow {
-      display: inline-block;
-      transition: transform 0.2s ease;
-    }
-    .dropdown.open .dropdown-toggle {
-      background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.18), rgba(5, 9, 26, 1));
-      transform: translateY(-1px);
-    }
-    .dropdown.open .dropdown-toggle span.arrow {
-      transform: rotate(180deg);
-    }
-    .dropdown-menu {
-      position: absolute;
-      right: 0;
-      top: 140%;
-      min-width: 140px;
-      border-radius: 14px;
-      background: rgba(4, 7, 22, 0.98);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      box-shadow: 0 18px 30px rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(18px);
-      overflow: hidden;
-      transform-origin: top right;
-      transform: scaleY(0.8) translateY(-6px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.18s ease, transform 0.18s ease;
-      z-index: 10;
-    }
-    .dropdown.open .dropdown-menu {
-      opacity: 1;
-      pointer-events: auto;
-      transform: scaleY(1) translateY(0);
-    }
-    .dropdown-menu button {
-      width: 100%;
-      border: none;
-      background: transparent;
-      color: #e8f5ff;
-      text-align: left;
-      font-size: 12px;
-      padding: 7px 12px;
-      cursor: pointer;
-      transition: background 0.15s ease;
-    }
-    .dropdown-menu button:hover {
-      background: rgba(0, 229, 255, 0.28);
-    }
+      .app::before {
+        content: '';
+        position: absolute;
+        inset: -40%;
+        background:
+          radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.18), transparent 55%),
+          radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.12), transparent 55%);
+        mix-blend-mode: screen;
+        opacity: 0.55;
+        pointer-events: none;
+      }
 
-    /* Editor header */
-    .editor-header {
-      background: rgba(4, 7, 22, 0.96);
-      padding: 7px 18px;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .editor-header .tab {
-      padding: 3px 11px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      font-size: 11px;
-    }
+      .border-neon {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 2px;
+        background: conic-gradient(
+          from 180deg,
+          rgba(255, 0, 200, 0.9),
+          rgba(0, 229, 255, 0.9),
+          rgba(255, 234, 0, 0.8),
+          rgba(255, 0, 200, 0.9)
+        );
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0.8;
+        animation: borderFlow 16s linear infinite;
+        pointer-events: none;
+      }
+      @keyframes borderFlow {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-    /* Editor + terminal layout */
-    .editor-wrapper {
-      flex: 1;
-      padding: 16px 18px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+      .shell {
+        position: relative;
+        display: flex;
+        flex: 1;
+        border-radius: inherit;
+        overflow: hidden;
+        z-index: 1;
+      }
 
-    .editor {
-      position: relative;
-      flex: 1;
-      padding: 14px 46px;
-      border-radius: 18px;
-      background:
-        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.07), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.06), transparent 55%),
-        linear-gradient(145deg, rgba(6, 9, 28, 0.96), rgba(3, 6, 20, 0.98));
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      box-shadow:
-        0 22px 40px rgba(0, 0, 0, 0.7),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-      backdrop-filter: blur(22px);
-      overflow: auto;
-      font-family: "JetBrains Mono", Menlo, Consolas, "Courier New", monospace;
-      color: #e8edf7;
-    }
+      /* Sidebar */
+      .sidebar {
+        width: 230px;
+        padding: 20px 16px;
+        background: linear-gradient(165deg, rgba(11, 26, 56, 0.96), rgba(2, 6, 20, 0.96));
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(24px);
+      }
 
-    .line-numbers {
-      position: absolute;
-      left: 14px;
-      top: 14px;
-      text-align: right;
-      color: #5c6370;
-      font-size: 13px;
-      line-height: 1.5;
-      user-select: none;
-      padding-right: 6px;
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-    }
+      .logo {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        font-weight: 650;
+        font-size: 19px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .logo-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        font-size: 18px;
+        background: radial-gradient(circle at 30% 0, #ffffff, #ffe6ff);
+        box-shadow:
+          0 0 18px rgba(255, 0, 200, 0.8),
+          0 0 10px rgba(255, 255, 255, 0.7);
+        color: #2b0136;
+      }
 
-    .code-area {
-      margin-left: 42px;
-      font-size: 13px;
-      line-height: 1.5;
-      white-space: pre;
-      outline: none;
-      min-height: 100%;
-      caret-color: #00e5ff;
-    }
+      .subtitle {
+        font-size: 11px;
+        margin-bottom: 16px;
+        opacity: 0.85;
+      }
 
-    .kw      { color: #61afef; }
-    .func    { color: #e5c07b; }
-    .string  { color: #98c379; }
-    .comment { color: #7f848e; }
+      .pill-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        margin-bottom: 10px;
+        opacity: 0.6;
+      }
 
-    /* Terminal */
-    .terminal {
-      height: 120px;
-      border-radius: 14px;
-      background: radial-gradient(circle at 0 0, rgba(0, 229, 255, 0.12), transparent 60%),
-                  rgba(4, 7, 16, 0.98);
-      border: 1px solid rgba(0, 229, 255, 0.45);
-      box-shadow:
-        0 14px 25px rgba(0, 0, 0, 0.7),
-        0 0 20px rgba(0, 229, 255, 0.45);
-      backdrop-filter: blur(18px);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-    }
-    .terminal-header {
-      padding: 4px 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(3, 8, 20, 0.95);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-    .dot.red    { background: #ff5f56; }
-    .dot.yellow { background: #ffbd2e; }
-    .dot.green  { background: #27c93f; }
-    .terminal-header span {
-      margin-left: 8px;
-      opacity: 0.8;
-    }
+      .sidebar button {
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: radial-gradient(
+          circle at 0 0,
+          rgba(255, 255, 255, 0.15),
+          rgba(6, 10, 30, 0.94)
+        );
+        color: #fdfdfd;
+        text-align: left;
+        padding: 7px 13px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-bottom: 8px;
+        backdrop-filter: blur(20px);
+        transition:
+          transform 0.16s ease,
+          box-shadow 0.16s ease,
+          background 0.16s ease;
+      }
+      .sidebar button::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, #ff00c8, #ffea00, #00e5ff, #ff00c8);
+        background-size: 240% 240%;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: -1;
+        filter: blur(1px);
+      }
+      .sidebar button:hover::before {
+        opacity: 0.75;
+        animation: gradientSweep 1.8s linear infinite;
+      }
+      .sidebar button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.55);
+        background: rgba(6, 10, 30, 0.96);
+      }
+      @keyframes gradientSweep {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
 
-    .terminal-body {
-      flex: 1;
-      padding: 6px 10px;
-      color: #e0f7fa;
-      overflow-y: auto;
-    }
-    .terminal-line {
-      margin-bottom: 2px;
-    }
-    .terminal-line span.prompt {
-      color: #00e676;
-    }
-    .terminal-line span.error {
-      color: #ff7676;
-    }
-    .terminal-line span.muted {
-      color: #7f848e;
-    }
+      /* Main */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background:
+          radial-gradient(circle at top left, rgba(255, 0, 200, 0.16), transparent 60%),
+          radial-gradient(circle at bottom right, rgba(0, 229, 255, 0.18), rgba(1, 2, 8, 0.98));
+      }
 
-    /* Bottom bar */
-    .bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(4, 7, 22, 0.98);
-      padding: 8px 18px 11px;
-      font-size: 12px;
-      color: #cfd8dc;
-      backdrop-filter: blur(20px);
-    }
-    .bottom label { margin-right: 8px; }
-    .bottom input[type="text"] {
-      width: 60%;
-      padding: 4px 7px;
-      background: rgba(6, 9, 28, 0.98);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #f5f7ff;
-      border-radius: 8px;
-    }
-    .bottom .stdin-options {
-      margin-top: 6px;
-    }
-    .bottom .stdin-options label {
-      margin-right: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <div class="border-neon"></div>
-    <div class="shell">
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <div class="logo">
-          <div class="logo-box">⚡</div>
-          NovaGlass
+      /* Topbar */
+      .topbar {
+        display: flex;
+        align-items: center;
+        padding: 10px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(90deg, rgba(4, 9, 24, 0.96), rgba(10, 2, 26, 0.96));
+        backdrop-filter: blur(24px);
+      }
+
+      .topbar-title {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: #e8f5ff;
+      }
+
+      .topbar button {
+        margin-left: 10px;
+        padding: 5px 15px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        backdrop-filter: blur(20px);
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .topbar button::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        background: conic-gradient(from 180deg, #ff00c8, #ffea00, #00e5ff, #ff00c8);
+        background-size: 200% 200%;
+        opacity: 0;
+        transition: opacity 0.18s ease;
+        z-index: -1;
+      }
+      .topbar button::after {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        border-radius: inherit;
+        background: rgba(7, 10, 30, 0.97);
+        z-index: -1;
+      }
+
+      .topbar button:hover::before {
+        opacity: 1;
+        animation: spinBorder 2.2s linear infinite;
+      }
+      .topbar button:hover {
+        transform: translateY(-1px);
+        box-shadow:
+          0 0 18px rgba(255, 0, 200, 0.9),
+          0 0 26px rgba(0, 229, 255, 0.9);
+      }
+      @keyframes spinBorder {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .btn-run {
+        background: linear-gradient(120deg, #00e676, #00b0ff, #00e676);
+        background-size: 220% 220%;
+        box-shadow: 0 0 22px rgba(0, 230, 118, 0.9);
+        animation: runGlow 2.3s ease-in-out infinite alternate;
+      }
+      @keyframes runGlow {
+        0% {
+          background-position: 0% 50%;
+          box-shadow: 0 0 16px rgba(0, 230, 118, 0.7);
+        }
+        100% {
+          background-position: 100% 50%;
+          box-shadow: 0 0 30px rgba(0, 230, 118, 1);
+        }
+      }
+
+      .lang-select {
+        margin-left: auto;
+        font-size: 12px;
+        color: #e0f7fa;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* Custom dropdown */
+      .dropdown {
+        position: relative;
+      }
+      .dropdown-toggle {
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(5, 9, 26, 0.96);
+        color: #e0f7fa;
+        font-size: 11px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition:
+          background 0.2s ease,
+          transform 0.15s ease;
+      }
+      .dropdown-toggle span.arrow {
+        display: inline-block;
+        transition: transform 0.2s ease;
+      }
+      .dropdown.open .dropdown-toggle {
+        background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.18), rgba(5, 9, 26, 1));
+        transform: translateY(-1px);
+      }
+      .dropdown.open .dropdown-toggle span.arrow {
+        transform: rotate(180deg);
+      }
+      .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: 140%;
+        min-width: 140px;
+        border-radius: 14px;
+        background: rgba(4, 7, 22, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 18px 30px rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(18px);
+        overflow: hidden;
+        transform-origin: top right;
+        transform: scaleY(0.8) translateY(-6px);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+        z-index: 10;
+      }
+      .dropdown.open .dropdown-menu {
+        opacity: 1;
+        pointer-events: auto;
+        transform: scaleY(1) translateY(0);
+      }
+      .dropdown-menu button {
+        width: 100%;
+        border: none;
+        background: transparent;
+        color: #e8f5ff;
+        text-align: left;
+        font-size: 12px;
+        padding: 7px 12px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+      .dropdown-menu button:hover {
+        background: rgba(0, 229, 255, 0.28);
+      }
+
+      /* Editor header */
+      .editor-header {
+        background: rgba(4, 7, 22, 0.96);
+        padding: 7px 18px;
+        font-size: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .editor-header .tab {
+        padding: 3px 11px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 11px;
+      }
+
+      /* Editor + terminal layout */
+      .editor-wrapper {
+        flex: 1;
+        padding: 16px 18px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .editor {
+        position: relative;
+        flex: 1;
+        padding: 14px 46px;
+        border-radius: 18px;
+        background:
+          radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.07), transparent 55%),
+          radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.06), transparent 55%),
+          linear-gradient(145deg, rgba(6, 9, 28, 0.96), rgba(3, 6, 20, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        box-shadow:
+          0 22px 40px rgba(0, 0, 0, 0.7),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(22px);
+        overflow: auto;
+        font-family: 'JetBrains Mono', Menlo, Consolas, 'Courier New', monospace;
+        color: #e8edf7;
+      }
+
+      .line-numbers {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        text-align: right;
+        color: #5c6370;
+        font-size: 13px;
+        line-height: 1.5;
+        user-select: none;
+        padding-right: 6px;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .code-area {
+        margin-left: 42px;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: pre;
+        outline: none;
+        min-height: 100%;
+        caret-color: #00e5ff;
+      }
+
+      .kw {
+        color: #61afef;
+      }
+      .func {
+        color: #e5c07b;
+      }
+      .string {
+        color: #98c379;
+      }
+      .comment {
+        color: #7f848e;
+      }
+
+      /* Terminal */
+      .terminal {
+        height: 120px;
+        border-radius: 14px;
+        background:
+          radial-gradient(circle at 0 0, rgba(0, 229, 255, 0.12), transparent 60%),
+          rgba(4, 7, 16, 0.98);
+        border: 1px solid rgba(0, 229, 255, 0.45);
+        box-shadow:
+          0 14px 25px rgba(0, 0, 0, 0.7),
+          0 0 20px rgba(0, 229, 255, 0.45);
+        backdrop-filter: blur(18px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+      }
+      .terminal-header {
+        padding: 4px 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(3, 8, 20, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .dot.red {
+        background: #ff5f56;
+      }
+      .dot.yellow {
+        background: #ffbd2e;
+      }
+      .dot.green {
+        background: #27c93f;
+      }
+      .terminal-header span {
+        margin-left: 8px;
+        opacity: 0.8;
+      }
+
+      .terminal-body {
+        flex: 1;
+        padding: 6px 10px;
+        color: #e0f7fa;
+        overflow-y: auto;
+      }
+      .terminal-line {
+        margin-bottom: 2px;
+      }
+      .terminal-line span.prompt {
+        color: #00e676;
+      }
+      .terminal-line span.error {
+        color: #ff7676;
+      }
+      .terminal-line span.muted {
+        color: #7f848e;
+      }
+
+      /* Bottom bar */
+      .bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(4, 7, 22, 0.98);
+        padding: 8px 18px 11px;
+        font-size: 12px;
+        color: #cfd8dc;
+        backdrop-filter: blur(20px);
+      }
+      .bottom label {
+        margin-right: 8px;
+      }
+      .bottom input[type='text'] {
+        width: 60%;
+        padding: 4px 7px;
+        background: rgba(6, 9, 28, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #f5f7ff;
+        border-radius: 8px;
+      }
+      .bottom .stdin-options {
+        margin-top: 6px;
+      }
+      .bottom .stdin-options label {
+        margin-right: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="border-neon"></div>
+      <div class="shell">
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="logo">
+            <div class="logo-box">⚡</div>
+            NovaGlass
+          </div>
+          <div class="subtitle">Frosted neon playground for modern C/C++ builds.</div>
+          <div class="pill-label">Workspace</div>
+          <button>Dashboard</button>
+          <button>Projects</button>
+          <button>Snippets</button>
+          <button>Playground</button>
+          <div class="pill-label" style="margin-top: 14px">Account</div>
+          <button>Profile</button>
+          <button>Settings</button>
+          <button>Logout</button>
         </div>
-        <div class="subtitle">Frosted neon playground for modern C/C++ builds.</div>
-        <div class="pill-label">Workspace</div>
-        <button>Dashboard</button>
-        <button>Projects</button>
-        <button>Snippets</button>
-        <button>Playground</button>
-        <div class="pill-label" style="margin-top:14px;">Account</div>
-        <button>Profile</button>
-        <button>Settings</button>
-        <button>Logout</button>
-      </div>
 
-      <!-- Main -->
-      <div class="main">
-        <!-- Topbar -->
-        <div class="topbar">
-          <div class="topbar-title">NOVA GLASS CODE STUDIO</div>
-          <button class="btn-run" id="runBtn">▶ Run</button>
-          <button>🐞 Debug</button>
-          <button>■ Stop</button>
-          <button>Share</button>
-          <button>Save</button>
-          <button>{ } Format</button>
+        <!-- Main -->
+        <div class="main">
+          <!-- Topbar -->
+          <div class="topbar">
+            <div class="topbar-title">NOVA GLASS CODE STUDIO</div>
+            <button class="btn-run" id="runBtn">▶ Run</button>
+            <button>🐞 Debug</button>
+            <button>■ Stop</button>
+            <button>Share</button>
+            <button>Save</button>
+            <button>{ } Format</button>
 
-          <div class="lang-select">
-            <span>Language:</span>
-            <div class="dropdown" id="langDropdown">
-              <button class="dropdown-toggle" type="button">
-                <span id="langLabel">C (GCC)</span>
-                <span class="arrow">▾</span>
-              </button>
-              <div class="dropdown-menu">
-                <button data-lang="c">C (GCC)</button>
-                <button data-lang="cpp">C++ (G++)</button>
-                <button data-lang="py">Python 3</button>
-                <button data-lang="js">Node.js</button>
+            <div class="lang-select">
+              <span>Language:</span>
+              <div class="dropdown" id="langDropdown">
+                <button class="dropdown-toggle" type="button">
+                  <span id="langLabel">C (GCC)</span>
+                  <span class="arrow">▾</span>
+                </button>
+                <div class="dropdown-menu">
+                  <button data-lang="c">C (GCC)</button>
+                  <button data-lang="cpp">C++ (G++)</button>
+                  <button data-lang="py">Python 3</button>
+                  <button data-lang="js">Node.js</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Editor header -->
-        <div class="editor-header">
-          <div class="tab">main.c</div>
-          <div style="font-size:11px; opacity:0.7;" id="statusText">
-            autosave • synced to cloud
-          </div>
-        </div>
-
-        <!-- Editor + terminal -->
-        <div class="editor-wrapper">
-          <div class="editor" id="editor">
-            <div class="line-numbers" id="lineNumbers">
-1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16
-            </div>
-            <!-- Editable code area -->
-            <div class="code-area" id="codeArea" contenteditable="true" spellcheck="false">
-/******************************************************************************
-  NovaGlass Code Studio.
-  Futuristic glassmorphism IDE with neon gradients.
-  Type here, press enter, and enjoy the glow.
-*******************************************************************************/
-
-#include &lt;stdio.h&gt;
-
-int main(void) 
-{
-    printf("Hello, NovaGlass!\n");
-    
-    return 0;
-}
+          <!-- Editor header -->
+          <div class="editor-header">
+            <div class="tab">main.c</div>
+            <div style="font-size: 11px; opacity: 0.7" id="statusText">
+              autosave • synced to cloud
             </div>
           </div>
 
-          <!-- Terminal -->
-          <div class="terminal" id="terminal">
-            <div class="terminal-header">
-              <div class="dot red"></div>
-              <div class="dot yellow"></div>
-              <div class="dot green"></div>
-              <span>integrated terminal • demo API</span>
-            </div>
-            <div class="terminal-body" id="terminalBody">
-              <div class="terminal-line">
-                <span class="prompt">nova@glass</span>:<span class="muted">~</span>$ run main.c
+          <!-- Editor + terminal -->
+          <div class="editor-wrapper">
+            <div class="editor" id="editor">
+              <div class="line-numbers" id="lineNumbers">
+                1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12<br />13<br />14<br />15<br />16
               </div>
-              <div class="terminal-line">
-                <span class="muted">Waiting for first run...</span>
+              <!-- Editable code area -->
+              <div class="code-area" id="codeArea" contenteditable="true" spellcheck="false">
+                /******************************************************************************
+                NovaGlass Code Studio. Futuristic glassmorphism IDE with neon gradients. Type here,
+                press enter, and enjoy the glow.
+                *******************************************************************************/
+                #include &lt;stdio.h&gt; int main(void) { printf("Hello, NovaGlass!\n"); return 0; }
+              </div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="terminal" id="terminal">
+              <div class="terminal-header">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <span>integrated terminal • demo API</span>
+              </div>
+              <div class="terminal-body" id="terminalBody">
+                <div class="terminal-line">
+                  <span class="prompt">nova@glass</span>:<span class="muted">~</span>$ run main.c
+                </div>
+                <div class="terminal-line">
+                  <span class="muted">Waiting for first run...</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Bottom -->
-        <div class="bottom">
-          <div>
-            <label>Command line arguments:</label>
-            <input type="text" id="cliArgs" placeholder="--help" />
-          </div>
-          <div class="stdin-options">
-            Standard Input:
-            <label><input type="radio" name="stdin" checked /> Interactive Console</label>
-            <label><input type="radio" name="stdin" /> Text</label>
+          <!-- Bottom -->
+          <div class="bottom">
+            <div>
+              <label>Command line arguments:</label>
+              <input type="text" id="cliArgs" placeholder="--help" />
+            </div>
+            <div class="stdin-options">
+              Standard Input:
+              <label><input type="radio" name="stdin" checked /> Interactive Console</label>
+              <label><input type="radio" name="stdin" /> Text</label>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    // Editable behavior: update line numbers on input [web:39][web:77]
-    const codeArea = document.getElementById("codeArea");
-    const lineNumbers = document.getElementById("lineNumbers");
-    const statusText = document.getElementById("statusText");
+    <script>
+      // Editable behavior: update line numbers on input [web:39][web:77]
+      const codeArea = document.getElementById('codeArea')
+      const lineNumbers = document.getElementById('lineNumbers')
+      const statusText = document.getElementById('statusText')
 
-    function updateLineNumbers() {
-      const lines = codeArea.innerText.split("\n").length;
-      let html = "";
-      for (let i = 1; i <= lines; i++) {
-        html += i + "<br>";
+      function updateLineNumbers() {
+        const lines = codeArea.innerText.split('\n').length
+        let html = ''
+        for (let i = 1; i <= lines; i++) {
+          html += i + '<br>'
+        }
+        lineNumbers.innerHTML = html
       }
-      lineNumbers.innerHTML = html;
-    }
 
-    let saveTimeout;
-    codeArea.addEventListener("input", () => {
-      updateLineNumbers();
-      statusText.textContent = "editing • unsaved changes...";
-      statusText.style.opacity = 1;
-      clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => {
-        statusText.textContent = "autosave • synced to cloud";
-        statusText.style.opacity = 0.8;
-      }, 800);
-    });
+      let saveTimeout
+      codeArea.addEventListener('input', () => {
+        updateLineNumbers()
+        statusText.textContent = 'editing • unsaved changes...'
+        statusText.style.opacity = 1
+        clearTimeout(saveTimeout)
+        saveTimeout = setTimeout(() => {
+          statusText.textContent = 'autosave • synced to cloud'
+          statusText.style.opacity = 0.8
+        }, 800)
+      })
 
-    codeArea.addEventListener("keydown", (e) => {
-      // Soft tab = 4 spaces
-      if (e.key === "Tab") {
-        e.preventDefault();
-        document.execCommand("insertText", false, "    ");
+      codeArea.addEventListener('keydown', (e) => {
+        // Soft tab = 4 spaces
+        if (e.key === 'Tab') {
+          e.preventDefault()
+          document.execCommand('insertText', false, '    ')
+        }
+      })
+
+      updateLineNumbers()
+
+      // Custom language dropdown with animation [web:75][web:78][web:86]
+      const langDropdown = document.getElementById('langDropdown')
+      const langToggle = langDropdown.querySelector('.dropdown-toggle')
+      const langLabel = document.getElementById('langLabel')
+      const tabLabel = document.querySelector('.editor-header .tab')
+
+      langToggle.addEventListener('click', (e) => {
+        e.stopPropagation()
+        langDropdown.classList.toggle('open')
+      })
+
+      langDropdown.querySelectorAll('.dropdown-menu button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const lang = btn.dataset.lang
+          langLabel.textContent = btn.textContent
+          langDropdown.classList.remove('open')
+          // Simple filename change
+          if (lang === 'c') tabLabel.textContent = 'main.c'
+          else if (lang === 'cpp') tabLabel.textContent = 'main.cpp'
+          else if (lang === 'py') tabLabel.textContent = 'main.py'
+          else if (lang === 'js') tabLabel.textContent = 'index.js'
+        })
+      })
+
+      document.addEventListener('click', (e) => {
+        if (!langDropdown.contains(e.target)) {
+          langDropdown.classList.remove('open')
+        }
+      })
+
+      // Terminal + API demo using fetch [web:76][web:81][web:84]
+      const runBtn = document.getElementById('runBtn')
+      const terminalBody = document.getElementById('terminalBody')
+      const cliArgsInput = document.getElementById('cliArgs')
+
+      function appendTerminalLine(html) {
+        const line = document.createElement('div')
+        line.className = 'terminal-line'
+        line.innerHTML = html
+        terminalBody.appendChild(line)
+        terminalBody.scrollTop = terminalBody.scrollHeight
       }
-    });
 
-    updateLineNumbers();
+      runBtn.addEventListener('click', async () => {
+        // small click animation
+        runBtn.style.filter = 'brightness(1.5)'
+        runBtn.style.transform = 'translateY(-2px) scale(1.03)'
+        setTimeout(() => {
+          runBtn.style.filter = 'brightness(1)'
+          runBtn.style.transform = ''
+        }, 200)
 
-    // Custom language dropdown with animation [web:75][web:78][web:86]
-    const langDropdown = document.getElementById("langDropdown");
-    const langToggle = langDropdown.querySelector(".dropdown-toggle");
-    const langLabel = document.getElementById("langLabel");
-    const tabLabel = document.querySelector(".editor-header .tab");
+        const lang = langLabel.textContent
+        const args = cliArgsInput.value
+        const code = codeArea.innerText
 
-    langToggle.addEventListener("click", (e) => {
-      e.stopPropagation();
-      langDropdown.classList.toggle("open");
-    });
-
-    langDropdown.querySelectorAll(".dropdown-menu button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const lang = btn.dataset.lang;
-        langLabel.textContent = btn.textContent;
-        langDropdown.classList.remove("open");
-        // Simple filename change
-        if (lang === "c") tabLabel.textContent = "main.c";
-        else if (lang === "cpp") tabLabel.textContent = "main.cpp";
-        else if (lang === "py") tabLabel.textContent = "main.py";
-        else if (lang === "js") tabLabel.textContent = "index.js";
-      });
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!langDropdown.contains(e.target)) {
-        langDropdown.classList.remove("open");
-      }
-    });
-
-    // Terminal + API demo using fetch [web:76][web:81][web:84]
-    const runBtn = document.getElementById("runBtn");
-    const terminalBody = document.getElementById("terminalBody");
-    const cliArgsInput = document.getElementById("cliArgs");
-
-    function appendTerminalLine(html) {
-      const line = document.createElement("div");
-      line.className = "terminal-line";
-      line.innerHTML = html;
-      terminalBody.appendChild(line);
-      terminalBody.scrollTop = terminalBody.scrollHeight;
-    }
-
-    runBtn.addEventListener("click", async () => {
-      // small click animation
-      runBtn.style.filter = "brightness(1.5)";
-      runBtn.style.transform = "translateY(-2px) scale(1.03)";
-      setTimeout(() => {
-        runBtn.style.filter = "brightness(1)";
-        runBtn.style.transform = "";
-      }, 200);
-
-      const lang = langLabel.textContent;
-      const args = cliArgsInput.value;
-      const code = codeArea.innerText;
-
-      appendTerminalLine(
-        `<span class="prompt">nova@glass</span>:<span class="muted">~</span>$ run '${lang}' ${args || ""}`
-      );
-      appendTerminalLine(`<span class="muted">contacting demo API...</span>`);
-
-      try {
-        // Demo API (public placeholder that echoes data) [web:81]
-        const res = await fetch("https://httpbin.org/post", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ lang, args, code })
-        });
-
-        const json = await res.json();
-        // Fake "output" made from response metadata
         appendTerminalLine(
-          `<span class="prompt">stdout</span>: response status ${res.status}`
-        );
-        appendTerminalLine(
-          `<span class="prompt">stdout</span>: bytes sent ${JSON.stringify(json.json).length}`
-        );
-        appendTerminalLine(
-          `<span class="prompt">stdout</span>: url → ${json.url}`
-        );
-      } catch (err) {
-        appendTerminalLine(
-          `<span class="error">error</span>: ${err.message}`
-        );
-      }
-    });
-  </script>
-</body>
+          `<span class="prompt">nova@glass</span>:<span class="muted">~</span>$ run '${lang}' ${args || ''}`
+        )
+        appendTerminalLine(`<span class="muted">contacting demo API...</span>`)
+
+        try {
+          // Demo API (public placeholder that echoes data) [web:81]
+          const res = await fetch('https://httpbin.org/post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lang, args, code })
+          })
+
+          const json = await res.json()
+          // Fake "output" made from response metadata
+          appendTerminalLine(`<span class="prompt">stdout</span>: response status ${res.status}`)
+          appendTerminalLine(
+            `<span class="prompt">stdout</span>: bytes sent ${JSON.stringify(json.json).length}`
+          )
+          appendTerminalLine(`<span class="prompt">stdout</span>: url → ${json.url}`)
+        } catch (err) {
+          appendTerminalLine(`<span class="error">error</span>: ${err.message}`)
+        }
+      })
+    </script>
+  </body>
 </html>

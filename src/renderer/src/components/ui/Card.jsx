@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * Reusable Card Component - Glassmorphism style
@@ -7,13 +6,7 @@ import React from 'react'
  * @param {object} style - Inline styles
  * @param {function} onClick - Click handler
  */
-const Card = ({
-  children,
-  className = '',
-  style = {},
-  onClick,
-  ...props
-}) => {
+const Card = ({ children, className = '', style = {}, onClick, ...props }) => {
   const cardStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     backdropFilter: 'blur(10px)',
@@ -31,16 +24,10 @@ const Card = ({
   }
 
   return (
-    <div
-      className={`card glass-card ${className}`}
-      style={cardStyle}
-      onClick={onClick}
-      {...props}
-    >
+    <div className={`card glass-card ${className}`} style={cardStyle} onClick={onClick} {...props}>
       {children}
     </div>
   )
 }
 
 export default Card
-

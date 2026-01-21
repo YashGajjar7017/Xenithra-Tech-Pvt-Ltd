@@ -15,4 +15,3 @@ import { OTP, Login, Signup, ForgotPassword, ResetPassword } from './pages/auth'
 // <Route path="/Account/forgotPassword" element={<ForgotPassword />} />
 // <Route path="/Account/resetPassword" element={<ResetPassword />} />
 */
-

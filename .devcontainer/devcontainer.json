@@ -1,103 +1,101 @@
 {
-	"name": "Human Error Dev Container",
-	"dockerComposeFile": [
-		"docker-compose.yml"
-	],
-	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-	"features": {
-		"ghcr.io/devcontainers/features/node:1": {
-			"nodeGypDependencies": true,
-			"installYarnUsingApt": true,
-			"version": "18",
-			"pnpmVersion": "8",
-			"nvmVersion": "latest"
-		},
-        "ghcr.io/devcontainers/features/azure-cli:1": {
-            "version": "latest"
-        },
-        "ghcr.io/devcontainers/features/conda:1": {
-            "version": "latest",
-            "addCondaForge": true,
-            "installJupyterlab": false,
-            "environmentFile": "../environment.yml",
-        },
-		"ghcr.io/devcontainers-extra/features/sbt-sdkman:2": {
-			"version": "latest",
-			"jdkVersion": "17",
-			"jdkDistro": "ms"
-		},
-		"ghcr.io/devcontainers-extra/features/scala-sdkman:2": {
-			"version": "latest",
-			"jdkVersion": "17",
-			"jdkDistro": "ms"
-		},
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {
-			"moby": true,
-			"dockerDashComposeVersion": "v2"
-		},
-		"ghcr.io/devcontainers/features/github-cli:1": {
-			"version": "latest"
-		}
-	},
-    //// Uncomment if you need GPU support and have a configuration that supports it
-	// "hostRequirements": {
-    //     "gpu": "optional"
-    // },
-    // "runArgs": ["--gpus=all"],
-    // "containerEnv": {
-    //     "NVIDIA_VISIBLE_DEVICES": "all",
-    //     "NVIDIA_DRIVER_CAPABILITIES": "all"
-    // },
-	"customizations": {
-        "vscode": {
-            "settings": {
-				"python.defaultInterpreterPath": "/opt/conda/envs/synapseml/bin/python",
-				"terminal.integrated.shell.linux": "/bin/bash",
-				"editor.formatOnSave": true,
-				"files.eol": "\n"
-			},
-            "extensions": [
-                "ms-vscode.vscode-typescript-next",
-                "bradlc.vscode-tailwindcss",
-                "esbenp.prettier-vscode",
-                "ms-vscode.vscode-json",
-                "ms-vscode.vscode-eslint",
-                "formulahendry.auto-rename-tag",
-                "christian-kohler.path-intellisense",
-                "ms-vscode.vscode-css-peek",
-                "zignd.html-css-class-completion",
-                "ms-vscode.vscode-html-css",
-                "ms-vscode.vscode-css-intellisense",
-                "ms-vscode.vscode-html-format",
-                "ms-vscode.vscode-css-format",
-                "ms-vscode.vscode-js-profile-flame",
-                "ms-vscode.vscode-js-debug",
-                "ms-vscode.vscode-js-debug-nightly",
-                "ms-vscode.vscode-node-debug",
-                "ms-vscode.vscode-node-debug2",
-                "ms-vscode.vscode-chrome-debug-core",
-                "ms-vscode.vscode-edge-debug2",
-                "ms-vscode.vscode-firefox-debug",
-                "ms-vscode.vscode-debug-visualizer",
-                "ms-vscode.vscode-debug-auto",
-                "github.copilot",
-                "github.copilot-chat",
-                "ms-toolsai.jupyter",
-                "ms-toolsai.jupyter-keymap",
-                "ms-toolsai.jupyter-renderers",
-                "ms-python.python",
-                "ms-python.black-formatter",
-                "ms-python.isort",
-                "ms-python.flake8",
-                "ms-python.pylint",
-                "scalameta.metals",
-                "scala-lang.scala",
-                "vscjava.vscode-java-debug",
-                "vscjava.vscode-java-test"
-            ]
-        }
+  "name": "Human Error Dev Container",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "nodeGypDependencies": true,
+      "installYarnUsingApt": true,
+      "version": "18",
+      "pnpmVersion": "8",
+      "nvmVersion": "latest"
     },
-    "postCreateCommand": "bash .devcontainer/postCreate.sh",
-    "remoteUser": "vscode"
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/conda:1": {
+      "version": "latest",
+      "addCondaForge": true,
+      "installJupyterlab": false,
+      "environmentFile": "../environment.yml"
+    },
+    "ghcr.io/devcontainers-extra/features/sbt-sdkman:2": {
+      "version": "latest",
+      "jdkVersion": "17",
+      "jdkDistro": "ms"
+    },
+    "ghcr.io/devcontainers-extra/features/scala-sdkman:2": {
+      "version": "latest",
+      "jdkVersion": "17",
+      "jdkDistro": "ms"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    }
+  },
+  //// Uncomment if you need GPU support and have a configuration that supports it
+  // "hostRequirements": {
+  //     "gpu": "optional"
+  // },
+  // "runArgs": ["--gpus=all"],
+  // "containerEnv": {
+  //     "NVIDIA_VISIBLE_DEVICES": "all",
+  //     "NVIDIA_DRIVER_CAPABILITIES": "all"
+  // },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/conda/envs/synapseml/bin/python",
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "editor.formatOnSave": true,
+        "files.eol": "\n"
+      },
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-json",
+        "ms-vscode.vscode-eslint",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.vscode-css-peek",
+        "zignd.html-css-class-completion",
+        "ms-vscode.vscode-html-css",
+        "ms-vscode.vscode-css-intellisense",
+        "ms-vscode.vscode-html-format",
+        "ms-vscode.vscode-css-format",
+        "ms-vscode.vscode-js-profile-flame",
+        "ms-vscode.vscode-js-debug",
+        "ms-vscode.vscode-js-debug-nightly",
+        "ms-vscode.vscode-node-debug",
+        "ms-vscode.vscode-node-debug2",
+        "ms-vscode.vscode-chrome-debug-core",
+        "ms-vscode.vscode-edge-debug2",
+        "ms-vscode.vscode-firefox-debug",
+        "ms-vscode.vscode-debug-visualizer",
+        "ms-vscode.vscode-debug-auto",
+        "github.copilot",
+        "github.copilot-chat",
+        "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.flake8",
+        "ms-python.pylint",
+        "scalameta.metals",
+        "scala-lang.scala",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-java-test"
+      ]
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+  "remoteUser": "vscode"
 }

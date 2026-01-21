@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'boxicons/css/boxicons.min.css';
-import './UserDashboard.css';
+import { useState, useEffect } from 'react'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'boxicons/css/boxicons.min.css'
+import './UserDashboard.css'
 
 const UserDashboard = () => {
   const [userData, setUserData] = useState({
@@ -27,22 +27,22 @@ const UserDashboard = () => {
     forumPosts: 23,
     badgesEarned: 8,
     lastActivity: 'Just now'
-  });
+  })
 
-  const [currentMode, setCurrentMode] = useState('web');
+  const [currentMode, setCurrentMode] = useState('web')
   const [progressAnimations, setProgressAnimations] = useState({
     compilation: 0,
     storage: 25,
     projects: 40
-  });
+  })
 
   const benefitsByTier = {
     Free: { compilations: 100, storage: '10 GB', avatar: '👤' },
     Pro: { compilations: 1000, storage: '100 GB', avatar: '⭐' },
     Enterprise: { compilations: 'Unlimited', storage: '1 TB', avatar: '👑' }
-  };
+  }
 
-  const benefits = benefitsByTier[userData.membershipTier] || benefitsByTier.Free;
+  const benefits = benefitsByTier[userData.membershipTier] || benefitsByTier.Free
 
   // Animate progress bars
   useEffect(() => {
@@ -51,27 +51,27 @@ const UserDashboard = () => {
         compilation: 45,
         storage: 25,
         projects: 40
-      });
-    }, 500);
+      })
+    }, 500)
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleModeSwitch = async (mode) => {
-    setCurrentMode(mode);
+    setCurrentMode(mode)
     // Simulate API call
-    console.log(`Switched to ${mode} mode`);
-  };
+    console.log(`Switched to ${mode} mode`)
+  }
 
   const handleLogout = () => {
     // Simulate logout
-    window.location.href = '/Account/login';
-  };
+    window.location.href = '/Account/login'
+  }
 
   const handleQuickAction = (action) => {
-    console.log(`Quick action: ${action}`);
+    console.log(`Quick action: ${action}`)
     // Navigate or trigger action
-  };
+  }
 
   return (
     <>
@@ -115,20 +115,50 @@ const UserDashboard = () => {
       <nav className="sidebar">
         <h5>Navigation</h5>
         <ul>
-          <li><a href="/" className="active"><i className="bx bxs-home"></i> Home</a></li>
-          <li><a href="#" id="profile-link"><i className="bx bxs-user"></i> Profile</a></li>
-          <li><a href="/classroom"><i className="bx bxs-book"></i> Classroom</a></li>
-          <li><a href="#"><i className="bx bxs-info-circle"></i> About</a></li>
+          <li>
+            <a href="/" className="active">
+              <i className="bx bxs-home"></i> Home
+            </a>
+          </li>
+          <li>
+            <a href="#" id="profile-link">
+              <i className="bx bxs-user"></i> Profile
+            </a>
+          </li>
+          <li>
+            <a href="/classroom">
+              <i className="bx bxs-book"></i> Classroom
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i className="bx bxs-info-circle"></i> About
+            </a>
+          </li>
         </ul>
         <h5>Tools</h5>
         <ul>
-          <li><a href="/Account/Complier/Beta/true"><i className="bx bxs-code-alt"></i> Compiler</a></li>
-          <li><a href="#" id="settings-link"><i className="bx bxs-cog"></i> Settings</a></li>
+          <li>
+            <a href="/Account/Complier/Beta/true">
+              <i className="bx bxs-code-alt"></i> Compiler
+            </a>
+          </li>
+          <li>
+            <a href="#" id="settings-link">
+              <i className="bx bxs-cog"></i> Settings
+            </a>
+          </li>
         </ul>
         <h5>Community</h5>
         <ul>
-          <li><a href="#"><i className="bxl-discord"></i> Discord</a></li>
-          <li><a href="#">📄 Docs</a></li>
+          <li>
+            <a href="#">
+              <i className="bxl-discord"></i> Discord
+            </a>
+          </li>
+          <li>
+            <a href="#">📄 Docs</a>
+          </li>
         </ul>
       </nav>
 
@@ -138,28 +168,40 @@ const UserDashboard = () => {
         <div className="plan-status-card">
           <div className="plan-header">
             <div className="plan-item">
-              <div className="plan-icon"><i className="bx bxs-crown"></i></div>
+              <div className="plan-icon">
+                <i className="bx bxs-crown"></i>
+              </div>
               <div className="plan-info">
                 <h3>Current Plan</h3>
                 <p>{userData.membershipTier} Tier</p>
               </div>
             </div>
             <div className="plan-item">
-              <div className="plan-icon" style={{ background: 'linear-gradient(135deg, #50d1ff 0%, #7c5cff 100%)' }}>
+              <div
+                className="plan-icon"
+                style={{ background: 'linear-gradient(135deg, #50d1ff 0%, #7c5cff 100%)' }}
+              >
                 <i className="bx bxs-flag"></i>
               </div>
               <div className="plan-info">
                 <h3>Status</h3>
-                <p><span className="status-badge status-active">Active</span></p>
+                <p>
+                  <span className="status-badge status-active">Active</span>
+                </p>
               </div>
             </div>
             <div className="plan-item">
-              <div className="plan-icon" style={{ background: 'linear-gradient(135deg, #ffd89b 0%, #ff9a8b 100%)' }}>
+              <div
+                className="plan-icon"
+                style={{ background: 'linear-gradient(135deg, #ffd89b 0%, #ff9a8b 100%)' }}
+              >
                 <i className="bx bxs-bolt"></i>
               </div>
               <div className="plan-info">
                 <h3>Compilations Used</h3>
-                <p>{userData.monthlyCompilations}/{userData.compilationQuota}</p>
+                <p>
+                  {userData.monthlyCompilations}/{userData.compilationQuota}
+                </p>
               </div>
             </div>
           </div>
@@ -243,7 +285,9 @@ const UserDashboard = () => {
 
         {/* Quick Actions */}
         <div className="quick-actions">
-          <h3><i className="bx bxs-magic-wand"></i> Quick Actions</h3>
+          <h3>
+            <i className="bx bxs-magic-wand"></i> Quick Actions
+          </h3>
           <div className="action-buttons">
             <button className="action-btn" onClick={() => handleQuickAction('new-project')}>
               <i className="bx bxs-plus"></i> New Project
@@ -261,7 +305,7 @@ const UserDashboard = () => {
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default UserDashboard;
+export default UserDashboard

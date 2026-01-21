@@ -12,75 +12,84 @@ const useForm = (initialValues = {}, validate) => {
   const [touched, setTouched] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleChange = useCallback((e) => {
-    const { name, value, type, checked } = e.target
-    const fieldValue = type === 'checkbox' ? checked : value
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value, type, checked } = e.target
+      const fieldValue = type === 'checkbox' ? checked : value
 
-    setValues(prev => ({
-      ...prev,
-      [name]: fieldValue
-    }))
-
-    // Clear error when field is modified
-    if (errors[name]) {
-      setErrors(prev => ({
+      setValues((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: fieldValue
       }))
-    }
-  }, [errors])
 
-  const handleBlur = useCallback((e) => {
-    const { name } = e.target
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }))
-
-    // Validate on blur
-    if (validate) {
-      const validationErrors = validate(values)
-      if (validationErrors[name]) {
-        setErrors(prev => ({
+      // Clear error when field is modified
+      if (errors[name]) {
+        setErrors((prev) => ({
           ...prev,
-          [name]: validationErrors[name]
+          [name]: ''
         }))
       }
-    }
-  }, [values, validate])
+    },
+    [errors]
+  )
 
-  const handleSubmit = useCallback(async (onSubmit) => {
-    return async (e) => {
-      e.preventDefault()
+  const handleBlur = useCallback(
+    (e) => {
+      const { name } = e.target
+      setTouched((prev) => ({
+        ...prev,
+        [name]: true
+      }))
 
-      // Mark all fields as touched
-      const touchedFields = {}
-      Object.keys(values).forEach(key => {
-        touchedFields[key] = true
-      })
-      setTouched(touchedFields)
-
-      // Validate all fields
+      // Validate on blur
       if (validate) {
         const validationErrors = validate(values)
-        setErrors(validationErrors)
-
-        // If there are errors, don't submit
-        if (Object.keys(validationErrors).length > 0) {
-          return
+        if (validationErrors[name]) {
+          setErrors((prev) => ({
+            ...prev,
+            [name]: validationErrors[name]
+          }))
         }
       }
+    },
+    [values, validate]
+  )
 
-      setIsSubmitting(true)
-      try {
-        await onSubmit(values)
-      } catch (error) {
-        console.error('Form submission error:', error)
-      } finally {
-        setIsSubmitting(false)
+  const handleSubmit = useCallback(
+    async (onSubmit) => {
+      return async (e) => {
+        e.preventDefault()
+
+        // Mark all fields as touched
+        const touchedFields = {}
+        Object.keys(values).forEach((key) => {
+          touchedFields[key] = true
+        })
+        setTouched(touchedFields)
+
+        // Validate all fields
+        if (validate) {
+          const validationErrors = validate(values)
+          setErrors(validationErrors)
+
+          // If there are errors, don't submit
+          if (Object.keys(validationErrors).length > 0) {
+            return
+          }
+        }
+
+        setIsSubmitting(true)
+        try {
+          await onSubmit(values)
+        } catch (error) {
+          console.error('Form submission error:', error)
+        } finally {
+          setIsSubmitting(false)
+        }
       }
-    }
-  }, [values, validate])
+    },
+    [values, validate]
+  )
 
   const resetForm = useCallback(() => {
     setValues(initialValues)
@@ -90,14 +99,14 @@ const useForm = (initialValues = {}, validate) => {
   }, [initialValues])
 
   const setFieldValue = useCallback((name, value) => {
-    setValues(prev => ({
+    setValues((prev) => ({
       ...prev,
       [name]: value
     }))
   }, [])
 
   const setFieldError = useCallback((name, error) => {
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
       [name]: error
     }))
@@ -120,4 +129,3 @@ const useForm = (initialValues = {}, validate) => {
 }
 
 export default useForm
-

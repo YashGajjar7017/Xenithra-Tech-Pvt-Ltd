@@ -10,14 +10,17 @@ const usePasswordValidation = (password = '', confirmPassword = '') => {
   const [passwordValue, setPasswordValue] = useState(password)
   const [confirmPasswordValue, setConfirmPasswordValue] = useState(confirmPassword)
 
-  const requirements = useMemo(() => ({
-    length: passwordValue.length >= 8,
-    uppercase: /[A-Z]/.test(passwordValue),
-    lowercase: /[a-z]/.test(passwordValue),
-    number: /[0-9]/.test(passwordValue),
-    special: /[!@#$%^&*]/.test(passwordValue),
-    match: passwordValue === confirmPasswordValue && passwordValue.length > 0
-  }), [passwordValue, confirmPasswordValue])
+  const requirements = useMemo(
+    () => ({
+      length: passwordValue.length >= 8,
+      uppercase: /[A-Z]/.test(passwordValue),
+      lowercase: /[a-z]/.test(passwordValue),
+      number: /[0-9]/.test(passwordValue),
+      special: /[!@#$%^&*]/.test(passwordValue),
+      match: passwordValue === confirmPasswordValue && passwordValue.length > 0
+    }),
+    [passwordValue, confirmPasswordValue]
+  )
 
   const score = useMemo(() => {
     return Object.values(requirements).filter(Boolean).length
@@ -35,10 +38,14 @@ const usePasswordValidation = (password = '', confirmPassword = '') => {
 
   const getStrengthColor = useCallback(() => {
     switch (strength) {
-      case 'weak': return '#dc3545'
-      case 'medium': return '#ffc107'
-      case 'strong': return '#28a745'
-      default: return '#6c757d'
+      case 'weak':
+        return '#dc3545'
+      case 'medium':
+        return '#ffc107'
+      case 'strong':
+        return '#28a745'
+      default:
+        return '#6c757d'
     }
   }, [strength])
 
@@ -78,4 +85,3 @@ const usePasswordValidation = (password = '', confirmPassword = '') => {
 }
 
 export default usePasswordValidation
-

@@ -12,7 +12,7 @@ const API_BASE_URL = '/api'
  */
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`
-  
+
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -44,54 +44,62 @@ const apiRequest = async (endpoint, options = {}) => {
  * Authentication API endpoints
  */
 export const authAPI = {
-  login: (credentials) => apiRequest('/login', {
-    method: 'POST',
-    body: JSON.stringify(credentials)
-  }),
+  login: (credentials) =>
+    apiRequest('/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials)
+    }),
 
-  signup: (userData) => apiRequest('/signup', {
-    method: 'POST',
-    body: JSON.stringify(userData)
-  }),
+  signup: (userData) =>
+    apiRequest('/signup', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    }),
 
-  logout: () => apiRequest('/logout', {
-    method: 'POST'
-  })
+  logout: () =>
+    apiRequest('/logout', {
+      method: 'POST'
+    })
 }
 
 /**
  * OTP API endpoints
  */
 export const otpAPI = {
-  send: (data) => apiRequest('/otp/send', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  }),
+  send: (data) =>
+    apiRequest('/otp/send', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
 
-  verify: (data) => apiRequest('/otp/verify', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  }),
+  verify: (data) =>
+    apiRequest('/otp/verify', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
 
-  resend: (email) => apiRequest('/otp/resend', {
-    method: 'POST',
-    body: JSON.stringify({ email })
-  })
+  resend: (email) =>
+    apiRequest('/otp/resend', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    })
 }
 
 /**
  * Password API endpoints
  */
 export const passwordAPI = {
-  forgot: (email) => apiRequest('/password-reset/forgot', {
-    method: 'POST',
-    body: JSON.stringify({ email })
-  }),
+  forgot: (email) =>
+    apiRequest('/password-reset/forgot', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    }),
 
-  reset: (data) => apiRequest('/password-reset/reset', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  })
+  reset: (data) =>
+    apiRequest('/password-reset/reset', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
 }
 
 /**
@@ -99,15 +107,17 @@ export const passwordAPI = {
  */
 export const userAPI = {
   profile: () => apiRequest('/user/profile'),
-  
-  update: (userData) => apiRequest('/user/update', {
-    method: 'PUT',
-    body: JSON.stringify(userData)
-  }),
 
-  delete: () => apiRequest('/user/delete', {
-    method: 'DELETE'
-  })
+  update: (userData) =>
+    apiRequest('/user/update', {
+      method: 'PUT',
+      body: JSON.stringify(userData)
+    }),
+
+  delete: () =>
+    apiRequest('/user/delete', {
+      method: 'DELETE'
+    })
 }
 
 /**
@@ -120,7 +130,7 @@ export const sessionManager = {
   },
 
   getAccessToken: () => localStorage.getItem('accessToken'),
-  
+
   getRefreshToken: () => localStorage.getItem('refreshToken'),
 
   setUser: (user) => {
@@ -191,4 +201,3 @@ export default {
   redirect,
   request: apiRequest
 }
-

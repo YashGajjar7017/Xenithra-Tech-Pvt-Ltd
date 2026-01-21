@@ -1,476 +1,495 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CodeX Studio - Modern Code Editor</title>
-    
+
     <!-- Modern Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
     <!-- Custom Styles -->
     <style>
-        :root {
-            --bg-primary: #0f0f23;
-            --bg-secondary: #1a1a2e;
-            --bg-tertiary: #16213e;
-            --accent: #00d4ff;
-            --accent-secondary: #ff006e;
-            --text-primary: #ffffff;
-            --text-secondary: #b3b3b3;
-            --border: #333;
-            --success: #00ff88;
-            --warning: #ffaa00;
-            --error: #ff0040;
-        }
+      :root {
+        --bg-primary: #0f0f23;
+        --bg-secondary: #1a1a2e;
+        --bg-tertiary: #16213e;
+        --accent: #00d4ff;
+        --accent-secondary: #ff006e;
+        --text-primary: #ffffff;
+        --text-secondary: #b3b3b3;
+        --border: #333;
+        --success: #00ff88;
+        --warning: #ffaa00;
+        --error: #ff0040;
+      }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            overflow: hidden;
-        }
+      body {
+        font-family: 'Inter', sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        overflow: hidden;
+      }
 
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-        }
+      /* Header */
+      .header {
+        background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(10px);
+      }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, var(--accent), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, var(--accent), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
 
-        .nav-controls {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
+      .nav-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
 
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+      .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #0099cc);
-            color: white;
-        }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), #0099cc);
+        color: white;
+      }
 
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
+      .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+      }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
-        }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+      }
 
-        /* Main Layout */
+      /* Main Layout */
+      .main-container {
+        display: grid;
+        grid-template-columns: 250px 1fr 300px;
+        height: calc(100vh - 80px);
+        gap: 1px;
+        background: var(--border);
+      }
+
+      /* Sidebar */
+      .sidebar {
+        background: var(--bg-secondary);
+        padding: 1rem;
+        overflow-y: auto;
+      }
+
+      .sidebar-section {
+        margin-bottom: 2rem;
+      }
+
+      .sidebar-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .file-tree {
+        list-style: none;
+      }
+
+      .file-tree li {
+        padding: 0.5rem;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        transition: background 0.2s;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .file-tree li:hover {
+        background: var(--bg-tertiary);
+      }
+
+      .file-tree .folder {
+        color: var(--accent);
+      }
+
+      .file-tree .file {
+        color: var(--text-secondary);
+      }
+
+      /* Editor Area */
+      .editor-container {
+        background: var(--bg-primary);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .editor-tabs {
+        background: var(--bg-secondary);
+        display: flex;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        border-right: 1px solid var(--border);
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .tab.active {
+        background: var(--bg-primary);
+        border-bottom: 2px solid var(--accent);
+      }
+
+      .tab-close {
+        margin-left: 0.5rem;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+      }
+
+      .tab-close:hover {
+        opacity: 1;
+      }
+
+      .editor-content {
+        flex: 1;
+        position: relative;
+      }
+
+      .code-editor {
+        width: 100%;
+        height: 100%;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border: none;
+        outline: none;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        padding: 1rem;
+        resize: none;
+      }
+
+      /* Right Panel */
+      .right-panel {
+        background: var(--bg-secondary);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .panel-section {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .panel-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+      }
+
+      .output-area {
+        flex: 1;
+        background: var(--bg-primary);
+        padding: 1rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        overflow-y: auto;
+        border-radius: 0.5rem;
+        margin: 0.5rem;
+      }
+
+      /* Status Bar */
+      .status-bar {
+        background: var(--bg-secondary);
+        padding: 0.5rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        border-top: 1px solid var(--border);
+      }
+
+      .status-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Animations */
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
         .main-container {
-            display: grid;
-            grid-template-columns: 250px 1fr 300px;
-            height: calc(100vh - 80px);
-            gap: 1px;
-            background: var(--border);
+          grid-template-columns: 1fr;
         }
 
-        /* Sidebar */
-        .sidebar {
-            background: var(--bg-secondary);
-            padding: 1rem;
-            overflow-y: auto;
-        }
-
-        .sidebar-section {
-            margin-bottom: 2rem;
-        }
-
-        .sidebar-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .file-tree {
-            list-style: none;
-        }
-
-        .file-tree li {
-            padding: 0.5rem;
-            cursor: pointer;
-            border-radius: 0.25rem;
-            transition: background 0.2s;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .file-tree li:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .file-tree .folder {
-            color: var(--accent);
-        }
-
-        .file-tree .file {
-            color: var(--text-secondary);
-        }
-
-        /* Editor Area */
-        .editor-container {
-            background: var(--bg-primary);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .editor-tabs {
-            background: var(--bg-secondary);
-            display: flex;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .tab {
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            border-right: 1px solid var(--border);
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .tab.active {
-            background: var(--bg-primary);
-            border-bottom: 2px solid var(--accent);
-        }
-
-        .tab-close {
-            margin-left: 0.5rem;
-            opacity: 0.5;
-            transition: opacity 0.2s;
-        }
-
-        .tab-close:hover {
-            opacity: 1;
-        }
-
-        .editor-content {
-            flex: 1;
-            position: relative;
-        }
-
-        .code-editor {
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border: none;
-            outline: none;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            padding: 1rem;
-            resize: none;
-        }
-
-        /* Right Panel */
+        .sidebar,
         .right-panel {
-            background: var(--bg-secondary);
-            display: flex;
-            flex-direction: column;
+          display: none;
         }
+      }
 
-        .panel-section {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
 
-        .panel-title {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+      }
 
-        .output-area {
-            flex: 1;
-            background: var(--bg-primary);
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            overflow-y: auto;
-            border-radius: 0.5rem;
-            margin: 0.5rem;
-        }
+      ::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 4px;
+      }
 
-        /* Status Bar */
-        .status-bar {
-            background: var(--bg-secondary);
-            padding: 0.5rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Animations */
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar, .right-panel {
-                display: none;
-            }
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-secondary);
-        }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-secondary);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Header -->
     <header class="header">
-        <div class="logo">
-            <i class="fas fa-code"></i> CodeX Studio
-        </div>
-        <div class="nav-controls">
-            <button class="btn btn-primary" onclick="runCode()">
-                <i class="fas fa-play"></i> Run
-            </button>
-            <button class="btn btn-secondary" onclick="saveCode()">
-                <i class="fas fa-save"></i> Save
-            </button>
-            <button class="btn btn-secondary" onclick="shareCode()">
-                <i class="fas fa-share"></i> Share
-            </button>
-            <button class="btn btn-secondary" onclick="toggleTheme()">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
+      <div class="logo"><i class="fas fa-code"></i> CodeX Studio</div>
+      <div class="nav-controls">
+        <button class="btn btn-primary" onclick="runCode()"><i class="fas fa-play"></i> Run</button>
+        <button class="btn btn-secondary" onclick="saveCode()">
+          <i class="fas fa-save"></i> Save
+        </button>
+        <button class="btn btn-secondary" onclick="shareCode()">
+          <i class="fas fa-share"></i> Share
+        </button>
+        <button class="btn btn-secondary" onclick="toggleTheme()">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
     </header>
 
     <!-- Main Container -->
     <div class="main-container">
-        <!-- Left Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">Explorer</div>
-                <ul class="file-tree">
-                    <li class="folder"><i class="fas fa-folder"></i> src</li>
-                    <li class="file"><i class="fas fa-file-code"></i> main.c</li>
-                    <li class="file"><i class="fas fa-file-code"></i> utils.py</li>
-                    <li class="file"><i class="fas fa-file-code"></i> app.js</li>
-                </ul>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Languages</div>
-                <select class="form-select" style="width: 100%; background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
-                    <option value="c">C</option>
-                    <option value="cpp">C++</option>
-                    <option value="python">Python</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="java">Java</option>
-                </select>
-            </div>
-        </aside>
+      <!-- Left Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">Explorer</div>
+          <ul class="file-tree">
+            <li class="folder"><i class="fas fa-folder"></i> src</li>
+            <li class="file"><i class="fas fa-file-code"></i> main.c</li>
+            <li class="file"><i class="fas fa-file-code"></i> utils.py</li>
+            <li class="file"><i class="fas fa-file-code"></i> app.js</li>
+          </ul>
+        </div>
 
-        <!-- Editor Area -->
-        <main class="editor-container">
-            <div class="editor-tabs">
-                <div class="tab active">
-                    <i class="fas fa-file-code"></i> main.c
-                    <span class="tab-close" onclick="closeTab(this)">×</span>
-                </div>
-            </div>
-            <div class="editor-content">
-                <textarea class="code-editor" id="editor" placeholder="// Start coding here...">#include <stdio.h>
+        <div class="sidebar-section">
+          <div class="sidebar-title">Languages</div>
+          <select
+            class="form-select"
+            style="
+              width: 100%;
+              background: var(--bg-tertiary);
+              color: var(--text-primary);
+              border: 1px solid var(--border);
+            "
+          >
+            <option value="c">C</option>
+            <option value="cpp">C++</option>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="java">Java</option>
+          </select>
+        </div>
+      </aside>
+
+      <!-- Editor Area -->
+      <main class="editor-container">
+        <div class="editor-tabs">
+          <div class="tab active">
+            <i class="fas fa-file-code"></i> main.c
+            <span class="tab-close" onclick="closeTab(this)">×</span>
+          </div>
+        </div>
+        <div class="editor-content">
+          <textarea class="code-editor" id="editor" placeholder="// Start coding here...">
+#include <stdio.h>
 
 int main() {
     printf("Hello, World! Welcome to CodeX Studio 🚀\n");
     return 0;
-}</textarea>
-            </div>
-        </main>
+}</textarea
+          >
+        </div>
+      </main>
 
-        <!-- Right Panel -->
-        <aside class="right-panel">
-            <div class="panel-section">
-                <div class="panel-title">Output</div>
-                <div class="output-area" id="output">
-                    <div style="color: var(--success);">✓ Ready to compile and run your code!</div>
-                </div>
-            </div>
-            
-            <div class="panel-section">
-                <div class="panel-title">Quick Actions</div>
-                <button class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">
-                    <i class="fas fa-bug"></i> Debug
-                </button>
-                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem;">
-                    <i class="fas fa-download"></i> Download
-                </button>
-                <button class="btn btn-secondary" style="width: 100%;">
-                    <i class="fas fa-upload"></i> Upload
-                </button>
-            </div>
-        </aside>
+      <!-- Right Panel -->
+      <aside class="right-panel">
+        <div class="panel-section">
+          <div class="panel-title">Output</div>
+          <div class="output-area" id="output">
+            <div style="color: var(--success)">✓ Ready to compile and run your code!</div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-title">Quick Actions</div>
+          <button class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem">
+            <i class="fas fa-bug"></i> Debug
+          </button>
+          <button class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem">
+            <i class="fas fa-download"></i> Download
+          </button>
+          <button class="btn btn-secondary" style="width: 100%">
+            <i class="fas fa-upload"></i> Upload
+          </button>
+        </div>
+      </aside>
     </div>
 
     <!-- Status Bar -->
     <footer class="status-bar">
-        <div class="status-item">
-            <i class="fas fa-circle" style="color: var(--success);"></i>
-            Ready
-        </div>
-        <div class="status-item">
-            <i class="fas fa-code-branch"></i>
-            main branch
-        </div>
-        <div class="status-item">
-            <i class="fas fa-clock"></i>
-            <span id="clock">00:00:00</span>
-        </div>
+      <div class="status-item">
+        <i class="fas fa-circle" style="color: var(--success)"></i>
+        Ready
+      </div>
+      <div class="status-item">
+        <i class="fas fa-code-branch"></i>
+        main branch
+      </div>
+      <div class="status-item">
+        <i class="fas fa-clock"></i>
+        <span id="clock">00:00:00</span>
+      </div>
     </footer>
 
     <!-- JavaScript -->
     <script>
-        // Theme toggle
-        function toggleTheme() {
-            const root = document.documentElement;
-            const isDark = root.style.getPropertyValue('--bg-primary') === '#ffffff';
-            
-            if (isDark) {
-                root.style.setProperty('--bg-primary', '#0f0f23');
-                root.style.setProperty('--bg-secondary', '#1a1a2e');
-                root.style.setProperty('--text-primary', '#ffffff');
-            } else {
-                root.style.setProperty('--bg-primary', '#ffffff');
-                root.style.setProperty('--bg-secondary', '#f5f5f5');
-                root.style.setProperty('--text-primary', '#000000');
-            }
-        }
+      // Theme toggle
+      function toggleTheme() {
+        const root = document.documentElement
+        const isDark = root.style.getPropertyValue('--bg-primary') === '#ffffff'
 
-        // Run code simulation
-        function runCode() {
-            const output = document.getElementById('output');
-            output.innerHTML = '<div style="color: var(--accent);">🔄 Compiling...</div>';
-            
-            setTimeout(() => {
-                output.innerHTML = `
+        if (isDark) {
+          root.style.setProperty('--bg-primary', '#0f0f23')
+          root.style.setProperty('--bg-secondary', '#1a1a2e')
+          root.style.setProperty('--text-primary', '#ffffff')
+        } else {
+          root.style.setProperty('--bg-primary', '#ffffff')
+          root.style.setProperty('--bg-secondary', '#f5f5f5')
+          root.style.setProperty('--text-primary', '#000000')
+        }
+      }
+
+      // Run code simulation
+      function runCode() {
+        const output = document.getElementById('output')
+        output.innerHTML = '<div style="color: var(--accent);">🔄 Compiling...</div>'
+
+        setTimeout(() => {
+          output.innerHTML = `
                     <div style="color: var(--success);">✅ Compilation successful!</div>
                     <div style="margin-top: 1rem;">Output:</div>
                     <div style="color: var(--text-primary); background: var(--bg-secondary); padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem;">
                         Hello, World! Welcome to CodeX Studio 🚀
                     </div>
-                `;
-            }, 1500);
-        }
+                `
+        }, 1500)
+      }
 
-        // Save code
-        function saveCode() {
-            const code = document.getElementById('editor').value;
-            const blob = new Blob([code], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'main.c';
-            a.click();
-        }
+      // Save code
+      function saveCode() {
+        const code = document.getElementById('editor').value
+        const blob = new Blob([code], { type: 'text/plain' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'main.c'
+        a.click()
+      }
 
-        // Share code
-        function shareCode() {
-            alert('Share functionality: Code copied to clipboard!');
-            navigator.clipboard.writeText(document.getElementById('editor').value);
-        }
+      // Share code
+      function shareCode() {
+        alert('Share functionality: Code copied to clipboard!')
+        navigator.clipboard.writeText(document.getElementById('editor').value)
+      }
 
-        // Close tab
-        function closeTab(element) {
-            element.parentElement.remove();
-        }
+      // Close tab
+      function closeTab(element) {
+        element.parentElement.remove()
+      }
 
-        // Clock
-        function updateClock() {
-            const now = new Date();
-            const time = now.toLocaleTimeString();
-            document.getElementById('clock').textContent = time;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+      // Clock
+      function updateClock() {
+        const now = new Date()
+        const time = now.toLocaleTimeString()
+        document.getElementById('clock').textContent = time
+      }
+      setInterval(updateClock, 1000)
+      updateClock()
 
-        // File tree interaction
-        document.querySelectorAll('.file-tree li').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.file-tree li').forEach(i => i.style.background = '');
-                this.style.background = 'var(--bg-tertiary)';
-            });
-        });
+      // File tree interaction
+      document.querySelectorAll('.file-tree li').forEach((item) => {
+        item.addEventListener('click', function () {
+          document.querySelectorAll('.file-tree li').forEach((i) => (i.style.background = ''))
+          this.style.background = 'var(--bg-tertiary)'
+        })
+      })
     </script>
-</body>
+  </body>
 </html>

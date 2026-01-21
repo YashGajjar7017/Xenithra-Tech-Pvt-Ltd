@@ -18,11 +18,13 @@ This directory contains Docker configuration files to containerize the Human Err
 ## Quick Start
 
 1. **Navigate to the docker directory:**
+
    ```bash
    cd .docker
    ```
 
 2. **Build and start the services:**
+
    ```bash
    docker-compose up --build
    ```
@@ -43,11 +45,13 @@ Update the environment variables in `docker-compose.yml` before running in produ
 ## Services
 
 ### App Service
+
 - **Port:** 8000
 - **Health Check:** `/health` endpoint
 - **Dependencies:** MongoDB service
 
 ### MongoDB Service
+
 - **Port:** 27017
 - **Database:** human-error
 - **Data Persistence:** mongodb_data volume
@@ -95,3 +99,4 @@ docker-compose up --build --force-recreate
 # Clean up
 docker-compose down -v
 docker system prune -a
+```

@@ -1,14 +1,14 @@
 .team-card {
   transition: all 0.3s ease;
   border: none;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border-radius: 15px;
   overflow: hidden;
 }
 
 .team-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 .card-img-container {
@@ -21,7 +21,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
   padding: 20px 15px 15px;
 }
 
@@ -46,16 +46,18 @@
   line-height: 1.5;
 }
 
-.contact-card, .contact-info-card {
+.contact-card,
+.contact-info-card {
   transition: all 0.3s ease;
   min-height: 400px;
   display: flex;
   flex-direction: column;
 }
 
-.contact-card:hover, .contact-info-card:hover {
+.contact-card:hover,
+.contact-info-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 
 .contact-item {
@@ -90,7 +92,7 @@
 
 .social-link:hover {
   transform: translateY(-3px) scale(1.1);
-  box-shadow: 0 5px 15px rgba(0,123,255,0.4);
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
 }
 
 .team-grid {
@@ -102,7 +104,7 @@
     flex-direction: column;
     align-items: center;
   }
-  
+
   .team-card {
     width: 90%;
     max-width: 350px;

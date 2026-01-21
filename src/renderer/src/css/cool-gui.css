@@ -1,219 +1,273 @@
 /* Additional Cool GUI Styles */
 :root {
-    --neon-blue: #00d4ff;
-    --neon-pink: #ff006e;
-    --neon-green: #00ff88;
-    --dark-bg: #0a0a0a;
-    --glass-bg: rgba(255, 255, 255, 0.1);
+  --neon-blue: #00d4ff;
+  --neon-pink: #ff006e;
+  --neon-green: #00ff88;
+  --dark-bg: #0a0a0a;
+  --glass-bg: rgba(255, 255, 255, 0.1);
 }
 
 /* Glass morphism effects */
 .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 1rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
 }
 
 /* Neon glow effects */
 .neon-glow {
-    box-shadow: 0 0 5px var(--neon-blue),
-                0 0 10px var(--neon-blue),
-                0 0 20px var(--neon-blue);
+  box-shadow:
+    0 0 5px var(--neon-blue),
+    0 0 10px var(--neon-blue),
+    0 0 20px var(--neon-blue);
 }
 
 .neon-glow-pink {
-    box-shadow: 0 0 5px var(--neon-pink),
-                0 0 10px var(--neon-pink),
-                0 0 20px var(--neon-pink);
+  box-shadow:
+    0 0 5px var(--neon-pink),
+    0 0 10px var(--neon-pink),
+    0 0 20px var(--neon-pink);
 }
 
 /* Animated background */
 .animated-bg {
-    background: linear-gradient(-45deg, #0a0a0a, #1a1a2e, #16213e, #0f3460);
-    background-size: 400% 400%;
-    animation: gradient 15s ease infinite;
+  background: linear-gradient(-45deg, #0a0a0a, #1a1a2e, #16213e, #0f3460);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
 }
 
 @keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Floating animation */
 @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .floating {
-    animation: float 6s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
 }
 
 /* Typewriter effect */
 .typewriter {
-    overflow: hidden;
-    border-right: 0.15em solid var(--neon-blue);
-    white-space: nowrap;
-    animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+  overflow: hidden;
+  border-right: 0.15em solid var(--neon-blue);
+  white-space: nowrap;
+  animation:
+    typing 3.5s steps(40, end),
+    blink-caret 0.75s step-end infinite;
 }
 
 @keyframes typing {
-    from { width: 0; }
-    to { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes blink-caret {
-    from, to { border-color: transparent; }
-    50% { border-color: var(--neon-blue); }
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: var(--neon-blue);
+  }
 }
 
 /* Pulse animation for buttons */
 @keyframes pulse-glow {
-    0% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 212, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 212, 255, 0);
+  }
 }
 
 .btn-pulse:hover {
-    animation: pulse-glow 1.5s infinite;
+  animation: pulse-glow 1.5s infinite;
 }
 
 /* Code editor enhancements */
 .code-editor-enhanced {
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-    border: 1px solid var(--neon-blue);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    line-height: 1.6;
-    color: #ffffff;
-    caret-color: var(--neon-blue);
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+  border: 1px solid var(--neon-blue);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #ffffff;
+  caret-color: var(--neon-blue);
 }
 
 /* Syntax highlighting simulation */
-.syntax-keyword { color: #ff79c6; }
-.syntax-string { color: #f1fa8c; }
-.syntax-comment { color: #6272a4; }
-.syntax-function { color: #50fa7b; }
-.syntax-number { color: #bd93f9; }
+.syntax-keyword {
+  color: #ff79c6;
+}
+.syntax-string {
+  color: #f1fa8c;
+}
+.syntax-comment {
+  color: #6272a4;
+}
+.syntax-function {
+  color: #50fa7b;
+}
+.syntax-number {
+  color: #bd93f9;
+}
 
 /* Loading spinner */
 .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(0, 212, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: var(--neon-blue);
-    animation: spin 1s ease-in-out infinite;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 212, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--neon-blue);
+  animation: spin 1s ease-in-out infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Notification styles */
 .notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 1rem 2rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--neon-blue);
-    border-radius: 0.5rem;
-    color: white;
-    z-index: 1000;
-    animation: slideIn 0.3s ease-out;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 2rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--neon-blue);
+  border-radius: 0.5rem;
+  color: white;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* Responsive grid */
 @media (max-width: 768px) {
-    .main-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .sidebar, .right-panel {
-        display: none;
-    }
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar,
+  .right-panel {
+    display: none;
+  }
 }
 
 /* Custom cursors */
-.cursor-pointer { cursor: pointer; }
-.cursor-text { cursor: text; }
-.cursor-wait { cursor: wait; }
+.cursor-pointer {
+  cursor: pointer;
+}
+.cursor-text {
+  cursor: text;
+}
+.cursor-wait {
+  cursor: wait;
+}
 
 /* Hover effects */
 .hover-lift:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s ease;
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
 }
 
 /* Focus effects */
 .focus-glow:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--neon-blue);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--neon-blue);
 }
 
 /* Tooltip styles */
 .tooltip {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .tooltip .tooltiptext {
-    visibility: hidden;
-    width: 120px;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -60px;
-    opacity: 0;
-    transition: opacity 0.3s;
+  visibility: hidden;
+  width: 120px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Progress bar */
 .progress-bar {
-    width: 100%;
-    height: 4px;
-    background: var(--bg-secondary);
-    border-radius: 2px;
-    overflow: hidden;
+  width: 100%;
+  height: 4px;
+  background: var(--bg-secondary);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
 .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
-    transition: width 0.3s ease;
-    animation: shimmer 2s infinite;
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+  transition: width 0.3s ease;
+  animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }

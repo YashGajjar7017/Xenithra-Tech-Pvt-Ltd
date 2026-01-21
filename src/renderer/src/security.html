@@ -1,43 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Security - Store JWT</title>
-</head>
-<body>
-  <h1>Store JWT Token</h1>
-  <p>Paste the JWT token you want to store securely for your account.</p>
-  <textarea id="token" rows="6" cols="80" placeholder="JWT token"></textarea><br>
-  <button id="store">Store Token</button>
-  <div id="status"></div>
+  <head>
+    <meta charset="utf-8" />
+    <title>Security - Store JWT</title>
+  </head>
+  <body>
+    <h1>Store JWT Token</h1>
+    <p>Paste the JWT token you want to store securely for your account.</p>
+    <textarea id="token" rows="6" cols="80" placeholder="JWT token"></textarea><br />
+    <button id="store">Store Token</button>
+    <div id="status"></div>
 
-  <script>
-    document.getElementById('store').addEventListener('click', async () => {
-      const token = document.getElementById('token').value.trim();
-      const status = document.getElementById('status');
-      status.textContent = '';
-      if (!token) { status.textContent = 'Please provide a token'; return; }
-
-      try {
-        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const res = await fetch('/api/security/store-jwt', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + (storedUser.token || '')
-          },
-          body: JSON.stringify({ token })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          status.textContent = 'Token stored successfully.';
-        } else {
-          status.textContent = data.error || data.message || 'Failed to store token.';
+    <script>
+      document.getElementById('store').addEventListener('click', async () => {
+        const token = document.getElementById('token').value.trim()
+        const status = document.getElementById('status')
+        status.textContent = ''
+        if (!token) {
+          status.textContent = 'Please provide a token'
+          return
         }
-      } catch (err) {
-        status.textContent = 'Network error';
-      }
-    });
-  </script>
-</body>
+
+        try {
+          const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+          const res = await fetch('/api/security/store-jwt', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + (storedUser.token || '')
+            },
+            body: JSON.stringify({ token })
+          })
+          const data = await res.json()
+          if (res.ok && data.success) {
+            status.textContent = 'Token stored successfully.'
+          } else {
+            status.textContent = data.error || data.message || 'Failed to store token.'
+          }
+        } catch (err) {
+          status.textContent = 'Network error'
+        }
+      })
+    </script>
+  </body>
 </html>

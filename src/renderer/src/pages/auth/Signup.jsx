@@ -1,11 +1,17 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import AuthLayout from '../auth/AuthLayout'
 import { authAPI, redirect } from '../utils/api'
-import { validateUsername, validateEmail, validatePassword, validatePasswordMatch, validateRole } from '../utils/validators'
+import {
+  validateUsername,
+  validateEmail,
+  validatePassword,
+  validatePasswordMatch,
+  validateRole
+} from '../utils/validators'
 
 /**
  * Signup Page Component
@@ -25,7 +31,7 @@ const Signup = () => {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }))
@@ -83,12 +89,15 @@ const Signup = () => {
       if (response.success) {
         // Check if tokens are returned (OTP disabled)
         if (response.data?.accessToken) {
-          localStorage.setItem('user', JSON.stringify({
-            id: response.data.user._id || response.data.user.id,
-            username: response.data.user.username,
-            token: response.data.accessToken
-          }))
-          
+          localStorage.setItem(
+            'user',
+            JSON.stringify({
+              id: response.data.user._id || response.data.user.id,
+              username: response.data.user.username,
+              token: response.data.accessToken
+            })
+          )
+
           setSuccess('Account created successfully!')
           setTimeout(() => {
             redirect.toDashboard()
@@ -161,7 +170,7 @@ const Signup = () => {
       <Card>
         <form onSubmit={handleSubmit} style={styles.container}>
           <h2 style={styles.title}>Create Account</h2>
-          
+
           <Input
             type="text"
             id="username"
@@ -222,14 +231,13 @@ const Signup = () => {
             <option value="moderator">Moderator</option>
           </select>
 
-          {error && !error.includes('Username') && !error.includes('Email') && 
-           !error.includes('Password') && !error.includes('match') && (
-            <div style={styles.error}>{error}</div>
-          )}
-          
-          {success && (
-            <div style={styles.success}>{success}</div>
-          )}
+          {error &&
+            !error.includes('Username') &&
+            !error.includes('Email') &&
+            !error.includes('Password') &&
+            !error.includes('match') && <div style={styles.error}>{error}</div>}
+
+          {success && <div style={styles.success}>{success}</div>}
 
           <Button
             type="submit"
@@ -240,10 +248,7 @@ const Signup = () => {
             Sign Up
           </Button>
 
-          <span 
-            style={styles.link} 
-            onClick={() => redirect.toLogin()}
-          >
+          <span style={styles.link} onClick={() => redirect.toLogin()}>
             Already have an account? Login
           </span>
         </form>
@@ -258,4 +263,3 @@ export default Signup
 const container = document.getElementById('root')
 const root = createRoot(container)
 root.render(<Signup />)
-

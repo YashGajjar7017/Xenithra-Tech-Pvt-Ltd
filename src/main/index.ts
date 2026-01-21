@@ -9,7 +9,9 @@ function createWindow(): void {
     height: 1200,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon: join(__dirname, '../../Public/Images/github.jpg') } : {}),
+    ...(process.platform === 'linux'
+      ? { icon: join(__dirname, '../../Public/Images/github.jpg') }
+      : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false

@@ -98,108 +98,121 @@
 </html>
 
 ------------------------------------------------------- -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maintenance Mode</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        /* Global Styles */
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            color: #fff;
-            overflow: hidden;
-        }
+      /* Global Styles */
+      body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        color: #fff;
+        overflow: hidden;
+      }
 
-        .container {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 40px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            max-width: 50vw;
-            width: 90%;
-            animation: fadeIn 1.5s ease-in-out;
-        }
+      .container {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 40px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        max-width: 50vw;
+        width: 90%;
+        animation: fadeIn 1.5s ease-in-out;
+      }
 
+      h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      p {
+        font-size: 1.2em;
+        opacity: 0.9;
+      }
+
+      .countdown {
+        font-size: 2em;
+        font-weight: bold;
+        margin: 20px 0;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 10px;
+        border-radius: 8px;
+        display: inline-block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 600px) {
         h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+          font-size: 2em;
         }
-
         p {
-            font-size: 1.2em;
-            opacity: 0.9;
+          font-size: 1em;
         }
-
         .countdown {
-            font-size: 2em;
-            font-weight: bold;
-            margin: 20px 0;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            display: inline-block;
+          font-size: 1.5em;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            h1 { font-size: 2em; }
-            p { font-size: 1em; }
-            .countdown { font-size: 1.5em; }
-        }
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <div class="container">
-        <h1>🚀We Are Under Maintenance</h1>
-        <p>We're making improvements to serve you better. We'll be back soon.</p>
-        <p>Estimated Time Left:</p>
-        <div class="countdown" id="countdown">Loading...</div>
+      <h1>🚀We Are Under Maintenance</h1>
+      <p>We're making improvements to serve you better. We'll be back soon.</p>
+      <p>Estimated Time Left:</p>
+      <div class="countdown" id="countdown">Loading...</div>
     </div>
 
     <script>
-        // Countdown Timer (Set maintenance end time)
-        let countdownTime = new Date().getTime() + 60 * 60 * 1000; 
+      // Countdown Timer (Set maintenance end time)
+      let countdownTime = new Date().getTime() + 60 * 60 * 1000
 
-        function updateCountdown() {
-            let now = new Date().getTime();
-            let timeLeft = countdownTime - now;
+      function updateCountdown() {
+        let now = new Date().getTime()
+        let timeLeft = countdownTime - now
 
-            let hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
-            let minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
-            let seconds = Math.floor((timeLeft / 1000) % 60);
+        let hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24)
+        let minutes = Math.floor((timeLeft / (1000 * 60)) % 60)
+        let seconds = Math.floor((timeLeft / 1000) % 60)
 
-            document.getElementById("countdown").innerText = `${hours}h ${minutes}m ${seconds}s`;
+        document.getElementById('countdown').innerText = `${hours}h ${minutes}m ${seconds}s`
 
-            if (timeLeft <= 0) {
-                document.getElementById("countdown").innerText = "We're Back!";
-            }
+        if (timeLeft <= 0) {
+          document.getElementById('countdown').innerText = "We're Back!"
         }
+      }
 
-        setInterval(updateCountdown, 1000);
+      setInterval(updateCountdown, 1000)
     </script>
-
-</body>
+  </body>
 </html>
 
- <!-- <!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">

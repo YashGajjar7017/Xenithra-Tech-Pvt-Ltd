@@ -1,49 +1,112 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <title>Login Overlay | Human Error</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <link rel="icon" type="image/png" href="/images/icons/favicon.ico" />
 
-    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 
-	<link rel="stylesheet" type="text/css" href="/css/login/util.css">
-	<link rel="stylesheet" type="text/css" href="/css/login/main.css">
+    <link rel="stylesheet" type="text/css" href="/css/login/util.css" />
+    <link rel="stylesheet" type="text/css" href="/css/login/main.css" />
     <style>
-        /* Lightweight variant of the login page with overlay-nav already enabled */
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg,#071126 0%, #081833 100%); color: #e6eef8; }
-        .overlay-wrapper { max-width: 1100px; margin: 80px auto; padding: 40px; position: relative; }
-        .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 32px; border-radius: 12px; }
-        .side-note { color: #9fb1c9; margin-top: 12px; font-size: 14px; }
+      /* Lightweight variant of the login page with overlay-nav already enabled */
+      body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #071126 0%, #081833 100%);
+        color: #e6eef8;
+      }
+      .overlay-wrapper {
+        max-width: 1100px;
+        margin: 80px auto;
+        padding: 40px;
+        position: relative;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 32px;
+        border-radius: 12px;
+      }
+      .side-note {
+        color: #9fb1c9;
+        margin-top: 12px;
+        font-size: 14px;
+      }
 
-        /* Reuse side-nav styles from login.html for consistency */
-        .side-nav-overlay { position: fixed; top: 0; left: -350px; width: 320px; height: 100vh; background: rgba(15, 15, 35, 0.95); backdrop-filter: blur(10px); z-index: 1000; transition: left 0.3s cubic-bezier(0.4,0,0.2,1); overflow-y: auto; padding: 60px 0 40px 0; }
-        .side-nav-overlay.active { left: 0; }
-        .nav-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0); z-index: 999; transition: background 0.3s ease; pointer-events: none; }
-        .nav-backdrop.active { background: rgba(0,0,0,0.45); pointer-events: all; }
-        .nav-toggle-btn { position: fixed; top: 30px; left: 30px; background: rgba(124,92,255,0.18); border: 1px solid rgba(124,92,255,0.4); color: #7c5cff; width: 44px; height: 44px; border-radius: 10px; cursor: pointer; display:flex; align-items:center; justify-content:center; z-index:1100; }
-        .nav-close-btn { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; }
+      /* Reuse side-nav styles from login.html for consistency */
+      .side-nav-overlay {
+        position: fixed;
+        top: 0;
+        left: -350px;
+        width: 320px;
+        height: 100vh;
+        background: rgba(15, 15, 35, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        padding: 60px 0 40px 0;
+      }
+      .side-nav-overlay.active {
+        left: 0;
+      }
+      .nav-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0);
+        z-index: 999;
+        transition: background 0.3s ease;
+        pointer-events: none;
+      }
+      .nav-backdrop.active {
+        background: rgba(0, 0, 0, 0.45);
+        pointer-events: all;
+      }
+      .nav-toggle-btn {
+        position: fixed;
+        top: 30px;
+        left: 30px;
+        background: rgba(124, 92, 255, 0.18);
+        border: 1px solid rgba(124, 92, 255, 0.4);
+        color: #7c5cff;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1100;
+      }
+      .nav-close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Side Navigation Overlay (same links as login.html) -->
     <nav class="side-nav-overlay" id="sideNavOverlay">
-        <button class="nav-close-btn" id="overlayNavClose">
-            ✕
-        </button>
-        <ul class="nav-menu" style="padding:20px; list-style:none;">
-            <li><a class="nav-link" href="/">🏠 Home</a></li>
-            <li><a class="nav-link" href="/Account/Dashboard/user">📊 Dashboard</a></li>
-            <li><a class="nav-link" href="/membership">💎 Membership Plans</a></li>
-            <li><a class="nav-link" href="/Account/signup">📝 Sign Up</a></li>
-            <li><a class="nav-link" href="/classroom">🎓 Classroom</a></li>
-            <li><a class="nav-link" href="#">ℹ️ About Us</a></li>
-            <li><a class="nav-link logout-link" href="/Account/logout">🚪 Logout</a></li>
-        </ul>
+      <button class="nav-close-btn" id="overlayNavClose">✕</button>
+      <ul class="nav-menu" style="padding: 20px; list-style: none">
+        <li><a class="nav-link" href="/">🏠 Home</a></li>
+        <li><a class="nav-link" href="/Account/Dashboard/user">📊 Dashboard</a></li>
+        <li><a class="nav-link" href="/membership">💎 Membership Plans</a></li>
+        <li><a class="nav-link" href="/Account/signup">📝 Sign Up</a></li>
+        <li><a class="nav-link" href="/classroom">🎓 Classroom</a></li>
+        <li><a class="nav-link" href="#">ℹ️ About Us</a></li>
+        <li><a class="nav-link logout-link" href="/Account/logout">🚪 Logout</a></li>
+      </ul>
     </nav>
 
     <div class="nav-backdrop" id="overlayBackdrop"></div>
@@ -51,60 +114,116 @@
     <button class="nav-toggle-btn" id="overlayToggle">☰</button>
 
     <div class="overlay-wrapper">
-        <div class="card">
-            <h2>Welcome back</h2>
-            <p class="side-note">Sign in to continue to your dashboard and membership features.</p>
+      <div class="card">
+        <h2>Welcome back</h2>
+        <p class="side-note">Sign in to continue to your dashboard and membership features.</p>
 
-            <form id="overlayLoginForm" style="margin-top:18px">
-                <div style="margin-bottom:12px">
-                    <label for="ov-username">Username</label><br>
-                    <input id="ov-username" name="username" required minlength="3" class="form-control" style="padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit" />
-                </div>
-                <div style="margin-bottom:12px">
-                    <label for="ov-password">Password</label><br>
-                    <input id="ov-password" name="password" type="password" required minlength="6" class="form-control" style="padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit" />
-                </div>
-                <div style="display:flex;gap:8px">
-                    <button type="submit" class="btn btn-primary" style="padding:10px 16px;border-radius:8px;border:none;">Login</button>
-                    <a href="/Account/signup" class="btn btn-outline-light" style="padding:10px 16px;border-radius:8px;text-decoration:none;">Sign up</a>
-                </div>
-            </form>
-        </div>
+        <form id="overlayLoginForm" style="margin-top: 18px">
+          <div style="margin-bottom: 12px">
+            <label for="ov-username">Username</label><br />
+            <input
+              id="ov-username"
+              name="username"
+              required
+              minlength="3"
+              class="form-control"
+              style="
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                background: transparent;
+                color: inherit;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 12px">
+            <label for="ov-password">Password</label><br />
+            <input
+              id="ov-password"
+              name="password"
+              type="password"
+              required
+              minlength="6"
+              class="form-control"
+              style="
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                background: transparent;
+                color: inherit;
+              "
+            />
+          </div>
+          <div style="display: flex; gap: 8px">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              style="padding: 10px 16px; border-radius: 8px; border: none"
+            >
+              Login
+            </button>
+            <a
+              href="/Account/signup"
+              class="btn btn-outline-light"
+              style="padding: 10px 16px; border-radius: 8px; text-decoration: none"
+              >Sign up</a
+            >
+          </div>
+        </form>
+      </div>
     </div>
 
     <script>
-        const overlayToggle = document.getElementById('overlayToggle');
-        const overlay = document.getElementById('sideNavOverlay');
-        const overlayClose = document.getElementById('overlayNavClose');
-        const overlayBackdrop = document.getElementById('overlayBackdrop');
+      const overlayToggle = document.getElementById('overlayToggle')
+      const overlay = document.getElementById('sideNavOverlay')
+      const overlayClose = document.getElementById('overlayNavClose')
+      const overlayBackdrop = document.getElementById('overlayBackdrop')
 
-        overlayToggle.addEventListener('click', () => { overlay.classList.add('active'); overlayBackdrop.classList.add('active'); document.body.classList.add('nav-open'); });
-        const closeOverlay = () => { overlay.classList.remove('active'); overlayBackdrop.classList.remove('active'); document.body.classList.remove('nav-open'); overlayToggle.focus(); };
-        overlayClose.addEventListener('click', closeOverlay); overlayBackdrop.addEventListener('click', closeOverlay);
-        document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', closeOverlay));
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('nav-open')) closeOverlay(); });
+      overlayToggle.addEventListener('click', () => {
+        overlay.classList.add('active')
+        overlayBackdrop.classList.add('active')
+        document.body.classList.add('nav-open')
+      })
+      const closeOverlay = () => {
+        overlay.classList.remove('active')
+        overlayBackdrop.classList.remove('active')
+        document.body.classList.remove('nav-open')
+        overlayToggle.focus()
+      }
+      overlayClose.addEventListener('click', closeOverlay)
+      overlayBackdrop.addEventListener('click', closeOverlay)
+      document
+        .querySelectorAll('.nav-link')
+        .forEach((l) => l.addEventListener('click', closeOverlay))
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.body.classList.contains('nav-open')) closeOverlay()
+      })
 
-        document.getElementById('overlayLoginForm').addEventListener('submit', async (ev) => {
-            ev.preventDefault();
-            const username = document.getElementById('ov-username').value.trim();
-            const password = document.getElementById('ov-password').value.trim();
-            if (!username || !password) return alert('Please enter credentials');
-            try {
-                const resp = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ username, password }) });
-                const data = await resp.json();
-                if (data.success) {
-                    document.cookie = `token=${data.token}; path=/; max-age=${24*60*60}`;
-                    document.cookie = `username=${data.user.username}; path=/; max-age=${24*60*60}`;
-                    document.cookie = `role=${data.user.role}; path=/; max-age=${24*60*60}`;
-                    window.location.href = '/';
-                } else {
-                    alert(data.message || 'Login failed');
-                }
-            } catch (err) {
-                console.error(err); alert('Login error');
-            }
-        });
+      document.getElementById('overlayLoginForm').addEventListener('submit', async (ev) => {
+        ev.preventDefault()
+        const username = document.getElementById('ov-username').value.trim()
+        const password = document.getElementById('ov-password').value.trim()
+        if (!username || !password) return alert('Please enter credentials')
+        try {
+          const resp = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          })
+          const data = await resp.json()
+          if (data.success) {
+            document.cookie = `token=${data.token}; path=/; max-age=${24 * 60 * 60}`
+            document.cookie = `username=${data.user.username}; path=/; max-age=${24 * 60 * 60}`
+            document.cookie = `role=${data.user.role}; path=/; max-age=${24 * 60 * 60}`
+            window.location.href = '/'
+          } else {
+            alert(data.message || 'Login failed')
+          }
+        } catch (err) {
+          console.error(err)
+          alert('Login error')
+        }
+      })
     </script>
-</body>
-
+  </body>
 </html>

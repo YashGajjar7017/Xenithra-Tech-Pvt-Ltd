@@ -1,492 +1,526 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Xenithra Technologies Pvt Ltd</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-        "Segoe UI", sans-serif;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, #ff00c8 0, transparent 55%),
-        radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%);
-      color: #e5f2ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0px;
-    }
-
-    /* Outer glass shell */
-    .app {
-      display: flex;
-      width: 100%;
-      height: 100vh;
-      position: relative;
-      border-radius: 26px;
-      background: radial-gradient(circle at top, rgba(14, 23, 48, 0.92), rgba(4, 7, 18, 0.98));
-      border: 1px solid rgba(255, 255, 255, 0.18); /* thin white edge [web:32] */
-      box-shadow:
-        0 0 40px rgba(0, 0, 0, 0.7),
-        0 0 80px rgba(255, 0, 200, 0.45),
-        0 0 120px rgba(0, 229, 255, 0.45);
-      backdrop-filter: blur(26px) saturate(180%); /* main glass blur [web:9][web:64] */
-      overflow: hidden;
-    }
-
-    /* liquid glass highlight */
-    .app::before {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      background:
-        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.18), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.12), transparent 55%);
-      mix-blend-mode: screen;
-      opacity: 0.55;
-      pointer-events: none;
-    }
-
-    /* neon split border */
-    .border-neon {
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 2px;
-      background: conic-gradient(
-        from 180deg,
-        rgba(255, 0, 200, 0.9),
-        rgba(0, 229, 255, 0.9),
-        rgba(255, 234, 0, 0.8),
-        rgba(255, 0, 200, 0.9)
-      );
-      -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude; /* gradient glass border trick [web:61][web:64] */
-      opacity: 0.8;
-      animation: borderFlow 16s linear infinite;
-      pointer-events: none;
-    }
-    @keyframes borderFlow {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    .shell {
-      position: relative;
-      display: flex;
-      flex: 1;
-      border-radius: inherit;
-      overflow: hidden;
-      z-index: 1;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 230px;
-      padding: 20px 16px;
-      background: linear-gradient(
-        165deg,
-        rgba(11, 26, 56, 0.96),
-        rgba(2, 6, 20, 0.96)
-      );
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(24px);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-      font-weight: 650;
-      font-size: 19px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-    .logo-box {
-      width: 32px;
-      height: 32px;
-      border-radius: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 10px;
-      font-size: 18px;
-      background: radial-gradient(circle at 30% 0, #ffffff, #ffe6ff);
-      box-shadow:
-        0 0 18px rgba(255, 0, 200, 0.8),
-        0 0 10px rgba(255, 255, 255, 0.7);
-      color: #2b0136;
-    }
-
-    .subtitle {
-      font-size: 11px;
-      margin-bottom: 16px;
-      opacity: 0.85;
-    }
-
-    .pill-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      margin-bottom: 10px;
-      opacity: 0.6;
-    }
-
-    .sidebar button {
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.15), rgba(6, 10, 30, 0.94));
-      color: #fdfdfd;
-      text-align: left;
-      padding: 7px 13px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-bottom: 8px;
-      backdrop-filter: blur(20px);
-      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-    }
-    .sidebar button::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, #ff00c8, #ffea00, #00e5ff, #ff00c8);
-      background-size: 240% 240%;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      z-index: -1;
-      filter: blur(1px);
-    }
-    .sidebar button:hover::before {
-      opacity: 0.75;
-      animation: gradientSweep 1.8s linear infinite; /* animated gradient [web:59][web:60] */
-    }
-    .sidebar button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(0, 229, 255, 0.55);
-      background: rgba(6, 10, 30, 0.96);
-    }
-
-    @keyframes gradientSweep {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    /* Main */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background:
-        radial-gradient(circle at top left, rgba(255, 0, 200, 0.16), transparent 60%),
-        radial-gradient(circle at bottom right, rgba(0, 229, 255, 0.18), rgba(1, 2, 8, 0.98));
-    }
-
-    /* Topbar */
-    .topbar {
-      display: flex;
-      align-items: center;
-      padding: 10px 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: linear-gradient(
-        90deg,
-        rgba(4, 9, 24, 0.96),
-        rgba(10, 2, 26, 0.96)
-      );
-      backdrop-filter: blur(24px);
-    }
-
-    .topbar-title {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      color: #e8f5ff;
-    }
-
-    .topbar button {
-      margin-left: 10px;
-      padding: 5px 15px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 12px;
-      color: #fff;
-      position: relative;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      backdrop-filter: blur(20px);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    }
-
-    .topbar button::before {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      background: conic-gradient(
-        from 180deg,
-        #ff00c8,
-        #ffea00,
-        #00e5ff,
-        #ff00c8
-      );
-      background-size: 200% 200%;
-      opacity: 0;
-      transition: opacity 0.18s ease;
-      z-index: -1;
-    }
-    .topbar button::after {
-      content: "";
-      position: absolute;
-      inset: 1px;
-      border-radius: inherit;
-      background: rgba(7, 10, 30, 0.97);
-      z-index: -1;
-    }
-
-    .topbar button:hover::before {
-      opacity: 1;
-      animation: spinBorder 2.2s linear infinite; /* neon button ring [web:66][web:70] */
-    }
-    .topbar button:hover {
-      transform: translateY(-1px);
-      box-shadow:
-        0 0 18px rgba(255, 0, 200, 0.9),
-        0 0 26px rgba(0, 229, 255, 0.9);
-    }
-
-    @keyframes spinBorder {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Run button – animated gradient core */
-    .btn-run {
-      background: linear-gradient(120deg, #00e676, #00b0ff, #00e676);
-      background-size: 220% 220%;
-      box-shadow: 0 0 22px rgba(0, 230, 118, 0.9);
-      animation: runGlow 2.3s ease-in-out infinite alternate;
-    }
-    @keyframes runGlow {
-      0% {
-        background-position: 0% 50%;
-        box-shadow: 0 0 16px rgba(0, 230, 118, 0.7);
+  <head>
+    <meta charset="UTF-8" />
+    <title>Xenithra Technologies Pvt Ltd</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      100% {
-        background-position: 100% 50%;
-        box-shadow: 0 0 30px rgba(0, 230, 118, 1);
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'SF Pro Text',
+          'Segoe UI',
+          sans-serif;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, #ff00c8 0, transparent 55%),
+          radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%);
+        color: #e5f2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0px;
       }
-    }
 
-    .lang-select {
-      margin-left: auto;
-      font-size: 12px;
-      color: #e0f7fa;
-      opacity: 0.9;
-    }
+      /* Outer glass shell */
+      .app {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+        position: relative;
+        border-radius: 26px;
+        background: radial-gradient(circle at top, rgba(14, 23, 48, 0.92), rgba(4, 7, 18, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.18); /* thin white edge [web:32] */
+        box-shadow:
+          0 0 40px rgba(0, 0, 0, 0.7),
+          0 0 80px rgba(255, 0, 200, 0.45),
+          0 0 120px rgba(0, 229, 255, 0.45);
+        backdrop-filter: blur(26px) saturate(180%); /* main glass blur [web:9][web:64] */
+        overflow: hidden;
+      }
 
-    /* Editor header */
-    .editor-header {
-      background: rgba(4, 7, 22, 0.96);
-      padding: 7px 18px;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .editor-header .tab {
-      padding: 3px 11px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      font-size: 11px;
-    }
+      /* liquid glass highlight */
+      .app::before {
+        content: '';
+        position: absolute;
+        inset: -40%;
+        background:
+          radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.18), transparent 55%),
+          radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.12), transparent 55%);
+        mix-blend-mode: screen;
+        opacity: 0.55;
+        pointer-events: none;
+      }
 
-    /* Editor (liquid glass card) */
-    .editor-wrapper {
-      flex: 1;
-      padding: 16px 18px 18px;
-      display: flex;
-    }
+      /* neon split border */
+      .border-neon {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 2px;
+        background: conic-gradient(
+          from 180deg,
+          rgba(255, 0, 200, 0.9),
+          rgba(0, 229, 255, 0.9),
+          rgba(255, 234, 0, 0.8),
+          rgba(255, 0, 200, 0.9)
+        );
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude; /* gradient glass border trick [web:61][web:64] */
+        opacity: 0.8;
+        animation: borderFlow 16s linear infinite;
+        pointer-events: none;
+      }
+      @keyframes borderFlow {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-    .editor {
-      position: relative;
-      flex: 1;
-      padding: 14px 46px;
-      border-radius: 18px;
-      background:
-        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.07), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.06), transparent 55%),
-        linear-gradient(145deg, rgba(6, 9, 28, 0.96), rgba(3, 6, 20, 0.98));
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      box-shadow:
-        0 22px 40px rgba(0, 0, 0, 0.7),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-      backdrop-filter: blur(22px); /* liquid glass card [web:15][web:71] */
-      overflow: auto;
-      font-family: "JetBrains Mono", Menlo, Consolas, "Courier New", monospace;
-      color: #e8edf7;
-    }
+      .shell {
+        position: relative;
+        display: flex;
+        flex: 1;
+        border-radius: inherit;
+        overflow: hidden;
+        z-index: 1;
+      }
 
-    .line-numbers {
-      position: absolute;
-      left: 14px;
-      top: 14px;
-      text-align: right;
-      color: #5c6370;
-      font-size: 13px;
-      line-height: 1.5;
-      user-select: none;
-      padding-right: 6px;
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-    }
+      /* Sidebar */
+      .sidebar {
+        width: 230px;
+        padding: 20px 16px;
+        background: linear-gradient(165deg, rgba(11, 26, 56, 0.96), rgba(2, 6, 20, 0.96));
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(24px);
+      }
 
-    .code-area {
-      margin-left: 42px;
-      font-size: 13px;
-      line-height: 1.5;
-      white-space: pre;
-      outline: none;
-      min-height: 100%;
-    }
+      .logo {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        font-weight: 650;
+        font-size: 19px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .logo-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        font-size: 18px;
+        background: radial-gradient(circle at 30% 0, #ffffff, #ffe6ff);
+        box-shadow:
+          0 0 18px rgba(255, 0, 200, 0.8),
+          0 0 10px rgba(255, 255, 255, 0.7);
+        color: #2b0136;
+      }
 
-    .kw      { color: #61afef; }
-    .func    { color: #e5c07b; }
-    .string  { color: #98c379; }
-    .comment { color: #7f848e; }
+      .subtitle {
+        font-size: 11px;
+        margin-bottom: 16px;
+        opacity: 0.85;
+      }
 
-    /* Bottom */
-    .bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(4, 7, 22, 0.98);
-      padding: 8px 18px 11px;
-      font-size: 12px;
-      color: #cfd8dc;
-      backdrop-filter: blur(20px);
-    }
-    .bottom label { margin-right: 8px; }
-    .bottom input[type="text"] {
-      width: 60%;
-      padding: 4px 7px;
-      background: rgba(6, 9, 28, 0.98);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #f5f7ff;
-      border-radius: 8px;
-    }
-    .bottom .stdin-options {
-      margin-top: 6px;
-    }
-    .bottom .stdin-options label {
-      margin-right: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <div class="border-neon"></div>
-    <div class="shell">
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <div class="logo">
-          <div class="logo-box">⚡</div>
-          NovaGlass
+      .pill-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        margin-bottom: 10px;
+        opacity: 0.6;
+      }
+
+      .sidebar button {
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: radial-gradient(
+          circle at 0 0,
+          rgba(255, 255, 255, 0.15),
+          rgba(6, 10, 30, 0.94)
+        );
+        color: #fdfdfd;
+        text-align: left;
+        padding: 7px 13px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-bottom: 8px;
+        backdrop-filter: blur(20px);
+        transition:
+          transform 0.16s ease,
+          box-shadow 0.16s ease,
+          background 0.16s ease;
+      }
+      .sidebar button::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, #ff00c8, #ffea00, #00e5ff, #ff00c8);
+        background-size: 240% 240%;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: -1;
+        filter: blur(1px);
+      }
+      .sidebar button:hover::before {
+        opacity: 0.75;
+        animation: gradientSweep 1.8s linear infinite; /* animated gradient [web:59][web:60] */
+      }
+      .sidebar button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.55);
+        background: rgba(6, 10, 30, 0.96);
+      }
+
+      @keyframes gradientSweep {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* Main */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background:
+          radial-gradient(circle at top left, rgba(255, 0, 200, 0.16), transparent 60%),
+          radial-gradient(circle at bottom right, rgba(0, 229, 255, 0.18), rgba(1, 2, 8, 0.98));
+      }
+
+      /* Topbar */
+      .topbar {
+        display: flex;
+        align-items: center;
+        padding: 10px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(90deg, rgba(4, 9, 24, 0.96), rgba(10, 2, 26, 0.96));
+        backdrop-filter: blur(24px);
+      }
+
+      .topbar-title {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: #e8f5ff;
+      }
+
+      .topbar button {
+        margin-left: 10px;
+        padding: 5px 15px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        backdrop-filter: blur(20px);
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .topbar button::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        background: conic-gradient(from 180deg, #ff00c8, #ffea00, #00e5ff, #ff00c8);
+        background-size: 200% 200%;
+        opacity: 0;
+        transition: opacity 0.18s ease;
+        z-index: -1;
+      }
+      .topbar button::after {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        border-radius: inherit;
+        background: rgba(7, 10, 30, 0.97);
+        z-index: -1;
+      }
+
+      .topbar button:hover::before {
+        opacity: 1;
+        animation: spinBorder 2.2s linear infinite; /* neon button ring [web:66][web:70] */
+      }
+      .topbar button:hover {
+        transform: translateY(-1px);
+        box-shadow:
+          0 0 18px rgba(255, 0, 200, 0.9),
+          0 0 26px rgba(0, 229, 255, 0.9);
+      }
+
+      @keyframes spinBorder {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Run button – animated gradient core */
+      .btn-run {
+        background: linear-gradient(120deg, #00e676, #00b0ff, #00e676);
+        background-size: 220% 220%;
+        box-shadow: 0 0 22px rgba(0, 230, 118, 0.9);
+        animation: runGlow 2.3s ease-in-out infinite alternate;
+      }
+      @keyframes runGlow {
+        0% {
+          background-position: 0% 50%;
+          box-shadow: 0 0 16px rgba(0, 230, 118, 0.7);
+        }
+        100% {
+          background-position: 100% 50%;
+          box-shadow: 0 0 30px rgba(0, 230, 118, 1);
+        }
+      }
+
+      .lang-select {
+        margin-left: auto;
+        font-size: 12px;
+        color: #e0f7fa;
+        opacity: 0.9;
+      }
+
+      /* Editor header */
+      .editor-header {
+        background: rgba(4, 7, 22, 0.96);
+        padding: 7px 18px;
+        font-size: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .editor-header .tab {
+        padding: 3px 11px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 11px;
+      }
+
+      /* Editor (liquid glass card) */
+      .editor-wrapper {
+        flex: 1;
+        padding: 16px 18px 18px;
+        display: flex;
+      }
+
+      .editor {
+        position: relative;
+        flex: 1;
+        padding: 14px 46px;
+        border-radius: 18px;
+        background:
+          radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.07), transparent 55%),
+          radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.06), transparent 55%),
+          linear-gradient(145deg, rgba(6, 9, 28, 0.96), rgba(3, 6, 20, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        box-shadow:
+          0 22px 40px rgba(0, 0, 0, 0.7),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(22px); /* liquid glass card [web:15][web:71] */
+        overflow: auto;
+        font-family: 'JetBrains Mono', Menlo, Consolas, 'Courier New', monospace;
+        color: #e8edf7;
+      }
+
+      .line-numbers {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        text-align: right;
+        color: #5c6370;
+        font-size: 13px;
+        line-height: 1.5;
+        user-select: none;
+        padding-right: 6px;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .code-area {
+        margin-left: 42px;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: pre;
+        outline: none;
+        min-height: 100%;
+      }
+
+      .kw {
+        color: #61afef;
+      }
+      .func {
+        color: #e5c07b;
+      }
+      .string {
+        color: #98c379;
+      }
+      .comment {
+        color: #7f848e;
+      }
+
+      /* Bottom */
+      .bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(4, 7, 22, 0.98);
+        padding: 8px 18px 11px;
+        font-size: 12px;
+        color: #cfd8dc;
+        backdrop-filter: blur(20px);
+      }
+      .bottom label {
+        margin-right: 8px;
+      }
+      .bottom input[type='text'] {
+        width: 60%;
+        padding: 4px 7px;
+        background: rgba(6, 9, 28, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #f5f7ff;
+        border-radius: 8px;
+      }
+      .bottom .stdin-options {
+        margin-top: 6px;
+      }
+      .bottom .stdin-options label {
+        margin-right: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="border-neon"></div>
+      <div class="shell">
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="logo">
+            <div class="logo-box">⚡</div>
+            NovaGlass
+          </div>
+          <div class="subtitle">Frosted neon playground for modern C/C++ builds.</div>
+          <div class="pill-label">Workspace</div>
+          <button>Dashboard</button>
+          <button>Projects</button>
+          <button>Snippets</button>
+          <button>Playground</button>
+          <div class="pill-label" style="margin-top: 14px">Account</div>
+          <button>Profile</button>
+          <button>Settings</button>
+          <button>Logout</button>
         </div>
-        <div class="subtitle">Frosted neon playground for modern C/C++ builds.</div>
-        <div class="pill-label">Workspace</div>
-        <button>Dashboard</button>
-        <button>Projects</button>
-        <button>Snippets</button>
-        <button>Playground</button>
-        <div class="pill-label" style="margin-top:14px;">Account</div>
-        <button>Profile</button>
-        <button>Settings</button>
-        <button>Logout</button>
-      </div>
 
-      <!-- Main -->
-      <div class="main">
-        <!-- Topbar -->
-        <div class="topbar">
-          <div class="topbar-title">NOVA GLASS CODE STUDIO</div>
-          <button class="btn-run">▶ Run</button>
-          <button>🐞 Debug</button>
-          <button>■ Stop</button>
-          <button>Share</button>
-          <button>Save</button>
-          <button>{ } Format</button>
-          <div class="lang-select">Language: C (GCC)</div>
-        </div>
+        <!-- Main -->
+        <div class="main">
+          <!-- Topbar -->
+          <div class="topbar">
+            <div class="topbar-title">NOVA GLASS CODE STUDIO</div>
+            <button class="btn-run">▶ Run</button>
+            <button>🐞 Debug</button>
+            <button>■ Stop</button>
+            <button>Share</button>
+            <button>Save</button>
+            <button>{ } Format</button>
+            <div class="lang-select">Language: C (GCC)</div>
+          </div>
 
-        <!-- Editor header -->
-        <div class="editor-header">
-          <div class="tab">main.c</div>
-          <div style="font-size:11px; opacity:0.7;">autosave • synced to cloud</div>
-        </div>
+          <!-- Editor header -->
+          <div class="editor-header">
+            <div class="tab">main.c</div>
+            <div style="font-size: 11px; opacity: 0.7">autosave • synced to cloud</div>
+          </div>
 
-        <!-- Editor body -->
-        <div class="editor-wrapper">
-          <div class="editor">
-            <div class="line-numbers">
-1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16
-            </div>
-            <!-- Editable code area -->
-            <div class="code-area" contenteditable="true" spellcheck="false">
-<span class="comment">/******************************************************************************</span>
-<span class="comment">  NovaGlass Code Studio.</span>
-<span class="comment">  Futuristic glassmorphism IDE with neon gradients.</span>
-<span class="comment">  Type here, press enter, and enjoy the glow.</span>
-<span class="comment">*******************************************************************************/</span>
+          <!-- Editor body -->
+          <div class="editor-wrapper">
+            <div class="editor">
+              <div class="line-numbers">
+                1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12<br />13<br />14<br />15<br />16
+              </div>
+              <!-- Editable code area -->
+              <div class="code-area" contenteditable="true" spellcheck="false">
+                <span class="comment"
+                  >/******************************************************************************</span
+                >
+                <span class="comment"> NovaGlass Code Studio.</span>
+                <span class="comment"> Futuristic glassmorphism IDE with neon gradients.</span>
+                <span class="comment"> Type here, press enter, and enjoy the glow.</span>
+                <span class="comment"
+                  >*******************************************************************************/</span
+                >
 
-<span class="kw">#include</span> &lt;stdio.h&gt;
+                <span class="kw">#include</span> &lt;stdio.h&gt;
 
-<span class="kw">int</span> <span class="func">main</span>(<span class="kw">void</span>) 
-{
-    <span class="func">printf</span>(<span class="string">"Hello, NovaGlass!\n"</span>);
-    
-    <span class="kw">return</span> <span class="kw">0</span>;
-}
+                <span class="kw">int</span> <span class="func">main</span>(<span class="kw"
+                  >void</span
+                >) { <span class="func">printf</span>(<span class="string"
+                  >"Hello, NovaGlass!\n"</span
+                >);
+
+                <span class="kw">return</span> <span class="kw">0</span>; }
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Bottom -->
-        <div class="bottom">
-          <div>
-            <label>Command line arguments:</label>
-            <input type="text" placeholder="--help" />
-          </div>
-          <div class="stdin-options">
-            Standard Input:
-            <label><input type="radio" name="stdin" checked /> Interactive Console</label>
-            <label><input type="radio" name="stdin" /> Text</label>
+          <!-- Bottom -->
+          <div class="bottom">
+            <div>
+              <label>Command line arguments:</label>
+              <input type="text" placeholder="--help" />
+            </div>
+            <div class="stdin-options">
+              Standard Input:
+              <label><input type="radio" name="stdin" checked /> Interactive Console</label>
+              <label><input type="radio" name="stdin" /> Text</label>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Tiny JS: Run button click flash -->
-  <script>
-    const runBtn = document.querySelector(".btn-run");
-    runBtn.addEventListener("click", () => {
-      runBtn.style.filter = "brightness(1.5)";
-      runBtn.style.transform = "translateY(-2px) scale(1.03)";
-      setTimeout(() => {
-        runBtn.style.filter = "brightness(1)";
-        runBtn.style.transform = "";
-      }, 200);
-    });
-  </script>
-</body>
+    <!-- Tiny JS: Run button click flash -->
+    <script>
+      const runBtn = document.querySelector('.btn-run')
+      runBtn.addEventListener('click', () => {
+        runBtn.style.filter = 'brightness(1.5)'
+        runBtn.style.transform = 'translateY(-2px) scale(1.03)'
+        setTimeout(() => {
+          runBtn.style.filter = 'brightness(1)'
+          runBtn.style.transform = ''
+        }, 200)
+      })
+    </script>
+  </body>
 </html>

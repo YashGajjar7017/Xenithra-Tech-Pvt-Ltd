@@ -1,12 +1,11 @@
-import { jsPDF } from 'jspdf';
+import { jsPDF } from 'jspdf'
 
 export function ConvertToPdf(data) {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'px',
+    format: 'a4'
+  })
 
-    const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: 'a4',
-    });
-
-    doc.save('test');
+  doc.save('test')
 }

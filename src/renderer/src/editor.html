@@ -1,127 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Web Editor | Human Error</title>
-  <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body, html { height: 100%; }
-    .file-tree { height: 80vh; overflow:auto; background:#f7f7f8; }
-    .editor-area { height: 80vh; }
-    .file-item { cursor: pointer; padding:4px 8px; }
-    .file-item:hover { background:#e9ecef; }
-  </style>
-</head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">Web Editor</a>
-    <div class="d-flex">
-      <input id="baseDir" class="form-control form-control-sm me-2" placeholder="Base directory (absolute)" style="min-width:360px;" />
-      <button id="openDir" class="btn btn-sm btn-primary">Open Directory</button>
-    </div>
-  </div>
-</nav>
-
-<div class="container-fluid mt-2">
-  <div class="row">
-    <div class="col-3">
-      <div class="file-tree list-group" id="fileTree"></div>
-    </div>
-    <div class="col-9 d-flex flex-column">
-      <div class="mb-2 d-flex gap-2">
-        <input id="currentPath" class="form-control form-control-sm" readonly />
-        <button id="saveBtn" class="btn btn-sm btn-success">Save</button>
-        <button id="downloadBtn" class="btn btn-sm btn-secondary">Download</button>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Editor | Human Error</title>
+    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      body,
+      html {
+        height: 100%;
+      }
+      .file-tree {
+        height: 80vh;
+        overflow: auto;
+        background: #f7f7f8;
+      }
+      .editor-area {
+        height: 80vh;
+      }
+      .file-item {
+        cursor: pointer;
+        padding: 4px 8px;
+      }
+      .file-item:hover {
+        background: #e9ecef;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Web Editor</a>
+        <div class="d-flex">
+          <input
+            id="baseDir"
+            class="form-control form-control-sm me-2"
+            placeholder="Base directory (absolute)"
+            style="min-width: 360px"
+          />
+          <button id="openDir" class="btn btn-sm btn-primary">Open Directory</button>
+        </div>
       </div>
-      <textarea id="editor" class="form-control editor-area" spellcheck="false"></textarea>
+    </nav>
+
+    <div class="container-fluid mt-2">
+      <div class="row">
+        <div class="col-3">
+          <div class="file-tree list-group" id="fileTree"></div>
+        </div>
+        <div class="col-9 d-flex flex-column">
+          <div class="mb-2 d-flex gap-2">
+            <input id="currentPath" class="form-control form-control-sm" readonly />
+            <button id="saveBtn" class="btn btn-sm btn-success">Save</button>
+            <button id="downloadBtn" class="btn btn-sm btn-secondary">Download</button>
+          </div>
+          <textarea id="editor" class="form-control editor-area" spellcheck="false"></textarea>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<script>
-  const fileTree = document.getElementById('fileTree');
-  const editor = document.getElementById('editor');
-  const currentPath = document.getElementById('currentPath');
-  const baseDirInput = document.getElementById('baseDir');
-  let baseDir = '';
+    <script>
+      const fileTree = document.getElementById('fileTree')
+      const editor = document.getElementById('editor')
+      const currentPath = document.getElementById('currentPath')
+      const baseDirInput = document.getElementById('baseDir')
+      let baseDir = ''
 
-  document.getElementById('openDir').addEventListener('click', async () => {
-    baseDir = baseDirInput.value.trim();
-    if (!baseDir) { alert('Enter an absolute base directory path'); return; }
-    await loadDir('.');
-  });
-
-  async function loadDir(relPath) {
-    try {
-      const res = await fetch(`/api/editor/list?base=${encodeURIComponent(baseDir)}&path=${encodeURIComponent(relPath)}`);
-      const data = await res.json();
-      if (!data.success) { alert(data.error || 'Failed to list'); return; }
-      renderList(relPath, data.entries);
-    } catch (err) {
-      alert('Network error while listing directory');
-    }
-  }
-
-  function renderList(relPath, entries) {
-    fileTree.innerHTML = '';
-    entries.forEach(e => {
-      const el = document.createElement('div');
-      el.className = 'file-item list-group-item';
-      el.textContent = e.name + (e.isDirectory ? '/' : '');
-      el.addEventListener('click', async () => {
-        if (e.isDirectory) {
-          await loadDir((relPath === '.' ? '' : relPath + '/') + e.name);
-        } else {
-          const fileRel = (relPath === '.' ? '' : relPath + '/') + e.name;
-          await openFile(fileRel);
+      document.getElementById('openDir').addEventListener('click', async () => {
+        baseDir = baseDirInput.value.trim()
+        if (!baseDir) {
+          alert('Enter an absolute base directory path')
+          return
         }
-      });
-      fileTree.appendChild(el);
-    });
-  }
+        await loadDir('.')
+      })
 
-  async function openFile(relPath) {
-    try {
-      const res = await fetch('/api/editor/read?base=' + encodeURIComponent(baseDir), {
-        method: 'POST', headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({ path: relPath })
-      });
-      const data = await res.json();
-      if (!data.success) { alert(data.error || 'Failed to open'); return; }
-      editor.value = data.content;
-      currentPath.value = relPath;
-    } catch (err) {
-      alert('Network error while opening file');
-    }
-  }
+      async function loadDir(relPath) {
+        try {
+          const res = await fetch(
+            `/api/editor/list?base=${encodeURIComponent(baseDir)}&path=${encodeURIComponent(relPath)}`
+          )
+          const data = await res.json()
+          if (!data.success) {
+            alert(data.error || 'Failed to list')
+            return
+          }
+          renderList(relPath, data.entries)
+        } catch (err) {
+          alert('Network error while listing directory')
+        }
+      }
 
-  document.getElementById('saveBtn').addEventListener('click', async () => {
-    const p = currentPath.value;
-    if (!p) return alert('No file open');
-    try {
-      const res = await fetch('/api/editor/write?base=' + encodeURIComponent(baseDir), {
-        method: 'POST', headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({ path: p, content: editor.value })
-      });
-      const data = await res.json();
-      if (!data.success) return alert(data.error || 'Save failed');
-      alert('Saved');
-    } catch (err) {
-      alert('Network error while saving file');
-    }
-  });
+      function renderList(relPath, entries) {
+        fileTree.innerHTML = ''
+        entries.forEach((e) => {
+          const el = document.createElement('div')
+          el.className = 'file-item list-group-item'
+          el.textContent = e.name + (e.isDirectory ? '/' : '')
+          el.addEventListener('click', async () => {
+            if (e.isDirectory) {
+              await loadDir((relPath === '.' ? '' : relPath + '/') + e.name)
+            } else {
+              const fileRel = (relPath === '.' ? '' : relPath + '/') + e.name
+              await openFile(fileRel)
+            }
+          })
+          fileTree.appendChild(el)
+        })
+      }
 
-  document.getElementById('downloadBtn').addEventListener('click', () => {
-    const blob = new Blob([editor.value], { type: 'text/plain' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    const name = currentPath.value ? currentPath.value.split('/').pop() : 'file.txt';
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  });
-</script>
-</body>
+      async function openFile(relPath) {
+        try {
+          const res = await fetch('/api/editor/read?base=' + encodeURIComponent(baseDir), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: relPath })
+          })
+          const data = await res.json()
+          if (!data.success) {
+            alert(data.error || 'Failed to open')
+            return
+          }
+          editor.value = data.content
+          currentPath.value = relPath
+        } catch (err) {
+          alert('Network error while opening file')
+        }
+      }
+
+      document.getElementById('saveBtn').addEventListener('click', async () => {
+        const p = currentPath.value
+        if (!p) return alert('No file open')
+        try {
+          const res = await fetch('/api/editor/write?base=' + encodeURIComponent(baseDir), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: p, content: editor.value })
+          })
+          const data = await res.json()
+          if (!data.success) return alert(data.error || 'Save failed')
+          alert('Saved')
+        } catch (err) {
+          alert('Network error while saving file')
+        }
+      })
+
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        const blob = new Blob([editor.value], { type: 'text/plain' })
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        const name = currentPath.value ? currentPath.value.split('/').pop() : 'file.txt'
+        a.download = name
+        a.click()
+        URL.revokeObjectURL(a.href)
+      })
+    </script>
+  </body>
 </html>

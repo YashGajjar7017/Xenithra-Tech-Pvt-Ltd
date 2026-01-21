@@ -6,7 +6,7 @@ services:
       context: ..
       dockerfile: .docker/Dockerfile
     ports:
-      - "8000:8000"
+      - '8000:8000'
     environment:
       - NODE_ENV=production
       - PORT=8000
@@ -28,7 +28,7 @@ services:
   mongodb:
     image: mongo:6.0
     ports:
-      - "27017:27017"
+      - '27017:27017'
     environment:
       - MONGO_INITDB_DATABASE=human-error
     volumes:

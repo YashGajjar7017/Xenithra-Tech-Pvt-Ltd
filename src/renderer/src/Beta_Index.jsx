@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { createRoot } from 'react-dom/client'
-// import '/css/NovaGlass.css'
+import './css/NovaGlass.css'
 
 const NovaGlassCodeStudio = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -11,14 +11,16 @@ const NovaGlassCodeStudio = () => {
     <span key="prompt1" className="prompt">
       nova@glass
     </span>,
-    <span className="muted">~</span>,
-    '$ run main.c',
+    <span key="tilde" className="muted">
+      ~
+    </span>,
+    <span key="run-cmd">$ run main.c</span>,
     <span key="waiting" className="muted">
       Waiting for first run...
     </span>
   ])
   const [sideBySide, setSideBySide] = useState(false)
-  const [code, setCode] =
+  const [code] =
     useState(`/******************************************************************************
  NovaGlass Code Studio.
  Futuristic glassmorphism IDE with neon gradients.
@@ -27,10 +29,10 @@ const NovaGlassCodeStudio = () => {
 
 #include <stdio.h>
 
-int main(void) 
+int main(void)
 {
     printf("Hello, NovaGlass!\\n");
-    
+
     return 0;
 }`)
   const [cliArgs, setCliArgs] = useState('')
@@ -88,7 +90,7 @@ int main(void)
         <span className="prompt">nova@glass</span>
         <span className="muted">~</span>
         <span>
-          $ run '{language}' {cliArgs || ''}
+          $ run {`${language}`} {cliArgs || ''}
         </span>
       </React.Fragment>,
       <span key="contacting" className="muted">
@@ -112,7 +114,7 @@ int main(void)
           {JSON.stringify(json, null, 2)}
         </span>
       ])
-    } catch (error) {
+    } catch {
       appendTerminalLine([
         <span key="error" className="error">
           Error: Failed to execute code
@@ -176,13 +178,13 @@ int main(void)
 
             <div className="topbar-title">NOVA GLASS CODE STUDIO</div>
             <button className="btn-run" id="runBtn" onClick={handleRun}>
-              ▶ Run
+              ? Run
             </button>
-            <button>🐞 Debug</button>
-            <button>■ Stop</button>
+            <button>?? Debug</button>
+            <button>� Stop</button>
             <button>Share</button>
             <button>Save</button>
-            <button>{ } Format</button>
+            <button>{'{}'} Format</button>
 
             <div className="lang-select">
               <span>Language:</span>

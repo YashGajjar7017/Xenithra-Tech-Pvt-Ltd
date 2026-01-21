@@ -1,6 +1,5 @@
-import React from "react";
-import "./404.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+import './404.css'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 const NotFoundPage = () => {
   return (
@@ -9,7 +8,7 @@ const NotFoundPage = () => {
         <div className="custom-navbar">
           <div className="brand-logo">
             {/* <img src="http://salehriaz.com/404Page/img/logo.svg" width="80px" /> */}
-            <h3 style={{ color: "white", fontSize: "20px" }}>Human Error</h3>
+            <h3 style={{ color: 'white', fontSize: '20px' }}>Human Error</h3>
           </div>
           <div className="navbar-links">
             <ul>
@@ -38,12 +37,7 @@ const NotFoundPage = () => {
             width="300px"
             alt="404"
           />
-          <a
-            href="/"
-            className="btn-go-home btn btn-primary"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href="/" className="btn-go-home btn btn-primary" target="_blank" rel="noreferrer">
             GO BACK HOME
           </a>
         </div>
@@ -88,7 +82,7 @@ const NotFoundPage = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default NotFoundPage;
+export default NotFoundPage

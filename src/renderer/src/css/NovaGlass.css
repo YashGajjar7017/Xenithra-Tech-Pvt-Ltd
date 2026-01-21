@@ -43,11 +43,13 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg,
+  background: linear-gradient(
+    45deg,
     var(--accent-primary),
     var(--accent-secondary),
     var(--accent-tertiary),
-    var(--accent-primary));
+    var(--accent-primary)
+  );
   background-size: 400% 400%;
   animation: neonGlow 3s ease-in-out infinite;
   opacity: 0.1;
@@ -55,8 +57,13 @@ body {
 }
 
 @keyframes neonGlow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .shell {
@@ -399,9 +406,15 @@ body {
   margin-right: 8px;
 }
 
-.dot.red { background: #ff5f57; }
-.dot.yellow { background: #ffbd2e; }
-.dot.green { background: #28ca42; }
+.dot.red {
+  background: #ff5f57;
+}
+.dot.yellow {
+  background: #ffbd2e;
+}
+.dot.green {
+  background: #28ca42;
+}
 
 .terminal-body {
   flex: 1;
@@ -539,8 +552,14 @@ body {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .app {

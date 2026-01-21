@@ -6,31 +6,31 @@
   --os-success: #107c10;
   --os-warning: #ff8c00;
   --os-error: #e81123;
-  
+
   /* Backgrounds */
   --os-bg-primary: #1e1e1e;
   --os-bg-secondary: #252526;
   --os-bg-tertiary: #2d2d30;
   --os-bg-hover: #37373d;
-  
+
   /* Text */
   --os-text-primary: #cccccc;
   --os-text-secondary: #969696;
   --os-text-muted: #6a6a6a;
-  
+
   /* Borders */
   --os-border: #3e3e42;
   --os-border-light: #454545;
-  
+
   /* Shadows */
   --os-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.14);
   --os-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.28);
   --os-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.36);
-  
+
   /* Glassmorphism */
   --os-glass-bg: rgba(255, 255, 255, 0.05);
   --os-glass-border: rgba(255, 255, 255, 0.1);
-  
+
   /* Transitions */
   --os-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -54,10 +54,10 @@ body {
   height: 100vh;
   display: grid;
   grid-template-rows: 30px 1fr 24px;
-  grid-template-areas: 
-    "menubar"
-    "workspace"
-    "statusbar";
+  grid-template-areas:
+    'menubar'
+    'workspace'
+    'statusbar';
 }
 
 /* Menu Bar */
@@ -178,7 +178,7 @@ body {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
   }
-  
+
   .os-sidebar,
   .os-panel-right {
     display: none;

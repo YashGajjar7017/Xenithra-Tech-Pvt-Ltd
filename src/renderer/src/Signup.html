@@ -1,85 +1,106 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Human Error</title>
+    <!-- <link rel="stylesheet" href="/CSS/Bootstrap/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="/css/login/util.css" />
+    <link rel="stylesheet" href="/css/login/main.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script> -->
+    <link rel="stylesheet" type="text/css" href="/CSS/glassy-login.css" />
+  </head>
 
-        <title>Sign Up | Human Error</title>
-        <!-- <link rel="stylesheet" href="/CSS/Bootstrap/css/bootstrap.min.css"> -->
-        <link rel="stylesheet" href="/css/login/util.css">
-        <link rel="stylesheet" href="/css/login/main.css">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script> -->
-        <link rel="stylesheet" type="text/css" href="/CSS/glassy-login.css">
-</head>
-
-<body class="animated-gradient-bg">
-
+  <body class="animated-gradient-bg">
     <div class="signup-container">
-        <div class="glass-container">
-            <h2 class="glass-title">Create Account</h2>
-            <form id="signupForm">
-                <input class="glass-input" type="text" id="username" required minlength="3" placeholder="Username" />
-                <input class="glass-input" type="email" id="email" required placeholder="Email" />
-                <input class="glass-input" type="password" id="password" required minlength="6" placeholder="Password" />
-                <input class="glass-input" type="password" id="confirmPassword" required minlength="6" placeholder="Confirm Password" />
-                <select class="glass-select" id="role" required>
-                    <option value="user" selected>User</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <div id="error-message" class="glass-error"></div>
-                <button type="submit" class="glass-button">Sign Up</button>
-                <a href="/Account/login" class="glass-link">Already have an account? Login</a>
-            </form>
-        </div>
+      <div class="glass-container">
+        <h2 class="glass-title">Create Account</h2>
+        <form id="signupForm">
+          <input
+            class="glass-input"
+            type="text"
+            id="username"
+            required
+            minlength="3"
+            placeholder="Username"
+          />
+          <input class="glass-input" type="email" id="email" required placeholder="Email" />
+          <input
+            class="glass-input"
+            type="password"
+            id="password"
+            required
+            minlength="6"
+            placeholder="Password"
+          />
+          <input
+            class="glass-input"
+            type="password"
+            id="confirmPassword"
+            required
+            minlength="6"
+            placeholder="Confirm Password"
+          />
+          <select class="glass-select" id="role" required>
+            <option value="user" selected>User</option>
+            <option value="admin">Admin</option>
+          </select>
+          <div id="error-message" class="glass-error"></div>
+          <button type="submit" class="glass-button">Sign Up</button>
+          <a href="/Account/login" class="glass-link">Already have an account? Login</a>
+        </form>
+      </div>
     </div>
 
     <script>
-        document.getElementById('signupForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const role = document.getElementById('role').value;
-            const errorDiv = document.getElementById('error-message');
-            errorDiv.textContent = '';
-            if (password !== confirmPassword) {
-                errorDiv.textContent = 'Passwords do not match.';
-                return;
+      document.getElementById('signupForm').addEventListener('submit', async function (e) {
+        e.preventDefault()
+        const username = document.getElementById('username').value.trim()
+        const email = document.getElementById('email').value.trim()
+        const password = document.getElementById('password').value
+        const confirmPassword = document.getElementById('confirmPassword').value
+        const role = document.getElementById('role').value
+        const errorDiv = document.getElementById('error-message')
+        errorDiv.textContent = ''
+        if (password !== confirmPassword) {
+          errorDiv.textContent = 'Passwords do not match.'
+          return
+        }
+        try {
+          const res = await fetch('/api/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password, confirmPassword, role })
+          })
+          const data = await res.json()
+          if (res.ok && data.success) {
+            // If server returned tokens (OTP disabled and immediate creation), save and redirect
+            if (data.data && data.data.accessToken) {
+              localStorage.setItem(
+                'user',
+                JSON.stringify({
+                  id: data.data.user._id || data.data.user.id,
+                  username: data.data.user.username,
+                  token: data.data.accessToken
+                })
+              )
+              window.location.href = '/index.html'
+              return
             }
-            try {
-                const res = await fetch('/api/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password, confirmPassword, role })
-                });
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    // If server returned tokens (OTP disabled and immediate creation), save and redirect
-                    if (data.data && data.data.accessToken) {
-                        localStorage.setItem('user', JSON.stringify({
-                            id: data.data.user._id || data.data.user.id,
-                            username: data.data.user.username,
-                            token: data.data.accessToken
-                        }));
-                        window.location.href = '/index.html';
-                        return;
-                    }
 
-                    // Otherwise, signup initiated and OTP should be sent separately
-                    alert(data.message || 'Signup initiated. Please check your email for OTP.');
-                    // Optionally redirect to a verification page or show OTP input
-                    window.location.href = '/Account/SignupOTP?email=' + encodeURIComponent(email);
-                } else {
-                    errorDiv.textContent = data.message || data.error || 'Signup failed.';
-                }
-            } catch (err) {
-                errorDiv.textContent = 'Network error. Please try again.';
-            }
-        });
+            // Otherwise, signup initiated and OTP should be sent separately
+            alert(data.message || 'Signup initiated. Please check your email for OTP.')
+            // Optionally redirect to a verification page or show OTP input
+            window.location.href = '/Account/SignupOTP?email=' + encodeURIComponent(email)
+          } else {
+            errorDiv.textContent = data.message || data.error || 'Signup failed.'
+          }
+        } catch (err) {
+          errorDiv.textContent = 'Network error. Please try again.'
+        }
+      })
     </script>
-</body>
-
+  </body>
 </html>

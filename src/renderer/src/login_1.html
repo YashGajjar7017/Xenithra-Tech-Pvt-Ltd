@@ -1,170 +1,177 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <title>Login | Human Error</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<head>
-	<title>Login | Human Error</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	
-	<link rel="icon" type="image/png" href="images/icons/favicon.ico" />
-	<link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="/css/login/util.css">
-	<link rel="stylesheet" type="text/css" href="/css/login/main.css">
-	
-</head>
+    <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/css/login/util.css" />
+    <link rel="stylesheet" type="text/css" href="/css/login/main.css" />
+  </head>
 
-	<body>
-	<div class="container py-5">
+  <body>
+    <div class="container py-5">
+      <div class="limiter">
+        <div class="container-login100">
+          <div class="wrap-login100">
+            <form class="login100-form validate-form" id="loginForm">
+              <span class="login100-form-logo">
+                <i class="zmdi zmdi-landscape"></i>
+              </span>
 
-	<div class="limiter">
-		<div class="container-login100">
-			<div class="wrap-login100">
-				<form class="login100-form validate-form" id="loginForm">
-					<span class="login100-form-logo">
-						<i class="zmdi zmdi-landscape"></i>
-					</span>
+              <span class="login100-form-title p-b-34 p-t-27"> Log IN </span>
 
-					<span class="login100-form-title p-b-34 p-t-27">
-						Log IN
-					</span>
+              <div class="wrap-input100 validate-input" data-validate="Enter username">
+                <input
+                  class="input100 form-control"
+                  type="text"
+                  name="username"
+                  placeholder="Username"
+                  id="username"
+                  required
+                  minlength="3"
+                />
+                <span class="focus-input100" data-placeholder="&#xf207;"></span>
+              </div>
 
-					<div class="wrap-input100 validate-input" data-validate="Enter username">
-						<input class="input100 form-control" type="text" name="username" placeholder="Username" id="username" required minlength="3">
-						<span class="focus-input100" data-placeholder="&#xf207;"></span>
-					</div>
+              <div class="wrap-input100 validate-input" data-validate="Enter password">
+                <input
+                  class="input100 form-control"
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  id="password"
+                  required
+                  minlength="6"
+                />
+                <span class="focus-input100" data-placeholder="&#xf191;"></span>
+              </div>
 
-					<div class="wrap-input100 validate-input" data-validate="Enter password">
-						<input class="input100 form-control" type="password" name="password" placeholder="Password" id="password" required minlength="6">
-						<span class="focus-input100" data-placeholder="&#xf191;"></span>
-					</div>
+              <div class="contact100-form-checkbox">
+                <input class="input-checkbox100" id="ckb1" type="checkbox" name="remember-me" />
+                <label class="label-checkbox100" for="ckb1"> Remember me </label>
+              </div>
 
-					<div class="contact100-form-checkbox">
-						<input class="input-checkbox100" id="ckb1" type="checkbox" name="remember-me">
-						<label class="label-checkbox100" for="ckb1">
-							Remember me
-						</label>
-					</div>
+              <div class="container-login100-form-btn">
+                <button class="login100-form-btn btn btn-primary" type="submit" id="loginBtn">
+                  Login
+                </button>
+              </div>
 
-					<div class="container-login100-form-btn">
-						<button class="login100-form-btn btn btn-primary" type="submit" id="loginBtn">
-							Login
-						</button>
-					</div>
+              <div class="text-center p-t-40">
+                <a class="txt1" href="/Account/forgotPassword"> Forgot Password? </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="dropDownSelect1"></div>
 
-					<div class="text-center p-t-40">
-						<a class="txt1" href="/Account/forgotPassword">
-							Forgot Password?
-						</a>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
+    <!------------------------Script File--------------------  -->
+    <script src="/js/login/main.js"></script>
+  </body>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault()
 
-	</div>
-	<div id="dropDownSelect1"></div>
+      const username = document.getElementById('username').value.trim()
+      const password = document.getElementById('password').value.trim()
 
-	<!------------------------Script File--------------------  -->
-	<script src="/js/login/main.js"></script>
+      // Client-side validation
+      if (username.length < 3) {
+        showError('Username must be at least 3 characters long.')
+        return
+      }
+      if (password.length < 6) {
+        showError('Password must be at least 6 characters long.')
+        return
+      }
 
-</body>
-<script>
-	document.getElementById('loginForm').addEventListener('submit', async function(e) {
-		e.preventDefault();
+      // Show loading state
+      const loginBtn = document.getElementById('loginBtn')
+      const originalText = loginBtn.textContent
+      loginBtn.textContent = 'Logging in...'
+      loginBtn.disabled = true
 
-		const username = document.getElementById('username').value.trim();
-		const password = document.getElementById('password').value.trim();
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        })
 
-		// Client-side validation
-		if (username.length < 3) {
-			showError('Username must be at least 3 characters long.');
-			return;
-		}
-		if (password.length < 6) {
-			showError('Password must be at least 6 characters long.');
-			return;
-		}
+        const data = await response.json()
 
-		// Show loading state
-		const loginBtn = document.getElementById('loginBtn');
-		const originalText = loginBtn.textContent;
-		loginBtn.textContent = 'Logging in...';
-		loginBtn.disabled = true;
+        if (data.success) {
+          // Set cookies for token and user data
+          document.cookie = `token=${data.token}; path=/; max-age=${24 * 60 * 60}`
+          document.cookie = `username=${data.user.username}; path=/; max-age=${24 * 60 * 60}`
+          document.cookie = `role=${data.user.role}; path=/; max-age=${24 * 60 * 60}`
 
-		try {
-			const response = await fetch('/api/login', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ username, password })
-			});
+          // Store user session in localStorage for cross-page access
+          localStorage.setItem(
+            'user',
+            JSON.stringify({
+              id: data.user._id || data.user.id,
+              username: data.user.username,
+              role: data.user.role,
+              token: data.token
+            })
+          )
 
-			const data = await response.json();
+          // Redirect to /Account/complier/user/:Token page for joining/sharing code (WebRTC)
+          if (data.token) {
+            window.location.href = `/Account/complier/user/${encodeURIComponent(data.token)}`
+          } else {
+            window.location.href = '/'
+          }
+        } else {
+          // If user not found, redirect to signup page with pre-filled username/email
+          if (data.message && data.message.toLowerCase().includes('invalid credentials')) {
+            const signupUrl = `/Account/Signup?email=${encodeURIComponent(username)}`
+            window.location.href = signupUrl
+          } else {
+            showError(data.message || 'Login failed')
+          }
+        }
+      } catch (error) {
+        console.error('Login error:', error)
+        showError('An error occurred during login. Please try again.')
+      } finally {
+        // Reset button state
+        loginBtn.textContent = originalText
+        loginBtn.disabled = false
+      }
+    })
 
-			if (data.success) {
-				// Set cookies for token and user data
-				document.cookie = `token=${data.token}; path=/; max-age=${24*60*60}`;
-				document.cookie = `username=${data.user.username}; path=/; max-age=${24*60*60}`;
-				document.cookie = `role=${data.user.role}; path=/; max-age=${24*60*60}`;
-
-				// Store user session in localStorage for cross-page access
-				localStorage.setItem('user', JSON.stringify({
-					id: data.user._id || data.user.id,
-					username: data.user.username,
-					role: data.user.role,
-					token: data.token
-				}));
-
-				// Redirect to /Account/complier/user/:Token page for joining/sharing code (WebRTC)
-				if (data.token) {
-					window.location.href = `/Account/complier/user/${encodeURIComponent(data.token)}`;
-				} else {
-					window.location.href = '/';
-				}
-			} else {
-				// If user not found, redirect to signup page with pre-filled username/email
-				if (data.message && data.message.toLowerCase().includes('invalid credentials')) {
-					const signupUrl = `/Account/Signup?email=${encodeURIComponent(username)}`;
-					window.location.href = signupUrl;
-				} else {
-					showError(data.message || 'Login failed');
-				}
-			}
-		} catch (error) {
-			console.error('Login error:', error);
-			showError('An error occurred during login. Please try again.');
-		} finally {
-			// Reset button state
-			loginBtn.textContent = originalText;
-			loginBtn.disabled = false;
-		}
-	});
-
-	function showError(message) {
-		// Create or update error message element
-		let errorDiv = document.getElementById('error-message');
-		if (!errorDiv) {
-			errorDiv = document.createElement('div');
-			errorDiv.id = 'error-message';
-			errorDiv.style.cssText = `
+    function showError(message) {
+      // Create or update error message element
+      let errorDiv = document.getElementById('error-message')
+      if (!errorDiv) {
+        errorDiv = document.createElement('div')
+        errorDiv.id = 'error-message'
+        errorDiv.style.cssText = `
 				color: #ff6b6b;
 				font-size: 14px;
 				text-align: center;
 				margin-top: 10px;
 				font-family: Poppins-Regular, sans-serif;
-			`;
-			document.getElementById('loginForm').appendChild(errorDiv);
-		}
-		errorDiv.textContent = message;
+			`
+        document.getElementById('loginForm').appendChild(errorDiv)
+      }
+      errorDiv.textContent = message
 
-		// Auto-hide after 5 seconds
-		setTimeout(() => {
-			if (errorDiv.parentNode) {
-				errorDiv.parentNode.removeChild(errorDiv);
-			}
-		}, 5000);
-	}
-</script>
-
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.parentNode.removeChild(errorDiv)
+        }
+      }, 5000)
+    }
+  </script>
 </html>

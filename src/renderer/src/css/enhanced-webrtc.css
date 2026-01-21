@@ -1,511 +1,531 @@
 /* Enhanced WebRTC Video Call Styles */
 .enhanced-webrtc-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 350px;
-    background: #2d2d30;
-    border: 1px solid #3e3e42;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    z-index: 1000;
-    overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 350px;
+  background: #2d2d30;
+  border: 1px solid #3e3e42;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .enhanced-webrtc-container.minimized {
-    width: 200px;
-    height: 60px;
+  width: 200px;
+  height: 60px;
 }
 
 .webrtc-header {
-    background-color: #2d2d30;
-    padding: 12px 16px;
-    border-bottom: 1px solid #3e3e42;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background-color: #2d2d30;
+  padding: 12px 16px;
+  border-bottom: 1px solid #3e3e42;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .webrtc-header h3 {
-    margin: 0;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .connection-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
 }
 
 .status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #6c757d;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #6c757d;
 }
 
 .status-indicator.connected {
-    background-color: #28a745;
-    animation: pulse 2s infinite;
+  background-color: #28a745;
+  animation: pulse 2s infinite;
 }
 
 .status-indicator.connecting {
-    background-color: #ffc107;
-    animation: pulse 1s infinite;
+  background-color: #ffc107;
+  animation: pulse 1s infinite;
 }
 
 .status-indicator.disconnected {
-    background-color: #dc3545;
+  background-color: #dc3545;
 }
 
 .status-indicator.reconnecting {
-    background-color: #fd7e14;
-    animation: pulse 1.5s infinite;
+  background-color: #fd7e14;
+  animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .header-right {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .webrtc-btn {
-    background-color: #0078d4;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .webrtc-btn:hover {
-    background-color: #106ebe;
-    transform: translateY(-1px);
+  background-color: #106ebe;
+  transform: translateY(-1px);
 }
 
 .webrtc-btn.danger {
-    background-color: #dc3545;
+  background-color: #dc3545;
 }
 
 .webrtc-btn.danger:hover {
-    background-color: #c82333;
+  background-color: #c82333;
 }
 
 .webrtc-btn.active {
-    background-color: #28a745;
+  background-color: #28a745;
 }
 
 .webrtc-btn.disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-    opacity: 0.7;
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .webrtc-btn.minimize,
 .webrtc-btn.close {
-    background-color: #6c757d;
-    padding: 4px 8px;
-    font-size: 12px;
+  background-color: #6c757d;
+  padding: 4px 8px;
+  font-size: 12px;
 }
 
 .webrtc-btn.minimize:hover,
 .webrtc-btn.close:hover {
-    background-color: #5a6268;
+  background-color: #5a6268;
 }
 
 .webrtc-controls {
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #252526;
-    border-bottom: 1px solid #3e3e42;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #252526;
+  border-bottom: 1px solid #3e3e42;
 }
 
 .control-group {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .webrtc-btn .icon {
-    font-size: 16px;
+  font-size: 16px;
 }
 
 .webrtc-btn .label {
-    font-size: 12px;
-    font-weight: 500;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .video-container {
-    display: flex;
-    flex-direction: column;
-    padding: 12px;
-    gap: 12px;
-    max-height: 400px;
-    overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .local-video-container {
-    position: relative;
-    width: 100%;
-    height: 200px;
-    background: #1e1e1e;
-    border-radius: 8px;
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .local-video-container video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .local-video-container .video-label {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .video-controls-overlay {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .local-video-container:hover .video-controls-overlay {
-    opacity: 1;
+  opacity: 1;
 }
 
 .video-settings-btn {
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: none;
-    padding: 6px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .remote-videos-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .remote-video {
-    position: relative;
-    width: 100%;
-    height: 150px;
-    background: #1e1e1e;
-    border-radius: 8px;
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 150px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .remote-video video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .remote-video .video-label {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .webrtc-info-panel {
-    padding: 12px;
-    background-color: #252526;
-    border-top: 1px solid #3e3e42;
+  padding: 12px;
+  background-color: #252526;
+  border-top: 1px solid #3e3e42;
 }
 
 .connection-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .info-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .info-item .label {
-    color: #cccccc;
-    font-weight: 500;
+  color: #cccccc;
+  font-weight: 500;
 }
 
 .info-item .value {
-    color: #ffffff;
-    font-weight: 600;
+  color: #ffffff;
+  font-weight: 600;
 }
 
-.quality-excellent { color: #28a745; }
-.quality-good { color: #ffc107; }
-.quality-fair { color: #fd7e14; }
-.quality-poor { color: #dc3545; }
+.quality-excellent {
+  color: #28a745;
+}
+.quality-good {
+  color: #ffc107;
+}
+.quality-fair {
+  color: #fd7e14;
+}
+.quality-poor {
+  color: #dc3545;
+}
 
 .recording-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background-color: #1e1e1e;
-    border-radius: 6px;
-    margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background-color: #1e1e1e;
+  border-radius: 6px;
+  margin-top: 8px;
 }
 
 .recording-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .recording-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #dc3545;
-    border-radius: 50%;
-    animation: blink 1s infinite;
+  width: 8px;
+  height: 8px;
+  background-color: #dc3545;
+  border-radius: 50%;
+  animation: blink 1s infinite;
 }
 
 @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .participants-panel,
 .settings-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #2d2d30;
-    z-index: 1001;
-    padding: 16px;
-    overflow-y: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #2d2d30;
+  z-index: 1001;
+  padding: 16px;
+  overflow-y: auto;
 }
 
 .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #3e3e42;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #3e3e42;
 }
 
 .panel-header h4 {
-    margin: 0;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .close-btn {
-    background: none;
-    border: none;
-    color: #ffffff;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .participants-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .participant-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background-color: #3e3e42;
-    border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #3e3e42;
+  border-radius: 6px;
 }
 
 .participant-item.self {
-    background-color: #0078d4;
+  background-color: #0078d4;
 }
 
 .participant-name {
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 500;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .participant-status {
-    color: #cccccc;
-    font-size: 12px;
+  color: #cccccc;
+  font-size: 12px;
 }
 
 .settings-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .setting-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .setting-group label {
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 500;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .setting-group select {
-    background-color: #3e3e42;
-    color: #ffffff;
-    border: 1px solid #5a5a5a;
-    padding: 8px;
-    border-radius: 4px;
-    font-size: 14px;
+  background-color: #3e3e42;
+  color: #ffffff;
+  border: 1px solid #5a5a5a;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
-.setting-group input[type="checkbox"] {
-    margin-right: 8px;
+.setting-group input[type='checkbox'] {
+  margin-right: 8px;
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    .enhanced-webrtc-container {
-        width: 100%;
-        max-width: 100%;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        border-radius: 12px 12px 0 0;
-        height: 50vh;
-    }
-    
-    .webrtc-controls {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .control-group {
-        justify-content: center;
-    }
-    
-    .local-video-container {
-        height: 150px;
-    }
-    
-    .remote-video {
-        height: 120px;
-    }
+  .enhanced-webrtc-container {
+    width: 100%;
+    max-width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 12px 12px 0 0;
+    height: 50vh;
+  }
+
+  .webrtc-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .control-group {
+    justify-content: center;
+  }
+
+  .local-video-container {
+    height: 150px;
+  }
+
+  .remote-video {
+    height: 120px;
+  }
 }
 
 @media (max-width: 480px) {
-    .webrtc-btn .label {
-        display: none;
-    }
-    
-    .webrtc-btn {
-        padding: 12px;
-    }
-    
-    .webrtc-btn .icon {
-        font-size: 20px;
-    }
+  .webrtc-btn .label {
+    display: none;
+  }
+
+  .webrtc-btn {
+    padding: 12px;
+  }
+
+  .webrtc-btn .icon {
+    font-size: 20px;
+  }
 }
 
 /* Dark mode adjustments */
 @media (prefers-color-scheme: light) {
-    .enhanced-webrtc-container {
-        background: #ffffff;
-        border-color: #e0e0e0;
-    }
-    
-    .webrtc-header {
-        background-color: #f5f5f5;
-        border-bottom-color: #e0e0e0;
-    }
-    
-    .webrtc-header h3 {
-        color: #333333;
-    }
-    
-    .webrtc-controls {
-        background-color: #f9f9f9;
-        border-bottom-color: #e0e0e0;
-    }
-    
-    .webrtc-info-panel {
-        background-color: #f9f9f9;
-        border-top-color: #e0e0e0;
-    }
-    
-    .participants-panel,
-    .settings-panel {
-        background-color: #ffffff;
-    }
-    
-    .participant-item {
-        background-color: #f5f5f5;
-    }
-    
-    .participant-name {
-        color: #333333;
-    }
-    
-    .participant-status {
-        color: #666666;
-    }
+  .enhanced-webrtc-container {
+    background: #ffffff;
+    border-color: #e0e0e0;
+  }
+
+  .webrtc-header {
+    background-color: #f5f5f5;
+    border-bottom-color: #e0e0e0;
+  }
+
+  .webrtc-header h3 {
+    color: #333333;
+  }
+
+  .webrtc-controls {
+    background-color: #f9f9f9;
+    border-bottom-color: #e0e0e0;
+  }
+
+  .webrtc-info-panel {
+    background-color: #f9f9f9;
+    border-top-color: #e0e0e0;
+  }
+
+  .participants-panel,
+  .settings-panel {
+    background-color: #ffffff;
+  }
+
+  .participant-item {
+    background-color: #f5f5f5;
+  }
+
+  .participant-name {
+    color: #333333;
+  }
+
+  .participant-status {
+    color: #666666;
+  }
 }

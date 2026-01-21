@@ -11,12 +11,12 @@ export const validateEmail = (email) => {
   if (!email) {
     return 'Email is required'
   }
-  
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
     return 'Please enter a valid email address'
   }
-  
+
   return ''
 }
 
@@ -29,20 +29,20 @@ export const validateUsername = (username) => {
   if (!username) {
     return 'Username is required'
   }
-  
+
   if (username.length < 3) {
     return 'Username must be at least 3 characters long'
   }
-  
+
   if (username.length > 20) {
     return 'Username must be less than 20 characters'
   }
-  
+
   const usernameRegex = /^[a-zA-Z0-9_]+$/
   if (!usernameRegex.test(username)) {
     return 'Username can only contain letters, numbers, and underscores'
   }
-  
+
   return ''
 }
 
@@ -55,15 +55,15 @@ export const validatePassword = (password) => {
   if (!password) {
     return 'Password is required'
   }
-  
+
   if (password.length < 6) {
     return 'Password must be at least 6 characters long'
   }
-  
+
   if (password.length > 50) {
     return 'Password must be less than 50 characters'
   }
-  
+
   return ''
 }
 
@@ -80,9 +80,9 @@ export const validatePasswordRequirements = (password) => {
     number: /[0-9]/.test(password),
     special: /[!@#$%^&*]/.test(password)
   }
-  
+
   const allMet = Object.values(requirements).every(Boolean)
-  
+
   return {
     isValid: allMet,
     requirements,
@@ -100,15 +100,15 @@ export const validateOTP = (otp, length = 6) => {
   if (!otp) {
     return 'OTP is required'
   }
-  
+
   if (otp.length !== length) {
     return `Please enter the complete ${length}-digit OTP`
   }
-  
+
   if (!/^\d+$/.test(otp)) {
     return 'OTP must contain only numbers'
   }
-  
+
   return ''
 }
 
@@ -122,11 +122,11 @@ export const validatePasswordMatch = (password, confirmPassword) => {
   if (!confirmPassword) {
     return 'Please confirm your password'
   }
-  
+
   if (password !== confirmPassword) {
     return 'Passwords do not match'
   }
-  
+
   return ''
 }
 
@@ -137,15 +137,15 @@ export const validatePasswordMatch = (password, confirmPassword) => {
  */
 export const validateRole = (role) => {
   const validRoles = ['user', 'admin', 'moderator']
-  
+
   if (!role) {
     return 'Please select a role'
   }
-  
+
   if (!validRoles.includes(role)) {
     return 'Invalid role selected'
   }
-  
+
   return ''
 }
 
@@ -159,7 +159,7 @@ export const validateUrlParam = (value, paramName = 'parameter') => {
   if (!value) {
     return `Missing ${paramName}`
   }
-  
+
   return ''
 }
 
@@ -171,11 +171,11 @@ export const validateUrlParam = (value, paramName = 'parameter') => {
  */
 export const validateForm = (formData, rules) => {
   const errors = {}
-  
-  Object.keys(rules).forEach(field => {
+
+  Object.keys(rules).forEach((field) => {
     const fieldRules = rules[field]
     const value = formData[field]
-    
+
     if (typeof fieldRules === 'function') {
       errors[field] = fieldRules(value, formData)
     } else if (Array.isArray(fieldRules)) {
@@ -188,7 +188,6 @@ export const validateForm = (formData, rules) => {
       }
     }
   })
-  
+
   return errors
 }
-

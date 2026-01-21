@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
@@ -59,7 +59,7 @@ const ForgotPassword = () => {
 
       if (response.success) {
         setSuccess('Password reset OTP sent successfully! Please check your email.')
-        
+
         // Redirect to OTP page after a short delay
         setTimeout(() => {
           redirect.toOTP()
@@ -130,7 +130,7 @@ const ForgotPassword = () => {
       <Card>
         <form onSubmit={handleSubmit} style={styles.container}>
           <h2 style={styles.title}>Forgot Password</h2>
-          
+
           <Input
             type="email"
             id="email"
@@ -158,10 +158,8 @@ const ForgotPassword = () => {
           {error && !error.includes('email') && !error.includes('Email') && (
             <div style={styles.error}>{error}</div>
           )}
-          
-          {success && (
-            <div style={styles.success}>{success}</div>
-          )}
+
+          {success && <div style={styles.success}>{success}</div>}
 
           <Button
             type="submit"
@@ -172,10 +170,7 @@ const ForgotPassword = () => {
             Send Reset OTP
           </Button>
 
-          <span 
-            style={styles.link} 
-            onClick={() => redirect.toLogin()}
-          >
+          <span style={styles.link} onClick={() => redirect.toLogin()}>
             Back to Login
           </span>
         </form>
@@ -190,4 +185,3 @@ export default ForgotPassword
 const container = document.getElementById('root')
 const root = createRoot(container)
 root.render(<ForgotPassword />)
-

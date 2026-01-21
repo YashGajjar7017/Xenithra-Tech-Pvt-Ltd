@@ -1,111 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OTP</title>
-    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600&disply=swap");
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter',sans-serif;
-        }
-        body{
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #e0e0e0;
-        }
-        .container{
-            width: 400px;
-            height: auto;
-            padding: 40px 30px;
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 15px;
-        }
-        h4{
-            font-size: 20px;
-            color: #121212;
-        }
-        .input_field_box input:focus{
-            outline: 1.5px solid #00b991;
-            outline-offset:2px;
-        }
-        .btnSubmit{
-            margin-top: 25px;
-            width: 92%;
-            color: #525252;
-            font-size: 16px;
-            padding: 10px 0;
-            font-weight: 600;
-            border: none;
-            border-radius: 6px;
-            pointer-events: none;
-            cursor: pointer;
-            background: #f5c504;
-            transition: all 0.2s ease;
-        }
-        .btnSubmit{
-            background: #ffcc00;
-            pointer-events: auto;
-            color: #000000;
-        }
-        .btnSubmit:hover{
-            background: #e6b801;
-        }
-        .form{
-            width: 100%;
-            height: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top:20px;
-        }
-        .input_field_box{
-            width: 100%;
-            height: auto;
-            display: flex;
-            flex-direction: row;
-            justify-content: space-evenly;
-        }
-        .input_field_box input{
-            border: none;
-            max-width: 15%;
-            height: 60px;
-            text-align: center;
-            border-radius: 5px;
-            background: #f0f0f0;
-            font-size: 25px;
-        }
-        .input_field_box input::-webkit-inner-spin-button,
-        .input_field_box input::-webkit-outer-spin-button{
-            display: none;
-        }
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600&disply=swap');
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+      }
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e0e0e0;
+      }
+      .container {
+        width: 400px;
+        height: auto;
+        padding: 40px 30px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 15px;
+      }
+      h4 {
+        font-size: 20px;
+        color: #121212;
+      }
+      .input_field_box input:focus {
+        outline: 1.5px solid #00b991;
+        outline-offset: 2px;
+      }
+      .btnSubmit {
+        margin-top: 25px;
+        width: 92%;
+        color: #525252;
+        font-size: 16px;
+        padding: 10px 0;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        pointer-events: none;
+        cursor: pointer;
+        background: #f5c504;
+        transition: all 0.2s ease;
+      }
+      .btnSubmit {
+        background: #ffcc00;
+        pointer-events: auto;
+        color: #000000;
+      }
+      .btnSubmit:hover {
+        background: #e6b801;
+      }
+      .form {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+      }
+      .input_field_box {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+      }
+      .input_field_box input {
+        border: none;
+        max-width: 15%;
+        height: 60px;
+        text-align: center;
+        border-radius: 5px;
+        background: #f0f0f0;
+        font-size: 25px;
+      }
+      .input_field_box input::-webkit-inner-spin-button,
+      .input_field_box input::-webkit-outer-spin-button {
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container py-5 d-flex justify-content-center align-items-center">
-        <h4>Enter Your 6 Digit OTP</h4>
-        <form class="form" method="POST" action="/Account/verifyOTP">
-            <div class="input_field_box">
-                <input type="number" name="otp1" id="otp1" max="9" class="otp form-control text-center d-inline-block" style="width:56px;" required>
-                <input type="number" name="otp2" id="otp2" max="9" class="otp form-control text-center d-inline-block" style="width:56px;" required>
-                <input type="number" name="otp3" id="otp3" max="9" class="otp form-control text-center d-inline-block" style="width:56px;" required>
-                <input type="number" name="otp4" id="otp4" max="9" class="otp form-control text-center d-inline-block" style="width:56px;" required>
-                <input type="number" name="otp5" id="otp5" max="9" class="otp form-control text-center d-inline-block" style="width:56px;" required>
-                <input type="number" name="otp6" id="otp6" max="9" class="otp form-control text-center d-inline-block" style="width:56px;" required>
-            </div>
-            <input type="submit" value="Verify OTP" class="btnSubmit btn btn-primary">
-            <!-- <a><button>Verify OTP</button></a> -->
-        </form>
+      <h4>Enter Your 6 Digit OTP</h4>
+      <form class="form" method="POST" action="/Account/verifyOTP">
+        <div class="input_field_box">
+          <input
+            type="number"
+            name="otp1"
+            id="otp1"
+            max="9"
+            class="otp form-control text-center d-inline-block"
+            style="width: 56px"
+            required
+          />
+          <input
+            type="number"
+            name="otp2"
+            id="otp2"
+            max="9"
+            class="otp form-control text-center d-inline-block"
+            style="width: 56px"
+            required
+          />
+          <input
+            type="number"
+            name="otp3"
+            id="otp3"
+            max="9"
+            class="otp form-control text-center d-inline-block"
+            style="width: 56px"
+            required
+          />
+          <input
+            type="number"
+            name="otp4"
+            id="otp4"
+            max="9"
+            class="otp form-control text-center d-inline-block"
+            style="width: 56px"
+            required
+          />
+          <input
+            type="number"
+            name="otp5"
+            id="otp5"
+            max="9"
+            class="otp form-control text-center d-inline-block"
+            style="width: 56px"
+            required
+          />
+          <input
+            type="number"
+            name="otp6"
+            id="otp6"
+            max="9"
+            class="otp form-control text-center d-inline-block"
+            style="width: 56px"
+            required
+          />
+        </div>
+        <input type="submit" value="Verify OTP" class="btnSubmit btn btn-primary" />
+        <!-- <a><button>Verify OTP</button></a> -->
+      </form>
     </div>
-</body>
+  </body>
 </html>

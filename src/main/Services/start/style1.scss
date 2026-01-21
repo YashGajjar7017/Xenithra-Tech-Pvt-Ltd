@@ -1,101 +1,135 @@
 $r: 2.5em; // outer radius of ring
-$b: .2*$r; // ring thickness
-$u: .5*$b;
+$b: 0.2 * $r; // ring thickness
+$u: 0.5 * $b;
 $t: 6s;
-$e: cubic-bezier(.365,0,.635,1);
+$e: cubic-bezier(0.365, 0, 0.635, 1);
 
 @property --p {
-	syntax: '<integer>';
-	initial-value: 0;
-	inherits: true
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: true;
 }
 
 @property --r {
-	syntax: '<length-percentage>';
-	initial-value: 0px;
-	inherits: false
+  syntax: '<length-percentage>';
+  initial-value: 0px;
+  inherits: false;
 }
 
 @property --x {
-	syntax: '<length-percentage>';
-	initial-value: 0px;
-	inherits: false
+  syntax: '<length-percentage>';
+  initial-value: 0px;
+  inherits: false;
 }
 
 @property --y {
-	syntax: '<length-percentage>';
-	initial-value: 0px;
-	inherits: false
+  syntax: '<length-percentage>';
+  initial-value: 0px;
+  inherits: false;
 }
 
-html, body, div, ::after { display: grid }
+html,
+body,
+div,
+::after {
+  display: grid;
+}
 
-html { height: 100% }
+html {
+  height: 100%;
+}
 
-div, ::before, ::after { grid-area: 1/ 1 } 
+div,
+::before,
+::after {
+  grid-area: 1/ 1;
+}
 
 body {
-	place-items: center;
-	background: #171717;
-	font: 900 6em cousine;
-	
-	&::before {
-		padding: $r + $b;
-		border-radius: $b;
-		box-shadow: 4px 4px 13px;
-		background: linear-gradient(-45deg, #3e1c33, #814623);
-		content: ''
-	}
+  place-items: center;
+  background: #171717;
+  font: 900 6em cousine;
+
+  &::before {
+    padding: $r + $b;
+    border-radius: $b;
+    box-shadow: 4px 4px 13px;
+    background: linear-gradient(-45deg, #3e1c33, #814623);
+    content: '';
+  }
 }
 
 .load {
-	counter-reset: p var(--p);
-	mix-blend-mode: lighten;
-	animation: p $t linear infinite;
-	
-	&::before, &::after {
-		background: linear-gradient(-45deg, #d196dd, #fd954e)
-	}
-	
-	&::before {
-		--x: #{$u};
-		--y: #{$u};
-		--r: calc(100% - #{$b}); // inner radius of ring
-		--rond: red calc(#{$u} - 1px), #0000 #{$u};
-		--mask: 
-			radial-gradient(circle at var(--x) var(--y), var(--rond)), 
-			radial-gradient(closest-side, 
-					#0000 var(--r), 
-					red calc(var(--r) + 1px) calc(100% - 1px), 
-					#0000), 
-			conic-gradient(red calc(var(--p)*1%), #0000 0%), 
-			radial-gradient(circle at 50% #{$u}, var(--rond));
-		padding: $r; // outer radius of ring
-		-webkit-mask: var(--mask);
-						mask: var(--mask);
-		-webkit-mask-composite: source-over, source-in;
-						mask-composite: add, intersect;
-		animation: r $t ease-out infinite, 
-			x .25*$t $e -.125*$t infinite alternate, 
-			y .25*$t $e infinite alternate;
-		content: ''
-	}
-	
-	&::after {
-		place-items: center;
-		-webkit-background-clip: text;
-		color: #0000;
-		mix-blend-mode: difference;
-		content: counter(p) '%'
-	}
+  counter-reset: p var(--p);
+  mix-blend-mode: lighten;
+  animation: p $t linear infinite;
+
+  &::before,
+  &::after {
+    background: linear-gradient(-45deg, #d196dd, #fd954e);
+  }
+
+  &::before {
+    --x: #{$u};
+    --y: #{$u};
+    --r: calc(100% - #{$b}); // inner radius of ring
+    --rond: red calc(#{$u} - 1px), #0000 #{$u};
+    --mask:
+      radial-gradient(circle at var(--x) var(--y), var(--rond)),
+      radial-gradient(
+        closest-side,
+        #0000 var(--r),
+        red calc(var(--r) + 1px) calc(100% - 1px),
+        #0000
+      ),
+      conic-gradient(red calc(var(--p) * 1%), #0000 0%),
+      radial-gradient(circle at 50% #{$u}, var(--rond));
+    padding: $r; // outer radius of ring
+    -webkit-mask: var(--mask);
+    mask: var(--mask);
+    -webkit-mask-composite: source-over, source-in;
+    mask-composite: add, intersect;
+    animation:
+      r $t ease-out infinite,
+      x 0.25 * $t $e -0.125 * $t infinite alternate,
+      y 0.25 * $t $e infinite alternate;
+    content: '';
+  }
+
+  &::after {
+    place-items: center;
+    -webkit-background-clip: text;
+    color: #0000;
+    mix-blend-mode: difference;
+    content: counter(p) '%';
+  }
 }
 
-@keyframes p { 50%, 100% { --p: 100 } }
+@keyframes p {
+  50%,
+  100% {
+    --p: 100;
+  }
+}
 
 @keyframes r {
-	0%, 50% { --r: calc(100% - #{$b}); }
-	75%, 100% { --r: -1px }
+  0%,
+  50% {
+    --r: calc(100% - #{$b});
+  }
+  75%,
+  100% {
+    --r: -1px;
+  }
 }
 
-@keyframes x { 100% { --x: calc(100% - #{$u}); } }
-@keyframes y { 100% { --y: calc(100% - #{$u}); } }
+@keyframes x {
+  100% {
+    --x: calc(100% - #{$u});
+  }
+}
+@keyframes y {
+  100% {
+    --y: calc(100% - #{$u});
+  }
+}

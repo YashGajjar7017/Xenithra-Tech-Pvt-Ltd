@@ -8,68 +8,68 @@ pool:
   vmImage: 'ubuntu-latest'
 
 stages:
-- stage: BuildAndTest
-  displayName: 'Build and Test'
-  jobs:
-  - job: Backend
-    displayName: 'Backend Build and Test'
-    steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-      displayName: 'Install Node.js'
-    - script: |
-        cd Backend
-        npm install
-      displayName: 'Install Backend Dependencies'
-    - script: |
-        cd Backend
-        npm run build || echo "No build script available, skipping"
-      displayName: 'Build Backend'
-      continueOnError: true  # No build script, skip if fails
-    - script: |
-        cd Backend
-        timeout 30s npm test || echo "Test completed or timed out"
-      displayName: 'Test Backend'
-      continueOnError: true  # Assuming no tests, skip if fails
+  - stage: BuildAndTest
+    displayName: 'Build and Test'
+    jobs:
+      - job: Backend
+        displayName: 'Backend Build and Test'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18.x'
+            displayName: 'Install Node.js'
+          - script: |
+              cd Backend
+              npm install
+            displayName: 'Install Backend Dependencies'
+          - script: |
+              cd Backend
+              npm run build || echo "No build script available, skipping"
+            displayName: 'Build Backend'
+            continueOnError: true # No build script, skip if fails
+          - script: |
+              cd Backend
+              timeout 30s npm test || echo "Test completed or timed out"
+            displayName: 'Test Backend'
+            continueOnError: true # Assuming no tests, skip if fails
 
-  - job: Frontend
-    displayName: 'Frontend Build and Test'
-    steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-      displayName: 'Install Node.js'
-    - script: |
-        cd Frontend
-        npm install
-      displayName: 'Install Frontend Dependencies'
-    - script: |
-        cd Frontend
-        npm run build || echo "No build script available, skipping"
-      displayName: 'Build Frontend'
-      continueOnError: true
-    - script: |
-        cd Frontend
-        timeout 30s npm test || echo "Test completed or timed out"
-      displayName: 'Test Frontend'
-      continueOnError: true
+      - job: Frontend
+        displayName: 'Frontend Build and Test'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '18.x'
+            displayName: 'Install Node.js'
+          - script: |
+              cd Frontend
+              npm install
+            displayName: 'Install Frontend Dependencies'
+          - script: |
+              cd Frontend
+              npm run build || echo "No build script available, skipping"
+            displayName: 'Build Frontend'
+            continueOnError: true
+          - script: |
+              cd Frontend
+              timeout 30s npm test || echo "Test completed or timed out"
+            displayName: 'Test Frontend'
+            continueOnError: true
 
-  - job: Docker
-    displayName: 'Build Docker Images'
-    steps:
-    - task: Docker@2
-      inputs:
-        command: 'build'
-        Dockerfile: '.docker/Dockerfile'
-        tags: 'app:$(Build.BuildId)'
-      displayName: 'Build Application Docker Image'
-      continueOnError: true
-    - task: Docker@2
-      inputs:
-        command: 'build'
-        Dockerfile: '.docker/Dockerfile'
-        arguments: '--target production'
-        tags: 'app:prod-$(Build.BuildId)'
-      displayName: 'Build Production Docker Image'
-      continueOnError: true
+      - job: Docker
+        displayName: 'Build Docker Images'
+        steps:
+          - task: Docker@2
+            inputs:
+              command: 'build'
+              Dockerfile: '.docker/Dockerfile'
+              tags: 'app:$(Build.BuildId)'
+            displayName: 'Build Application Docker Image'
+            continueOnError: true
+          - task: Docker@2
+            inputs:
+              command: 'build'
+              Dockerfile: '.docker/Dockerfile'
+              arguments: '--target production'
+              tags: 'app:prod-$(Build.BuildId)'
+            displayName: 'Build Production Docker Image'
+            continueOnError: true

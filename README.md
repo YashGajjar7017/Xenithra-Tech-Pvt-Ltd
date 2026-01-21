@@ -17,7 +17,7 @@
 **Xenithra** is a **next-gen compiler-style code editor** designed to be  
 **much faster than VS Code**, with **instant startup**, minimal RAM usage, and zero unnecessary bloat.
 
-> 🧠 *Think of VS Code as a loaded SUV — Xenithra is a Formula-1 car.*
+> 🧠 _Think of VS Code as a loaded SUV — Xenithra is a Formula-1 car._
 
 ---
 
@@ -37,11 +37,11 @@
 
 ## 📊 Performance Snapshot
 
-| Metric | VS Code | Xenithra |
-|--------|--------|----------|
-| Cold Start | ~2.5s | **< 300ms** |
-| RAM Usage (Idle) | ~400MB | **< 90MB** |
-| Large File Open | Laggy | **Instant** |
+| Metric           | VS Code | Xenithra    |
+| ---------------- | ------- | ----------- |
+| Cold Start       | ~2.5s   | **< 300ms** |
+| RAM Usage (Idle) | ~400MB  | **< 90MB**  |
+| Large File Open  | Laggy   | **Instant** |
 
 > ⚠️ Benchmarks vary by system — Xenithra scales down, not up.
 
@@ -55,6 +55,7 @@ cd Xenithra-Tech-Pvt-Ltd
 # follow project-specific setup
 (Prebuilt binaries & installer coming soon 🚧)
 ```
+
 ## 🤝 Contributing
 
 Xenithra is open to builders.
@@ -68,12 +69,15 @@ How to contribute:
 4. Open a PR with explanation
 
 <br><hr><br>
+
 ## 📝 License
 
 MIT License — use it, modify it, ship it.
 <br><hr><br>
+
 <p align="center"> <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=16&pause=1000&color=00FFD1&center=true&vCenter=true&width=700&lines=Built+for+Speed.;Designed+for+Focus.;Crafted+for+Developers." /> </p>
 <br><hr><br>
 
 ## Contant US
-Email : ``` xenithra.technology.in@gmail.com```
+
+Email : ` xenithra.technology.in@gmail.com`

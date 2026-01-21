@@ -1,81 +1,83 @@
 // -----------------Gelolocation--------------------
 
 setTimeout(() => {
-    function getLocation() {
-        try {
-            navigator.geolocation.getCurrentPosition(showPosition);
-        } catch {
-            x.innerHTML = err;
-        }
+  function getLocation() {
+    try {
+      navigator.geolocation.getCurrentPosition(showPosition)
+    } catch {
+      x.innerHTML = err
     }
+  }
 
-    function showPosition(position) {
-        console.log("Latitude: " + position.coords.latitude + "\nLongitude: " + position.coords.longitude);
-    }
-    getLocation() // call the geolcation
-}, 6000);
+  function showPosition(position) {
+    console.log(
+      'Latitude: ' + position.coords.latitude + '\nLongitude: ' + position.coords.longitude
+    )
+  }
+  getLocation() // call the geolcation
+}, 6000)
 
 // -----------toggle class Maintenance-break timer------------------
 function myTimer() {
-    // -timer code start
-    const countToDate = new Date().setHours(new Date().getHours() + 24);
-    let previousTimeBetweenDates;
+  // -timer code start
+  const countToDate = new Date().setHours(new Date().getHours() + 24)
+  let previousTimeBetweenDates
 
-    setInterval(() => {
-        const currentDate = new Date()
-        const timeBetweenDates = Math.ceil((countToDate - currentDate) / 1000)
-        flipAllCards(timeBetweenDates)
+  setInterval(() => {
+    const currentDate = new Date()
+    const timeBetweenDates = Math.ceil((countToDate - currentDate) / 1000)
+    flipAllCards(timeBetweenDates)
 
-        previousTimeBetweenDates = timeBetweenDates
-    }, 250)
+    previousTimeBetweenDates = timeBetweenDates
+  }, 250)
 
-    function flipAllCards(time) {
-        const seconds = time % 60
-        const minutes = Math.floor(time / 60) % 60
-        const hours = Math.floor(time / 3600)
+  function flipAllCards(time) {
+    const seconds = time % 60
+    const minutes = Math.floor(time / 60) % 60
+    const hours = Math.floor(time / 3600)
 
-        flip(document.querySelector("[data-hours-tens]"), Math.floor(hours / 10))
-        flip(document.querySelector("[data-hours-ones]"), hours % 10)
-        flip(document.querySelector("[data-minutes-tens]"), Math.floor(minutes / 10))
-        flip(document.querySelector("[data-minutes-ones]"), minutes % 10)
-        flip(document.querySelector("[data-seconds-tens]"), Math.floor(seconds / 10))
-        flip(document.querySelector("[data-seconds-ones]"), seconds % 10)
-    }
+    flip(document.querySelector('[data-hours-tens]'), Math.floor(hours / 10))
+    flip(document.querySelector('[data-hours-ones]'), hours % 10)
+    flip(document.querySelector('[data-minutes-tens]'), Math.floor(minutes / 10))
+    flip(document.querySelector('[data-minutes-ones]'), minutes % 10)
+    flip(document.querySelector('[data-seconds-tens]'), Math.floor(seconds / 10))
+    flip(document.querySelector('[data-seconds-ones]'), seconds % 10)
+  }
 
-    function flip(flipCard, newNumber) {
-        const topHalf = flipCard.querySelector(".top")
-        const startNumber = parseInt(topHalf.textContent)
-        if (newNumber === startNumber) return
+  function flip(flipCard, newNumber) {
+    const topHalf = flipCard.querySelector('.top')
+    const startNumber = parseInt(topHalf.textContent)
+    if (newNumber === startNumber) return
 
-        const bottomHalf = flipCard.querySelector(".bottom")
-        const topFlip = document.createElement("div")
-        topFlip.classList.add("top-flip")
-        const bottomFlip = document.createElement("div")
-        bottomFlip.classList.add("bottom-flip")
+    const bottomHalf = flipCard.querySelector('.bottom')
+    const topFlip = document.createElement('div')
+    topFlip.classList.add('top-flip')
+    const bottomFlip = document.createElement('div')
+    bottomFlip.classList.add('bottom-flip')
 
-        top.textContent = startNumber
-        bottomHalf.textContent = startNumber
-        topFlip.textContent = startNumber
-        bottomFlip.textContent = newNumber
+    top.textContent = startNumber
+    bottomHalf.textContent = startNumber
+    topFlip.textContent = startNumber
+    bottomFlip.textContent = newNumber
 
-        topFlip.addEventListener("animationstart", e => {
-            topHalf.textContent = newNumber
-        })
-        topFlip.addEventListener("animationend", e => {
-            topFlip.remove()
-        })
-        bottomFlip.addEventListener("animationend", e => {
-            bottomHalf.textContent = newNumber
-            bottomFlip.remove()
-        })
-        flipCard.append(topFlip, bottomFlip)
-    }
-    // -timer code end
+    topFlip.addEventListener('animationstart', (e) => {
+      topHalf.textContent = newNumber
+    })
+    topFlip.addEventListener('animationend', (e) => {
+      topFlip.remove()
+    })
+    bottomFlip.addEventListener('animationend', (e) => {
+      bottomHalf.textContent = newNumber
+      bottomFlip.remove()
+    })
+    flipCard.append(topFlip, bottomFlip)
+  }
+  // -timer code end
 }
 
 // ----------------maintence Break- callback-------------
 function Maintenance(callback) {
-    const MaintenanceData = `
+  const MaintenanceData = `
     <div class="bg-image"></div>
             <div class="bg-text">
                 <!-- <h2>Blurred Background</h2> -->
@@ -129,66 +131,65 @@ function Maintenance(callback) {
                 <button id="turnOff" style="padding: 10px;">Turn Off</button>
                 <button style="padding: 10px;">Learn more</button>
                 <button style="padding: 10px;">Templates</button>
-            </div>`;
+            </div>`
 
-    let main1 = document.getElementById('Maintenance');
-    main1.innerHTML += MaintenanceData;
+  let main1 = document.getElementById('Maintenance')
+  main1.innerHTML += MaintenanceData
 }
 
 // ----------------------maintaince brake-----------------
 $(document).ready(function () {
-    $('.Maintenance').hide();
-    let maintainceToken = 0;
+  $('.Maintenance').hide()
+  let maintainceToken = 0
 
-    $('#maintaince').click(function () {
-        let code = prompt("PLEASE ENTER THE SERVER TOKEN:");
+  $('#maintaince').click(function () {
+    let code = prompt('PLEASE ENTER THE SERVER TOKEN:')
 
-        if (code === "yashacker") {
-            maintainceToken++;
-            sessionStorage.setItem('token_true', 'THENDKFNVSJMDNFIIJDFIMKZDFJIXDFHASUHBBSDHUD');
-            // toggale class
-            if (maintainceToken === 1 && sessionStorage.getItem('token_true')) {
-                $('body').addClass('adder'), 1000;
-                $('.Maintenance').show();
-                if (sessionStorage.getItem('token_true')) {
-                    sessionStorage.removeItem('token_true');
-                    sessionStorage.setItem('token_false', 'YIEURNSDFHAJKRTHUISRTNALERTKMAKSRLQWOIREKW');
-                } else {
-                    sessionStorage.getItem('token_false');
-                }
-            } else {
-                alert("Please try again");
-            }
+    if (code === 'yashacker') {
+      maintainceToken++
+      sessionStorage.setItem('token_true', 'THENDKFNVSJMDNFIIJDFIMKZDFJIXDFHASUHBBSDHUD')
+      // toggale class
+      if (maintainceToken === 1 && sessionStorage.getItem('token_true')) {
+        ;($('body').addClass('adder'), 1000)
+        $('.Maintenance').show()
+        if (sessionStorage.getItem('token_true')) {
+          sessionStorage.removeItem('token_true')
+          sessionStorage.setItem('token_false', 'YIEURNSDFHAJKRTHUISRTNALERTKMAKSRLQWOIREKW')
         } else {
-            maintainceToken = 0;
-
+          sessionStorage.getItem('token_false')
         }
-        // $('.home,.close').fadeTo(1000,0.4);
-        // $('.home,.close').css("opacity", "0.5");
-    });
+      } else {
+        alert('Please try again')
+      }
+    } else {
+      maintainceToken = 0
+    }
+    // $('.home,.close').fadeTo(1000,0.4);
+    // $('.home,.close').css("opacity", "0.5");
+  })
 
-    // Maintaince Off
-    // let tokenOff = document.getElementById('turnOff')
-    // tokenOff.addEventListener('click', function () {
-    //     // token_true
-    //     if (sessionStorage.getItem('token_true')) {
-    //         sessionStorage.getItem('token_false');
-    //     } else {
-    //         alert("ckeck the sessionStorage : token_true");
-    //     }
+  // Maintaince Off
+  // let tokenOff = document.getElementById('turnOff')
+  // tokenOff.addEventListener('click', function () {
+  //     // token_true
+  //     if (sessionStorage.getItem('token_true')) {
+  //         sessionStorage.getItem('token_false');
+  //     } else {
+  //         alert("ckeck the sessionStorage : token_true");
+  //     }
 
-    //     // token_false
-    //     if (sessionStorage.getItem('token_false')) {
-    //         $('.home,.close').removeClass('backup'), 9000;
-    //         $('.Maintenance').hide();
-    //     } else {
-    //         console.log('data not found!')
-    //     }
-    // });
+  //     // token_false
+  //     if (sessionStorage.getItem('token_false')) {
+  //         $('.home,.close').removeClass('backup'), 9000;
+  //         $('.Maintenance').hide();
+  //     } else {
+  //         console.log('data not found!')
+  //     }
+  // });
 
-    // $('.mainbreak').dblclick(function () {
-    //     $('.Maintenance').hide();
-    // });
+  // $('.mainbreak').dblclick(function () {
+  //     $('.Maintenance').hide();
+  // });
 
-    // $('a[class="mainbreak"]').attr('disabled', true);  ->Set attribute to a class vai jqueary
-});
+  // $('a[class="mainbreak"]').attr('disabled', true);  ->Set attribute to a class vai jqueary
+})

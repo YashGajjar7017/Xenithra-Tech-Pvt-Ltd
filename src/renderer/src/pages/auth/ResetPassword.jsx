@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createRoot } from 'react-dom/client'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
@@ -32,12 +32,12 @@ const ResetPassword = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const token = urlParams.get('token')
-    
+
     if (!token) {
       setError('Invalid reset link. Please request a new password reset.')
       return
     }
-    
+
     setResetToken(token)
   }, [])
 
@@ -51,13 +51,13 @@ const ResetPassword = () => {
       special: /[!@#$%^&*]/.test(pwd),
       match: pwd === confirmPwd && pwd.length > 0
     }
-    
+
     setRequirements(reqs)
-    
+
     const score = Object.values(reqs).filter(Boolean).length
     const labels = ['Very Weak', 'Weak', 'Fair', 'Medium', 'Strong', 'Excellent']
     setStrength({ score, label: labels[Math.min(score, 5)] })
-    
+
     return reqs
   }, [])
 
@@ -111,7 +111,7 @@ const ResetPassword = () => {
 
       if (response.success) {
         setSuccess('Password reset successfully!')
-        
+
         // Redirect to login after success
         setTimeout(() => {
           alert('Password reset successfully! You can now log in with your new password.')
@@ -192,14 +192,14 @@ const ResetPassword = () => {
     }
   }
 
-  const getRequirementColor = (met) => met ? '#28a745' : '#dc3545'
+  const getRequirementColor = (met) => (met ? '#28a745' : '#dc3545')
 
   return (
     <AuthLayout title="Reset Password">
       <Card>
         <form onSubmit={handleSubmit} style={styles.container}>
           <h2 style={styles.title}>Reset Password</h2>
-          
+
           <div style={styles.passwordSection}>
             <Input
               type="password"
@@ -231,37 +231,67 @@ const ResetPassword = () => {
             <strong>Password Requirements:</strong>
             <ul style={styles.requirementList}>
               <li style={styles.requirementItem}>
-                <span style={{ ...styles.requirementIcon, color: getRequirementColor(requirements.length) }}>
+                <span
+                  style={{
+                    ...styles.requirementIcon,
+                    color: getRequirementColor(requirements.length)
+                  }}
+                >
                   {requirements.length ? '✓' : '✗'}
                 </span>
                 At least 8 characters
               </li>
               <li style={styles.requirementItem}>
-                <span style={{ ...styles.requirementIcon, color: getRequirementColor(requirements.uppercase) }}>
+                <span
+                  style={{
+                    ...styles.requirementIcon,
+                    color: getRequirementColor(requirements.uppercase)
+                  }}
+                >
                   {requirements.uppercase ? '✓' : '✗'}
                 </span>
                 At least one uppercase letter
               </li>
               <li style={styles.requirementItem}>
-                <span style={{ ...styles.requirementIcon, color: getRequirementColor(requirements.lowercase) }}>
+                <span
+                  style={{
+                    ...styles.requirementIcon,
+                    color: getRequirementColor(requirements.lowercase)
+                  }}
+                >
                   {requirements.lowercase ? '✓' : '✗'}
                 </span>
                 At least one lowercase letter
               </li>
               <li style={styles.requirementItem}>
-                <span style={{ ...styles.requirementIcon, color: getRequirementColor(requirements.number) }}>
+                <span
+                  style={{
+                    ...styles.requirementIcon,
+                    color: getRequirementColor(requirements.number)
+                  }}
+                >
                   {requirements.number ? '✓' : '✗'}
                 </span>
                 At least one number
               </li>
               <li style={styles.requirementItem}>
-                <span style={{ ...styles.requirementIcon, color: getRequirementColor(requirements.special) }}>
+                <span
+                  style={{
+                    ...styles.requirementIcon,
+                    color: getRequirementColor(requirements.special)
+                  }}
+                >
                   {requirements.special ? '✓' : '✗'}
                 </span>
                 At least one special character (!@#$%^&*)
               </li>
               <li style={styles.requirementItem}>
-                <span style={{ ...styles.requirementIcon, color: getRequirementColor(requirements.match) }}>
+                <span
+                  style={{
+                    ...styles.requirementIcon,
+                    color: getRequirementColor(requirements.match)
+                  }}
+                >
                   {requirements.match ? '✓' : '✗'}
                 </span>
                 Passwords match
@@ -271,10 +301,12 @@ const ResetPassword = () => {
 
           {/* Password Strength */}
           {password && (
-            <div style={{
-              ...styles.strengthIndicator,
-              color: strength.score <= 2 ? '#dc3545' : strength.score <= 4 ? '#ffc107' : '#28a745'
-            }}>
+            <div
+              style={{
+                ...styles.strengthIndicator,
+                color: strength.score <= 2 ? '#dc3545' : strength.score <= 4 ? '#ffc107' : '#28a745'
+              }}
+            >
               Password Strength: {strength.label}
             </div>
           )}
@@ -282,10 +314,8 @@ const ResetPassword = () => {
           {error && !error.includes('requirements') && !error.includes('match') && (
             <div style={styles.error}>{error}</div>
           )}
-          
-          {success && (
-            <div style={styles.success}>{success}</div>
-          )}
+
+          {success && <div style={styles.success}>{success}</div>}
 
           <Button
             type="submit"
@@ -297,10 +327,7 @@ const ResetPassword = () => {
             Reset Password
           </Button>
 
-          <span 
-            style={styles.link} 
-            onClick={() => redirect.toLogin()}
-          >
+          <span style={styles.link} onClick={() => redirect.toLogin()}>
             Back to Login
           </span>
         </form>
@@ -315,4 +342,3 @@ export default ResetPassword
 const container = document.getElementById('root')
 const root = createRoot(container)
 root.render(<ResetPassword />)
-

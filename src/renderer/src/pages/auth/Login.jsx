@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
@@ -23,7 +23,7 @@ const Login = () => {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }))
@@ -88,9 +88,11 @@ const Login = () => {
       } else {
         // Handle specific error cases
         const errorMessage = response.message || 'Login failed'
-        
-        if (errorMessage.toLowerCase().includes('user not found') || 
-            errorMessage.toLowerCase().includes('invalid credentials')) {
+
+        if (
+          errorMessage.toLowerCase().includes('user not found') ||
+          errorMessage.toLowerCase().includes('invalid credentials')
+        ) {
           // Redirect to signup with pre-filled username/email
           const signupUrl = `/Account/Signup?email=${encodeURIComponent(formData.username)}`
           setTimeout(() => {
@@ -163,7 +165,7 @@ const Login = () => {
       <Card>
         <form onSubmit={handleSubmit} style={styles.container}>
           <h2 style={styles.title}>Login</h2>
-          
+
           <Input
             type="text"
             id="username"
@@ -207,9 +209,7 @@ const Login = () => {
           )}
 
           {success && (
-            <div style={{ color: '#28a745', fontSize: '14px', marginTop: '10px' }}>
-              {success}
-            </div>
+            <div style={{ color: '#28a745', fontSize: '14px', marginTop: '10px' }}>{success}</div>
           )}
 
           <Button
@@ -222,16 +222,10 @@ const Login = () => {
           </Button>
 
           <div style={styles.linkContainer}>
-            <span 
-              style={styles.link} 
-              onClick={() => redirect.toForgotPassword()}
-            >
+            <span style={styles.link} onClick={() => redirect.toForgotPassword()}>
               Forgot Password?
             </span>
-            <span 
-              style={styles.link} 
-              onClick={() => redirect.toSignup()}
-            >
+            <span style={styles.link} onClick={() => redirect.toSignup()}>
               Don't have an account? Signup
             </span>
           </div>
@@ -247,4 +241,3 @@ export default Login
 const container = document.getElementById('root')
 const root = createRoot(container)
 root.render(<Login />)
-

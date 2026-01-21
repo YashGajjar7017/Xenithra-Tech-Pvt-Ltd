@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './ThemeSelector.css';
+import { useState, useEffect } from 'react'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './ThemeSelector.css'
 
 const ThemeSelector = () => {
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [showFailAlert, setShowFailAlert] = useState(false);
-  const [activeTheme, setActiveTheme] = useState(null);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false)
+  const [showFailAlert, setShowFailAlert] = useState(false)
+  const [activeTheme, setActiveTheme] = useState(null)
 
   const themes = [
     {
@@ -48,24 +48,24 @@ const ThemeSelector = () => {
       name: 'Gradient Theme 2',
       background: 'linear-gradient(to right, #4facfe 0%, #00f2fe 100%)'
     }
-  ];
+  ]
 
   const applyTheme = (themeId) => {
-    setActiveTheme(themeId);
-    setShowSuccessAlert(true);
+    setActiveTheme(themeId)
+    setShowSuccessAlert(true)
     // Simulate API call to apply theme to editor
     setTimeout(() => {
-      setShowSuccessAlert(false);
-    }, 3000);
-  };
+      setShowSuccessAlert(false)
+    }, 3000)
+  }
 
   const removeTheme = () => {
-    setActiveTheme(null);
-    setShowFailAlert(true);
+    setActiveTheme(null)
+    setShowFailAlert(true)
     setTimeout(() => {
-      setShowFailAlert(false);
-    }, 3000);
-  };
+      setShowFailAlert(false)
+    }, 3000)
+  }
 
   const renderThemeCard = (theme) => (
     <div key={theme.id} className="card theme-card" style={{ width: '18rem', marginRight: '2%' }}>
@@ -89,24 +89,23 @@ const ThemeSelector = () => {
             Apply
           </button>
           {activeTheme === theme.id && (
-            <button
-              className="btn btn-danger"
-              onClick={removeTheme}
-            >
+            <button className="btn btn-danger" onClick={removeTheme}>
               Remove
             </button>
           )}
         </div>
       </div>
     </div>
-  );
+  )
 
   return (
     <div style={{ backgroundColor: '#555', minHeight: '100vh' }}>
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg navbar-dark bg-light custom">
         <div className="container-fluid">
-          <a className="navbar-brand" href="#">The Byter Machine</a>
+          <a className="navbar-brand" href="#">
+            The Byter Machine
+          </a>
           <button
             className="navbar-toggler"
             type="button"
@@ -118,10 +117,14 @@ const ThemeSelector = () => {
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <a className="nav-link active" href="/">Home</a>
+                <a className="nav-link active" href="/">
+                  Home
+                </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">Join with us</a>
+                <a className="nav-link" href="#">
+                  Join with us
+                </a>
               </li>
               <li className="nav-item dropdown">
                 <a
@@ -134,19 +137,37 @@ const ThemeSelector = () => {
                   Dropdown
                 </a>
                 <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <li><a className="dropdown-item" href="#">Action</a></li>
-                  <li><a className="dropdown-item" href="#">Another action</a></li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li><a className="dropdown-item" href="#">Something else here</a></li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Action
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Another action
+                    </a>
+                  </li>
+                  <li>
+                    <hr className="dropdown-divider" />
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Something else here
+                    </a>
+                  </li>
                 </ul>
               </li>
               <li className="nav-item">
-                <a className="nav-link disabled" href="/classLoader">Classroom</a>
+                <a className="nav-link disabled" href="/classLoader">
+                  Classroom
+                </a>
               </li>
             </ul>
             <form className="d-flex">
               <input className="form-control me-2" type="search" placeholder="Search" />
-              <button className="btn btn-outline-success" type="submit">Search</button>
+              <button className="btn btn-outline-success" type="submit">
+                Search
+              </button>
             </form>
           </div>
         </div>
@@ -159,13 +180,12 @@ const ThemeSelector = () => {
 
       {/* Success Alert */}
       {showSuccessAlert && (
-        <div className="alert alert-success alert-dismissible fade show container my-2" role="alert">
+        <div
+          className="alert alert-success alert-dismissible fade show container my-2"
+          role="alert"
+        >
           <strong>Successfully</strong> apply the theme to texteditor
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowSuccessAlert(false)}
-          />
+          <button type="button" className="btn-close" onClick={() => setShowSuccessAlert(false)} />
         </div>
       )}
 
@@ -173,11 +193,7 @@ const ThemeSelector = () => {
       {showFailAlert && (
         <div className="alert alert-danger alert-dismissible fade show container my-2" role="alert">
           <strong>Fail to</strong> apply the theme to texteditor
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowFailAlert(false)}
-          />
+          <button type="button" className="btn-close" onClick={() => setShowFailAlert(false)} />
         </div>
       )}
 
@@ -195,12 +211,12 @@ const ThemeSelector = () => {
       {activeTheme && (
         <div className="container text-center">
           <div className="alert alert-info">
-            Currently Active: <strong>{themes.find(t => t.id === activeTheme)?.name}</strong>
+            Currently Active: <strong>{themes.find((t) => t.id === activeTheme)?.name}</strong>
           </div>
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ThemeSelector;
+export default ThemeSelector

@@ -35,6 +35,7 @@ This dev container provides a complete development environment for the Node.js C
 ## Troubleshooting
 
 If services don't start properly:
+
 1. Check if ports 8000, 3000, 27017 are available
 2. Ensure MongoDB container is running: `docker ps`
 3. Check logs: `docker logs mongodb-dev`
@@ -52,3 +53,4 @@ docker run -d --name mongodb-dev -p 27017:27017 mongo:6.0
 # Start services
 cd Backend && npm start &
 cd ../Frontend && npm start &
+```

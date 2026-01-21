@@ -20,7 +20,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
-    "react-devtools": "^7.0.1"
+    "react-devtools": "^1.0.5"
   },
   "optionalDependencies": {
     "bcryptjs": "^2.4.3",

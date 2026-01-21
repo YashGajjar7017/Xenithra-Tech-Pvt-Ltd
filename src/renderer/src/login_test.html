@@ -1,227 +1,228 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login Test - Debug Mode</title>
-    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/CSS/Bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover {
-            background: #45a049;
-        }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .log-box {
-            background: #f0f0f0;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .log-entry {
-            margin-bottom: 8px;
-            padding: 8px;
-            background: white;
-            border-left: 3px solid #4CAF50;
-        }
-        .log-error {
-            border-left-color: #f44336;
-            background: #ffebee;
-        }
-        .status {
-            margin-top: 15px;
-            padding: 10px;
-            background: #e3f2fd;
-            border-radius: 4px;
-            color: #1565c0;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 14px;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .log-box {
+        background: #f0f0f0;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .log-entry {
+        margin-bottom: 8px;
+        padding: 8px;
+        background: white;
+        border-left: 3px solid #4caf50;
+      }
+      .log-error {
+        border-left-color: #f44336;
+        background: #ffebee;
+      }
+      .status {
+        margin-top: 15px;
+        padding: 10px;
+        background: #e3f2fd;
+        border-radius: 4px;
+        color: #1565c0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🧪 Login Test - Debug Mode</h1>
-        <p>This page tests form submission and API connectivity.</p>
-        
-        <form id="testLoginForm" onsubmit="handleFormSubmit(event)">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input 
-                    type="text" 
-                    id="username" 
-                    name="username" 
-                    placeholder="Enter username" 
-                    value="testuser"
-                    required
-                    class="form-control"
-                />
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Enter password" 
-                    value="testpass123"
-                    required
-                    class="form-control"
-                />
-            </div>
-            
-            <button type="submit" id="submitBtn" class="btn btn-primary">Test Login</button>
-        </form>
-        
-        <div class="status">
-            <strong>Status:</strong> <span id="statusText">Ready</span>
+      <h1>🧪 Login Test - Debug Mode</h1>
+      <p>This page tests form submission and API connectivity.</p>
+
+      <form id="testLoginForm" onsubmit="handleFormSubmit(event)">
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Enter username"
+            value="testuser"
+            required
+            class="form-control"
+          />
         </div>
 
-        <div class="log-box" id="logBox">
-            <div class="log-entry">Waiting for form submission...</div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter password"
+            value="testpass123"
+            required
+            class="form-control"
+          />
         </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary">Test Login</button>
+      </form>
+
+      <div class="status"><strong>Status:</strong> <span id="statusText">Ready</span></div>
+
+      <div class="log-box" id="logBox">
+        <div class="log-entry">Waiting for form submission...</div>
+      </div>
     </div>
 
     <script>
-        const logBox = document.getElementById('logBox');
-        const statusText = document.getElementById('statusText');
-        const submitBtn = document.getElementById('submitBtn');
+      const logBox = document.getElementById('logBox')
+      const statusText = document.getElementById('statusText')
+      const submitBtn = document.getElementById('submitBtn')
 
-        // Utility to add log entries
-        function addLog(message, isError = false) {
-            const entry = document.createElement('div');
-            entry.className = 'log-entry' + (isError ? ' log-error' : '');
-            const timestamp = new Date().toLocaleTimeString();
-            entry.textContent = `[${timestamp}] ${message}`;
-            logBox.appendChild(entry);
-            logBox.scrollTop = logBox.scrollHeight; // Auto-scroll to bottom
-            console.log(isError ? '%c' + message : message, isError ? 'color: red; font-weight: bold;' : '');
+      // Utility to add log entries
+      function addLog(message, isError = false) {
+        const entry = document.createElement('div')
+        entry.className = 'log-entry' + (isError ? ' log-error' : '')
+        const timestamp = new Date().toLocaleTimeString()
+        entry.textContent = `[${timestamp}] ${message}`
+        logBox.appendChild(entry)
+        logBox.scrollTop = logBox.scrollHeight // Auto-scroll to bottom
+        console.log(
+          isError ? '%c' + message : message,
+          isError ? 'color: red; font-weight: bold;' : ''
+        )
+      }
+
+      // Form submission handler
+      async function handleFormSubmit(event) {
+        event.preventDefault()
+        addLog('🔴 FORM SUBMIT EVENT TRIGGERED')
+
+        const username = document.getElementById('username').value.trim()
+        const password = document.getElementById('password').value.trim()
+
+        addLog(`Username: ${username}`)
+        addLog(`Password: ${password.replace(/./g, '*')}`)
+
+        // Validate
+        if (!username || username.length < 3) {
+          addLog('❌ Validation failed: username too short', true)
+          statusText.textContent = 'Validation failed'
+          return
+        }
+        if (!password || password.length < 6) {
+          addLog('❌ Validation failed: password too short', true)
+          statusText.textContent = 'Validation failed'
+          return
         }
 
-        // Form submission handler
-        async function handleFormSubmit(event) {
-            event.preventDefault();
-            addLog('🔴 FORM SUBMIT EVENT TRIGGERED');
+        addLog('✅ Validation passed')
+        submitBtn.disabled = true
+        submitBtn.textContent = 'Logging in...'
+        statusText.textContent = 'Sending request...'
 
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
+        try {
+          addLog('📤 Fetching to /api/login with POST')
+          const payload = { username, password }
+          addLog('📦 Payload: ' + JSON.stringify(payload))
 
-            addLog(`Username: ${username}`);
-            addLog(`Password: ${password.replace(/./g, '*')}`);
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          })
 
-            // Validate
-            if (!username || username.length < 3) {
-                addLog('❌ Validation failed: username too short', true);
-                statusText.textContent = 'Validation failed';
-                return;
-            }
-            if (!password || password.length < 6) {
-                addLog('❌ Validation failed: password too short', true);
-                statusText.textContent = 'Validation failed';
-                return;
-            }
+          addLog(`📥 Response received: Status ${response.status}`)
+          const data = await response.json()
+          addLog('📄 Response body: ' + JSON.stringify(data))
 
-            addLog('✅ Validation passed');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Logging in...';
-            statusText.textContent = 'Sending request...';
-
-            try {
-                addLog('📤 Fetching to /api/login with POST');
-                const payload = { username, password };
-                addLog('📦 Payload: ' + JSON.stringify(payload));
-
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                addLog(`📥 Response received: Status ${response.status}`);
-                const data = await response.json();
-                addLog('📄 Response body: ' + JSON.stringify(data));
-
-                if (data.success) {
-                    addLog('✅ Login successful!');
-                    statusText.textContent = 'Login successful!';
-                    statusText.style.background = '#c8e6c9';
-                    // Set cookies
-                    document.cookie = `token=${data.token}; path=/`;
-                    document.cookie = `username=${data.user.username}; path=/`;
-                    document.cookie = `role=${data.user.role}; path=/`;
-                    addLog('🍪 Cookies set');
-                    // Uncomment to redirect:
-                    // setTimeout(() => window.location.href = '/', 2000);
-                } else {
-                    addLog(`❌ Login failed: ${data.message}`, true);
-                    statusText.textContent = `Failed: ${data.message}`;
-                }
-            } catch (error) {
-                addLog(`❌ Error: ${error.message}`, true);
-                addLog(`Stack: ${error.stack}`, true);
-                statusText.textContent = `Error: ${error.message}`;
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Test Login';
-            }
+          if (data.success) {
+            addLog('✅ Login successful!')
+            statusText.textContent = 'Login successful!'
+            statusText.style.background = '#c8e6c9'
+            // Set cookies
+            document.cookie = `token=${data.token}; path=/`
+            document.cookie = `username=${data.user.username}; path=/`
+            document.cookie = `role=${data.user.role}; path=/`
+            addLog('🍪 Cookies set')
+            // Uncomment to redirect:
+            // setTimeout(() => window.location.href = '/', 2000);
+          } else {
+            addLog(`❌ Login failed: ${data.message}`, true)
+            statusText.textContent = `Failed: ${data.message}`
+          }
+        } catch (error) {
+          addLog(`❌ Error: ${error.message}`, true)
+          addLog(`Stack: ${error.stack}`, true)
+          statusText.textContent = `Error: ${error.message}`
+        } finally {
+          submitBtn.disabled = false
+          submitBtn.textContent = 'Test Login'
         }
+      }
 
-        // Log that page is ready
-        addLog('✅ Page loaded, form handler attached');
-        addLog('🎯 Frontend URL: ' + window.location.origin);
-        addLog('📍 Backend target: http://localhost:8000');
+      // Log that page is ready
+      addLog('✅ Page loaded, form handler attached')
+      addLog('🎯 Frontend URL: ' + window.location.origin)
+      addLog('📍 Backend target: http://localhost:8000')
     </script>
-</body>
+  </body>
 </html>

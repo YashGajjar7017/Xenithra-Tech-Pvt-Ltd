@@ -1,334 +1,348 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Xenithra Technologies Pvt Ltd</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Arial, sans-serif;
-      min-height: 100vh;
-      background: radial-gradient(circle at top left, #1e3c72, #2a0845);
-      color: #ddd;
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    /* Glass container */
-    .app {
-      display: flex;
-      width: 100%;
-      max-width: 1200px;
-      height: 90vh;
-      border-radius: 18px;
-      background: rgba(15, 15, 25, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow:
-        0 0 25px rgba(0, 0, 0, 0.6),
-        0 0 60px rgba(0, 150, 255, 0.25);
-      backdrop-filter: blur(18px); /* glassmorphism blur [web:6][web:9] */
-      overflow: hidden;
-    }
-
-    /* Left glassy sidebar */
-    .sidebar {
-      width: 230px;
-      background: linear-gradient(
-        160deg,
-        rgba(0, 140, 255, 0.22),
-        rgba(0, 0, 40, 0.65)
-      );
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 18px 14px;
-      color: #f4f6ff;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .sidebar::before {
-      content: "";
-      position: absolute;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 255, 255, 0.4), transparent);
-      top: -80px;
-      right: -120px;
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      margin-bottom: 24px;
-      font-weight: bold;
-      font-size: 19px;
-    }
-    .logo-box {
-      width: 30px;
-      height: 30px;
-      border-radius: 10px;
-      border: 2px solid rgba(255, 255, 255, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 8px;
-      font-size: 18px;
-      background: rgba(255, 255, 255, 0.05);
-      box-shadow: 0 0 12px rgba(0, 200, 255, 0.7);
-    }
-
-    .subtitle {
-      font-size: 11px;
-      margin-bottom: 16px;
-      opacity: 0.9;
-    }
-
-    .sidebar button {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #fdfdfd;
-      text-align: left;
-      padding: 7px 12px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-bottom: 6px;
-      backdrop-filter: blur(12px);
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-    }
-    .sidebar button:hover {
-      background: rgba(0, 255, 255, 0.14);
-      box-shadow: 0 0 16px rgba(0, 255, 255, 0.4);
-      transform: translateY(-1px);
-    }
-
-    /* Main area */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(
-        135deg,
-        rgba(10, 10, 25, 0.9),
-        rgba(15, 15, 35, 0.9)
-      );
-    }
-
-    /* Header bar */
-    .topbar {
-      display: flex;
-      align-items: center;
-      padding: 8px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: linear-gradient(
-        90deg,
-        rgba(0, 0, 0, 0.6),
-        rgba(0, 40, 90, 0.7)
-      );
-      backdrop-filter: blur(16px);
-    }
-
-    .topbar-title {
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: #e3f2fd;
-    }
-
-    .topbar-title span#typing {
-      border-right: 2px solid #00e5ff;
-      padding-right: 4px;
-      margin-left: 4px;
-      white-space: nowrap;
-    }
-
-    .topbar button {
-      margin-left: 10px;
-      padding: 4px 12px;
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      font-size: 12px;
-      color: #fff;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      backdrop-filter: blur(14px);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    }
-
-    .topbar button:hover {
-      background: rgba(0, 230, 255, 0.18);
-      box-shadow: 0 0 14px rgba(0, 230, 255, 0.7);
-      transform: translateY(-1px);
-    }
-
-    .btn-run {
-      background: linear-gradient(120deg, #00e676, #00b0ff);
-      box-shadow: 0 0 14px rgba(0, 230, 118, 0.7);
-      animation: pulse 1.3s ease-in-out infinite alternate;
-    }
-
-    @keyframes pulse {
-      from {
-        box-shadow: 0 0 10px rgba(0, 230, 118, 0.7);
-        transform: translateY(0);
+  <head>
+    <meta charset="UTF-8" />
+    <title>Xenithra Technologies Pvt Ltd</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      to {
-        box-shadow: 0 0 24px rgba(0, 230, 118, 1);
+      body {
+        font-family: Arial, sans-serif;
+        min-height: 100vh;
+        background: radial-gradient(circle at top left, #1e3c72, #2a0845);
+        color: #ddd;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      /* Glass container */
+      .app {
+        display: flex;
+        width: 100%;
+        max-width: 1200px;
+        height: 90vh;
+        border-radius: 18px;
+        background: rgba(15, 15, 25, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow:
+          0 0 25px rgba(0, 0, 0, 0.6),
+          0 0 60px rgba(0, 150, 255, 0.25);
+        backdrop-filter: blur(18px); /* glassmorphism blur [web:6][web:9] */
+        overflow: hidden;
+      }
+
+      /* Left glassy sidebar */
+      .sidebar {
+        width: 230px;
+        background: linear-gradient(160deg, rgba(0, 140, 255, 0.22), rgba(0, 0, 40, 0.65));
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 18px 14px;
+        color: #f4f6ff;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .sidebar::before {
+        content: '';
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0, 255, 255, 0.4), transparent);
+        top: -80px;
+        right: -120px;
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        margin-bottom: 24px;
+        font-weight: bold;
+        font-size: 19px;
+      }
+      .logo-box {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+        font-size: 18px;
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 0 12px rgba(0, 200, 255, 0.7);
+      }
+
+      .subtitle {
+        font-size: 11px;
+        margin-bottom: 16px;
+        opacity: 0.9;
+      }
+
+      .sidebar button {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fdfdfd;
+        text-align: left;
+        padding: 7px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-bottom: 6px;
+        backdrop-filter: blur(12px);
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          background 0.15s ease;
+      }
+      .sidebar button:hover {
+        background: rgba(0, 255, 255, 0.14);
+        box-shadow: 0 0 16px rgba(0, 255, 255, 0.4);
         transform: translateY(-1px);
       }
-    }
 
-    .topbar .lang-select {
-      margin-left: auto;
-      font-size: 12px;
-      color: #e0f7fa;
-      opacity: 0.9;
-    }
+      /* Main area */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(135deg, rgba(10, 10, 25, 0.9), rgba(15, 15, 35, 0.9));
+      }
 
-    /* Editor header tab */
-    .editor-header {
-      background: rgba(9, 9, 20, 0.85);
-      padding: 6px 16px;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .editor-header .tab {
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      font-size: 11px;
-    }
+      /* Header bar */
+      .topbar {
+        display: flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(90deg, rgba(0, 0, 0, 0.6), rgba(0, 40, 90, 0.7));
+        backdrop-filter: blur(16px);
+      }
 
-    /* Editor area */
-    .editor {
-      flex: 1;
-      font-family: Consolas, "Courier New", monospace;
-      color: #d4d4d4;
-      padding: 12px 44px;
-      position: relative;
-      overflow: auto;
-      background: radial-gradient(circle at top, #101020, #050510);
-    }
+      .topbar-title {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: #e3f2fd;
+      }
 
-    .line-numbers {
-      position: absolute;
-      left: 14px;
-      top: 12px;
-      text-align: right;
-      color: #5c6370;
-      font-size: 13px;
-      line-height: 1.4;
-      user-select: none;
-    }
+      .topbar-title span#typing {
+        border-right: 2px solid #00e5ff;
+        padding-right: 4px;
+        margin-left: 4px;
+        white-space: nowrap;
+      }
 
-    .editor pre {
-      line-height: 1.4;
-      font-size: 13px;
-      white-space: pre;
-    }
+      .topbar button {
+        margin-left: 10px;
+        padding: 4px 12px;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(14px);
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          background 0.18s ease;
+      }
 
-    .kw      { color: #569cd6; }
-    .func    { color: #dcdcaa; }
-    .string  { color: #ce9178; }
-    .comment { color: #6a9955; }
+      .topbar button:hover {
+        background: rgba(0, 230, 255, 0.18);
+        box-shadow: 0 0 14px rgba(0, 230, 255, 0.7);
+        transform: translateY(-1px);
+      }
 
-    .cursor {
-      display: inline-block;
-      width: 7px;
-      background: #00e5ff;
-      margin-left: 2px;
-      animation: blink 1s step-end infinite;
-    }
+      .btn-run {
+        background: linear-gradient(120deg, #00e676, #00b0ff);
+        box-shadow: 0 0 14px rgba(0, 230, 118, 0.7);
+        animation: pulse 1.3s ease-in-out infinite alternate;
+      }
 
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      50.01%, 100% { opacity: 0; }
-    }
+      @keyframes pulse {
+        from {
+          box-shadow: 0 0 10px rgba(0, 230, 118, 0.7);
+          transform: translateY(0);
+        }
+        to {
+          box-shadow: 0 0 24px rgba(0, 230, 118, 1);
+          transform: translateY(-1px);
+        }
+      }
 
-    /* Bottom area */
-    .bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      background: rgba(0, 0, 0, 0.66);
-      padding: 8px 14px 10px;
-      font-size: 12px;
-      color: #cfd8dc;
-      backdrop-filter: blur(12px);
-    }
-    .bottom label { margin-right: 8px; }
-    .bottom input[type="text"] {
-      width: 60%;
-      padding: 4px 6px;
-      background: rgba(5, 5, 18, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #eee;
-      border-radius: 8px;
-    }
-    .bottom .stdin-options {
-      margin-top: 6px;
-    }
-    .bottom .stdin-options label {
-      margin-right: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="logo">
-        <div class="logo-box">⚡</div>
-        Neon Studio
-      </div>
-      <div class="subtitle">Glassy online playground for C/C++ and more.</div>
-      <button>Dashboard</button>
-      <button>Projects</button>
-      <button>Snippets</button>
-      <button>Learn</button>
-      <button>Challenges</button>
-      <button>Sign In</button>
-      <button>Settings</button>
-    </div>
+      .topbar .lang-select {
+        margin-left: auto;
+        font-size: 12px;
+        color: #e0f7fa;
+        opacity: 0.9;
+      }
 
-    <!-- Main -->
-    <div class="main">
-      <!-- Topbar -->
-      <div class="topbar">
-        <div class="topbar-title">
-          <span>Neon Glass Code</span>
-          <span id="typing"></span>
+      /* Editor header tab */
+      .editor-header {
+        background: rgba(9, 9, 20, 0.85);
+        padding: 6px 16px;
+        font-size: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .editor-header .tab {
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        font-size: 11px;
+      }
+
+      /* Editor area */
+      .editor {
+        flex: 1;
+        font-family: Consolas, 'Courier New', monospace;
+        color: #d4d4d4;
+        padding: 12px 44px;
+        position: relative;
+        overflow: auto;
+        background: radial-gradient(circle at top, #101020, #050510);
+      }
+
+      .line-numbers {
+        position: absolute;
+        left: 14px;
+        top: 12px;
+        text-align: right;
+        color: #5c6370;
+        font-size: 13px;
+        line-height: 1.4;
+        user-select: none;
+      }
+
+      .editor pre {
+        line-height: 1.4;
+        font-size: 13px;
+        white-space: pre;
+      }
+
+      .kw {
+        color: #569cd6;
+      }
+      .func {
+        color: #dcdcaa;
+      }
+      .string {
+        color: #ce9178;
+      }
+      .comment {
+        color: #6a9955;
+      }
+
+      .cursor {
+        display: inline-block;
+        width: 7px;
+        background: #00e5ff;
+        margin-left: 2px;
+        animation: blink 1s step-end infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        50.01%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      /* Bottom area */
+      .bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(0, 0, 0, 0.66);
+        padding: 8px 14px 10px;
+        font-size: 12px;
+        color: #cfd8dc;
+        backdrop-filter: blur(12px);
+      }
+      .bottom label {
+        margin-right: 8px;
+      }
+      .bottom input[type='text'] {
+        width: 60%;
+        padding: 4px 6px;
+        background: rgba(5, 5, 18, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #eee;
+        border-radius: 8px;
+      }
+      .bottom .stdin-options {
+        margin-top: 6px;
+      }
+      .bottom .stdin-options label {
+        margin-right: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="logo">
+          <div class="logo-box">⚡</div>
+          Neon Studio
         </div>
-        <button class="btn-run">▶ Run</button>
-        <button>🐞 Debug</button>
-        <button>■ Stop</button>
-        <button>Share</button>
-        <button>Save</button>
-        <button>{ } Format</button>
-        <div class="lang-select">Language: C (GCC)</div>
+        <div class="subtitle">Glassy online playground for C/C++ and more.</div>
+        <button>Dashboard</button>
+        <button>Projects</button>
+        <button>Snippets</button>
+        <button>Learn</button>
+        <button>Challenges</button>
+        <button>Sign In</button>
+        <button>Settings</button>
       </div>
 
-      <!-- Editor header -->
-      <div class="editor-header">
-        <div class="tab">main.c</div>
-        <div style="font-size:11px; opacity:0.7;">auto-saved 2 seconds ago</div>
-      </div>
-
-      <!-- Editor -->
-      <div class="editor">
-        <div class="line-numbers">
-1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16
+      <!-- Main -->
+      <div class="main">
+        <!-- Topbar -->
+        <div class="topbar">
+          <div class="topbar-title">
+            <span>Neon Glass Code</span>
+            <span id="typing"></span>
+          </div>
+          <button class="btn-run">▶ Run</button>
+          <button>🐞 Debug</button>
+          <button>■ Stop</button>
+          <button>Share</button>
+          <button>Save</button>
+          <button>{ } Format</button>
+          <div class="lang-select">Language: C (GCC)</div>
         </div>
-<pre>
+
+        <!-- Editor header -->
+        <div class="editor-header">
+          <div class="tab">main.c</div>
+          <div style="font-size: 11px; opacity: 0.7">auto-saved 2 seconds ago</div>
+        </div>
+
+        <!-- Editor -->
+        <div class="editor">
+          <div class="line-numbers">
+            1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12<br />13<br />14<br />15<br />16
+          </div>
+          <pre>
 <span class="comment">/******************************************************************************</span>
 <span class="comment">  Neon Glass Code Studio.</span>
 <span class="comment">  Modern online compiler & debugger with glassmorphism UI.</span>
@@ -344,63 +358,63 @@
     <span class="kw">return</span> <span class="kw">0</span>;
 }<span class="cursor"></span>
 </pre>
-      </div>
-
-      <!-- Bottom -->
-      <div class="bottom">
-        <div>
-          <label>Command line arguments:</label>
-          <input type="text" placeholder="--help" />
         </div>
-        <div class="stdin-options">
-          Standard Input:
-          <label><input type="radio" name="stdin" checked /> Interactive Console</label>
-          <label><input type="radio" name="stdin" /> Text</label>
+
+        <!-- Bottom -->
+        <div class="bottom">
+          <div>
+            <label>Command line arguments:</label>
+            <input type="text" placeholder="--help" />
+          </div>
+          <div class="stdin-options">
+            Standard Input:
+            <label><input type="radio" name="stdin" checked /> Interactive Console</label>
+            <label><input type="radio" name="stdin" /> Text</label>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- JS: typewriter animation in header -->
-  <script>
-    const phrases = [
-      "— compile in the cloud",
-      "— debug with style",
-      "— share your snippets",
-      "— powered by C / C++ / JS"
-    ];
-    const typingSpan = document.getElementById("typing");
+    <!-- JS: typewriter animation in header -->
+    <script>
+      const phrases = [
+        '— compile in the cloud',
+        '— debug with style',
+        '— share your snippets',
+        '— powered by C / C++ / JS'
+      ]
+      const typingSpan = document.getElementById('typing')
 
-    let phraseIndex = 0;
-    let charIndex = 0;
-    let deleting = false;
+      let phraseIndex = 0
+      let charIndex = 0
+      let deleting = false
 
-    function typeLoop() {
-      const current = phrases[phraseIndex];
-      if (!deleting) {
-        // typing
-        typingSpan.textContent = current.slice(0, charIndex + 1);
-        charIndex++;
-        if (charIndex === current.length) {
-          deleting = true;
-          setTimeout(typeLoop, 1200);
-          return;
+      function typeLoop() {
+        const current = phrases[phraseIndex]
+        if (!deleting) {
+          // typing
+          typingSpan.textContent = current.slice(0, charIndex + 1)
+          charIndex++
+          if (charIndex === current.length) {
+            deleting = true
+            setTimeout(typeLoop, 1200)
+            return
+          }
+        } else {
+          // deleting
+          typingSpan.textContent = current.slice(0, charIndex - 1)
+          charIndex--
+          if (charIndex === 0) {
+            deleting = false
+            phraseIndex = (phraseIndex + 1) % phrases.length
+          }
         }
-      } else {
-        // deleting
-        typingSpan.textContent = current.slice(0, charIndex - 1);
-        charIndex--;
-        if (charIndex === 0) {
-          deleting = false;
-          phraseIndex = (phraseIndex + 1) % phrases.length;
-        }
+        const speed = deleting ? 45 : 80
+        setTimeout(typeLoop, speed)
       }
-      const speed = deleting ? 45 : 80;
-      setTimeout(typeLoop, speed);
-    }
 
-    // start animation
-    typeLoop();
-  </script>
-</body>
+      // start animation
+      typeLoop()
+    </script>
+  </body>
 </html>

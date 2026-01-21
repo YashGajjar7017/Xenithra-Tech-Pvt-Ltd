@@ -1,444 +1,468 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/images/Human Error.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/images/Human Error.png" />
     <title>Home | Yash's Machine</title>
 
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel='stylesheet' href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css'>
-    <link rel="stylesheet" href="/css/style.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" />
+    <link rel="stylesheet" href="/css/style.css" />
 
     <style>
-        /* Responsive Custom Styles */
-        :root {
-            --header-height: 60px;
-            --sidebar-width: 250px;
-        }
+      /* Responsive Custom Styles */
+      :root {
+        --header-height: 60px;
+        --sidebar-width: 250px;
+      }
 
-        body {
-            overflow-x: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f8f9fa;
-        }
+      body {
+        overflow-x: hidden;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f8f9fa;
+      }
 
-        /* Responsive Navbar */
-        .navbar {
-            padding: 0.5rem 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,.1);
-        }
+      /* Responsive Navbar */
+      .navbar {
+        padding: 0.5rem 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.25rem;
-        }
+      .navbar-brand {
+        font-weight: bold;
+        font-size: 1.25rem;
+      }
 
-        /* Main Container */
-        .main-container {
-            margin-top: var(--header-height);
-            padding: 1rem;
-            min-height: calc(100vh - var(--header-height));
-        }
+      /* Main Container */
+      .main-container {
+        margin-top: var(--header-height);
+        padding: 1rem;
+        min-height: calc(100vh - var(--header-height));
+      }
 
-        /* Responsive Code Editor */
+      /* Responsive Code Editor */
+      .code-editor-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: calc(100vh - 120px);
+      }
+
+      @media (min-width: 768px) {
         .code-editor-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            height: calc(100vh - 120px);
+          flex-direction: row;
         }
+      }
 
-        @media (min-width: 768px) {
-            .code-editor-container {
-                flex-direction: row;
-            }
+      .code-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 300px;
+      }
+
+      .code-input-area {
+        display: flex;
+        height: 100%;
+      }
+
+      .line-numbers {
+        width: 50px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-right: none;
+        border-radius: 0.375rem 0 0 0.375rem;
+        padding: 0.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        resize: none;
+        overflow-y: hidden;
+      }
+
+      .code-textarea {
+        flex: 1;
+        border: 1px solid #dee2e6;
+        border-radius: 0 0.375rem 0.375rem 0;
+        padding: 0.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        resize: none;
+        outline: none;
+      }
+
+      .code-textarea:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+      }
+
+      /* Responsive Output Area */
+      .output-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 200px;
+      }
+
+      .output-textarea {
+        flex: 1;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 0.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        resize: none;
+        background-color: #f8f9fa;
+      }
+
+      /* Responsive Iframe */
+      .responsive-iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 300px;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        background-color: white;
+      }
+
+      /* Responsive Sidebars */
+      .sidenav {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        z-index: 1050;
+        top: 0;
+        left: 0;
+        background-color: #212529;
+        overflow-x: hidden;
+        transition: 0.3s;
+        padding-top: 60px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidenav a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 16px;
+        color: #adb5bd;
+        display: block;
+        transition: 0.3s;
+      }
+
+      .sidenav a:hover {
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .sidenav .closebtn {
+        position: absolute;
+        top: 0;
+        right: 25px;
+        font-size: 36px;
+        margin-left: 50px;
+        color: #ffffff;
+      }
+
+      /* Responsive Cards */
+      .feature-card {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+      }
+
+      /* Responsive Buttons */
+      .btn-group-responsive {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      @media (max-width: 575.98px) {
+        .btn-group-responsive .btn {
+          flex: 1 1 100%;
         }
+      }
 
-        .code-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 300px;
-        }
+      /* Dark mode styles */
+      .dark-mode {
+        background-color: #1a1a1a;
+        color: #ffffff;
+      }
 
-        .code-input-area {
-            display: flex;
-            height: 100%;
-        }
+      .dark-mode .navbar {
+        background-color: #2d2d2d !important;
+      }
 
-        .line-numbers {
-            width: 50px;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-right: none;
-            border-radius: 0.375rem 0 0 0.375rem;
-            padding: 0.5rem;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            resize: none;
-            overflow-y: hidden;
-        }
+      .dark-mode .code-textarea,
+      .dark-mode .output-textarea {
+        background-color: #2d2d2d;
+        color: #ffffff;
+        border-color: #555;
+      }
 
-        .code-textarea {
-            flex: 1;
-            border: 1px solid #dee2e6;
-            border-radius: 0 0.375rem 0.375rem 0;
-            padding: 0.5rem;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            resize: none;
-            outline: none;
-        }
+      .dark-mode .line-numbers {
+        background-color: #2d2d2d;
+        color: #ffffff;
+        border-color: #555;
+      }
 
-        .code-textarea:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-        }
+      /* Responsive utilities */
+      .vh-100 {
+        height: 100vh;
+      }
 
-        /* Responsive Output Area */
-        .output-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 200px;
-        }
+      .min-vh-100 {
+        min-height: 100vh;
+      }
 
-        .output-textarea {
-            flex: 1;
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            padding: 0.5rem;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            resize: none;
-            background-color: #f8f9fa;
-        }
+      /* Responsive spacing */
+      .responsive-padding {
+        padding: 1rem;
+      }
 
-        /* Responsive Iframe */
-        .responsive-iframe {
-            width: 100%;
-            height: 100%;
-            min-height: 300px;
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            background-color: white;
-        }
-
-        /* Responsive Sidebars */
-        .sidenav {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            z-index: 1050;
-            top: 0;
-            left: 0;
-            background-color: #212529;
-            overflow-x: hidden;
-            transition: 0.3s;
-            padding-top: 60px;
-            box-shadow: 2px 0 5px rgba(0,0,0,.1);
-        }
-
-        .sidenav a {
-            padding: 8px 8px 8px 32px;
-            text-decoration: none;
-            font-size: 16px;
-            color: #adb5bd;
-            display: block;
-            transition: 0.3s;
-        }
-
-        .sidenav a:hover {
-            color: #ffffff;
-            background-color: rgba(255,255,255,.1);
-        }
-
-        .sidenav .closebtn {
-            position: absolute;
-            top: 0;
-            right: 25px;
-            font-size: 36px;
-            margin-left: 50px;
-            color: #ffffff;
-        }
-
-        /* Responsive Cards */
-        .feature-card {
-            background: white;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            margin-bottom: 1rem;
-            border: 1px solid #dee2e6;
-        }
-
-        /* Responsive Buttons */
-        .btn-group-responsive {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        @media (max-width: 575.98px) {
-            .btn-group-responsive .btn {
-                flex: 1 1 100%;
-            }
-        }
-
-        /* Dark mode styles */
-        .dark-mode {
-            background-color: #1a1a1a;
-            color: #ffffff;
-        }
-
-        .dark-mode .navbar {
-            background-color: #2d2d2d !important;
-        }
-
-        .dark-mode .code-textarea,
-        .dark-mode .output-textarea {
-            background-color: #2d2d2d;
-            color: #ffffff;
-            border-color: #555;
-        }
-
-        .dark-mode .line-numbers {
-            background-color: #2d2d2d;
-            color: #ffffff;
-            border-color: #555;
-        }
-
-        /* Responsive utilities */
-        .vh-100 {
-            height: 100vh;
-        }
-
-        .min-vh-100 {
-            min-height: 100vh;
-        }
-
-        /* Responsive spacing */
+      @media (min-width: 768px) {
         .responsive-padding {
-            padding: 1rem;
+          padding: 2rem;
         }
+      }
 
-        @media (min-width: 768px) {
-            .responsive-padding {
-                padding: 2rem;
-            }
-        }
+      /* Hide elements by default */
+      .hidden-section {
+        display: none;
+      }
 
-        /* Hide elements by default */
-        .hidden-section {
-            display: none;
-        }
+      /* Responsive forms */
+      .form-control-responsive {
+        width: 100%;
+      }
 
-        /* Responsive forms */
+      @media (min-width: 576px) {
         .form-control-responsive {
-            width: 100%;
+          width: auto;
         }
-
-        @media (min-width: 576px) {
-            .form-control-responsive {
-                width: auto;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class='bx bx-code-alt'></i> Human Error
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link text-danger" onclick="run()">
-                            <i class='bx bx-play'></i> Run
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link text-info" onclick="debug()">
-                            <i class='bx bx-bug'></i> Debug
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link text-success" onclick="stop()">
-                            <i class='bx bx-stop'></i> Stop
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link text-warning" onclick="downloadFile()">
-                            <i class='bx bx-download'></i> Save
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link text-warning" onclick="printPageArea('source')">
-                            <i class='bx bx-printer'></i> Print
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/upload/fileName=" class="nav-link text-light">
-                            <i class='bx bx-upload'></i> Upload
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" onclick="openNav3()" class="nav-link text-light">
-                            <i class='bx bx-share-alt'></i> Share
-                        </a>
-                    </li>
-                </ul>
-                
-                <div class="d-flex align-items-center flex-wrap">
-                    <div class="dropdown me-2 mb-2 mb-lg-0">
-                        <select id="lang" class="form-select form-select-sm" onchange="LangSelector()">
-                            <option value="select" selected>-- Select Language --</option>
-                            <option value="C">C</option>
-                            <option value="C++">C++</option>
-                            <option value="Python">Python</option>
-                            <option value="Java">Java</option>
-                            <option value="Html">HTML, CSS, JS</option>
-                            <option value="Text">Text File</option>
-                            <option value="VB">VB.Net*</option>
-                            <option value="Node">NodeJS*</option>
-                            <option value="Applet">Applet*</option>
-                            <option value="Hacking">Kali Linux</option>
-                            <option value="Encrypt">Encrypt Msg</option>
-                            <option value="Quantum">Quantum #</option>
-                        </select>
-                    </div>
-                    
-                    <div class="darkLight-searchBox d-flex align-items-center me-2 mb-2 mb-lg-0">
-                        <div class="dark-light me-2">
-                            <i class='bx bx-moon moon text-light' style="cursor: pointer;" onclick="toggleDarkMode()"></i>
-                        </div>
-                        <div class="searchToggle">
-                            <i class='bx bx-search search text-light' onclick="openNav()" style="cursor: pointer;"></i>
-                        </div>
-                    </div>
-                    
-                    <a id="login" class="btn btn-outline-light btn-sm me-2" href="/Account/Signup">Login</a>
-                    
-                    <div class="user dropdown" id="user" style="display: none;">
-                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <img src="/images/User_icon.png" alt="User" style="height: 25px; width: 25px; border-radius: 50%;">
-                            <span id="username" class="ms-1"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                            <li><a class="dropdown-item" href="/settings">Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#"> <i class="bx bx-code-alt"></i> Human Error </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a href="#" class="nav-link text-danger" onclick="run()">
+                <i class="bx bx-play"></i> Run
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link text-info" onclick="debug()">
+                <i class="bx bx-bug"></i> Debug
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link text-success" onclick="stop()">
+                <i class="bx bx-stop"></i> Stop
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link text-warning" onclick="downloadFile()">
+                <i class="bx bx-download"></i> Save
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link text-warning" onclick="printPageArea('source')">
+                <i class="bx bx-printer"></i> Print
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/upload/fileName=" class="nav-link text-light">
+                <i class="bx bx-upload"></i> Upload
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" onclick="openNav3()" class="nav-link text-light">
+                <i class="bx bx-share-alt"></i> Share
+              </a>
+            </li>
+          </ul>
+
+          <div class="d-flex align-items-center flex-wrap">
+            <div class="dropdown me-2 mb-2 mb-lg-0">
+              <select id="lang" class="form-select form-select-sm" onchange="LangSelector()">
+                <option value="select" selected>-- Select Language --</option>
+                <option value="C">C</option>
+                <option value="C++">C++</option>
+                <option value="Python">Python</option>
+                <option value="Java">Java</option>
+                <option value="Html">HTML, CSS, JS</option>
+                <option value="Text">Text File</option>
+                <option value="VB">VB.Net*</option>
+                <option value="Node">NodeJS*</option>
+                <option value="Applet">Applet*</option>
+                <option value="Hacking">Kali Linux</option>
+                <option value="Encrypt">Encrypt Msg</option>
+                <option value="Quantum">Quantum #</option>
+              </select>
             </div>
+
+            <div class="darkLight-searchBox d-flex align-items-center me-2 mb-2 mb-lg-0">
+              <div class="dark-light me-2">
+                <i
+                  class="bx bx-moon moon text-light"
+                  style="cursor: pointer"
+                  onclick="toggleDarkMode()"
+                ></i>
+              </div>
+              <div class="searchToggle">
+                <i
+                  class="bx bx-search search text-light"
+                  onclick="openNav()"
+                  style="cursor: pointer"
+                ></i>
+              </div>
+            </div>
+
+            <a id="login" class="btn btn-outline-light btn-sm me-2" href="/Account/Signup">Login</a>
+
+            <div class="user dropdown" id="user" style="display: none">
+              <button
+                class="btn btn-light btn-sm dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+              >
+                <img
+                  src="/images/User_icon.png"
+                  alt="User"
+                  style="height: 25px; width: 25px; border-radius: 50%"
+                />
+                <span id="username" class="ms-1"></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="/logout">Logout</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
+      </div>
     </nav>
 
     <!-- Side Navigation Menus -->
     <div id="mySidenav" class="sidenav">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <div class="p-3">
-            <div class="mb-3">
-                <input type="search" class="form-control form-control-sm" placeholder="Search code">
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label text-light">Font Size:</label>
-                <select id="fontsize" class="form-select form-select-sm">
-                    <option value="12">12</option>
-                    <option value="14">14</option>
-                    <option value="16" selected>16</option>
-                    <option value="18">18</option>
-                    <option value="20">20</option>
-                    <option value="22">22</option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label text-light">Background:</label>
-                <input type="color" class="form-control form-control-color" id="color1" value="#272822">
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label text-light">Font Color:</label>
-                <input type="color" class="form-control form-control-color" id="color2" value="#ffffff">
-            </div>
-            
-            <button class="btn btn-secondary btn-sm w-100 mb-3" id="defaultcolors">Default Theme</button>
-            <hr>
-            
-            <a href="/extension" class="nav-link">→ Extension</a>
-            <a href="/games/games.html" class="nav-link">→ Games</a>
-            <a href="/theme.html" class="nav-link">→ Themes</a>
-            <a href="#" class="nav-link small mt-3">Copyright to Yash Production</a>
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+      <div class="p-3">
+        <div class="mb-3">
+          <input type="search" class="form-control form-control-sm" placeholder="Search code" />
         </div>
+
+        <div class="mb-3">
+          <label class="form-label text-light">Font Size:</label>
+          <select id="fontsize" class="form-select form-select-sm">
+            <option value="12">12</option>
+            <option value="14">14</option>
+            <option value="16" selected>16</option>
+            <option value="18">18</option>
+            <option value="20">20</option>
+            <option value="22">22</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-light">Background:</label>
+          <input type="color" class="form-control form-control-color" id="color1" value="#272822" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-light">Font Color:</label>
+          <input type="color" class="form-control form-control-color" id="color2" value="#ffffff" />
+        </div>
+
+        <button class="btn btn-secondary btn-sm w-100 mb-3" id="defaultcolors">
+          Default Theme
+        </button>
+        <hr />
+
+        <a href="/extension" class="nav-link">→ Extension</a>
+        <a href="/games/games.html" class="nav-link">→ Games</a>
+        <a href="/theme.html" class="nav-link">→ Themes</a>
+        <a href="#" class="nav-link small mt-3">Copyright to Yash Production</a>
+      </div>
     </div>
 
     <div id="mySidenav2" class="sidenav">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav1()">&times;</a>
-        <div class="p-3">
-            <a href="/extension" class="nav-link">Extension</a>
-            <a href="/games/games.html" class="nav-link">Games</a>
-            <a href="/other/contactUs.html" class="nav-link">Contact us</a>
-            <a href="/Maintenance" class="nav-link" id="Maintenance">Maintenance</a>
-            <a href="/feedback" class="nav-link">Feedback</a>
-            <a href="/404" class="nav-link">Source Code</a>
-            <a href="/classroom" class="nav-link">Classroom</a>
-            <a href="/questions" class="nav-link">Ask your question</a>
-            <a href="/404" class="nav-link">Hire a Developer</a>
-            <hr>
-            <a href="/logout" id="logout" class="btn btn-light w-100">Logout</a>
-            <a href="#" class="nav-link small mt-3 text-center">Copyright to Yash Production</a>
-        </div>
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav1()">&times;</a>
+      <div class="p-3">
+        <a href="/extension" class="nav-link">Extension</a>
+        <a href="/games/games.html" class="nav-link">Games</a>
+        <a href="/other/contactUs.html" class="nav-link">Contact us</a>
+        <a href="/Maintenance" class="nav-link" id="Maintenance">Maintenance</a>
+        <a href="/feedback" class="nav-link">Feedback</a>
+        <a href="/404" class="nav-link">Source Code</a>
+        <a href="/classroom" class="nav-link">Classroom</a>
+        <a href="/questions" class="nav-link">Ask your question</a>
+        <a href="/404" class="nav-link">Hire a Developer</a>
+        <hr />
+        <a href="/logout" id="logout" class="btn btn-light w-100">Logout</a>
+        <a href="#" class="nav-link small mt-3 text-center">Copyright to Yash Production</a>
+      </div>
     </div>
 
     <div id="mySidenav4" class="sidenav">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav3()">&times;</a>
-        <div class="p-3">
-            <input type="text" class="form-control mb-3" placeholder="Paste Link">
-            <a href="/join" class="btn btn-primary w-100 mb-2">Join Session</a>
-            <hr>
-            <a href="/share" class="btn btn-primary w-100">Share Code</a>
-        </div>
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav3()">&times;</a>
+      <div class="p-3">
+        <input type="text" class="form-control mb-3" placeholder="Paste Link" />
+        <a href="/join" class="btn btn-primary w-100 mb-2">Join Session</a>
+        <hr />
+        <a href="/share" class="btn btn-primary w-100">Share Code</a>
+      </div>
     </div>
 
     <!-- Main Content -->
     <main class="main-container">
-        <div class="container-fluid">
-            <!-- Code Editor -->
-            <div class="code-editor-container">
-                <div class="code-section">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label class="form-label fw-bold">Code Editor</label>
-                        <div class="btn-group-responsive">
-                            <button class="btn btn-primary btn-sm" onclick="run()">
-                                <i class='bx bx-play'></i> Run
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="clearCode()">
-                                <i class='bx bx-trash'></i> Clear
-                            </button>
-                            <button class="btn btn-success btn-sm" onclick="downloadFile()">
-                                <i class='bx bx-download'></i> Download
-                            </button>
-                        </div>
-                    </div>
-                    <div class="code-input-area">
-                        <textarea id="lineCounter" class="line-numbers" readonly>1.</textarea>
-                        <textarea id="source" class="code-textarea" placeholder="Enter your code here...">
+      <div class="container-fluid">
+        <!-- Code Editor -->
+        <div class="code-editor-container">
+          <div class="code-section">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold">Code Editor</label>
+              <div class="btn-group-responsive">
+                <button class="btn btn-primary btn-sm" onclick="run()">
+                  <i class="bx bx-play"></i> Run
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="clearCode()">
+                  <i class="bx bx-trash"></i> Clear
+                </button>
+                <button class="btn btn-success btn-sm" onclick="downloadFile()">
+                  <i class="bx bx-download"></i> Download
+                </button>
+              </div>
+            </div>
+            <div class="code-input-area">
+              <textarea id="lineCounter" class="line-numbers" readonly>1.</textarea>
+              <textarea id="source" class="code-textarea" placeholder="Enter your code here...">
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Welcome to the complier of Coder's .This is complier give all templete to code, that is usefull for you. Also you can 
     Download the file from the download button.. and more new feauture! Try once's come again..   
@@ -449,116 +473,144 @@ void main()
 {
     printf("Hello world...");
 }
-                        </textarea>
-                    </div>
-                </div>
-
-                <div class="output-area">
-                    <label class="form-label fw-bold">Output</label>
-                    <textarea id="output" class="output-textarea" placeholder="Output will appear here..." readonly></textarea>
-                </div>
+                        </textarea
+              >
             </div>
+          </div>
 
-            <!-- HTML Editor -->
-            <div id="htmlEditor" class="hidden-section">
-                <div class="row">
-                    <div class="col-lg-6 mb-3">
-                        <label class="form-label fw-bold">HTML/CSS/JS Editor</label>
-                        <div class="code-input-area">
-                            <textarea id="lineCounter1" class="line-numbers" readonly>1.</textarea>
-                            <textarea id="htmlTextarea" class="code-textarea" placeholder="Your HTML code goes here!" onkeyup="refresh()"></textarea>
-                        </div>
-                    </div>
-                    <div class="col-lg-6 mb-3">
-                        <label class="form-label fw-bold">Preview</label>
-                        <iframe src="" class="responsive-iframe" id="htmlTextarea1"></iframe>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kali Linux -->
-            <div id="kali" class="hidden-section">
-                <div class="feature-card text-center">
-                    <h3><i class='bx bx-shield'></i> Redirect Notice</h3>
-                    <p>In case you can't redirect to another page then click on below button to start connect to virtual machine</p>
-                    <div class="btn-group-responsive justify-content-center">
-                        <button class="btn btn-primary" onclick="window.location.href='/404'">Redirect</button>
-                        <button class="btn btn-secondary" onclick="window.location.href='/'">Home</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Future Work -->
-            <div id="futureWork" class="hidden-section">
-                <div class="feature-card text-center">
-                    <h3><i class='bx bx-construction'></i> Language Under Construction</h3>
-                    <hr>
-                    <p>→ This language is undergoing development by our company.<br>
-                    → If you want to get early access, subscribe to our newsletter</p>
-                    <button class="btn btn-primary">Register for Newsletter</button>
-                </div>
-            </div>
-
-            <!-- Encrypt/Decrypt -->
-            <div id="encrypt" class="hidden-section">
-                <div class="feature-card">
-                    <h3 class="text-center">String Encryption Tool</h3>
-                    <hr>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Enter Text:</label>
-                            <textarea id="sendData" class="code-textarea" rows="5" placeholder="Enter text to encrypt..."></textarea>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Encrypted Text (SHA256):</label>
-                            <textarea id="receverData" class="output-textarea" rows="5" readonly></textarea>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <button class="btn btn-primary me-2" id="encryptBtn">Encrypt</button>
-                        <button class="btn btn-secondary" id="clearBtn">Clear</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- IO System -->
-            <div id="IO" class="hidden-section">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Input:</label>
-                        <textarea id="input" class="code-textarea" rows="3" placeholder="Enter input..."></textarea>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Output:</label>
-                        <textarea id="outputIO" class="output-textarea" rows="3" readonly></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Layout Selector -->
-            <div id="myNav" class="overlay">
-                <a href="javascript:void(0)" class="closebtn" onclick="closeNav2()">&times;</a>
-                <div class="overlay-content">
-                    <div class="container">
-                        <h2 class="text-center text-white mb-4">Select Your Layout View:</h2>
-                        <div class="row justify-content-center">
-                            <div class="col-md-6">
-                                <select class="form-select mb-3" id="layout">
-                                    <option value="none" selected>None</option>
-                                    <option value="sbs">Side by Side</option>
-                                    <option value="fm">Fullscreen Mode</option>
-                                    <option value="bm">Beginner Mode</option>
-                                    <option value="default">Default</option>
-                                </select>
-                                <div class="text-center">
-                                    <button class="btn btn-primary" id="layoutID">Apply Mode</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          <div class="output-area">
+            <label class="form-label fw-bold">Output</label>
+            <textarea
+              id="output"
+              class="output-textarea"
+              placeholder="Output will appear here..."
+              readonly
+            ></textarea>
+          </div>
         </div>
+
+        <!-- HTML Editor -->
+        <div id="htmlEditor" class="hidden-section">
+          <div class="row">
+            <div class="col-lg-6 mb-3">
+              <label class="form-label fw-bold">HTML/CSS/JS Editor</label>
+              <div class="code-input-area">
+                <textarea id="lineCounter1" class="line-numbers" readonly>1.</textarea>
+                <textarea
+                  id="htmlTextarea"
+                  class="code-textarea"
+                  placeholder="Your HTML code goes here!"
+                  onkeyup="refresh()"
+                ></textarea>
+              </div>
+            </div>
+            <div class="col-lg-6 mb-3">
+              <label class="form-label fw-bold">Preview</label>
+              <iframe src="" class="responsive-iframe" id="htmlTextarea1"></iframe>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kali Linux -->
+        <div id="kali" class="hidden-section">
+          <div class="feature-card text-center">
+            <h3><i class="bx bx-shield"></i> Redirect Notice</h3>
+            <p>
+              In case you can't redirect to another page then click on below button to start connect
+              to virtual machine
+            </p>
+            <div class="btn-group-responsive justify-content-center">
+              <button class="btn btn-primary" onclick="window.location.href = '/404'">
+                Redirect
+              </button>
+              <button class="btn btn-secondary" onclick="window.location.href = '/'">Home</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Future Work -->
+        <div id="futureWork" class="hidden-section">
+          <div class="feature-card text-center">
+            <h3><i class="bx bx-construction"></i> Language Under Construction</h3>
+            <hr />
+            <p>
+              → This language is undergoing development by our company.<br />
+              → If you want to get early access, subscribe to our newsletter
+            </p>
+            <button class="btn btn-primary">Register for Newsletter</button>
+          </div>
+        </div>
+
+        <!-- Encrypt/Decrypt -->
+        <div id="encrypt" class="hidden-section">
+          <div class="feature-card">
+            <h3 class="text-center">String Encryption Tool</h3>
+            <hr />
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Enter Text:</label>
+                <textarea
+                  id="sendData"
+                  class="code-textarea"
+                  rows="5"
+                  placeholder="Enter text to encrypt..."
+                ></textarea>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Encrypted Text (SHA256):</label>
+                <textarea id="receverData" class="output-textarea" rows="5" readonly></textarea>
+              </div>
+            </div>
+            <div class="text-center">
+              <button class="btn btn-primary me-2" id="encryptBtn">Encrypt</button>
+              <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- IO System -->
+        <div id="IO" class="hidden-section">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Input:</label>
+              <textarea
+                id="input"
+                class="code-textarea"
+                rows="3"
+                placeholder="Enter input..."
+              ></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Output:</label>
+              <textarea id="outputIO" class="output-textarea" rows="3" readonly></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Selector -->
+        <div id="myNav" class="overlay">
+          <a href="javascript:void(0)" class="closebtn" onclick="closeNav2()">&times;</a>
+          <div class="overlay-content">
+            <div class="container">
+              <h2 class="text-center text-white mb-4">Select Your Layout View:</h2>
+              <div class="row justify-content-center">
+                <div class="col-md-6">
+                  <select class="form-select mb-3" id="layout">
+                    <option value="none" selected>None</option>
+                    <option value="sbs">Side by Side</option>
+                    <option value="fm">Fullscreen Mode</option>
+                    <option value="bm">Beginner Mode</option>
+                    <option value="default">Default</option>
+                  </select>
+                  <div class="text-center">
+                    <button class="btn btn-primary" id="layoutID">Apply Mode</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Bootstrap JS Bundle -->
@@ -566,321 +618,323 @@ void main()
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // Navigation functions
-        function openNav() {
-            document.getElementById("mySidenav").style.width = "250px";
+      // Navigation functions
+      function openNav() {
+        document.getElementById('mySidenav').style.width = '250px'
+      }
+
+      function closeNav() {
+        document.getElementById('mySidenav').style.width = '0'
+      }
+
+      function openNav1() {
+        document.getElementById('mySidenav2').style.width = '250px'
+      }
+
+      function closeNav1() {
+        document.getElementById('mySidenav2').style.width = '0'
+      }
+
+      function openNav3() {
+        document.getElementById('mySidenav4').style.width = '250px'
+      }
+
+      function closeNav3() {
+        document.getElementById('mySidenav4').style.width = '0'
+      }
+
+      function closeNav2() {
+        document.getElementById('myNav').style.height = '0%'
+      }
+
+      // Responsive functions
+      function adjustLayout() {
+        const width = window.innerWidth
+        const containers = document.querySelectorAll('.code-editor-container')
+
+        containers.forEach((container) => {
+          if (width < 768) {
+            container.style.flexDirection = 'column'
+          } else {
+            container.style.flexDirection = 'row'
+          }
+        })
+      }
+
+      // Dark mode toggle
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode')
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'))
+      }
+
+      // Load dark mode preference
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode')
+      }
+
+      // Line counter sync
+      function updateLineNumbers() {
+        const textarea = document.getElementById('source')
+        const lineCounter = document.getElementById('lineCounter')
+        const lines = textarea.value.split('\n')
+        const lineNumbers = lines.map((_, index) => index + 1).join('\n') + '.'
+        lineCounter.value = lineNumbers
+      }
+
+      // Initialize
+      document.addEventListener('DOMContentLoaded', function () {
+        adjustLayout()
+        updateLineNumbers()
+        loadAutoSave()
+        startAutoSave()
+
+        // Sync line numbers on input
+        document.getElementById('source').addEventListener('input', updateLineNumbers)
+        document.getElementById('source').addEventListener('scroll', function () {
+          document.getElementById('lineCounter').scrollTop = this.scrollTop
+        })
+
+        // Font size change
+        document.getElementById('fontsize')?.addEventListener('change', function () {
+          const size = this.value
+          document.getElementById('source').style.fontSize = size + 'px'
+          document.getElementById('lineCounter').style.fontSize = size + 'px'
+        })
+
+        // Theme colors
+        document.getElementById('color1')?.addEventListener('change', function () {
+          document.getElementById('source').style.backgroundColor = this.value
+        })
+        document.getElementById('color2')?.addEventListener('change', function () {
+          document.getElementById('source').style.color = this.value
+        })
+
+        document.getElementById('defaultcolors')?.addEventListener('click', function () {
+          document.getElementById('source').style.backgroundColor = '#272822'
+          document.getElementById('source').style.color = '#ffffff'
+          document.getElementById('color1').value = '#272822'
+          document.getElementById('color2').value = '#ffffff'
+        })
+      })
+
+      // Code execution functions
+      async function run() {
+        const sourceCode = document.getElementById('source').value
+        const language = document.getElementById('lang').value
+        const input = document.getElementById('input')?.value || ''
+
+        if (!sourceCode.trim()) {
+          alert('Please enter some code to run.')
+          return
         }
 
-        function closeNav() {
-            document.getElementById("mySidenav").style.width = "0";
+        try {
+          const response = await fetch('/api/compiler/compile-content', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              code: sourceCode,
+              language: language,
+              input: input
+            })
+          })
+
+          const result = await response.json()
+          const outputElement = document.getElementById('output')
+          if (result.success) {
+            outputElement.value = result.output || 'Code executed successfully'
+          } else {
+            outputElement.value = result.error || 'Execution failed'
+          }
+        } catch (error) {
+          console.error('Error running code:', error)
+          document.getElementById('output').value = 'Error: ' + error.message
+        }
+      }
+
+      function debug() {
+        alert('Debug functionality coming soon...')
+      }
+
+      function stop() {
+        // Stop any running processes if implemented
+        alert('Stop functionality - no running processes to stop')
+      }
+
+      function downloadFile() {
+        const sourceCode = document.getElementById('source').value
+        const language = document.getElementById('lang').value
+
+        if (!sourceCode.trim()) {
+          alert('No code to download. Please write some code first.')
+          return
         }
 
-        function openNav1() {
-            document.getElementById("mySidenav2").style.width = "250px";
+        let extension = 'txt'
+        let mimeType = 'text/plain'
+
+        switch (language) {
+          case 'C':
+            extension = 'c'
+            break
+          case 'C++':
+            extension = 'cpp'
+            break
+          case 'Java':
+            extension = 'java'
+            break
+          case 'Python':
+            extension = 'py'
+            break
+          default:
+            extension = 'txt'
         }
 
-        function closeNav1() {
-            document.getElementById("mySidenav2").style.width = "0";
-        }
+        const blob = new Blob([sourceCode], { type: mimeType })
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(blob)
+        link.download = `code.${extension}`
+        link.click()
+        URL.revokeObjectURL(link.href)
+      }
 
-        function openNav3() {
-            document.getElementById("mySidenav4").style.width = "250px";
-        }
+      // Language selector
+      function LangSelector() {
+        const lang = document.getElementById('lang').value
+        const sourceTextarea = document.getElementById('source')
 
-        function closeNav3() {
-            document.getElementById("mySidenav4").style.width = "0";
-        }
+        // Hide all editor elements first
+        $(
+          '#htmlEditor,#htmlTextarea,#htmlTextarea1,#lineCounter1,.kali,.futureWork,.encrypt'
+        ).hide()
 
-        function closeNav2() {
-            document.getElementById("myNav").style.height = "0%";
-        }
+        // Show code editor elements
+        $('#lineCounter,#output,#source').show()
 
-        // Responsive functions
-        function adjustLayout() {
-            const width = window.innerWidth;
-            const containers = document.querySelectorAll('.code-editor-container');
-
-            containers.forEach(container => {
-                if (width < 768) {
-                    container.style.flexDirection = 'column';
-                } else {
-                    container.style.flexDirection = 'row';
-                }
-            });
-        }
-
-        // Dark mode toggle
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-        }
-
-        // Load dark mode preference
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        // Line counter sync
-        function updateLineNumbers() {
-            const textarea = document.getElementById('source');
-            const lineCounter = document.getElementById('lineCounter');
-            const lines = textarea.value.split('\n');
-            const lineNumbers = lines.map((_, index) => index + 1).join('\n') + '.';
-            lineCounter.value = lineNumbers;
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            adjustLayout();
-            updateLineNumbers();
-            loadAutoSave();
-            startAutoSave();
-
-            // Sync line numbers on input
-            document.getElementById('source').addEventListener('input', updateLineNumbers);
-            document.getElementById('source').addEventListener('scroll', function() {
-                document.getElementById('lineCounter').scrollTop = this.scrollTop;
-            });
-
-            // Font size change
-            document.getElementById('fontsize')?.addEventListener('change', function() {
-                const size = this.value;
-                document.getElementById('source').style.fontSize = size + 'px';
-                document.getElementById('lineCounter').style.fontSize = size + 'px';
-            });
-
-            // Theme colors
-            document.getElementById('color1')?.addEventListener('change', function() {
-                document.getElementById('source').style.backgroundColor = this.value;
-            });
-            document.getElementById('color2')?.addEventListener('change', function() {
-                document.getElementById('source').style.color = this.value;
-            });
-
-            document.getElementById('defaultcolors')?.addEventListener('click', function() {
-                document.getElementById('source').style.backgroundColor = '#272822';
-                document.getElementById('source').style.color = '#ffffff';
-                document.getElementById('color1').value = '#272822';
-                document.getElementById('color2').value = '#ffffff';
-            });
-        });
-
-        // Code execution functions
-        async function run() {
-            const sourceCode = document.getElementById('source').value;
-            const language = document.getElementById('lang').value;
-            const input = document.getElementById('input')?.value || '';
-
-            if (!sourceCode.trim()) {
-                alert('Please enter some code to run.');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/compiler/compile-content', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        code: sourceCode,
-                        language: language,
-                        input: input
-                    })
-                });
-
-                const result = await response.json();
-                const outputElement = document.getElementById('output');
-                if (result.success) {
-                    outputElement.value = result.output || 'Code executed successfully';
-                } else {
-                    outputElement.value = result.error || 'Execution failed';
-                }
-            } catch (error) {
-                console.error('Error running code:', error);
-                document.getElementById('output').value = 'Error: ' + error.message;
-            }
-        }
-
-        function debug() {
-            alert('Debug functionality coming soon...');
-        }
-
-        function stop() {
-            // Stop any running processes if implemented
-            alert('Stop functionality - no running processes to stop');
-        }
-
-        function downloadFile() {
-            const sourceCode = document.getElementById('source').value;
-            const language = document.getElementById('lang').value;
-
-            if (!sourceCode.trim()) {
-                alert('No code to download. Please write some code first.');
-                return;
-            }
-
-            let extension = 'txt';
-            let mimeType = 'text/plain';
-
-            switch (language) {
-                case 'C':
-                    extension = 'c';
-                    break;
-                case 'C++':
-                    extension = 'cpp';
-                    break;
-                case 'Java':
-                    extension = 'java';
-                    break;
-                case 'Python':
-                    extension = 'py';
-                    break;
-                default:
-                    extension = 'txt';
-            }
-
-            const blob = new Blob([sourceCode], { type: mimeType });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `code.${extension}`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }
-
-        // Language selector
-        function LangSelector() {
-            const lang = document.getElementById('lang').value;
-            const sourceTextarea = document.getElementById('source');
-
-            // Hide all editor elements first
-            $('#htmlEditor,#htmlTextarea,#htmlTextarea1,#lineCounter1,.kali,.futureWork,.encrypt').hide();
-
-            // Show code editor elements
-            $('#lineCounter,#output,#source').show();
-
-            // Set default code based on language
-            switch (lang) {
-                case 'C':
-                    sourceTextarea.value = `#include <stdio.h>
+        // Set default code based on language
+        switch (lang) {
+          case 'C':
+            sourceTextarea.value = `#include <stdio.h>
 
 int main() {
     printf("Hello World!\\n");
     return 0;
-}`;
-                    break;
-                case 'C++':
-                    sourceTextarea.value = `#include <iostream>
+}`
+            break
+          case 'C++':
+            sourceTextarea.value = `#include <iostream>
 using namespace std;
 
 int main() {
     cout << "Hello World!" << endl;
     return 0;
-}`;
-                    break;
-                case 'Python':
-                    sourceTextarea.value = `print("Hello World!")`;
-                    break;
-                case 'Java':
-                    sourceTextarea.value = `public class Main {
+}`
+            break
+          case 'Python':
+            sourceTextarea.value = `print("Hello World!")`
+            break
+          case 'Java':
+            sourceTextarea.value = `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello World!");
     }
-}`;
-                    break;
-                default:
-                    sourceTextarea.value = `// Select a language and start coding!`;
-            }
-
-            // Update line numbers
-            updateLineNumbers();
+}`
+            break
+          default:
+            sourceTextarea.value = `// Select a language and start coding!`
         }
 
-        function clearCode() {
-            document.getElementById('source').value = '';
-            updateLineNumbers();
+        // Update line numbers
+        updateLineNumbers()
+      }
+
+      function clearCode() {
+        document.getElementById('source').value = ''
+        updateLineNumbers()
+      }
+
+      function printPageArea(areaID) {
+        const printContent = document.getElementById(areaID)
+        const WinPrint = window.open('', '', 'width=900,height=650')
+        WinPrint.document.write(printContent.innerHTML)
+        WinPrint.document.close()
+        WinPrint.focus()
+        WinPrint.print()
+        WinPrint.close()
+      }
+
+      // Font size setter
+      function setSize(size) {
+        const textarea = document.getElementById('source')
+        const lineCounter = document.getElementById('lineCounter')
+
+        if (textarea && lineCounter) {
+          textarea.style.fontSize = size + 'px'
+          lineCounter.style.fontSize = size + 'px'
         }
+      }
 
-        function printPageArea(areaID) {
-            const printContent = document.getElementById(areaID);
-            const WinPrint = window.open('', '', 'width=900,height=650');
-            WinPrint.document.write(printContent.innerHTML);
-            WinPrint.document.close();
-            WinPrint.focus();
-            WinPrint.print();
-            WinPrint.close();
+      // Full screen mode
+      function enterFullScreen(element) {
+        if (element.requestFullscreen) {
+          element.requestFullscreen()
+        } else if (element.mozRequestFullScreen) {
+          element.mozRequestFullScreen()
+        } else if (element.webkitRequestFullscreen) {
+          element.webkitRequestFullscreen()
+        } else if (element.msRequestFullscreen) {
+          element.msRequestFullscreen()
         }
+      }
 
-        // Font size setter
-        function setSize(size) {
-            const textarea = document.getElementById('source');
-            const lineCounter = document.getElementById('lineCounter');
+      // Auto-save functionality
+      let autoSaveInterval
+      function startAutoSave() {
+        autoSaveInterval = setInterval(() => {
+          const data = {
+            source: document.getElementById('source').value,
+            input: document.getElementById('input')?.value || '',
+            lang: document.getElementById('lang').value
+          }
+          localStorage.setItem('codeEditorState', JSON.stringify(data))
+        }, 5000)
+      }
 
-            if (textarea && lineCounter) {
-                textarea.style.fontSize = size + 'px';
-                lineCounter.style.fontSize = size + 'px';
-            }
+      function loadAutoSave() {
+        const saved = localStorage.getItem('codeEditorState')
+        if (saved) {
+          const data = JSON.parse(saved)
+          document.getElementById('source').value = data.source || ''
+          document.getElementById('input')?.value = data.input || ''
+          document.getElementById('lang').value = data.lang || 'Python'
+          updateLineNumbers()
         }
+      }
 
-        // Full screen mode
-        function enterFullScreen(element) {
-            if (element.requestFullscreen) {
-                element.requestFullscreen();
-            } else if (element.mozRequestFullScreen) {
-                element.mozRequestFullScreen();
-            } else if (element.webkitRequestFullscreen) {
-                element.webkitRequestFullscreen();
-            } else if (element.msRequestFullscreen) {
-                element.msRequestFullscreen();
-            }
-        }
+      // Encryption functions
+      document.getElementById('encryptBtn')?.addEventListener('click', function () {
+        const input = document.getElementById('sendData').value
+        const output = document.getElementById('receverData')
+        // Simple base64 encoding as placeholder
+        output.value = btoa(input)
+      })
 
-        // Auto-save functionality
-        let autoSaveInterval;
-        function startAutoSave() {
-            autoSaveInterval = setInterval(() => {
-                const data = {
-                    source: document.getElementById('source').value,
-                    input: document.getElementById('input')?.value || '',
-                    lang: document.getElementById('lang').value
-                };
-                localStorage.setItem('codeEditorState', JSON.stringify(data));
-            }, 5000);
-        }
+      document.getElementById('clearBtn')?.addEventListener('click', function () {
+        document.getElementById('sendData').value = ''
+        document.getElementById('receverData').value = ''
+      })
 
-        function loadAutoSave() {
-            const saved = localStorage.getItem('codeEditorState');
-            if (saved) {
-                const data = JSON.parse(saved);
-                document.getElementById('source').value = data.source || '';
-                document.getElementById('input')?.value = data.input || '';
-                document.getElementById('lang').value = data.lang || 'Python';
-                updateLineNumbers();
-            }
-        }
-
-        // Encryption functions
-        document.getElementById('encryptBtn')?.addEventListener('click', function() {
-            const input = document.getElementById('sendData').value;
-            const output = document.getElementById('receverData');
-            // Simple base64 encoding as placeholder
-            output.value = btoa(input);
-        });
-
-        document.getElementById('clearBtn')?.addEventListener('click', function() {
-            document.getElementById('sendData').value = '';
-            document.getElementById('receverData').value = '';
-        });
-
-        // HTML preview function
-        function refresh() {
-            const htmlContent = document.getElementById('htmlTextarea').value;
-            const iframe = document.getElementById('htmlTextarea1');
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write(htmlContent);
-            iframeDoc.close();
-        }
+      // HTML preview function
+      function refresh() {
+        const htmlContent = document.getElementById('htmlTextarea').value
+        const iframe = document.getElementById('htmlTextarea1')
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+        iframeDoc.open()
+        iframeDoc.write(htmlContent)
+        iframeDoc.close()
+      }
     </script>
-</body>
+  </body>
 </html>

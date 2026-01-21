@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
@@ -17,7 +17,7 @@ const OTP = ({ purpose = 'signup_verification' }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  
+
   const inputRefs = useRef([])
   const emailInputRef = useRef(null)
 
@@ -97,10 +97,7 @@ const OTP = ({ purpose = 'signup_verification' }) => {
 
         // Store tokens if provided
         if (response.data?.accessToken) {
-          sessionManager.setTokens(
-            response.data.accessToken,
-            response.data.refreshToken || ''
-          )
+          sessionManager.setTokens(response.data.accessToken, response.data.refreshToken || '')
           sessionManager.setUser({
             username: response.data.username,
             email: response.data.email,
@@ -211,7 +208,7 @@ const OTP = ({ purpose = 'signup_verification' }) => {
       <Card>
         <form onSubmit={handleSubmit} style={styles.container}>
           <h4 style={styles.title}>Enter Your 6 Digit OTP</h4>
-          
+
           <div style={styles.emailSection}>
             <Input
               ref={emailInputRef}
@@ -230,7 +227,7 @@ const OTP = ({ purpose = 'signup_verification' }) => {
             {otp.map((digit, index) => (
               <input
                 key={index}
-                ref={el => inputRefs.current[index] = el}
+                ref={(el) => (inputRefs.current[index] = el)}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
@@ -247,13 +244,9 @@ const OTP = ({ purpose = 'signup_verification' }) => {
             ))}
           </div>
 
-          {error && !error.includes('email') && (
-            <div style={styles.error}>{error}</div>
-          )}
-          
-          {success && (
-            <div style={styles.success}>{success}</div>
-          )}
+          {error && !error.includes('email') && <div style={styles.error}>{error}</div>}
+
+          {success && <div style={styles.success}>{success}</div>}
 
           <Button
             type="submit"
@@ -264,12 +257,7 @@ const OTP = ({ purpose = 'signup_verification' }) => {
             Verify OTP
           </Button>
 
-          <button
-            type="button"
-            onClick={handleResend}
-            disabled={loading}
-            style={styles.resendLink}
-          >
+          <button type="button" onClick={handleResend} disabled={loading} style={styles.resendLink}>
             Didn't receive OTP? Resend
           </button>
         </form>
@@ -284,4 +272,3 @@ export default OTP
 const container = document.getElementById('root')
 const root = createRoot(container)
 root.render(<OTP />)
-

@@ -1,81 +1,106 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title } from 'chart.js';
-import { Doughnut, Bar, Line } from 'react-chartjs-2';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'boxicons/css/boxicons.min.css';
-import './dashboard.css';
+import { useState, useEffect, useCallback } from 'react'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title
+} from 'chart.js'
+import { Doughnut, Bar, Line } from 'react-chartjs-2'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'boxicons/css/boxicons.min.css'
+import './dashboard.css'
 
 // Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title);
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title
+)
 
 const DashboardPage = () => {
-  const [activePage, setActivePage] = useState('overview');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [username, setUsername] = useState('Loading...');
+  const [activePage, setActivePage] = useState('overview')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [username, setUsername] = useState('Loading...')
   const [stats, setStats] = useState({
     totalCompilations: 342,
     totalAchievements: 8,
     activeSessions: 2,
     codingStreak: 5
-  });
+  })
   const [recentActivity, setRecentActivity] = useState([
     { icon: 'bx bx-code-alt', text: 'Completed JavaScript compilation', time: '2 mins ago' },
     { icon: 'bx bx-trophy', text: 'Unlocked "First Compile" achievement', time: '5 mins ago' },
     { icon: 'bx bx-group', text: 'Joined collaboration session', time: '10 mins ago' }
-  ]);
+  ])
 
   // Mock data
   const achievements = [
     { id: 1, name: 'First Compile', icon: 'bx bx-code-alt', unlocked: true },
     { id: 2, name: '5 Day Streak', icon: 'bx bx-calendar', unlocked: true },
     { id: 3, name: '10 Compilations', icon: 'bx bx-trophy', unlocked: false }
-  ];
+  ]
 
   const sessions = [
     { id: 1, name: 'Team Sprint Review', members: 4, status: 'active' },
     { id: 2, name: 'Algorithm Challenge', members: 2, status: 'completed' }
-  ];
+  ]
 
   // Chart data
   const compilationChartData = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [{
-      label: 'Compilations',
-      data: [12, 19, 15, 22, 18, 14, 25],
-      backgroundColor: 'rgba(124, 92, 255, 0.6)',
-      borderColor: 'rgba(124, 92, 255, 1)',
-      borderWidth: 2
-    }]
-  };
+    datasets: [
+      {
+        label: 'Compilations',
+        data: [12, 19, 15, 22, 18, 14, 25],
+        backgroundColor: 'rgba(124, 92, 255, 0.6)',
+        borderColor: 'rgba(124, 92, 255, 1)',
+        borderWidth: 2
+      }
+    ]
+  }
 
   const languageChartData = {
     labels: ['JavaScript', 'Python', 'Java', 'C++', 'Others'],
-    datasets: [{
-      data: [45, 25, 15, 10, 5],
-      backgroundColor: [
-        'rgba(124, 92, 255, 0.8)',
-        'rgba(80, 209, 255, 0.8)',
-        'rgba(255, 154, 139, 0.8)',
-        'rgba(255, 216, 155, 0.8)',
-        'rgba(104, 224, 207, 0.8)'
-      ]
-    }]
-  };
+    datasets: [
+      {
+        data: [45, 25, 15, 10, 5],
+        backgroundColor: [
+          'rgba(124, 92, 255, 0.8)',
+          'rgba(80, 209, 255, 0.8)',
+          'rgba(255, 154, 139, 0.8)',
+          'rgba(255, 216, 155, 0.8)',
+          'rgba(104, 224, 207, 0.8)'
+        ]
+      }
+    ]
+  }
 
   const handleMenuClick = (page) => {
-    setActivePage(page);
-  };
+    setActivePage(page)
+  }
 
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-  };
+    setSidebarCollapsed(!sidebarCollapsed)
+  }
 
   useEffect(() => {
     // Simulate loading user data
     setTimeout(() => {
-      setUsername('john_doe');
-    }, 500);
-  }, []);
+      setUsername('john_doe')
+    }, 500)
+  }, [])
 
   const renderPageContent = () => {
     switch (activePage) {
@@ -138,18 +163,24 @@ const DashboardPage = () => {
               </div>
             </div>
           </>
-        );
+        )
 
       case 'analytics':
         return (
           <div className="analytics-grid">
             <div className="analytics-card">
               <h3>Compilation Statistics</h3>
-              <Bar data={compilationChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+              <Bar
+                data={compilationChartData}
+                options={{ responsive: true, maintainAspectRatio: false }}
+              />
             </div>
             <div className="analytics-card">
               <h3>Language Usage</h3>
-              <Doughnut data={languageChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+              <Doughnut
+                data={languageChartData}
+                options={{ responsive: true, maintainAspectRatio: false }}
+              />
             </div>
             <div className="analytics-card">
               <h3>Success Rate</h3>
@@ -163,7 +194,7 @@ const DashboardPage = () => {
             <div className="analytics-card">
               <h3>Recent Sessions</h3>
               <div className="session-list">
-                {sessions.map(session => (
+                {sessions.map((session) => (
                   <div key={session.id} className="session-item">
                     <span>{session.name}</span>
                     <span>{session.members} members</span>
@@ -173,7 +204,7 @@ const DashboardPage = () => {
               </div>
             </div>
           </div>
-        );
+        )
 
       case 'achievements':
         return (
@@ -185,8 +216,11 @@ const DashboardPage = () => {
               </div>
             </div>
             <div className="achievements-grid">
-              {achievements.map(achievement => (
-                <div key={achievement.id} className={`achievement-card ${achievement.unlocked ? 'unlocked' : ''}`}>
+              {achievements.map((achievement) => (
+                <div
+                  key={achievement.id}
+                  className={`achievement-card ${achievement.unlocked ? 'unlocked' : ''}`}
+                >
                   <i className={achievement.icon}></i>
                   <h4>{achievement.name}</h4>
                   <span>{achievement.unlocked ? 'Unlocked' : 'Locked'}</span>
@@ -209,14 +243,18 @@ const DashboardPage = () => {
               </div>
             </div>
           </>
-        );
+        )
 
       case 'collaboration':
         return (
           <>
             <div className="collaboration-header">
               <h2>Code Collaboration</h2>
-              <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSessionModal">
+              <button
+                className="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#createSessionModal"
+              >
                 <i className="bx bx-plus"></i> Create Session
               </button>
             </div>
@@ -224,7 +262,7 @@ const DashboardPage = () => {
               <div className="sessions-section">
                 <h3>Your Sessions</h3>
                 <div className="sessions-list">
-                  {sessions.map(session => (
+                  {sessions.map((session) => (
                     <div key={session.id} className="session-card">
                       <h5>{session.name}</h5>
                       <div className="session-meta">
@@ -245,7 +283,7 @@ const DashboardPage = () => {
               </div>
             </div>
           </>
-        );
+        )
 
       case 'api-docs':
         return (
@@ -271,12 +309,12 @@ const DashboardPage = () => {
               </div>
             </div>
           </>
-        );
+        )
 
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   return (
     <div className="dashboard-container">
@@ -286,23 +324,38 @@ const DashboardPage = () => {
           <h3>Dashboard</h3>
         </div>
         <ul className="sidebar-menu">
-          <li className={`menu-item ${activePage === 'overview' ? 'active' : ''}`} onClick={() => handleMenuClick('overview')}>
+          <li
+            className={`menu-item ${activePage === 'overview' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('overview')}
+          >
             <i className="bx bx-home"></i>
             <span>Overview</span>
           </li>
-          <li className={`menu-item ${activePage === 'analytics' ? 'active' : ''}`} onClick={() => handleMenuClick('analytics')}>
+          <li
+            className={`menu-item ${activePage === 'analytics' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('analytics')}
+          >
             <i className="bx bx-bar-chart"></i>
             <span>Analytics</span>
           </li>
-          <li className={`menu-item ${activePage === 'achievements' ? 'active' : ''}`} onClick={() => handleMenuClick('achievements')}>
+          <li
+            className={`menu-item ${activePage === 'achievements' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('achievements')}
+          >
             <i className="bx bx-trophy"></i>
             <span>Achievements</span>
           </li>
-          <li className={`menu-item ${activePage === 'collaboration' ? 'active' : ''}`} onClick={() => handleMenuClick('collaboration')}>
+          <li
+            className={`menu-item ${activePage === 'collaboration' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('collaboration')}
+          >
             <i className="bx bx-group"></i>
             <span>Collaboration</span>
           </li>
-          <li className={`menu-item ${activePage === 'api-docs' ? 'active' : ''}`} onClick={() => handleMenuClick('api-docs')}>
+          <li
+            className={`menu-item ${activePage === 'api-docs' ? 'active' : ''}`}
+            onClick={() => handleMenuClick('api-docs')}
+          >
             <i className="bx bx-book"></i>
             <span>API Docs</span>
           </li>
@@ -323,11 +376,17 @@ const DashboardPage = () => {
             <button className="sidebar-toggle" id="sidebarToggle" onClick={toggleSidebar}>
               <i className="bx bx-menu"></i>
             </button>
-            <h1>{activePage === 'overview' ? 'Dashboard Overview' :
-              activePage === 'analytics' ? 'Analytics' :
-                activePage === 'achievements' ? 'Achievements' :
-                  activePage === 'collaboration' ? 'Collaboration' :
-                    'API Documentation'}</h1>
+            <h1>
+              {activePage === 'overview'
+                ? 'Dashboard Overview'
+                : activePage === 'analytics'
+                  ? 'Analytics'
+                  : activePage === 'achievements'
+                    ? 'Achievements'
+                    : activePage === 'collaboration'
+                      ? 'Collaboration'
+                      : 'API Documentation'}
+            </h1>
           </div>
           <div className="header-right">
             <div className="user-info">
@@ -338,9 +397,7 @@ const DashboardPage = () => {
         </header>
 
         {/* Dynamic Page Content */}
-        <div className="dashboard-content">
-          {renderPageContent()}
-        </div>
+        <div className="dashboard-content">{renderPageContent()}</div>
       </main>
 
       {/* Create Session Modal */}
@@ -354,25 +411,33 @@ const DashboardPage = () => {
             <div className="modal-body">
               <form id="createSessionForm">
                 <div className="mb-3">
-                  <label htmlFor="sessionTitle" className="form-label">Session Title</label>
+                  <label htmlFor="sessionTitle" className="form-label">
+                    Session Title
+                  </label>
                   <input type="text" className="form-control" id="sessionTitle" required />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="sessionDescription" className="form-label">Description</label>
+                  <label htmlFor="sessionDescription" className="form-label">
+                    Description
+                  </label>
                   <textarea className="form-control" id="sessionDescription" rows="3"></textarea>
                 </div>
                 {/* Additional form fields */}
               </form>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="button" className="btn btn-primary">Create Session</button>
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+              </button>
+              <button type="button" className="btn btn-primary">
+                Create Session
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default DashboardPage;
+export default DashboardPage

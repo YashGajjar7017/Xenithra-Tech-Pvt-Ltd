@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * Reusable Input Component
@@ -91,4 +90,3 @@ const Input = ({
 }
 
 export default Input
-

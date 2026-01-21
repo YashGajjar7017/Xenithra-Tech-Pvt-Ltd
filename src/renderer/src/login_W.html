@@ -1,380 +1,580 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HumanError | Dashboard</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            display: flex;
-            overflow: auto;
-            color: white;
-            transition: background 1s ease;
-        }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 100vh;
+        display: flex;
+        overflow: auto;
+        color: white;
+        transition: background 1s ease;
+      }
 
+      .wrapper {
+        display: flex;
+        width: 100%;
+        height: 100%;
+      }
+
+      .side-nav {
+        width: 250px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        height: 100vh;
+        position: fixed;
+        top: 0vh;
+        left: 0vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        transition: all 0.3s ease;
+      }
+
+      .side-nav ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .side-nav li {
+        margin: 20px 0;
+      }
+
+      .side-nav a {
+        color: #ddd;
+        text-decoration: none;
+        font-size: 1.2rem;
+        display: block;
+        padding: 10px;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition:
+          background-color 0.3s ease,
+          color 0.3s ease;
+      }
+
+      .side-nav a:hover,
+      .side-nav a.active {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: #fff;
+      }
+
+      .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        text-align: center;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+        margin: 0px 20vw 0px 20vw;
+        color: #fff;
+        background: linear-gradient(45deg, #f8b500, #ff6157);
+        /* Gradient heading */
+        -webkit-background-clip: text;
+        background-clip: text;
+        display: flex;
+        justify-content: center;
+      }
+
+      .draggable-panel {
+        width: 250px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        cursor: move;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.3s ease,
+          background 0.3s ease;
+      }
+
+      .draggable-panel header {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        background: linear-gradient(45deg, #ff9a8b, #f8b500);
+        /* Gradient for header */
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+        color: white;
+        transition: background 0.3s ease;
+      }
+
+      .draggable-panel .content {
+        font-size: 0.9rem;
+        color: #ddd;
+      }
+
+      .draggable-panel:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+      }
+
+      .draggable-panel:hover header {
+        background: linear-gradient(45deg, #f8b500, #ff6a88);
+        /* Hover effect: gradient header */
+      }
+
+      @media screen and (max-width: 768px) {
         .wrapper {
-            display: flex;
-            width: 100%;
-            height: 100%;
+          flex-direction: column;
         }
 
         .side-nav {
-            width: 250px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            height: 100vh;
-            position: fixed;
-            top: 0vh;
-            left: 0vw;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .side-nav ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .side-nav li {
-            margin: 20px 0;
-        }
-
-        .side-nav a {
-            color: #ddd;
-            text-decoration: none;
-            font-size: 1.2rem;
-            display: block;
-            padding: 10px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .side-nav a:hover,
-        .side-nav a.active {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: #fff;
+          width: 100%;
+          height: auto;
+          position: relative;
+          box-shadow: none;
         }
 
         .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: flex-start;
+          margin-left: 0;
+          padding: 20px;
         }
-
-        h1 {
-            font-size: 2.5rem;
-            text-align: center;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-            margin: 0px 20vw 0px 20vw;
-            color: #fff;
-            background: linear-gradient(45deg, #f8b500, #ff6157);
-            /* Gradient heading */
-            -webkit-background-clip: text;
-            background-clip: text;
-            display: flex;
-            justify-content: center;
-        }
-
-        .draggable-panel {
-            width: 250px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            cursor: move;
-            transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-
-        .draggable-panel header {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #ff9a8b, #f8b500);
-            /* Gradient for header */
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            color: white;
-            transition: background 0.3s ease;
-        }
-
-        .draggable-panel .content {
-            font-size: 0.9rem;
-            color: #ddd;
-        }
-
-        .draggable-panel:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-        }
-
-        .draggable-panel:hover header {
-            background: linear-gradient(45deg, #f8b500, #ff6a88);
-            /* Hover effect: gradient header */
-        }
-
-        @media screen and (max-width: 768px) {
-            .wrapper {
-                flex-direction: column;
-            }
-
-            .side-nav {
-                width: 100%;
-                height: auto;
-                position: relative;
-                box-shadow: none;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="wrapper">
-        <!-- Side Nav -->
-        <nav class="side-nav">
-            <ul>
-                <li><a href="/" class="active">Home</a></li>
-                <li><a href="#">Your Profile</a></li>
-                <li><a href="/classroom">Classroom</a></li>
-                <li><a href="#">About US</a></li>
-                <li><a href="/Account/Complier/Beta/true">Hire us</a></li>
-                <li><a href="/Account/Complier/Beta/true">Join Discord</a></li>
-                <li><a href="/Account/Complier/Beta/true">Beta Preview</a></li>
-                <hr>
-                <li><a href="/admin-panel" id="admin-link" style="display: none;">Admin Panel</a></li>
-                <li><a href="/Account/logout">Logout</a></li>
-            </ul>
-            <h5>Copyright to Yash Gajjar</h5>
-        </nav>
+      <!-- Side Nav -->
+      <nav class="side-nav">
+        <ul>
+          <li><a href="/" class="active">Home</a></li>
+          <li><a href="#">Your Profile</a></li>
+          <li><a href="/classroom">Classroom</a></li>
+          <li><a href="#">About US</a></li>
+          <li><a href="/Account/Complier/Beta/true">Hire us</a></li>
+          <li><a href="/Account/Complier/Beta/true">Join Discord</a></li>
+          <li><a href="/Account/Complier/Beta/true">Beta Preview</a></li>
+          <hr />
+          <li><a href="/admin-panel" id="admin-link" style="display: none">Admin Panel</a></li>
+          <li><a href="/Account/logout">Logout</a></li>
+        </ul>
+        <h5>Copyright to Yash Gajjar</h5>
+      </nav>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <h1>Human Error Dashboard</h1>
-            <div class="draggable-panel" id="panel1">
-                <header>Profile Card</header>
-                <div class="content">
-                    <img src="/images/github.jpg" alt="User Avatar" style="border-radius: 50%; height: 80px; width: 80px; margin: 10px auto; display: block; border: 2px solid rgba(255,255,255,0.3);">
-                    <p><strong>Name:</strong> <span id="user-name">Loading...</span></p>
-                    <p><strong>Email:</strong> john.doe@example.com</p>
-                    <p><strong>Projects:</strong> 15 | <strong>Compilations:</strong> 120</p>
-                    <p><strong>Last Login:</strong> Today</p>
-                    <button style="padding: 10px 20px; background: linear-gradient(45deg, #ff9a8b, #f8b500); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Edit Profile</button>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel2">
-                <header>Membership</header>
-                <div class="content">
-                    <p>Current Plan: <strong>Free Tier</strong></p>
-                    <center style="margin: 10px 0;"><h2 style="color: #f8b500;">$0</h2></center>
-                    <hr style="border: 1px solid rgba(255,255,255,0.3);">
-                    <p>Features:</p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li>❌ Download Content</li>
-                        <li>❌ Upload to Server</li>
-                        <li>✅ Basic Compilation</li>
-                        <li>✅ Classroom Access</li>
-                    </ul>
-                    <button style="padding: 10px 20px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Upgrade to Pro</button>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel3">
-                <header>Application Download</header>
-                <div class="content">
-                    <p>Download the offline version of the compiler for full functionality without internet.</p>
-                    <p><strong>Version:</strong> 1.2.3 | <strong>Size:</strong> 50MB</p>
-                    <p>Compatible with Windows, macOS, Linux.</p>
-                    <button style="padding: 10px 20px; background: linear-gradient(45deg, #209cff, #68e0cf); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Download Now</button>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel4">
-                <header>Server Data Management</header>
-                <div class="content">
-                    <p>Manage your server-side data, backups, and analytics.</p>
-                    <p><strong>Storage Used:</strong> 2.5GB / 10GB</p>
-                    <p><strong>Backups:</strong> Last: 2 days ago</p>
-                    <p><strong>API Calls:</strong> 1,250 this month</p>
-                    <button style="padding: 10px 20px; background: linear-gradient(45deg, #ff6157, #f8b500); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Manage Data</button>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel5">
-                <header>Recent Activity</header>
-                <div class="content">
-                    <p><strong>Last Compilation:</strong> 2 hours ago</p>
-                    <p><strong>Files Processed:</strong> 45</p>
-                    <p><strong>Success Rate:</strong> 98%</p>
-                    <p><strong>Active Sessions:</strong> 3</p>
-                    <button style="padding: 10px 20px; background: linear-gradient(45deg, #4facfe, #00f2fe); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">View History</button>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel6">
-                <header>Quick Actions</header>
-                <div class="content">
-                    <button style="padding: 8px 16px; background: linear-gradient(45deg, #a8edea, #fed6e3); color: #333; border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 0.8rem;">New Project</button>
-                    <button style="padding: 8px 16px; background: linear-gradient(45deg, #d299c2, #fef9d7); color: #333; border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 0.8rem;">Import Code</button>
-                    <button style="padding: 8px 16px; background: linear-gradient(45deg, #f093fb, #f5576c); color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 0.8rem;">Share Project</button>
-                    <button style="padding: 8px 16px; background: linear-gradient(45deg, #4facfe, #00f2fe); color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 0.8rem;">Settings</button>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel7">
-                <header>System Status</header>
-                <div class="content">
-                    <p><strong>Server Status:</strong> <span style="color: #4CAF50;">Online</span></p>
-                    <p><strong>Database:</strong> <span style="color: #4CAF50;">Connected</span></p>
-                    <p><strong>API Response:</strong> <span style="color: #4CAF50;">Fast</span></p>
-                    <p><strong>Uptime:</strong> 99.9%</p>
-                    <div style="background: rgba(76, 175, 80, 0.2); padding: 10px; border-radius: 5px; margin-top: 10px;">
-                        <p style="margin: 0; font-size: 0.8rem;">All systems operational</p>
-                    </div>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel8">
-                <header>Learning Progress</header>
-                <div class="content">
-                    <p><strong>Current Course:</strong> Advanced JavaScript</p>
-                    <p><strong>Progress:</strong> 75%</p>
-                    <div style="background: rgba(255,255,255,0.2); height: 8px; border-radius: 4px; margin: 10px 0;">
-                        <div style="background: linear-gradient(45deg, #f8b500, #ff6157); height: 100%; width: 75%; border-radius: 4px;"></div>
-                    </div>
-                    <p><strong>Next Lesson:</strong> Async Programming</p>
-                    <button style="padding: 10px 20px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Continue Learning</button>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel9">
-                <header>Community</header>
-                <div class="content">
-                    <p><strong>Forum Posts:</strong> 23</p>
-                    <p><strong>Answers Given:</strong> 156</p>
-                    <p><strong>Reputation:</strong> 2,450</p>
-                    <p><strong>Badges Earned:</strong> 8</p>
-                    <button style="padding: 10px 20px; background: linear-gradient(45deg, #ff9a8b, #f8b500); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Visit Forum</button>
-                </div>
-            </div>
-            <div class="draggable-panel" id="panel10">
-                <header>Notifications</header>
-                <div class="content">
-                    <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin-bottom: 8px;">
-                        <p style="margin: 0; font-size: 0.8rem;"><strong>New update available!</strong></p>
-                        <p style="margin: 0; font-size: 0.7rem; color: #ccc;">Version 1.2.4 released</p>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin-bottom: 8px;">
-                        <p style="margin: 0; font-size: 0.8rem;"><strong>Project shared</strong></p>
-                        <p style="margin: 0; font-size: 0.7rem; color: #ccc;">Your code was viewed 15 times</p>
-                    </div>
-                    <button style="padding: 8px 16px; background: linear-gradient(45deg, #209cff, #68e0cf); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">View All</button>
-                </div>
-            </div>
+      <!-- Main Content -->
+      <div class="main-content">
+        <h1>Human Error Dashboard</h1>
+        <div class="draggable-panel" id="panel1">
+          <header>Profile Card</header>
+          <div class="content">
+            <img
+              src="/images/github.jpg"
+              alt="User Avatar"
+              style="
+                border-radius: 50%;
+                height: 80px;
+                width: 80px;
+                margin: 10px auto;
+                display: block;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+              "
+            />
+            <p><strong>Name:</strong> <span id="user-name">Loading...</span></p>
+            <p><strong>Email:</strong> john.doe@example.com</p>
+            <p><strong>Projects:</strong> 15 | <strong>Compilations:</strong> 120</p>
+            <p><strong>Last Login:</strong> Today</p>
+            <button
+              style="
+                padding: 10px 20px;
+                background: linear-gradient(45deg, #ff9a8b, #f8b500);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+              "
+            >
+              Edit Profile
+            </button>
+          </div>
         </div>
+        <div class="draggable-panel" id="panel2">
+          <header>Membership</header>
+          <div class="content">
+            <p>Current Plan: <strong>Free Tier</strong></p>
+            <center style="margin: 10px 0"><h2 style="color: #f8b500">$0</h2></center>
+            <hr style="border: 1px solid rgba(255, 255, 255, 0.3)" />
+            <p>Features:</p>
+            <ul style="list-style: none; padding: 0">
+              <li>❌ Download Content</li>
+              <li>❌ Upload to Server</li>
+              <li>✅ Basic Compilation</li>
+              <li>✅ Classroom Access</li>
+            </ul>
+            <button
+              style="
+                padding: 10px 20px;
+                background: linear-gradient(45deg, #667eea, #764ba2);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+              "
+            >
+              Upgrade to Pro
+            </button>
+          </div>
+        </div>
+        <div class="draggable-panel" id="panel3">
+          <header>Application Download</header>
+          <div class="content">
+            <p>
+              Download the offline version of the compiler for full functionality without internet.
+            </p>
+            <p><strong>Version:</strong> 1.2.3 | <strong>Size:</strong> 50MB</p>
+            <p>Compatible with Windows, macOS, Linux.</p>
+            <button
+              style="
+                padding: 10px 20px;
+                background: linear-gradient(45deg, #209cff, #68e0cf);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+              "
+            >
+              Download Now
+            </button>
+          </div>
+        </div>
+        <div class="draggable-panel" id="panel4">
+          <header>Server Data Management</header>
+          <div class="content">
+            <p>Manage your server-side data, backups, and analytics.</p>
+            <p><strong>Storage Used:</strong> 2.5GB / 10GB</p>
+            <p><strong>Backups:</strong> Last: 2 days ago</p>
+            <p><strong>API Calls:</strong> 1,250 this month</p>
+            <button
+              style="
+                padding: 10px 20px;
+                background: linear-gradient(45deg, #ff6157, #f8b500);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+              "
+            >
+              Manage Data
+            </button>
+          </div>
+        </div>
+        <div class="draggable-panel" id="panel5">
+          <header>Recent Activity</header>
+          <div class="content">
+            <p><strong>Last Compilation:</strong> 2 hours ago</p>
+            <p><strong>Files Processed:</strong> 45</p>
+            <p><strong>Success Rate:</strong> 98%</p>
+            <p><strong>Active Sessions:</strong> 3</p>
+            <button
+              style="
+                padding: 10px 20px;
+                background: linear-gradient(45deg, #4facfe, #00f2fe);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+              "
+            >
+              View History
+            </button>
+          </div>
+        </div>
+        <div class="draggable-panel" id="panel6">
+          <header>Quick Actions</header>
+          <div class="content">
+            <button
+              style="
+                padding: 8px 16px;
+                background: linear-gradient(45deg, #a8edea, #fed6e3);
+                color: #333;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+                font-size: 0.8rem;
+              "
+            >
+              New Project
+            </button>
+            <button
+              style="
+                padding: 8px 16px;
+                background: linear-gradient(45deg, #d299c2, #fef9d7);
+                color: #333;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+                font-size: 0.8rem;
+              "
+            >
+              Import Code
+            </button>
+            <button
+              style="
+                padding: 8px 16px;
+                background: linear-gradient(45deg, #f093fb, #f5576c);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+                font-size: 0.8rem;
+              "
+            >
+              Share Project
+            </button>
+            <button
+              style="
+                padding: 8px 16px;
+                background: linear-gradient(45deg, #4facfe, #00f2fe);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+                font-size: 0.8rem;
+              "
+            >
+              Settings
+            </button>
+          </div>
+        </div>
+        <div class="draggable-panel" id="panel7">
+          <header>System Status</header>
+          <div class="content">
+            <p><strong>Server Status:</strong> <span style="color: #4caf50">Online</span></p>
+            <p><strong>Database:</strong> <span style="color: #4caf50">Connected</span></p>
+            <p><strong>API Response:</strong> <span style="color: #4caf50">Fast</span></p>
+            <p><strong>Uptime:</strong> 99.9%</p>
+            <div
+              style="
+                background: rgba(76, 175, 80, 0.2);
+                padding: 10px;
+                border-radius: 5px;
+                margin-top: 10px;
+              "
+            >
+              <p style="margin: 0; font-size: 0.8rem">All systems operational</p>
+            </div>
+          </div>
+        </div>
+        <div class="draggable-panel" id="panel8">
+          <header>Learning Progress</header>
+          <div class="content">
+            <p><strong>Current Course:</strong> Advanced JavaScript</p>
+            <p><strong>Progress:</strong> 75%</p>
+            <div
+              style="
+                background: rgba(255, 255, 255, 0.2);
+                height: 8px;
+                border-radius: 4px;
+                margin: 10px 0;
+              "
+            >
+              <div
+                style="
+                  background: linear-gradient(45deg, #f8b500, #ff6157);
+                  height: 100%;
+                  width: 75%;
+                  border-radius: 4px;
+                "
+              ></div>
+            </div>
+            <p><strong>Next Lesson:</strong> Async Programming</p>
+            <button
+              style="
+                padding: 10px 20px;
+                background: linear-gradient(45deg, #667eea, #764ba2);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+              "
+            >
+              Continue Learning
+            </button>
+          </div>
+        </div>
+        <div class="draggable-panel" id="panel9">
+          <header>Community</header>
+          <div class="content">
+            <p><strong>Forum Posts:</strong> 23</p>
+            <p><strong>Answers Given:</strong> 156</p>
+            <p><strong>Reputation:</strong> 2,450</p>
+            <p><strong>Badges Earned:</strong> 8</p>
+            <button
+              style="
+                padding: 10px 20px;
+                background: linear-gradient(45deg, #ff9a8b, #f8b500);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+              "
+            >
+              Visit Forum
+            </button>
+          </div>
+        </div>
+        <div class="draggable-panel" id="panel10">
+          <header>Notifications</header>
+          <div class="content">
+            <div
+              style="
+                background: rgba(255, 255, 255, 0.1);
+                padding: 8px;
+                border-radius: 5px;
+                margin-bottom: 8px;
+              "
+            >
+              <p style="margin: 0; font-size: 0.8rem"><strong>New update available!</strong></p>
+              <p style="margin: 0; font-size: 0.7rem; color: #ccc">Version 1.2.4 released</p>
+            </div>
+            <div
+              style="
+                background: rgba(255, 255, 255, 0.1);
+                padding: 8px;
+                border-radius: 5px;
+                margin-bottom: 8px;
+              "
+            >
+              <p style="margin: 0; font-size: 0.8rem"><strong>Project shared</strong></p>
+              <p style="margin: 0; font-size: 0.7rem; color: #ccc">Your code was viewed 15 times</p>
+            </div>
+            <button
+              style="
+                padding: 8px 16px;
+                background: linear-gradient(45deg, #209cff, #68e0cf);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.8rem;
+              "
+            >
+              View All
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        // Fetch user data from session
-        async function fetchUserData() {
-            try {
-                const response = await fetch('/Account/check-auth');
-                const data = await response.json();
-                if (data.authenticated) {
-                    document.getElementById('user-name').textContent = data.user.username;
-                    // Update email if available
-                    if (data.user.email) {
-                        document.querySelector('.content p:nth-child(3)').innerHTML = '<strong>Email:</strong> ' + data.user.email;
-                    }
-                } else {
-                    document.getElementById('user-name').textContent = 'Guest';
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                document.getElementById('user-name').textContent = 'Error loading name';
+      // Fetch user data from session
+      async function fetchUserData() {
+        try {
+          const response = await fetch('/Account/check-auth')
+          const data = await response.json()
+          if (data.authenticated) {
+            document.getElementById('user-name').textContent = data.user.username
+            // Update email if available
+            if (data.user.email) {
+              document.querySelector('.content p:nth-child(3)').innerHTML =
+                '<strong>Email:</strong> ' + data.user.email
             }
+          } else {
+            document.getElementById('user-name').textContent = 'Guest'
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+          document.getElementById('user-name').textContent = 'Error loading name'
         }
+      }
 
-        // JavaScript code to enable dragging of panels
-        const panels = document.querySelectorAll('.draggable-panel');
+      // JavaScript code to enable dragging of panels
+      const panels = document.querySelectorAll('.draggable-panel')
 
-        panels.forEach(panel => {
-            panel.addEventListener('mousedown', (e) => {
-                const offsetX = e.clientX - panel.getBoundingClientRect().left;
-                const offsetY = e.clientY - panel.getBoundingClientRect().top;
+      panels.forEach((panel) => {
+        panel.addEventListener('mousedown', (e) => {
+          const offsetX = e.clientX - panel.getBoundingClientRect().left
+          const offsetY = e.clientY - panel.getBoundingClientRect().top
 
-                function dragMove(e) {
-                    panel.style.position = 'absolute';
-                    panel.style.left = e.clientX - offsetX + 'px';
-                    panel.style.top = e.clientY - offsetY + 'px';
-                }
+          function dragMove(e) {
+            panel.style.position = 'absolute'
+            panel.style.left = e.clientX - offsetX + 'px'
+            panel.style.top = e.clientY - offsetY + 'px'
+          }
 
-                function dragEnd() {
-                    document.removeEventListener('mousemove', dragMove);
-                    document.removeEventListener('mouseup', dragEnd);
-                }
+          function dragEnd() {
+            document.removeEventListener('mousemove', dragMove)
+            document.removeEventListener('mouseup', dragEnd)
+          }
 
-                document.addEventListener('mousemove', dragMove);
-                document.addEventListener('mouseup', dragEnd);
-            });
-        });
+          document.addEventListener('mousemove', dragMove)
+          document.addEventListener('mouseup', dragEnd)
+        })
+      })
 
-        // Check if user is admin and show admin link
-        async function checkAdminStatus() {
-            try {
-                const response = await fetch('/Account/check-auth');
-                const data = await response.json();
-                if (data.authenticated && data.user.role === 'admin') {
-                    document.getElementById('admin-link').style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error checking admin status:', error);
-            }
+      // Check if user is admin and show admin link
+      async function checkAdminStatus() {
+        try {
+          const response = await fetch('/Account/check-auth')
+          const data = await response.json()
+          if (data.authenticated && data.user.role === 'admin') {
+            document.getElementById('admin-link').style.display = 'block'
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error)
         }
+      }
 
-        // Load user data on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize common dashboard features
-            initializeDashboard();
-            
-            // Then load user-specific data
-            fetchUserData();
-            checkAdminStatus();
-        });
+      // Load user data on page load
+      document.addEventListener('DOMContentLoaded', function () {
+        // Initialize common dashboard features
+        initializeDashboard()
+
+        // Then load user-specific data
+        fetchUserData()
+        checkAdminStatus()
+      })
     </script>
     <!-- Dashboard Helper Script -->
     <script src="/JS/dashboard-helper.js"></script>
-</body>
-
+  </body>
 </html>

@@ -1,379 +1,404 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Home | Welcome User</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Arial, sans-serif;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #050814, #090018);
-      color: #ddd;
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      /* padding: 20px; */
-    }
-
-    /* Glass container */
-    .app {
-      display: flex;
-      width: 100%;
-      /* max-width: 1200px; */
-      height: 100vh; /** full viewport height : 90vh **/
-      position: relative;
-      border-radius: 22px;
-      background: rgba(11, 16, 32, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.16); /* thin glass border [web:5][web:32] */
-      box-shadow:
-        0 0 40px rgba(0, 0, 0, 0.6),
-        0 0 80px rgba(0, 200, 255, 0.35);
-      backdrop-filter: blur(22px) saturate(170%);
-      overflow: hidden;
-    }
-
-    /* floating lights */
-    .app::before,
-    .app::after {
-      content: "";
-      position: absolute;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 255, 255, 0.4), transparent);
-      filter: blur(4px);
-      opacity: 0.75;
-      pointer-events: none;
-      animation: floatLight 12s infinite alternate ease-in-out;
-    }
-    .app::before {
-      top: -80px;
-      left: -40px;
-    }
-    .app::after {
-      bottom: -90px;
-      right: -60px;
-      animation-delay: -4s;
-    }
-    @keyframes floatLight {
-      from { transform: translateY(0) translateX(0); }
-      to   { transform: translateY(30px) translateX(20px); }
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 230px;
-      padding: 18px 14px;
-      color: #f4f6ff;
-      background: linear-gradient(
-        165deg,
-        rgba(5, 36, 68, 0.9),
-        rgba(5, 10, 30, 0.92)
-      );
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(18px);
-      z-index: 1;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      margin-bottom: 22px;
-      font-weight: bold;
-      font-size: 19px;
-    }
-    .logo-box {
-      width: 30px;
-      height: 30px;
-      border-radius: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 8px;
-      font-size: 18px;
-      background: rgba(255, 255, 255, 0.06);
-      box-shadow:
-        0 0 18px rgba(0, 255, 255, 0.7),
-        0 0 6px rgba(255, 255, 255, 0.6);
-    }
-    .subtitle {
-      font-size: 11px;
-      margin-bottom: 16px;
-      opacity: 0.9;
-    }
-
-    .sidebar button {
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(255, 255, 255, 0.03);
-      color: #fdfdfd;
-      text-align: left;
-      padding: 7px 13px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-bottom: 6px;
-      backdrop-filter: blur(16px);
-      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-    }
-    .sidebar button::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, #00e5ff, #ff4081, #ffea00, #00e5ff);
-      background-size: 240% 240%; /* animated gradient [web:22][web:31] */
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      z-index: -1;
-      filter: blur(1px);
-    }
-    .sidebar button:hover::before {
-      opacity: 0.65;
-      animation: gradientFlow 1.8s linear infinite;
-    }
-    .sidebar button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 18px rgba(0, 255, 255, 0.55);
-      background: rgba(6, 14, 38, 0.85);
-    }
-
-    @keyframes gradientFlow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    /* Main */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: radial-gradient(circle at top, #050715, #02030a);
-      position: relative;
-      z-index: 1;
-    }
-
-    /* Topbar */
-    .topbar {
-      display: flex;
-      align-items: center;
-      padding: 8px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(3, 7, 24, 0.92);
-      backdrop-filter: blur(18px);
-    }
-
-    .topbar-title {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #e3f2fd;
-    }
-
-    .topbar button {
-      margin-left: 10px;
-      padding: 5px 14px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 12px;
-      color: #fff;
-      position: relative;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      backdrop-filter: blur(18px);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    }
-
-    .topbar button::before {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      background: conic-gradient(
-        from 180deg,
-        #00e5ff,
-        #7c4dff,
-        #ff4081,
-        #ffea00,
-        #00e5ff
-      );
-      background-size: 200% 200%;
-      opacity: 0;
-      transition: opacity 0.18s ease;
-      z-index: -1;
-    }
-    .topbar button::after {
-      content: "";
-      position: absolute;
-      inset: 1px;
-      border-radius: inherit;
-      background: rgba(5, 10, 30, 0.98);
-      z-index: -1;
-    }
-
-    .topbar button:hover::before {
-      opacity: 1;
-      animation: spinBorder 2.5s linear infinite; /* neon animated border [web:30][web:33] */
-    }
-    .topbar button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 18px rgba(0, 229, 255, 0.8);
-    }
-
-    @keyframes spinBorder {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Special run button: continuous gradient */
-    .btn-run {
-      background: linear-gradient(120deg, #00e676, #00b0ff, #00e676);
-      background-size: 220% 220%;
-      animation: runGlow 2.2s ease-in-out infinite alternate;
-      box-shadow: 0 0 22px rgba(0, 230, 118, 0.9);
-    }
-    @keyframes runGlow {
-      0% {
-        background-position: 0% 50%;
-        box-shadow: 0 0 16px rgba(0, 230, 118, 0.7);
+  <head>
+    <meta charset="UTF-8" />
+    <title>Home | Welcome User</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      100% {
-        background-position: 100% 50%;
-        box-shadow: 0 0 30px rgba(0, 230, 118, 1);
+      body {
+        font-family: Arial, sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #050814, #090018);
+        color: #ddd;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        /* padding: 20px; */
       }
-    }
 
-    .lang-select {
-      margin-left: auto;
-      font-size: 12px;
-      color: #e0f7fa;
-      opacity: 0.9;
-    }
+      /* Glass container */
+      .app {
+        display: flex;
+        width: 100%;
+        /* max-width: 1200px; */
+        height: 100vh; /** full viewport height : 90vh **/
+        position: relative;
+        border-radius: 22px;
+        background: rgba(11, 16, 32, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.16); /* thin glass border [web:5][web:32] */
+        box-shadow:
+          0 0 40px rgba(0, 0, 0, 0.6),
+          0 0 80px rgba(0, 200, 255, 0.35);
+        backdrop-filter: blur(22px) saturate(170%);
+        overflow: hidden;
+      }
 
-    /* Editor header */
-    .editor-header {
-      background: rgba(6, 10, 30, 0.96);
-      padding: 6px 16px;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .editor-header .tab {
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      font-size: 11px;
-    }
+      /* floating lights */
+      .app::before,
+      .app::after {
+        content: '';
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0, 255, 255, 0.4), transparent);
+        filter: blur(4px);
+        opacity: 0.75;
+        pointer-events: none;
+        animation: floatLight 12s infinite alternate ease-in-out;
+      }
+      .app::before {
+        top: -80px;
+        left: -40px;
+      }
+      .app::after {
+        bottom: -90px;
+        right: -60px;
+        animation-delay: -4s;
+      }
+      @keyframes floatLight {
+        from {
+          transform: translateY(0) translateX(0);
+        }
+        to {
+          transform: translateY(30px) translateX(20px);
+        }
+      }
 
-    /* Editor */
-    .editor {
-      flex: 1;
-      font-family: Consolas, "Courier New", monospace;
-      color: #d4d4d4;
-      padding: 12px 44px;
-      position: relative;
-      overflow: auto;
-      background: radial-gradient(circle at top, #050716, #010208);
-    }
-    .line-numbers {
-      position: absolute;
-      left: 14px;
-      top: 12px;
-      text-align: right;
-      color: #5c6370;
-      font-size: 13px;
-      line-height: 1.4;
-      user-select: none;
-    }
-    .editor pre {
-      line-height: 1.4;
-      font-size: 13px;
-      white-space: pre;
-    }
-    .kw      { color: #569cd6; }
-    .func    { color: #dcdcaa; }
-    .string  { color: #ce9178; }
-    .comment { color: #6a9955; }
+      /* Sidebar */
+      .sidebar {
+        width: 230px;
+        padding: 18px 14px;
+        color: #f4f6ff;
+        background: linear-gradient(165deg, rgba(5, 36, 68, 0.9), rgba(5, 10, 30, 0.92));
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(18px);
+        z-index: 1;
+      }
 
-    /* Bottom */
-    .bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      background: rgba(3, 7, 24, 0.97);
-      padding: 8px 14px 10px;
-      font-size: 12px;
-      color: #cfd8dc;
-      backdrop-filter: blur(18px);
-    }
-    .bottom label { margin-right: 8px; }
-    .bottom input[type="text"] {
-      width: 60%;
-      padding: 4px 6px;
-      background: rgba(4, 6, 20, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      color: #eee;
-      border-radius: 8px;
-    }
-    .bottom .stdin-options {
-      margin-top: 6px;
-    }
-    .bottom .stdin-options label {
-      margin-right: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="logo">
-        <div class="logo-box">⚡</div>
-        Neon Studio
-      </div>
-      <div class="subtitle">Glassy online playground for C/C++ and more.</div>
-      <button>Dashboard</button>
-      <button>Projects</button>
-      <button>Snippets</button>
-      <button>Learn</button>
-      <button>Challenges</button>
-      <button>Sign In</button><br><hr style="border: 1px dotted white;border-radius: 4px;"><br>
-      <button>Settings</button>
-    </div>
+      .logo {
+        display: flex;
+        align-items: center;
+        margin-bottom: 22px;
+        font-weight: bold;
+        font-size: 19px;
+      }
+      .logo-box {
+        width: 30px;
+        height: 30px;
+        border-radius: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+        font-size: 18px;
+        background: rgba(255, 255, 255, 0.06);
+        box-shadow:
+          0 0 18px rgba(0, 255, 255, 0.7),
+          0 0 6px rgba(255, 255, 255, 0.6);
+      }
+      .subtitle {
+        font-size: 11px;
+        margin-bottom: 16px;
+        opacity: 0.9;
+      }
 
-    <!-- Main -->
-    <div class="main">
-      <!-- Topbar -->
-      <div class="topbar">
-        <div class="topbar-title">NEON GLASS CODE STUDIO</div>
-        <button class="btn-run">▶ Run</button>
-        <button>🐞 Debug</button>
-        <button>■ Stop</button>
-        <button>Share</button>
-        <button>Save</button>
-        <button>{ } Format</button>
-        <div class="lang-select">Language: C (GCC)</div>
-      </div>
+      .sidebar button {
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.03);
+        color: #fdfdfd;
+        text-align: left;
+        padding: 7px 13px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-bottom: 6px;
+        backdrop-filter: blur(16px);
+        transition:
+          transform 0.16s ease,
+          box-shadow 0.16s ease,
+          background 0.16s ease;
+      }
+      .sidebar button::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, #00e5ff, #ff4081, #ffea00, #00e5ff);
+        background-size: 240% 240%; /* animated gradient [web:22][web:31] */
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: -1;
+        filter: blur(1px);
+      }
+      .sidebar button:hover::before {
+        opacity: 0.65;
+        animation: gradientFlow 1.8s linear infinite;
+      }
+      .sidebar button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 18px rgba(0, 255, 255, 0.55);
+        background: rgba(6, 14, 38, 0.85);
+      }
 
-      <!-- Editor header -->
-      <div class="editor-header">
-        <div class="tab">main.c</div>
-        <div style="font-size:11px; opacity:0.7;">auto-saved a moment ago</div>
-      </div>
+      @keyframes gradientFlow {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
 
-      <!-- Editor -->
-      <div class="editor">
-        <div class="line-numbers">
-1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16
+      /* Main */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: radial-gradient(circle at top, #050715, #02030a);
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Topbar */
+      .topbar {
+        display: flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(3, 7, 24, 0.92);
+        backdrop-filter: blur(18px);
+      }
+
+      .topbar-title {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #e3f2fd;
+      }
+
+      .topbar button {
+        margin-left: 10px;
+        padding: 5px 14px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(18px);
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .topbar button::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        background: conic-gradient(from 180deg, #00e5ff, #7c4dff, #ff4081, #ffea00, #00e5ff);
+        background-size: 200% 200%;
+        opacity: 0;
+        transition: opacity 0.18s ease;
+        z-index: -1;
+      }
+      .topbar button::after {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        border-radius: inherit;
+        background: rgba(5, 10, 30, 0.98);
+        z-index: -1;
+      }
+
+      .topbar button:hover::before {
+        opacity: 1;
+        animation: spinBorder 2.5s linear infinite; /* neon animated border [web:30][web:33] */
+      }
+      .topbar button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 18px rgba(0, 229, 255, 0.8);
+      }
+
+      @keyframes spinBorder {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Special run button: continuous gradient */
+      .btn-run {
+        background: linear-gradient(120deg, #00e676, #00b0ff, #00e676);
+        background-size: 220% 220%;
+        animation: runGlow 2.2s ease-in-out infinite alternate;
+        box-shadow: 0 0 22px rgba(0, 230, 118, 0.9);
+      }
+      @keyframes runGlow {
+        0% {
+          background-position: 0% 50%;
+          box-shadow: 0 0 16px rgba(0, 230, 118, 0.7);
+        }
+        100% {
+          background-position: 100% 50%;
+          box-shadow: 0 0 30px rgba(0, 230, 118, 1);
+        }
+      }
+
+      .lang-select {
+        margin-left: auto;
+        font-size: 12px;
+        color: #e0f7fa;
+        opacity: 0.9;
+      }
+
+      /* Editor header */
+      .editor-header {
+        background: rgba(6, 10, 30, 0.96);
+        padding: 6px 16px;
+        font-size: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .editor-header .tab {
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        font-size: 11px;
+      }
+
+      /* Editor */
+      .editor {
+        flex: 1;
+        font-family: Consolas, 'Courier New', monospace;
+        color: #d4d4d4;
+        padding: 12px 44px;
+        position: relative;
+        overflow: auto;
+        background: radial-gradient(circle at top, #050716, #010208);
+      }
+      .line-numbers {
+        position: absolute;
+        left: 14px;
+        top: 12px;
+        text-align: right;
+        color: #5c6370;
+        font-size: 13px;
+        line-height: 1.4;
+        user-select: none;
+      }
+      .editor pre {
+        line-height: 1.4;
+        font-size: 13px;
+        white-space: pre;
+      }
+      .kw {
+        color: #569cd6;
+      }
+      .func {
+        color: #dcdcaa;
+      }
+      .string {
+        color: #ce9178;
+      }
+      .comment {
+        color: #6a9955;
+      }
+
+      /* Bottom */
+      .bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(3, 7, 24, 0.97);
+        padding: 8px 14px 10px;
+        font-size: 12px;
+        color: #cfd8dc;
+        backdrop-filter: blur(18px);
+      }
+      .bottom label {
+        margin-right: 8px;
+      }
+      .bottom input[type='text'] {
+        width: 60%;
+        padding: 4px 6px;
+        background: rgba(4, 6, 20, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: #eee;
+        border-radius: 8px;
+      }
+      .bottom .stdin-options {
+        margin-top: 6px;
+      }
+      .bottom .stdin-options label {
+        margin-right: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="logo">
+          <div class="logo-box">⚡</div>
+          Neon Studio
         </div>
-<pre>
+        <div class="subtitle">Glassy online playground for C/C++ and more.</div>
+        <button>Dashboard</button>
+        <button>Projects</button>
+        <button>Snippets</button>
+        <button>Learn</button>
+        <button>Challenges</button>
+        <button>Sign In</button><br />
+        <hr style="border: 1px dotted white; border-radius: 4px" />
+        <br />
+        <button>Settings</button>
+      </div>
+
+      <!-- Main -->
+      <div class="main">
+        <!-- Topbar -->
+        <div class="topbar">
+          <div class="topbar-title">NEON GLASS CODE STUDIO</div>
+          <button class="btn-run">▶ Run</button>
+          <button>🐞 Debug</button>
+          <button>■ Stop</button>
+          <button>Share</button>
+          <button>Save</button>
+          <button>{ } Format</button>
+          <div class="lang-select">Language: C (GCC)</div>
+        </div>
+
+        <!-- Editor header -->
+        <div class="editor-header">
+          <div class="tab">main.c</div>
+          <div style="font-size: 11px; opacity: 0.7">auto-saved a moment ago</div>
+        </div>
+
+        <!-- Editor -->
+        <div class="editor">
+          <div class="line-numbers">
+            1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12<br />13<br />14<br />15<br />16
+          </div>
+          <pre>
 <span class="comment">/******************************************************************************</span>
 <span class="comment">  Neon Glass Code Studio.</span>
 <span class="comment">  Modern online compiler & debugger with glassmorphism UI.</span>
@@ -389,35 +414,35 @@
     <span class="kw">return</span> <span class="kw">0</span>;
 }
 </pre>
-      </div>
-
-      <!-- Bottom -->
-      <div class="bottom">
-        <div>
-          <label>Command line arguments:</label>
-          <input type="text" placeholder="--help" />
         </div>
-        <div class="stdin-options">
-          Standard Input:
-          <label><input type="radio" name="stdin" checked /> Interactive Console</label>
-          <label><input type="radio" name="stdin" /> Text</label>
+
+        <!-- Bottom -->
+        <div class="bottom">
+          <div>
+            <label>Command line arguments:</label>
+            <input type="text" placeholder="--help" />
+          </div>
+          <div class="stdin-options">
+            Standard Input:
+            <label><input type="radio" name="stdin" checked /> Interactive Console</label>
+            <label><input type="radio" name="stdin" /> Text</label>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Minimal JS: click animation on Run button (color flash) -->
-  <script>
-    const runBtn = document.querySelector(".btn-run");
+    <!-- Minimal JS: click animation on Run button (color flash) -->
+    <script>
+      const runBtn = document.querySelector('.btn-run')
 
-    runBtn.addEventListener("click", () => {
-      runBtn.classList.add("clicked");
-      runBtn.style.filter = "brightness(1.4)";
-      setTimeout(() => {
-        runBtn.style.filter = "brightness(1)";
-        runBtn.classList.remove("clicked");
-      }, 220);
-    });
-  </script>
-</body>
+      runBtn.addEventListener('click', () => {
+        runBtn.classList.add('clicked')
+        runBtn.style.filter = 'brightness(1.4)'
+        setTimeout(() => {
+          runBtn.style.filter = 'brightness(1)'
+          runBtn.classList.remove('clicked')
+        }, 220)
+      })
+    </script>
+  </body>
 </html>
