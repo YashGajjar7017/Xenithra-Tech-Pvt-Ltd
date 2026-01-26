@@ -1,0 +1,62 @@
+project-root/
+│
+├── .config/                    # Tooling & editor configuration
+│   ├── eslint/
+│   ├── prettier/
+│   └── editor/
+│
+├── .devcontainer/              # VS Code Dev Container setup
+│
+├── .docker/                    # Docker & container-related files
+│
+├── .github/
+│   ├── workflows/              # GitHub Actions (CI/CD)
+│   └── ISSUE_TEMPLATE/
+│
+├── .vscode/                    # Local VS Code settings
+│
+├── build/                      # App icons, entitlements, signing files
+│
+├── docs/                       # 📘 All documentation (single source of truth)
+│   ├── architecture/
+│   ├── setup/
+│   ├── guides/
+│   └── reports/
+│
+├── electron/                   # Electron main process
+│   ├── main/
+│   │   ├── index.ts
+│   │   ├── window.ts
+│   │   └── menu.ts
+│   ├── preload/
+│   │   └── index.ts
+│   └── electron-env.d.ts
+│
+├── renderer/                   # Frontend (Vite + React)
+│   ├── public/
+│   └── src/
+│       ├── assets/
+│       ├── components/
+│       ├── hooks/
+│       ├── layouts/
+│       ├── pages/
+│       ├── routes/
+│       ├── services/
+│       ├── styles/
+│       ├── utils/
+│       ├── App.tsx
+│       └── main.tsx
+│
+├── scripts/                    # Automation & helper scripts
+│
+├── tests/                      # Unit / Integration / E2E tests
+│
+├── .editorconfig
+├── .gitignore
+├── electron-builder.yml
+├── electron.vite.config.mjs
+├── package.json
+├── package-lock.json
+├── README.md
+├── TODO.md
+└── DOCUMENTATION_INDEX.md
