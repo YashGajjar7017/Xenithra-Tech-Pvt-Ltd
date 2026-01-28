@@ -15,11 +15,14 @@ router.get('/Account/Signup', (req, res) => {
   res.redirect('/Signup')
 })
 router.get('/Signup/:SignUpToken', signUpController.signUp)
-// router.post('/Signup', signUpController.postSignUp); // Disabled: frontend should POST directly to backend API
-router.post('/Signup/Verify/:SignUpToken')
+
+// POST signup - handle new user registration
+router.post('/Signup', signUpController.handleSignup)
+router.post('/Account/Signup', signUpController.handleSignup)
 
 // OTP Handler - aligned with backend routes
 router.get('/sendOTP', signUpController.OTP)
 router.post('/verifyOTP', signUpController.PostOTP)
+router.post('/sendOTP', signUpController.sendOTP)
 
 module.exports = router

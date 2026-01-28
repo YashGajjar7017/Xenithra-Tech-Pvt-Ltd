@@ -77,6 +77,85 @@ const validateSignupData = (data) => {
   return errors
 }
 
+// Handle signup registration (POST)
+exports.handleSignup = async (req, res) => {
+  try {
+    const { username, email, password, confirmPassword } = req.body
+
+    // Validate input
+    const errors = validateSignupData({ username, email, password, confirmPassword })
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: errors.join(', ')
+      })
+    }
+
+    console.log('Processing signup for:', email)
+
+    // Call backend signup API
+    const response = await axios.post(
+      'http://localhost:8000/api/signup',
+      {
+        username,
+        email,
+        password
+      },
+      {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 10000
+      }
+    )
+
+    console.log('Backend signup response:', response.data)
+
+    if (response.data.success) {
+      // Store user info in session
+      req.session.authenticated = true
+      req.session.user = {
+        id: response.data.user?.id,
+        username: response.data.user?.username,
+        email: response.data.user?.email,
+        role: response.data.user?.role || 'user',
+        token: response.data.token
+      }
+
+      // Set auth cookie
+      res.cookie('auth_token', response.data.token, {
+        httpOnly: false,
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000
+      })
+
+      res.json({
+        success: true,
+        message: 'Signup successful',
+        user: req.session.user,
+        token: response.data.token
+      })
+    } else {
+      res.status(400).json({
+        success: false,
+        message: response.data.message || 'Signup failed'
+      })
+    }
+  } catch (error) {
+    console.error('Signup error:', error.message)
+
+    if (error.response) {
+      res.status(error.response.status || 500).json({
+        success: false,
+        message: error.response.data?.message || 'Signup failed'
+      })
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Signup failed. Please try again later.'
+      })
+    }
+  }
+}
+
 // No-op signup handler: frontend should POST directly to backend API
 exports.postSignUp = (req, res) => {
   res.status(501).json({ error: 'Not implemented. Please POST directly to /Account/Signup.' })
