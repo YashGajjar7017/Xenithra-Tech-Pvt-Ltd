@@ -1,0 +1,89 @@
+/* Topbar Styles */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #1a1a28 0%, #2a2a3e 100%);
+  border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-left h2 {
+  margin: 0;
+  color: #e5f2ff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #6496ff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.topbar-right {
+  display: flex;
+  gap: 8px;
+}
+
+.topbar .btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(100, 150, 255, 0.3);
+  background: rgba(100, 150, 255, 0.1);
+  color: #6496ff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.topbar .btn:hover {
+  background: rgba(100, 150, 255, 0.2);
+  border-color: #6496ff;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6496ff, #4a7bff);
+  border-color: #6496ff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #7aa3ff, #5a8bff);
+}
+
+.btn-secondary {
+  background: rgba(100, 150, 255, 0.1);
+  border-color: rgba(100, 150, 255, 0.3);
+  color: #b0b0c0;
+}
+
+.btn-secondary:hover {
+  background: rgba(100, 150, 255, 0.2);
+  color: #6496ff;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .topbar-right {
+    gap: 4px;
+  }
+
+  .topbar .btn {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}

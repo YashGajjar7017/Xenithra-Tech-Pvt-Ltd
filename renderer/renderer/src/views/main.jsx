@@ -1,5 +1,3 @@
-import './assets/main.css'
-
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
@@ -10,6 +8,8 @@ import ClassroomPage from './classroom.jsx'
 import Dashboard_User from './Dashboard_User.jsx'
 import Maintenance from './Maintenance.jsx'
 import NotFound from './NotFound.jsx'
+
+import './assets/main.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

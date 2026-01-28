@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 3000
 
 // Middleware
 app.use(cors())
@@ -23,16 +23,13 @@ const connectDatabase = async () => {
     const mongooseDefault = mongoose.default || mongoose
     
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/xenithra_db'
-    await mongooseDefault.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    })
-    console.log('✅ MongoDB Connected Successfully')
+    await mongooseDefault.connect(mongoUri)
+    console.log('MongoDB Connected Successfully')
     mongooseConnected = true
     return true
   } catch (error) {
-    console.warn('⚠️  MongoDB Connection Error:', (error).message)
-    console.warn('⚠️  Running without database - use npm install mongoose to enable')
+    console.warn('~ MongoDB Connection Error:', (error).message)
+    console.warn('~ Running without database - use npm install mongoose to enable')
     return false
   }
 }
@@ -44,10 +41,10 @@ const loadRoutes = async () => {
     const authRoutes = authModule.default || authModule
     if (authRoutes) {
       app.use('/api', authRoutes)
-      console.log('✅ Auth routes loaded')
+      console.log('Auth routes loaded')
     }
   } catch (error) {
-    console.warn('⚠️  Could not load auth routes:', (error).message)
+    console.warn('~ Could not load auth routes:', (error).message)
   }
 }
 

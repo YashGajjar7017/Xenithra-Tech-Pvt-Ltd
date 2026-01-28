@@ -6,6 +6,7 @@ import './styles/App.css'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
+import EditorPage from './pages/EditorPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Layouts
@@ -15,6 +16,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/editor" element={<EditorPage />} />
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />

@@ -1,0 +1,65 @@
+/* Bottom Bar Styles */
+.bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #1a1a28 0%, #2a2a3e 100%);
+  border-top: 1px solid rgba(100, 150, 255, 0.2);
+  font-size: 12px;
+  color: #b0b0c0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.status-info {
+  display: flex;
+  gap: 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  color: #6496ff;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.status-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.status-btn {
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  color: #6496ff;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  border-radius: 3px;
+}
+
+.status-btn:hover {
+  background: rgba(100, 150, 255, 0.1);
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .bottom-bar {
+    padding: 6px 12px;
+  }
+
+  .status-info {
+    gap: 12px;
+  }
+
+  .status-item {
+    font-size: 10px;
+  }
+
+  .status-btn {
+    padding: 2px 4px;
+    font-size: 14px;
+  }
+}

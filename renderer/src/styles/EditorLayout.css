@@ -1,0 +1,83 @@
+/* Editor Layout Styles */
+.editor-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: #0f0f17;
+  overflow: hidden;
+}
+
+.editor-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.editor-body {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.editor-body > * {
+  flex: 1;
+  min-width: 300px;
+}
+
+.editor-body > div:first-child {
+  flex: 2;
+}
+
+.editor-body > div:last-child {
+  flex: 1;
+  min-height: 200px;
+}
+
+/* Light scrollbars for better visibility */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(100, 150, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 150, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 150, 255, 0.4);
+}
+
+@media (max-width: 1024px) {
+  .editor-body {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .editor-body > * {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .editor-layout {
+    flex-direction: column;
+  }
+
+  .editor-body {
+    flex-direction: column;
+  }
+
+  .editor-body > div {
+    flex: 1 !important;
+    min-height: 250px;
+  }
+}
