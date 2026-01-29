@@ -2,37 +2,22 @@ import React, { useState } from 'react'
 import '../styles/Editor.css'
 
 function Editor() {
-  const [code, setCode] = useState('// Start coding here...\nconsole.log("Hello World");')
-
-  const handleCodeChange = (e) => {
-    setCode(e.target.value)
-  }
-
-  const handleRun = () => {
-    console.log('Running code:', code)
-    // Add execution logic here
-  }
+  const [code, setCode] = useState('// Write your code here\nconsole.log("Hello, World!");')
 
   return (
     <div className="editor-container">
-      <div className="editor-toolbar">
-        <button className="btn btn-success" onClick={handleRun}>
-          ▶ Run
-        </button>
-        <button className="btn btn-secondary">🐞 Debug</button>
-        <button className="btn btn-secondary">Share</button>
-        <button className="btn btn-secondary">Format</button>
-        <button className="btn btn-secondary">Save</button>
+      <div className="editor-header">
+        <span className="file-name">main.js</span>
+        <div className="editor-tabs">
+          <button className="tab active">main.js</button>
+        </div>
       </div>
-      <div className="editor-wrapper">
-        <textarea
-          className="code-editor"
-          value={code}
-          onChange={handleCodeChange}
-          spellCheck="false"
-          placeholder="Enter your code here..."
-        />
-      </div>
+      <textarea
+        className="code-editor"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder="Enter your code here..."
+      />
     </div>
   )
 }

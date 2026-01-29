@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import './styles/App.css'
 
 // Pages
@@ -13,6 +13,11 @@ import NotFoundPage from './pages/NotFoundPage'
 import MainLayout from './layouts/MainLayout'
 
 function App() {
+  React.useEffect(() => {
+    const handler = () => document.body.classList.toggle('dark-theme')
+    window.addEventListener('toggle-theme', handler)
+    return () => window.removeEventListener('toggle-theme', handler)
+  }, [])
   return (
     <Router>
       <Routes>

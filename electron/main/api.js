@@ -68,6 +68,53 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', pid: process.pid })
 })
 
+// Basic Login route (demo - no real auth)
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password required' })
+  }
+
+  // Demo: simple validation
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password too short' })
+  }
+
+  // Mock user for demo
+  const user = {
+    id: 1,
+    username: email.split('@')[0],
+    email: email
+  }
+
+  req.session.user = user
+  res.json({ message: 'Login successful', user })
+})
+
+// Basic Signup route (demo - no real auth)
+app.post('/api/signup', (req, res) => {
+  const { username, email, password } = req.body
+
+  if (!username || !email || !password) {
+    return res.status(400).json({ message: 'Username, email, and password required' })
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' })
+  }
+
+  // Mock user for demo
+  const user = {
+    id: Math.random(),
+    username: username,
+    email: email
+  }
+
+  req.session.user = user
+  res.json({ message: 'Signup successful', user })
+})
+
 // Fallback route for CSS (explicit) to help packaged app lookups
 app.get('/css/:file', (req, res, next) => {
   const fileName = req.params.file

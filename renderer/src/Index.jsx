@@ -1,6 +1,6 @@
 import React from 'react';
 // import './css/NovaGlass.css';
-import './css/Beta_index.css';
+import './css/Beta_Index.css';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import Editor from './components/Editor';

@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Beta_Index from './Beta_Index.jsx'
+import Beta_Index from './Beta_Index_0.jsx'
 import Login from './Login.jsx'
 import Signup from './Signup.jsx'
 import ClassroomPage from './classroom.jsx'

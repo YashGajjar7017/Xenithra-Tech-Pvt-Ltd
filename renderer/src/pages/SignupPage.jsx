@@ -1,26 +1,45 @@
 import React, { useState } from 'react'
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+const SignupPage = () => {
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSignup = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:8000/api/login', {
+      const response = await fetch('http://localhost:8000/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password
+        })
       })
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Login failed')
+        throw new Error(data.message || 'Signup failed')
       }
 
       const data = await response.json()
@@ -36,17 +55,31 @@ const LoginPage = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <div style={styles.icon}>🔐</div>
-        <h1 style={styles.title}>Login</h1>
+        <div style={styles.icon}>✨</div>
+        <h1 style={styles.title}>Sign Up</h1>
         {error && <div style={styles.error}>{error}</div>}
         
-        <form onSubmit={handleLogin} style={styles.form}>
+        <form onSubmit={handleSignup} style={styles.form}>
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Username</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              style={styles.input}
+              placeholder="Choose a username"
+            />
+          </div>
+
           <div style={styles.formGroup}>
             <label style={styles.label}>Email</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               required
               style={styles.input}
               placeholder="you@example.com"
@@ -57,8 +90,22 @@ const LoginPage = () => {
             <label style={styles.label}>Password</label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              style={styles.input}
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
               required
               style={styles.input}
               placeholder="••••••••"
@@ -70,13 +117,13 @@ const LoginPage = () => {
             disabled={loading}
             style={{ ...styles.button, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Creating account...' : 'Sign Up'}
           </button>
         </form>
 
         <div style={styles.links}>
-          <a href="/#/signup" style={styles.link}>
-            Don't have an account? Sign up
+          <a href="/#/login" style={styles.link}>
+            Already have an account? Login
           </a>
         </div>
       </div>
@@ -149,7 +196,7 @@ const styles = {
     outline: 'none'
   },
   button: {
-    background: 'linear-gradient(120deg, #00e676, #00b0ff)',
+    background: 'linear-gradient(120deg, #ff00c8, #00e5ff)',
     border: 'none',
     borderRadius: '8px',
     color: '#fff',
@@ -157,7 +204,7 @@ const styles = {
     fontSize: '16px',
     fontWeight: '600',
     marginTop: '8px',
-    boxShadow: '0 0 22px rgba(0, 230, 118, 0.9)',
+    boxShadow: '0 0 22px rgba(0, 229, 255, 0.9)',
     transition: 'transform 0.2s'
   },
   links: {
@@ -171,4 +218,4 @@ const styles = {
   }
 }
 
-export default LoginPage
+export default SignupPage

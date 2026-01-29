@@ -9,7 +9,7 @@ export default defineConfig({
     },
     build: {
       lib: {
-        entry: 'electron/main/index.ts'
+        entry: 'electron/main/index.js'
       },
       rollupOptions: {
         external: ['express', 'path', 'cookie-parser', 'express-session', 'cors', 'dotenv', 'bcryptjs', 'jsonwebtoken', 'formidable', 'mongoose']
@@ -19,11 +19,12 @@ export default defineConfig({
   preload: {
     build: {
       lib: {
-        entry: 'electron/preload/index.ts'
+        entry: 'electron/preload/index.js'
       }
     }
   },
   renderer: {
+    // The renderer files live in the top-level `renderer` folder (not renderer/renderer)
     root: 'renderer',
     publicDir: 'renderer/public',
     server: {

@@ -1,7 +1,7 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Menu, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+const icon = join(__dirname, '../../renderer/public/Images/github.jpg')
 import { createRequire } from 'module'
 
 function createWindow() {
@@ -17,6 +17,49 @@ function createWindow() {
       sandbox: false
     }
   })
+
+  // Simple application menu with File -> Open and View -> Toggle Theme
+  try {
+    const template = [
+      {
+        label: 'File',
+        submenu: [
+          {
+            label: 'Open...',
+            accelerator: 'Ctrl+O',
+            click: async () => {
+              const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+                properties: ['openFile', 'multiSelections']
+              })
+              if (!canceled && filePaths && filePaths.length) {
+                mainWindow.webContents.send('open-files', filePaths)
+              }
+            }
+          },
+          { role: 'close' }
+        ]
+      },
+      {
+        label: 'View',
+        submenu: [
+          {
+            label: 'Toggle Theme',
+            accelerator: 'Ctrl+T',
+            click: () => mainWindow.webContents.send('toggle-theme')
+          },
+          { type: 'separator' },
+          { role: 'reload' },
+          { role: 'toggledevtools' }
+        ]
+      },
+      { role: 'help', submenu: [{ label: 'Learn More', click: () => shell.openExternal('https://electronjs.org') }] }
+    ]
+
+    const menu = Menu.buildFromTemplate(template)
+    Menu.setApplicationMenu(menu)
+  } catch (err) {
+    console.warn('Could not set application menu:', err.message)
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -51,13 +94,16 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  // Disable autofill to prevent DevTools errors
+  app.commandLine.appendSwitch('disable-features', 'Autofill')
+
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
   // Start local API server (if available)
   try {
     const requireMain = createRequire(import.meta.url)
-    const api = requireMain('./api.js')
+    const api = requireMain/('../../electron/main/api.js')
     if (api && typeof api.start === 'function') {
       // Default to 8000 to match expected port; can be overridden with API_PORT env var
       api.start(process.env.API_PORT || 8000)
@@ -74,15 +120,8 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
-
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
