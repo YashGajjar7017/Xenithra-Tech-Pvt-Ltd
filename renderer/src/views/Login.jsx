@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { authAPI } from './services/authAPI'
+import Sidebar from './components/Sidebar';
+import Topbar from './components/Topbar';
+import Editor from './components/Editor';
+import Terminal from './components/Terminal';
+import Bottom from './components/Bottom';
 
 const loginStyles = {
   container: {

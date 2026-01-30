@@ -59,6 +59,10 @@
   text-align: left;
 }
 
+.sidebar.collapsed .collapsed-icon {
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 60px;

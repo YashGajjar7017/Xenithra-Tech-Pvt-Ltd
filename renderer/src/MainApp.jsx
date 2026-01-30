@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import './styles/index.css'
+import './css/index.css'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 
@@ -87,11 +87,11 @@ press enter, and enjoy the glow.
   };
 
   const handleLogin = () => {
-    window.location.href = '/#/login'
+    window.location.href = '/login'
   }
 
   const handleSignup = () => {
-    window.location.href = '/#/signup'
+    window.location.href = '/signup'
   }
 
   const handleLogout = () => {
@@ -190,11 +190,11 @@ press enter, and enjoy the glow.
   }
 
   const handleLogin = () => {
-    window.location.href = '/#/login'
+    window.location.href = '/login'
   }
 
   const handleSignup = () => {
-    window.location.href = '/#/signup'
+    window.location.href = '/signup'
   }
 
   const handleLogout = () => {
@@ -203,7 +203,7 @@ press enter, and enjoy the glow.
       setIsLoggedIn(false)
       setUsername('User')
       alert('Logged out successfully!')
-      window.location.href = '/#/'
+      window.location.href = '/'
     }
   }
 
