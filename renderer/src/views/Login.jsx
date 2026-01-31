@@ -160,6 +160,7 @@ const Login = () => {
 
   return (
     <div style={loginStyles.container}>
+      <Topbar />
       <div style={loginStyles.card}>
         <div style={loginStyles.icon}>🔐</div>
         <h2 style={loginStyles.title}>Login</h2>

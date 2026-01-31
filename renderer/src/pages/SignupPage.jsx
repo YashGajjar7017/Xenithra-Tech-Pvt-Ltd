@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Header from '../components/ui/Header'
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -53,7 +54,9 @@ const SignupPage = () => {
   }
 
   return (
-    <div style={styles.container}>
+    <>
+      <Header />
+      <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.icon}>✨</div>
         <h1 style={styles.title}>Sign Up</h1>
@@ -128,6 +131,7 @@ const SignupPage = () => {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

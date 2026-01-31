@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import '../styles/Terminal.css'
+import '../../css/Terminal.css'
 
 function Terminal() {
   const [logs, setLogs] = useState(['Terminal ready...', '> '])

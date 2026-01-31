@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import '../styles/Editor.css'
+import '../../css/Editor.css'
 
 function Editor() {
   const [code, setCode] = useState('// Write your code here\nconsole.log("Hello, World!");')

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Header from '../components/ui/Topbar'
 
 const LoginPage = () => {
   const [email, setEmail] = useState('')
@@ -34,7 +35,9 @@ const LoginPage = () => {
   }
 
   return (
-    <div style={styles.container}>
+    <>
+      <Header />
+      <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.icon}>🔐</div>
         <h1 style={styles.title}>Login</h1>
@@ -75,12 +78,13 @@ const LoginPage = () => {
         </form>
 
         <div style={styles.links}>
-          <a href="/#/signup" style={styles.link}>
+          <a href="#/Account/signup" style={styles.link}>
             Don't have an account? Sign up
           </a>
         </div>
       </div>
     </div>
+    </>
   )
 }
 

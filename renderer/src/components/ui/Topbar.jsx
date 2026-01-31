@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import '../styles/Topbar.css'
+import '../../css/Topbar.css'
 
 function Topbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

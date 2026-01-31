@@ -1,5 +1,5 @@
 import React from 'react'
-import '../styles/Bottom.css'
+import '../../css/Bottom.css'
 
 function Bottom() {
   return (

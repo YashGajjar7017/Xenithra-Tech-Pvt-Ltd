@@ -1,15 +1,18 @@
 import React from 'react';
 // import './css/NovaGlass.css';
 import './css/Beta_Index.css';
-import Sidebar from './components/Sidebar';
-import Topbar from './components/Topbar';
-import Editor from './components/Editor';
-import Terminal from './components/Terminal';
-import Bottom from './components/Bottom';
+import Sidebar from './components/ui/Sidebar.jsx';
+import Topbar from './components/Topbar/Topbar.jsx';
+import Editor from './components/ui/Editor.jsx';
+import Terminal from './components/ui/Terminal.jsx';
+import Bottom from './components/ui/Bottom.jsx';
+import Header from './components/ui/Header.jsx';
+import Footer from './components/ui/Footer.jsx';
 
 const BetaIndex = () => {
   return (
     <div className="app">
+      <Header />
       <div className="border-neon"></div>
       <div className="shell">
         <Sidebar />
@@ -20,6 +23,7 @@ const BetaIndex = () => {
           <Terminal />
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
