@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { authAPI } from './services/authAPI'
+import { authAPI } from '../services/authAPI'
 
 const signupStyles = {
   container: {

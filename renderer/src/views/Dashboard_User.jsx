@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'boxicons/css/boxicons.min.css'
-import './css/UserDashboard.css'
+import '../css/UserDashboard.css'
 
 const UserDashboard = () => {
   const [userData, setUserData] = useState({

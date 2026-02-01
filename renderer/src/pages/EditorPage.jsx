@@ -1,10 +1,10 @@
 import React from 'react'
-import Sidebar from '@components/Sidebar'
-import Topbar from '@components/Topbar'
-import Editor from '@components/Editor'
-import Terminal from '@components/Terminal'
-import Bottom from '@components/Bottom'
-import '../styles/EditorLayout.css'
+import Sidebar from '@components/ui/Sidebar'
+import Topbar from '@components/ui/Topbar'
+import Editor from '@components/ui/Editor'
+import Terminal from '@components/ui/Terminal'
+import Bottom from '@components/ui/Bottom'
+import '@styles/EditorLayout.css'
 
 function EditorPage() {
   return (

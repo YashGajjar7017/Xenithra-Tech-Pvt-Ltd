@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createRoot } from 'react-dom/client'
-import './css/NovaGlass.css'
+import '../css/NovaGlass.css'
 
 const NovaGlassCodeStudio = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
