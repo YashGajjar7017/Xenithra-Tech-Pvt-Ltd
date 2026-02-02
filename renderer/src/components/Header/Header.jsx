@@ -72,7 +72,7 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
 
   const navigateToClassroom = () => {
     try {
-      window.location.href = '/#/Classroom'
+      window.location.href = '/classroom'
     } catch (error) {
       console.error('Error navigating to classroom:', error)
     }

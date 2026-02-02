@@ -4,6 +4,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import './css/index.css'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import ClassroomPage from './views/classroom'
 
 const MainApp = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -102,6 +103,7 @@ press enter, and enjoy the glow.
         <Route path="/Account/login" element={<LoginPage />} />
         <Route path="/Account/signup" element={<SignupPage />} />
         <Route path="/*" element={<MainContent isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} username={username} setUsername={setUsername} />} />
+        <Route path="/classroom" element={<ClassroomPage />} />
       </Routes>
     </Router>
   )
@@ -185,12 +187,15 @@ press enter, and enjoy the glow.
   const handleLogin = () => {
     window.location.href = '#/Account/login'
     localStorage.setItem('redirectAfterLogin', window.location.pathname)
-
   }
 
   const handleSignup = () => {
     window.location.href = '#/Account/signup'
   }
+  const navigateToClassroom = () => {
+    window.location.href = '#/classroom'
+    // localStorage.setItem('redirectAfterLogin', window.location.pathname)
+  } 
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
@@ -219,7 +224,7 @@ press enter, and enjoy the glow.
           <button title="Projects">📁 Projects</button>
           <button title="Snippets">📝 Snippets</button>
           <button title="Playground">🎮 Playground</button>
-          <button title="Classroom">🏫 Classroom</button>
+          <button title="Classroom" onClick={navigateToClassroom}>🏫 Classroom</button>
         </div>
 
         <div className="menu-spacer"></div>
