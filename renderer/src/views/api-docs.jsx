@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'boxicons/css/boxicons.min.css'
-import './api-docs.css'
+import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/boxicons/boxicons.min.css'
+import '../css/api-docs.css'
 
 const ApiDocsPage = () => {
   const [activeExampleTab, setActiveExampleTab] = useState('javascript')

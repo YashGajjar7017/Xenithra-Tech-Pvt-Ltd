@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css'
+import '../css/bootstrap/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
-import './AdminPanel.css'
+import '../css/AdminPanel.css'
 
 const AdminPanel = () => {
   const [activeSection, setActiveSection] = useState('dashboard')

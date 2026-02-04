@@ -1,5 +1,5 @@
-import 'bootstrap/dist/css/bootstrap.min.css'
-import './ContactUs.css'
+import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/ContactUs.css'
 
 const ContactUsPage = () => {
   const teamMembers = [

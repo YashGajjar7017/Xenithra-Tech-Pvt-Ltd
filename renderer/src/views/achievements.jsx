@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'boxicons/css/boxicons.min.css'
-import './achievements.css'
+import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/boxicons/css/boxicons.min.css'
+import '../css/achievements.css'
 
 const AchievementsPage = () => {
   const [activeCategory, setActiveCategory] = useState('all')

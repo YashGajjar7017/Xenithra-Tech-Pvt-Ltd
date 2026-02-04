@@ -25,7 +25,8 @@
     "chart.js": "^4.5.1",
     "react-chartjs-2": "^5.3.1",
     "react-devtools": "^1.0.5",
-    "react-router-dom": "^7.13.0"
+    "react-router-dom": "^7.13.0",
+    "simple-peer": "^9.11.1"
   },
   "optionalDependencies": {
     "bcryptjs": "^2.4.3",

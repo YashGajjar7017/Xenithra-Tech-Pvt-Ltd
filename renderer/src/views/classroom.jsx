@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'boxicons/css/boxicons.min.css'
+import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/boxicons/boxicons.min.css'
 import '../css/classroom.css'
 
 const ClassroomPage = () => {
@@ -274,219 +274,65 @@ const ClassroomPage = () => {
       </div>
 
       {/* Main Content */}
-      <div
-        className="content"
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          minHeight: '80vh'
-        }}
-      >
-        <div
-          className="glass-container"
-          style={{
-            background: 'rgba(255,255,255,0.25)',
-            boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '20px',
-            border: '1px solid rgba(255,255,255,0.18)',
-            padding: '2.5rem 2rem',
-            width: '480px',
-            maxWidth: '98vw',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '2rem'
-          }}
-        >
+      <div className="content">
+        <div className="glass-container">
           {/* Header */}
-          <div
-            className="classroom-header"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-          >
-            <span
-              className="classroom-title"
-              style={{ fontSize: '2rem', fontWeight: '700', color: '#222', letterSpacing: '1px' }}
-            >
-              Classroom
-            </span>
-            <i className="bx bxs-chalkboard" style={{ fontSize: '2rem', color: '#007bff' }}></i>
+          <div className="classroom-header">
+            <span className="classroom-title">Classroom</span>
+            <i className="bx bxs-chalkboard"></i>
           </div>
 
           {/* Token Area */}
-          <div
-            className="token-area"
-            style={{
-              background: 'rgba(255,255,255,0.5)',
-              borderRadius: '12px',
-              padding: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '1.1rem',
-              fontWeight: '500',
-              color: '#333',
-              marginBottom: '0.5rem'
-            }}
-          >
+          <div className="token-area">
             <span>{classroomToken}</span>
-            <i
-              className="bx bx-copy token-copy"
-              title="Copy token"
-              style={{
-                cursor: 'pointer',
-                color: '#007bff',
-                fontSize: '1.3rem',
-                marginLeft: '1rem'
-              }}
-              onClick={copyToken}
-            />
+            <i className="bx bx-copy token-copy" title="Copy token" onClick={copyToken}></i>
           </div>
 
           {/* Join Area */}
-          <div
-            className="join-area"
-            style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
-          >
+          <div className="join-area">
             <input
               type="text"
               className="join-input"
               placeholder="Paste classroom code/token to join..."
-              style={{
-                flex: 1,
-                padding: '0.7rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid #ccc',
-                fontSize: '1rem',
-                background: 'rgba(255,255,255,0.7)'
-              }}
               value={joinToken}
               onChange={(e) => setJoinToken(e.target.value)}
             />
-            <button
-              className="join-btn"
-              style={{
-                padding: '0.7rem 1.2rem',
-                borderRadius: '8px',
-                border: 'none',
-                background: '#007bff',
-                color: '#fff',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-              onClick={joinClassroom}
-            >
+            <button className="join-btn" onClick={joinClassroom}>
               Join Class
             </button>
           </div>
 
           {/* Members Area */}
-          <div
-            className="members-area"
-            style={{
-              background: 'rgba(255,255,255,0.4)',
-              borderRadius: '12px',
-              padding: '1rem',
-              marginTop: '1rem'
-            }}
-          >
-            <div
-              className="members-title"
-              style={{
-                fontSize: '1.1rem',
-                fontWeight: '600',
-                marginBottom: '0.5rem',
-                color: '#333'
-              }}
-            >
-              Members
-            </div>
-            <ul
-              className="member-list"
-              style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '0.5rem'
-              }}
-            >
+          <div className="members-area">
+            <div className="members-title">Members</div>
+            <ul className="member-list">
               {members.length === 0 ? <li>Loading...</li> : renderMembers()}
             </ul>
             {showAdminActions && (
-              <div id="admin-actions" style={{ marginTop: '1rem' }}>
+              <div id="admin-actions">
                 <input
                   type="text"
                   id="add-member-id"
                   placeholder="User ID to add"
-                  style={{
-                    padding: '0.3rem 0.7rem',
-                    borderRadius: '6px',
-                    border: '1px solid #ccc'
-                  }}
                   value={addMemberId}
                   onChange={(e) => setAddMemberId(e.target.value)}
                 />
-                <button
-                  onClick={addMember}
-                  style={{
-                    marginLeft: '0.5rem',
-                    padding: '0.3rem 0.8rem',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: '#007bff',
-                    color: '#fff'
-                  }}
-                >
-                  Add Member
-                </button>
+                <button onClick={addMember}>Add Member</button>
               </div>
             )}
           </div>
 
           {/* Editor Area */}
-          <div
-            className="editor-area"
-            style={{
-              marginTop: '2rem',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
-            }}
-          >
+          <div className="editor-area">
             <textarea
               id="editor"
               placeholder="Start coding together in real-time..."
-              style={{
-                width: '100%',
-                height: '320px',
-                fontSize: '1rem',
-                background: '#1e1e1e',
-                color: '#fff',
-                border: 'none',
-                outline: 'none',
-                resize: 'none',
-                padding: '1rem',
-                fontFamily: "'Fira Mono','Consolas',monospace"
-              }}
               value={editorContent}
               onChange={handleEditorChange}
               disabled={!isConnected}
             />
             {!isConnected && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  color: '#666',
-                  fontSize: '0.9rem'
-                }}
-              >
-                Connecting to peers...
-              </div>
+              <div className="connecting-message">Connecting to peers...</div>
             )}
           </div>
         </div>

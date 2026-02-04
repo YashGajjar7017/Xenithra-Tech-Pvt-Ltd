@@ -12,9 +12,9 @@ import {
   Title
 } from 'chart.js'
 import { Doughnut, Bar, Line } from 'react-chartjs-2'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'boxicons/css/boxicons.min.css'
-import './dashboard.css'
+import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/boxicons/boxicons.min.css'
+import '../css/dashboard.css'
 
 // Register Chart.js components
 ChartJS.register(

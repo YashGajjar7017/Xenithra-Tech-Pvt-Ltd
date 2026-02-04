@@ -14,7 +14,7 @@ import {
 import { Line, Bar, Doughnut } from 'react-chartjs-2'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'boxicons/css/boxicons.min.css'
-import './analytics.css'
+import '../css/analytics.css'
 
 // Register Chart.js components
 ChartJS.register(

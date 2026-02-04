@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import './ThemeSelector.css'
+import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/ThemeSelector.css'
 
 const ThemeSelector = () => {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false)

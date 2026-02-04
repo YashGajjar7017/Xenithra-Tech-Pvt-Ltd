@@ -1,5 +1,5 @@
-import 'bootstrap/dist/css/bootstrap.min.css'
-import './navbar-glassy.css' // if you actually use that elsewhere
+import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/navbar-glassy.css' // if you actually use that elsewhere
 
 const RoleErrorPage = () => {
   return (

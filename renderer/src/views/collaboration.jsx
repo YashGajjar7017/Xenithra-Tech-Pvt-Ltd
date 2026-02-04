@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'boxicons/css/boxicons.min.css'
+import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/boxicons/boxicons.min.css'
 import '../css/collaboration.css'
 
 const CollaborationPage = () => {

@@ -1,5 +1,5 @@
-import './404.css'
-import 'bootstrap/dist/css/bootstrap.min.css'
+import '../css/404.css'
+import '../css/bootstrap/css/bootstrap.min.css'
 
 const NotFoundPage = () => {
   return (
