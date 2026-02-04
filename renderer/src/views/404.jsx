@@ -1,5 +1,6 @@
 import '../css/404.css'
 import '../css/bootstrap/css/bootstrap.min.css'
+import '../css/boxicons/css/boxicons.min.css'
 
 const NotFoundPage = () => {
   return (
