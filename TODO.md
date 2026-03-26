@@ -1,1 +1,8 @@
-# TODO: Make textarea resize up/down only (not sideways)\n\n**Status**: ✅ COMPLETE\n\n## Steps:\n- [x] 1. Edit renderer/src/App.jsx (inline textarea style) ✅\n- [x] 2. Edit renderer/src/css/index.css (global textarea rule) ✅\n- [x] 3. Test changes (user to verify in running app)\n- [x] 4. Mark complete ✅\n\n**Changes:**\n- App.jsx: `resize: 'both'` → `resize: 'vertical'`\n- index.css: `resize: both;` → `resize: vertical;`\n\nReload dev server to see textarea now resizes only vertically.
+# Vite Source Map Error Fix - TODO
+
+## Plan Steps:
+- [x] Step 1: Edit `renderer/src/css/boxicons/boxicons.min.css` - Remove erroneous sourceMappingURL comment
+- [x] Step 2: Edit `electron.vite.config.mjs` - Disable CSS dev sourcemaps
+- [ ] Step 3: Verify fix - Restart dev server, check no errors
+- [ ] Step 3: Verify fix - Restart dev server, check no errors
+

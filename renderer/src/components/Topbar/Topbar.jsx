@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { topbarStyles } from './topbarStyles'
 
-const Topbar = ({ onToggleSidebar }) => {
+const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [selectedLang, setSelectedLang] = useState('Node.js')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -73,16 +73,43 @@ const Topbar = ({ onToggleSidebar }) => {
     // TODO: Implement new file logic
   }
 
-  const handleFileOpen = () => {
-    console.log('File: Open - Opening file dialog')
+  const handleFileOpen = async () => {
     setFileDropdownOpen(false)
-    // TODO: Implement open file logic
+    try {
+      const file = await window.api.openFileDialog()
+      if (file) {
+        setCode(file.content)
+        setFilename(file.name)
+        console.log('Opened file:', file.name)
+      }
+    } catch (error) {
+      console.error('Open file error:', error)
+    }
   }
 
   const handleFileSave = () => {
-    console.log('File: Save - Saving current file')
+    console.log('File: Save - Saving current file:', filename)
     setFileDropdownOpen(false)
-    // TODO: Implement save file logic
+    // Download current file
+    const blob = new Blob([code], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleFileSaveAs = () => {
+    console.log('File: Save As - Saving with new name')
+    setFileDropdownOpen(false)
+    const blob = new Blob([code], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `xenithra_${Date.now()}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const handleFileExit = () => {
@@ -197,8 +224,12 @@ const Topbar = ({ onToggleSidebar }) => {
         {fileDropdownOpen && (
           <div className="dropdown-menu">
             <button onClick={handleFileNew}>New</button>
-            <button onClick={handleFileOpen}>Open</button>
+            <button onClick={handleFileOpen}>Open...</button>
             <button onClick={handleFileSave}>Save</button>
+            <button onClick={handleFileSaveAs}>Save As...</button>
+            <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)' }} />
+            <button>Export as PDF</button>
+            <button>Recent Files</button>
             <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)' }} />
             <button onClick={handleFileExit}>Exit</button>
           </div>

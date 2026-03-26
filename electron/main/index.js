@@ -97,8 +97,32 @@ app.whenReady().then(() => {
   // Disable autofill to prevent DevTools errors
   app.commandLine.appendSwitch('disable-features', 'Autofill')
 
-  // IPC test
+// IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // File open dialog IPC
+  ipcMain.handle('dialog:openFile', async () => {
+    const mainWindow = BrowserWindow.getFocusedWindow()
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile'],
+      filters: [
+        { name: 'Code Files', extensions: ['js', 'jsx', 'ts', 'tsx', 'py', 'cpp', 'c', 'java', 'html', 'css', 'json'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    })
+    
+    if (canceled || !filePaths.length) return null
+    
+    const filePath = filePaths[0]
+    try {
+      const fs = require('fs').promises
+      const content = await fs.readFile(filePath, 'utf-8')
+      return { path: filePath, content, name: require('path').basename(filePath) }
+    } catch (err) {
+      console.error('File read error:', err)
+      return null
+    }
+  })
 
   // Start local API server (if available)
   try {

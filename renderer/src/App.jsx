@@ -25,10 +25,18 @@ const MainApp = () => {
 // Main Layout Component - Wraps pages with navbar and sidebar
 const MainLayout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [code, setCode] = useState(`/******************************************************************************\nXenithra Code Studio. Futuristic glassmorphism IDE with neon gradients. \nType here, press enter, and enjoy the glow.\n*******************************************************************************/\n\nconsole.log('Hello, Xenithra!');`)
+  const [filename, setFilename] = useState('untitled.js')
 
   return (
     <>
-      <Topbar onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)} />
+      <Topbar 
+        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        code={code}
+        setCode={setCode}
+        filename={filename}
+        setFilename={setFilename}
+      />
       <div className="app">
         <div className="border-neon"></div>
         <div className="shell">

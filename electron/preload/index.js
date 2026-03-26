@@ -19,7 +19,8 @@ console.error = (...args) => {
 const api = {
   // Renderer can register callbacks for messages from main
   onOpenFiles: (cb) => ipcRenderer.on('open-files', (_event, files) => cb(files)),
-  onToggleTheme: (cb) => ipcRenderer.on('toggle-theme', () => cb())
+  onToggleTheme: (cb) => ipcRenderer.on('toggle-theme', () => cb()),
+  openFileDialog: () => ipcRenderer.invoke('dialog:openFile')
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).

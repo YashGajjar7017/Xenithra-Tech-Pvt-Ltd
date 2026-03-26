@@ -44,6 +44,9 @@ export default defineConfig({
       }
     },
     plugins: [react()],
+    css: {
+      devSourcemap: false
+    },
     build: {
       rollupOptions: {
         input: {
