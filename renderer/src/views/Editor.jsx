@@ -207,7 +207,12 @@ const Editor = () => {
               border: '1px solid #ced4da',
               borderRadius: '4px',
               fontFamily: 'monospace',
-              fontSize: '14px'
+              fontSize: '14px',
+              resize: 'both',
+              overflow: 'auto',
+              minHeight: '200px',
+              width: '100%',
+              boxSizing: 'border-box'
             }}
           />
         </div>

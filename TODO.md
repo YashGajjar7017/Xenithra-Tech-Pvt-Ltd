@@ -1,5 +1,1 @@
-# TODO: Add Header to Login & Signup Pages
-
-- [x] Update LoginPage.jsx: Change import from Topbar to Header and replace <Topbar /> with <Header />
-- [x] Update SignupPage.jsx: Add import for Header component and add <Header /> at the top of the page
-- [x] Verify changes and ensure pages render correctly
+# TODO: Make textarea resize up/down only (not sideways)\n\n**Status**: ✅ COMPLETE\n\n## Steps:\n- [x] 1. Edit renderer/src/App.jsx (inline textarea style) ✅\n- [x] 2. Edit renderer/src/css/index.css (global textarea rule) ✅\n- [x] 3. Test changes (user to verify in running app)\n- [x] 4. Mark complete ✅\n\n**Changes:**\n- App.jsx: `resize: 'both'` → `resize: 'vertical'`\n- index.css: `resize: both;` → `resize: vertical;`\n\nReload dev server to see textarea now resizes only vertically.

@@ -14,7 +14,6 @@ if (window.api) {
   try {
     window.api.onOpenFiles((files) => {
       console.log('Files opened from menu:', files)
-      // TODO: implement handling (open in editor, recent list, etc.)
     })
 
     window.api.onToggleTheme(() => {

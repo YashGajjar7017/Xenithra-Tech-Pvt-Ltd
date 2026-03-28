@@ -68,6 +68,18 @@ body {
   border-color: var(--danger-color);
 }
 
+/* Textarea Styles - Resizable and Flexible */
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+  overflow-y: auto;
+  font-family: inherit;
+}
+
+textarea.form-control:focus {
+  resize: both;
+}
+
 /* Labels */
 .form-label {
   display: block;
