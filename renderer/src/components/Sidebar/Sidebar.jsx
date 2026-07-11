@@ -1,201 +1,185 @@
-import { useState, useEffect } from 'react'
-import { sidebarStyles } from './sidebarStyles'
+import React, { useState, useEffect } from 'react'
 
 const Sidebar = ({ collapsed, sidebarWidth }) => {
-  const [activeItem, setActiveItem] = useState('home')
-  const [folderPath, setFolderPath] = useState('')
-  const [folderContents, setFolderContents] = useState([])
-  const [expandedDirs, setExpandedDirs] = useState({})
+  const [activeFile, setActiveFile] = useState('index.html')
+  const [expandedDirs, setExpandedDirs] = useState({
+    'my-project': true,
+    'src': true,
+    'public': false,
+    'config': false
+  })
 
-  const menuItems = [
-    { id: 'home', label: 'Home', icon: '🏠' },
-    { id: 'open-folder', label: 'Open Folder', icon: '📁' },
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' }
-  ]
-
-  // Handle Open Folder - simulate file browser
-  const handleOpenFolder = () => {
-    // In Electron, this would use ipcRenderer
-    // For web, we can use the File System Access API
-    if (window.ipcRenderer) {
-      window.ipcRenderer.invoke('open-folder-dialog').then(result => {
-        if (result && !result.cancelled) {
-          setFolderPath(result.filePaths[0])
-          setActiveItem('open-folder')
-          loadFolderContents(result.filePaths[0])
-        }
-      })
-    } else {
-      // Fallback: just show a message
-      alert('Using fallback: Folder dialog - Set folder path')
-      setFolderPath('C:/Users/Projects/MyApp')
-      setActiveItem('open-folder')
-      loadFolderContents('C:/Users/Projects/MyApp')
-    }
-  }
-
-  // Mock folder loading
-  const loadFolderContents = (path) => {
-    // Simulate folder structure
-    const mockContents = [
-      { name: 'src', isDir: true },
-      { name: 'public', isDir: true },
-      { name: 'README.md', isDir: false },
-      { name: 'package.json', isDir: false },
-      { name: '.gitignore', isDir: false },
-      { name: 'node_modules', isDir: true }
+  // Simulated project files tree
+  const fileTree = {
+    name: 'MY-PROJECT',
+    isDir: true,
+    key: 'my-project',
+    children: [
+      {
+        name: 'src',
+        isDir: true,
+        key: 'src',
+        children: [
+          { name: 'index.html', isDir: false, key: 'index.html', content: `<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>` },
+          { name: 'main.js', isDir: false, key: 'main.js', content: `console.log("Hello from Xenithra IDE!");\n\nconst greet = (name) => {\n  console.log(\`Greetings, \${name}!\`);\n};\n\ngreet("Developer");` },
+          { name: 'style.css', isDir: false, key: 'style.css', content: `body {\n  margin: 0;\n  background: #111;\n  color: #fff;\n  font-family: sans-serif;\n}` }
+        ]
+      },
+      {
+        name: 'public',
+        isDir: true,
+        key: 'public',
+        children: [
+          { name: 'favicon.ico', isDir: false, key: 'favicon.ico', content: '(Binary Favicon Data)' }
+        ]
+      },
+      {
+        name: 'config',
+        isDir: true,
+        key: 'config',
+        children: [
+          { name: 'webpack.config.js', isDir: false, key: 'webpack.config.js', content: 'module.exports = {\n  entry: "./src/main.js"\n};' }
+        ]
+      },
+      { name: 'README.md', isDir: false, key: 'README.md', content: '# My Project\n\nA sample project to get started with the Xenithra IDE.\n\n## Features\n- File editing\n- AI Assistant support\n- Terminal output' },
+      { name: 'utils.js', isDir: false, key: 'utils.js', content: 'export const delay = ms => new Promise(res => setTimeout(res, ms));' }
     ]
-    setFolderContents(mockContents)
   }
 
-  const handleMenuClick = (itemId) => {
-    setActiveItem(itemId)
-    
-    if (itemId === 'open-folder') {
-      handleOpenFolder()
-    } else if (itemId === 'dashboard') {
-      window.location.href = '/#/Dashboard'
-    } else if (itemId === 'settings') {
-      console.log('Settings clicked')
-    }
-  }
-
-  const toggleDirExpand = (dirName) => {
+  const toggleDirExpand = (dirKey) => {
     setExpandedDirs(prev => ({
       ...prev,
-      [dirName]: !prev[dirName]
+      [dirKey]: !prev[dirKey]
     }))
   }
 
-  const handleFileClick = (fileName) => {
-    // In a real app, this would open the file in the editor
-    console.log('File clicked:', fileName)
-    // Dispatch event to editor to open file
-    window.dispatchEvent(new CustomEvent('open-file', { detail: { fileName } }))
+  const handleFileClick = (file) => {
+    setActiveFile(file.key)
+    // Dispatch custom event to let EditorPage update code content
+    window.dispatchEvent(new CustomEvent('open-file', { 
+      detail: { 
+        filename: file.name,
+        code: file.content
+      } 
+    }))
+  }
+
+  // Render file tree recursively with styling
+  const renderTree = (node, depth = 0) => {
+    const isExpanded = expandedDirs[node.key]
+    const indent = depth * 12
+
+    if (node.isDir) {
+      return (
+        <div key={node.key}>
+          <div
+            onClick={() => toggleDirExpand(node.key)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '6px 12px 6px ' + (indent + 12) + 'px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: depth === 0 ? '600' : 'normal',
+              color: depth === 0 ? 'var(--text-main)' : 'var(--text-muted)',
+              transition: 'background 0.2s',
+              gap: '6px',
+              userSelect: 'none'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <span style={{ fontSize: '9px', opacity: 0.6 }}>{isExpanded ? '▼' : '▶'}</span>
+            <span>📁</span>
+            <span style={{ letterSpacing: depth === 0 ? '0.04em' : 'normal' }}>{node.name}</span>
+          </div>
+          
+          {isExpanded && node.children && (
+            <div>
+              {node.children.map(child => renderTree(child, depth + 1))}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    const isActive = activeFile === node.key
+
+    return (
+      <div
+        key={node.key}
+        onClick={() => handleFileClick(node)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '5px 12px 5px ' + (indent + 22) + 'px',
+          cursor: 'pointer',
+          fontSize: '12px',
+          color: isActive ? 'var(--accent-color)' : 'var(--text-muted)',
+          background: isActive ? 'rgba(0, 229, 255, 0.08)' : 'transparent',
+          borderLeft: isActive ? '2px solid var(--accent-color)' : '2px solid transparent',
+          gap: '6px',
+          userSelect: 'none',
+          transition: 'all 0.15s'
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) e.currentTarget.style.background = 'transparent'
+        }}
+      >
+        <span>📄</span>
+        <span>{node.name}</span>
+      </div>
+    )
+  }
+
+  if (collapsed) {
+    return (
+      <div style={{ width: '60px', background: 'var(--sidebar-bg)', borderRight: '1px solid var(--panel-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px 0', gap: '20px' }}>
+        <div style={{ fontSize: '18px', cursor: 'pointer', opacity: 0.6 }} title="Expand Explorer">📂</div>
+        <div style={{ fontSize: '18px', cursor: 'pointer', opacity: 0.6 }} title="Open Editors">📄</div>
+      </div>
+    )
   }
 
   return (
-    <div style={{ ...sidebarStyles.sidebar, width: collapsed ? '60px' : `${sidebarWidth}px` }}>
-      <div style={sidebarStyles.logo}>
-        <div style={sidebarStyles.logoBox}>X</div>
-        {!collapsed && <span>Xenithra</span>}
-      </div>
-
-      {!collapsed && <div style={sidebarStyles.subtitle}>Technologies</div>}
-
-      {!collapsed && <div style={sidebarStyles.pillLabel}>Explorer</div>}
-
-      <div style={sidebarStyles.buttonGroup}>
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            style={{
-              ...sidebarStyles.button,
-              background:
-                activeItem === item.id
-                  ? 'rgba(0, 229, 255, 0.2)'
-                  : 'radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.15), rgba(6, 10, 30, 0.94))'
-            }}
-            onClick={() => handleMenuClick(item.id)}
-            title={collapsed ? item.label : ''}
-          >
-            <span>{item.icon}</span>
-            {!collapsed && <span style={{ marginLeft: '8px' }}>{item.label}</span>}
-          </button>
-        ))}
-      </div>
-
-      {/* Folder Contents */}
-      {!collapsed && folderPath && (
-        <>
-          <div style={{ ...sidebarStyles.pillLabel, marginTop: '12px' }}>Explorer</div>
-          <div style={{ 
-            fontSize: '10px', 
-            padding: '8px', 
-            opacity: 0.7,
-            wordBreak: 'break-all',
-            marginBottom: '10px'
-          }}>
-            📂 {folderPath.split('\\').pop() || folderPath.split('/').pop()}
-          </div>
-          
-          <div style={{
-            fontSize: '11px',
-            maxHeight: '300px',
-            overflowY: 'auto',
-            paddingLeft: '8px'
-          }}>
-            {folderContents.map((item, idx) => (
-              <div key={idx}>
-                {item.isDir ? (
-                  <>
-                    <div
-                      style={{
-                        cursor: 'pointer',
-                        padding: '4px',
-                        hover: { background: 'rgba(255,255,255,0.1)' }
-                      }}
-                      onClick={() => toggleDirExpand(item.name)}
-                    >
-                      {expandedDirs[item.name] ? '▼' : '▶'} 📁 {item.name}
-                    </div>
-                    {expandedDirs[item.name] && (
-                      <div style={{ paddingLeft: '16px', color: '#aaa' }}>
-                        <div style={{ padding: '2px', cursor: 'pointer' }}>📄 file.js</div>
-                        <div style={{ padding: '2px', cursor: 'pointer' }}>📄 file2.js</div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div
-                    style={{
-                      cursor: 'pointer',
-                      padding: '4px',
-                      paddingLeft: '16px'
-                    }}
-                    onClick={() => handleFileClick(item.name)}
-                    onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-                    onMouseOut={(e) => e.target.style.background = 'transparent'}
-                  >
-                    📄 {item.name}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {!collapsed && (
-        <>
-          <div style={sidebarStyles.pillLabel}>Tools</div>
-          <div style={sidebarStyles.buttonGroup}>
-            <button style={sidebarStyles.button} title={collapsed ? 'Terminal' : ''}>
-              <span>💻</span>
-              {!collapsed && <span style={{ marginLeft: '8px' }}>Terminal</span>}
-            </button>
-            <button style={sidebarStyles.button} title={collapsed ? 'Extensions' : ''}>
-              <span>🔌</span>
-              {!collapsed && <span style={{ marginLeft: '8px' }}>Extensions</span>}
-            </button>
-          </div>
-        </>
-      )}
-
-      <div style={sidebarStyles.userSection}>
-        <div style={sidebarStyles.userInfo}>
-          <div style={sidebarStyles.userLogo}>👤</div>
-          {!collapsed && <div style={sidebarStyles.userName}>User</div>}
+    <div style={{ width: `${sidebarWidth}px`, background: 'var(--sidebar-bg)', borderRight: '1px solid var(--panel-border)', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* Sidebar Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid var(--panel-border)' }}>
+        <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '0.08em' }}>EXPLORER</span>
+        <div style={{ display: 'flex', gap: '8px', opacity: 0.7, fontSize: '12px' }}>
+          <span style={{ cursor: 'pointer' }} title="New File">📄</span>
+          <span style={{ cursor: 'pointer' }} title="New Folder">📁</span>
+          <span style={{ cursor: 'pointer' }} title="Refresh Explorer">↻</span>
         </div>
       </div>
 
-      {collapsed && (
-        <div style={sidebarStyles.collapsedIcons}>
-          <div style={sidebarStyles.collapsedIcon}>⚙️</div>
-          <div style={sidebarStyles.collapsedIcon}>🔔</div>
+      {/* Open Editors Section */}
+      <div style={{ borderBottom: '1px solid var(--panel-border)', paddingBottom: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+          ▼ OPEN EDITORS
         </div>
-      )}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '5px 22px',
+          fontSize: '12px',
+          cursor: 'pointer',
+          color: 'var(--accent-color)',
+          background: 'rgba(0, 229, 255, 0.04)',
+          gap: '6px'
+        }}>
+          <span>📄</span>
+          <span>{activeFile.split('/').pop()}</span>
+        </div>
+      </div>
+
+      {/* Project Folder Explorer */}
+      <div style={{ flex: 1, overflowY: 'auto', paddingTop: '8px' }}>
+        {renderTree(fileTree)}
+      </div>
     </div>
   )
 }

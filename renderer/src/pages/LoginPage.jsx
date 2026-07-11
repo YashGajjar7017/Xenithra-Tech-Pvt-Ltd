@@ -12,7 +12,8 @@ const LoginPage = () => {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:8000/api/login', {
+      const port = localStorage.getItem('api-port') || '8000'
+      const response = await fetch(`http://localhost:${port}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

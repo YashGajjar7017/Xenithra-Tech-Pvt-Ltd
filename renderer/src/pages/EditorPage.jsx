@@ -2,102 +2,49 @@ import React, { useState, useEffect, useRef } from 'react'
 
 const EditorPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('Node.js')
-  const [code, setCode] = useState(`/******************************************************************************
-Xenithra Code Studio. Futuristic glassmorphism IDE with neon gradients. 
-Type here, click Run, and enjoy the glow.
-*******************************************************************************/
-
-console.log('Hello, Xenithra!');`)
+  const [activeTab, setActiveTab] = useState('index.html')
+  const [code, setCode] = useState(`<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>`)
   const [terminalLines, setTerminalLines] = useState([
-    { text: 'xenithra@glass:~$', className: 'prompt' },
-    { text: 'System diagnostics operational. Compiler engine online.', className: 'muted' }
+    { text: 'Xenithra Technologies IDE Terminal v2.0', className: 'muted' },
+    { text: 'System diagnostics operational. Compiler engine online.', className: 'muted' },
+    { text: 'xenithra@studio:~$', className: 'prompt' }
   ])
   const [cliArgs, setCliArgs] = useState('')
   const [isRunning, setIsRunning] = useState(false)
-  const [showTimer, setShowTimer] = useState(false)
-  const [timerTime, setTimerTime] = useState(300) // 5 minutes default
-  const [timerRunning, setTimerRunning] = useState(false)
+  const [activeTerminalTab, setActiveTerminalTab] = useState('Terminal')
 
   // Layout resize states
-  const [editorHeight, setEditorHeight] = useState(400) // default editor height in pixels
+  const [editorHeight, setEditorHeight] = useState(380) // default editor height in pixels
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
 
   const codeAreaRef = useRef(null)
   const terminalBodyRef = useRef(null)
 
-  // Sync default code template when language changes
+  // Listen to open-file events from the sidebar
   useEffect(() => {
-    switch (selectedLanguage) {
-      case 'C (GCC)':
-        setCode(`// Xenithra Code Studio - GCC compiler
-#include <stdio.h>
+    const handleOpenFile = (event) => {
+      if (event.detail) {
+        const { filename, code: fileCode } = event.detail
+        setActiveTab(filename)
+        if (fileCode) {
+          setCode(fileCode)
+        }
 
-int main() {
-    printf("Hello from C compilation engine!\\n");
-    return 0;
-}`)
-        break
-      case 'C++ (G++)':
-        setCode(`// Xenithra Code Studio - G++ compiler
-#include <iostream>
-using namespace std;
-
-int main() {
-    cout << "Hello from C++ compilation engine!" << endl;
-    return 0;
-}`)
-        break
-      case 'Python 3':
-        setCode(`# Xenithra Code Studio - Python 3 runner
-import sys
-
-print("Hello from Python runner engine!")
-print("Version:", sys.version)`)
-        break
-      case 'Node.js':
-        setCode(`// Xenithra Code Studio - Node.js runner
-console.log("Hello from Node.js runner engine!");
-console.log("Process PID:", process.pid);`)
-        break
-      case 'Dot Net':
-        setCode(`// Xenithra Code Studio - C# compiler
-using System;
-
-class Program {
-    static void Main(string[] args) {
-        Console.WriteLine("Hello from C# compiler engine!");
+        // Auto-set compilation language based on extension
+        const ext = filename.split('.').pop()
+        if (ext === 'html') setSelectedLanguage('XML')
+        else if (ext === 'js') setSelectedLanguage('Node.js')
+        else if (ext === 'css') setSelectedLanguage('XML')
+        else if (ext === 'py') setSelectedLanguage('Python 3')
+        else if (ext === 'cpp') setSelectedLanguage('C++ (G++)')
+        else if (ext === 'c') setSelectedLanguage('C (GCC)')
+        else if (ext === 'cs') setSelectedLanguage('Dot Net')
+        else if (ext === 'dart') setSelectedLanguage('Dart')
+      }
     }
-}`)
-        break
-      case 'Dart':
-        setCode(`// Xenithra Code Studio - Dart runner
-void main() {
-  print("Hello from Dart runner engine!");
-}`)
-        break
-      case 'XML':
-        setCode(`<!-- Xenithra Code Studio - XML Syntax Validator -->
-<xenithra>
-    <project name="Xenithra Technologies" version="1.0.0"/>
-    <status value="running" port="8000"/>
-</xenithra>`)
-        break
-      case 'Next.js':
-        setCode(`// Xenithra Code Studio - Next.js/React code mockup
-import React from 'react';
-
-export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-black text-white">
-      <h1 className="text-3xl font-bold text-cyan-400">Hello, Next.js!</h1>
-    </div>
-  );
-}`)
-        break
-      default:
-        break
-    }
-  }, [selectedLanguage])
+    window.addEventListener('open-file', handleOpenFile)
+    return () => window.removeEventListener('open-file', handleOpenFile)
+  }, [])
 
   // Auto-scroll terminal
   useEffect(() => {
@@ -105,24 +52,6 @@ export default function Home() {
       terminalBodyRef.current.scrollTop = terminalBodyRef.current.scrollHeight
     }
   }, [terminalLines])
-
-  // Timer counter interval logic
-  useEffect(() => {
-    let interval = null
-    if (timerRunning && timerTime > 0) {
-      interval = setInterval(() => {
-        setTimerTime((prevTime) => prevTime - 1)
-      }, 1000)
-    } else if (timerTime === 0) {
-      setTimerRunning(false)
-      setTerminalLines((prev) => [
-        ...prev,
-        { text: '[TIMER] Time limit reached!', className: 'warning' },
-        { text: 'xenithra@glass:~$', className: 'prompt' }
-      ])
-    }
-    return () => clearInterval(interval)
-  }, [timerRunning, timerTime])
 
   // Drag resizer handler for editor vs terminal split pane
   const handleTerminalMouseDown = (e) => {
@@ -133,8 +62,7 @@ export default function Home() {
 
     const handleMouseMove = (moveEvent) => {
       const deltaY = moveEvent.clientY - startY
-      // Calculate new height, keeping it bounded between 120px and 700px
-      const newHeight = Math.max(120, Math.min(700, startHeight + deltaY))
+      const newHeight = Math.max(120, Math.min(800, startHeight + deltaY))
       setEditorHeight(newHeight)
     }
 
@@ -156,15 +84,16 @@ export default function Home() {
     const newLines = [
       ...terminalLines,
       { 
-        text: `xenithra@glass:~$ run --lang='${selectedLanguage}' ${cliArgs ? '--args="' + cliArgs + '"' : ''}`, 
+        text: `xenithra@studio:~$ run --lang='${selectedLanguage}' ${cliArgs ? '--args="' + cliArgs + '"' : ''}`, 
         className: 'prompt' 
       },
-      { text: 'Compiling & launching execution shell...', className: 'muted' }
+      { text: 'Compiling & executing source code...', className: 'muted' }
     ]
     setTerminalLines(newLines)
 
     try {
-      const res = await fetch('http://localhost:8000/api/run', {
+      const port = localStorage.getItem('api-port') || '8000'
+      const res = await fetch(`http://localhost:${port}/api/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -184,15 +113,15 @@ export default function Home() {
       setTerminalLines([
         ...newLines,
         { text: json.output, className: json.success ? 'success' : 'error' },
-        { text: `[SYSTEM] Process completed with success status: ${json.success}`, className: 'muted' },
-        { text: `xenithra@glass:~$`, className: 'prompt' }
+        { text: `[SYSTEM] Run complete. Exit status: ${json.success ? '0' : '1'}`, className: 'muted' },
+        { text: `xenithra@studio:~$`, className: 'prompt' }
       ])
     } catch (err) {
       setTerminalLines([
         ...newLines,
         { text: `[ERROR] Execution failed: ${err.message}`, className: 'error' },
-        { text: `[HINT] Ensure the local server is running by verifying index.js startup.`, className: 'warning' },
-        { text: `xenithra@glass:~$`, className: 'prompt' }
+        { text: `[HINT] Ensure the Electron backend compiler server is running.`, className: 'warning' },
+        { text: `xenithra@studio:~$`, className: 'prompt' }
       ])
     } finally {
       setIsRunning(false)
@@ -204,21 +133,11 @@ export default function Home() {
     setTerminalLines([
       ...terminalLines,
       { text: '[STOPPED] Execution forcefully terminated.', className: 'error' },
-      { text: 'xenithra@glass:~$', className: 'prompt' }
-    ])
-  }
-
-  const handleDebug = () => {
-    setTerminalLines([
-      ...terminalLines,
-      { text: `xenithra@glass:~$ debug --lang='${selectedLanguage}'`, className: 'prompt' },
-      { text: '[DEBUG] Debugger debugger-v8 attached successfully. Resuming breakpoints...', className: 'warning' },
-      { text: 'xenithra@glass:~$', className: 'prompt' }
+      { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
   }
 
   const handleFormat = () => {
-    // Format simple indentation or cleanup
     const formatted = code
       .split('\n')
       .map(line => line.trimEnd())
@@ -227,392 +146,194 @@ export default function Home() {
 
     setTerminalLines([
       ...terminalLines,
-      { text: `[FORMAT] Syntactical cleanup completed.`, className: 'success' },
-      { text: 'xenithra@glass:~$', className: 'prompt' }
+      { text: `[FORMAT] Source file auto-formatted successfully.`, className: 'success' },
+      { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
-  }
-
-  const handleSave = () => {
-    const extensions = {
-      'C (GCC)': 'c',
-      'C++ (G++)': 'cpp',
-      'Python 3': 'py',
-      'Node.js': 'js',
-      'XML': 'xml',
-      'Dot Net': 'cs',
-      'Dart': 'dart',
-      'Next.js': 'jsx'
-    }
-    const ext = extensions[selectedLanguage] || 'txt'
-    
-    const blob = new Blob([code], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `xenithra_${Date.now()}.${ext}`
-    a.click()
-    URL.revokeObjectURL(url)
-
-    setTerminalLines([
-      ...terminalLines,
-      { text: `[SAVED] Code downloaded as: xenithra_${Date.now()}.${ext}`, className: 'success' },
-      { text: 'xenithra@glass:~$', className: 'prompt' }
-    ])
-  }
-
-  const handlePrint = () => {
-    const printWindow = window.open('', '', 'width=800,height=600')
-    printWindow.document.write('<pre style="padding:20px; font-family: monospace; background:#1e1e1e; color:#fff;">' + code + '</pre>')
-    printWindow.document.close()
-    printWindow.print()
   }
 
   return (
-    <div className="editor-container" style={styles.container}>
-      {/* Editor Header Controls */}
-      <div className="editor-header" style={styles.header}>
-        <div className="editor-controls" style={styles.controls}>
-          <button 
-            className={`btn-run ${isRunning ? 'disabled' : ''}`}
-            onClick={handleRun}
-            disabled={isRunning}
-            style={styles.btnRun}
-          >
-            ▶ Run
-          </button>
-          <button 
-            onClick={handleDebug}
-            style={styles.btnDebug}
-          >
-            🐞 Debug
-          </button>
-          <button 
-            onClick={handleStop}
-            style={styles.btnStop}
-          >
-            ■ Stop
-          </button>
-          <button onClick={handleSave} style={styles.btnAction}>Save</button>
-          <button onClick={handleFormat} style={styles.btnAction}>Format</button>
-          <button onClick={handlePrint} style={styles.btnAction}>Print</button>
-          <button 
-            onClick={() => setShowTimer(!showTimer)}
-            style={{
-              ...styles.btnAction,
-              borderColor: showTimer ? 'var(--accent-color)' : 'rgba(255,255,255,0.2)'
-            }}
-          >
-            ⏱️ Timer
-          </button>
-        </div>
-      </div>
+    <div className="editor-wrapper" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* Editor Main Section */}
+      <div style={{ height: `${editorHeight}px`, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderBottom: '1px solid var(--panel-border)', position: 'relative' }}>
+        {/* Editor Tabs bar */}
+        <div className="editor-tabs">
+          <div className="editor-tab active">
+            <span>📄</span>
+            <span>{activeTab}</span>
+            <span className="close-btn" style={{ cursor: 'pointer', marginLeft: '6px' }}>×</span>
+          </div>
 
-      {/* Timer Widget */}
-      {showTimer && (
-        <div className="timer-widget" style={styles.timerWidget}>
-          <div style={styles.timerHeader}>
-            <span>⏱️ Session Timer</span>
-            <button onClick={() => setShowTimer(false)} style={styles.closeBtn}>✕</button>
-          </div>
-          <div style={styles.timerDisplay}>
-            {Math.floor(timerTime / 60)}:{String(timerTime % 60).padStart(2, '0')}
-          </div>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '12px' }}>
             <button 
-              onClick={() => setTimerRunning(!timerRunning)}
+              onClick={handleRun}
+              disabled={isRunning}
               style={{
-                ...styles.timerBtn,
-                background: timerRunning ? 'rgba(255,107,107,0.25)' : 'rgba(0,230,118,0.25)',
-                color: timerRunning ? '#ff6b6b' : '#00e676'
+                background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
+                border: 'none',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                padding: '3px 10px',
+                height: '22px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                opacity: isRunning ? 0.6 : 1
               }}
             >
-              {timerRunning ? 'Pause' : 'Start'}
+              ▶ Run
             </button>
             <button 
-              onClick={() => { setTimerRunning(false); setTimerTime(300); }}
-              style={styles.timerBtnReset}
+              onClick={handleFormat}
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '4px',
+                color: 'var(--text-main)',
+                fontSize: '11px',
+                cursor: 'pointer',
+                padding: '3px 8px',
+                height: '22px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
             >
-              Reset
+              Format
+            </button>
+            <button 
+              onClick={handleStop}
+              style={{
+                background: 'rgba(255,107,107,0.15)',
+                border: '1px solid rgba(255,107,107,0.3)',
+                borderRadius: '4px',
+                color: '#ff6b6b',
+                fontSize: '11px',
+                cursor: 'pointer',
+                padding: '3px 8px',
+                height: '22px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              ■ Stop
             </button>
           </div>
         </div>
-      )}
 
-      {/* Main Split Pane Layout */}
-      <div className="editor-wrapper" style={styles.wrapper}>
-        
-        {/* Code Editor Panel */}
-        <div className="editor" style={{ ...styles.editorPanel, height: `${editorHeight}px` }}>
+        {/* Editor Body (Line Numbers & Textarea) */}
+        <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           <div className="line-numbers">
-            {code.split('\n').map((_, i) => (
-              <div key={i + 1}>{i + 1}</div>
-            ))}
-          </div>
-          <textarea
-            className="code-area"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            spellCheck="false"
-            style={styles.textarea}
-          />
-        </div>
-
-        {/* Horizontal resizer divider bar */}
-        <div 
-          className={`resizer-h ${isResizingTerminal ? 'resizing' : ''}`}
-          onMouseDown={handleTerminalMouseDown}
-        />
-
-        {/* Integrated Terminal Panel */}
-        <div className="terminal" style={styles.terminalPanel}>
-          <div className="terminal-header">
-            <div className="dot red"></div>
-            <div className="dot yellow"></div>
-            <div className="dot green"></div>
-            <span>Integrated Terminal</span>
-          </div>
-          <div className="terminal-body" ref={terminalBodyRef}>
-            {terminalLines.map((line, index) => (
-              <div key={index} className="terminal-line">
-                <span className={line.className}>{line.text}</span>
+            {Array.from({ length: Math.max(1, code.split('\n').length) }).map((_, i) => (
+              <div key={i} style={{ height: '19.5px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
+                {i + 1}
               </div>
             ))}
           </div>
-        </div>
 
+          <textarea
+            ref={codeAreaRef}
+            className="code-area"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            style={{
+              padding: '10px',
+              fontSize: '13px',
+              lineHeight: '19.5px',
+              fontFamily: "'JetBrains Mono', Consolas, monospace",
+              background: 'transparent',
+              color: 'var(--text-main)',
+              border: 'none',
+              resize: 'none',
+              outline: 'none',
+              flex: 1,
+              height: '100%',
+              overflowY: 'auto'
+            }}
+          />
+        </div>
       </div>
 
-      {/* Bottom Option Bar */}
-      <div className="bottom" style={styles.bottomBar}>
-        <div style={styles.optionGroup}>
-          <label style={styles.label}>Language:</label>
-          <select 
-            value={selectedLanguage}
-            onChange={(e) => setSelectedLanguage(e.target.value)}
-            style={styles.select}
+      {/* DRAGGABLE HORIZONTAL SPLIT RESIZER */}
+      <div 
+        className={`resizer-h ${isResizingTerminal ? 'resizing' : ''}`} 
+        onMouseDown={handleTerminalMouseDown}
+        style={{ height: '3px', cursor: 'row-resize', background: 'var(--panel-border)', zIndex: 10 }}
+      />
+
+      {/* Terminal View panel */}
+      <div className="terminal" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Terminal Header Tabs */}
+        <div className="terminal-tabs">
+          <div 
+            className={`terminal-tab ${activeTerminalTab === 'Problems' ? 'active' : ''}`}
+            onClick={() => setActiveTerminalTab('Problems')}
           >
-            <option value="C (GCC)">C (GCC)</option>
-            <option value="C++ (G++)">C++ (G++)</option>
-            <option value="Python 3">Python 3</option>
-            <option value="Node.js">Node.js</option>
-            <option value="XML">XML</option>
-            <option value="Dot Net">Dot Net (C#)</option>
-            <option value="Dart">Dart</option>
-            <option value="Next.js">Next.js</option>
-          </select>
+            Problems
+          </div>
+          <div 
+            className={`terminal-tab ${activeTerminalTab === 'Output' ? 'active' : ''}`}
+            onClick={() => setActiveTerminalTab('Output')}
+          >
+            Output
+          </div>
+          <div 
+            className={`terminal-tab ${activeTerminalTab === 'Debug' ? 'active' : ''}`}
+            onClick={() => setActiveTerminalTab('Debug')}
+          >
+            Debug Console
+          </div>
+          <div 
+            className={`terminal-tab ${activeTerminalTab === 'Terminal' ? 'active' : ''}`}
+            onClick={() => setActiveTerminalTab('Terminal')}
+          >
+            Terminal
+          </div>
         </div>
-        
-        <div style={styles.optionGroup}>
-          <label style={styles.label}>Command Line Args:</label>
-          <input
-            type="text"
-            value={cliArgs}
-            onChange={(e) => setCliArgs(e.target.value)}
-            placeholder="e.g. --help --debug"
-            style={styles.input}
-          />
+
+        {/* Terminal Body Console log */}
+        <div 
+          className="terminal-body" 
+          ref={terminalBodyRef}
+          style={{
+            flex: 1,
+            padding: '12px',
+            overflowY: 'auto',
+            background: 'var(--terminal-bg)',
+            fontFamily: "'JetBrains Mono', Consolas, monospace",
+            fontSize: '12px',
+            lineHeight: '1.6',
+            color: 'var(--terminal-text)'
+          }}
+        >
+          {activeTerminalTab === 'Terminal' ? (
+            terminalLines.map((line, idx) => (
+              <div 
+                key={idx} 
+                style={{
+                  color: line.className === 'prompt' ? 'var(--accent-color)' : 
+                         line.className === 'error' ? '#ff5252' : 
+                         line.className === 'success' ? '#00e676' : 
+                         line.className === 'warning' ? '#ffd740' : 'var(--text-main)',
+                  whiteSpace: 'pre-wrap',
+                  marginBottom: '4px'
+                }}
+              >
+                {line.text}
+              </div>
+            ))
+          ) : activeTerminalTab === 'Problems' ? (
+            <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No problems have been detected in the workspace.</div>
+          ) : activeTerminalTab === 'Output' ? (
+            <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>[Xenithra Output Shell is operational]</div>
+          ) : (
+            <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>[Debugger console initialized]</div>
+          )}
         </div>
       </div>
     </div>
   )
-}
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    padding: '12px',
-    gap: '10px',
-    background: 'transparent',
-    overflow: 'hidden'
-  },
-  header: {
-    background: 'rgba(10, 15, 30, 0.4)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    padding: '10px 15px',
-    borderRadius: '12px',
-    backdropFilter: 'blur(10px)'
-  },
-  controls: {
-    display: 'flex',
-    gap: '10px',
-    alignItems: 'center',
-    flexWrap: 'wrap'
-  },
-  btnRun: {
-    padding: '8px 16px',
-    background: 'rgba(0, 230, 118, 0.15)',
-    border: '1px solid rgba(0, 230, 118, 0.4)',
-    color: '#00e676',
-    borderRadius: '8px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    boxShadow: '0 0 15px rgba(0, 230, 118, 0.25)',
-    transition: 'all 0.2s ease'
-  },
-  btnDebug: {
-    padding: '8px 16px',
-    background: 'rgba(255, 193, 7, 0.15)',
-    border: '1px solid rgba(255, 193, 7, 0.4)',
-    color: '#ffc107',
-    borderRadius: '8px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  },
-  btnStop: {
-    padding: '8px 16px',
-    background: 'rgba(255, 107, 107, 0.15)',
-    border: '1px solid rgba(255, 107, 107, 0.4)',
-    color: '#ff6b6b',
-    borderRadius: '8px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  },
-  btnAction: {
-    padding: '8px 14px',
-    background: 'rgba(255, 255, 255, 0.04)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    color: '#fff',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
-  },
-  timerWidget: {
-    background: 'rgba(10, 15, 40, 0.85)',
-    border: '1px solid var(--accent-color)',
-    padding: '12px',
-    borderRadius: '12px',
-    width: '210px',
-    position: 'fixed',
-    bottom: '80px',
-    right: '25px',
-    zIndex: 100,
-    backdropFilter: 'blur(15px)',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
-  },
-  timerHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#8fa0b5'
-  },
-  closeBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#aaa',
-    cursor: 'pointer',
-    fontSize: '12px'
-  },
-  timerDisplay: {
-    fontSize: '32px',
-    textAlign: 'center',
-    color: '#00e676',
-    margin: '10px 0',
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
-    textShadow: '0 0 10px rgba(0,230,118,0.4)'
-  },
-  timerBtn: {
-    flex: 1,
-    padding: '6px',
-    border: '1px solid transparent',
-    borderRadius: '6px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  timerBtnReset: {
-    padding: '6px 10px',
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    color: '#fff',
-    borderRadius: '6px',
-    fontSize: '12px',
-    cursor: 'pointer'
-  },
-  wrapper: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden'
-  },
-  editorPanel: {
-    flex: 'none',
-    display: 'flex',
-    position: 'relative',
-    overflow: 'auto',
-    borderRadius: '12px 12px 0 0'
-  },
-  textarea: {
-    flex: 1,
-    height: '100%',
-    width: '100%',
-    background: 'transparent',
-    border: 'none',
-    resize: 'none',
-    fontFamily: 'Consolas, monospace',
-    fontSize: '14px',
-    color: 'var(--text-main)',
-    lineHeight: '1.55',
-    outline: 'none',
-    padding: '14px 15px',
-    marginLeft: '42px'
-  },
-  terminalPanel: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    borderRadius: '0 0 12px 12px'
-  },
-  bottomBar: {
-    background: 'rgba(10, 15, 30, 0.4)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    padding: '12px 16px',
-    borderRadius: '12px',
-    display: 'flex',
-    gap: '20px',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    backdropFilter: 'blur(10px)'
-  },
-  optionGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px'
-  },
-  label: {
-    fontSize: '12px',
-    fontWeight: '500',
-    color: '#8fa0b5',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em'
-  },
-  select: {
-    padding: '6px 12px',
-    borderRadius: '8px',
-    background: 'rgba(5, 8, 22, 0.6)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    color: '#fff',
-    outline: 'none',
-    fontSize: '13px',
-    cursor: 'pointer'
-  },
-  input: {
-    padding: '6px 12px',
-    borderRadius: '8px',
-    background: 'rgba(5, 8, 22, 0.6)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    color: '#fff',
-    outline: 'none',
-    fontSize: '13px',
-    minWidth: '220px'
-  }
 }
 
 export default EditorPage

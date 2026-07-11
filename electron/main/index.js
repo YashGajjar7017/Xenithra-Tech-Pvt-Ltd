@@ -126,6 +126,8 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
+
   // Start local API server
   try {
     if (typeof start === 'function') {

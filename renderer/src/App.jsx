@@ -32,6 +32,18 @@ const MainApp = () => {
     }
   }, [])
 
+  // Resolve backend port dynamically on mount
+  useEffect(() => {
+    if (window.api && typeof window.api.getApiPort === 'function') {
+      window.api.getApiPort().then(port => {
+        console.log('[App] Resolved backend API port:', port)
+        localStorage.setItem('api-port', port)
+      }).catch(err => {
+        console.error('[App] Failed to get API port:', err)
+      })
+    }
+  }, [])
+
   return (
     <Router>
       <Routes>
@@ -72,7 +84,7 @@ const MainApp = () => {
   )
 }
 
-// Main Layout Component - Wraps pages with navbar, sidebar and prism blur backgrounds
+// Main Layout Component - Wraps pages with Activity Bar, Sidebar, Workspace, and Status Bar
 const MainLayout = ({ 
   children, 
   theme, 
@@ -82,8 +94,9 @@ const MainLayout = ({
   sidebarWidth,
   setSidebarWidth 
 }) => {
-  const [filename, setFilename] = useState('untitled.js')
+  const [filename, setFilename] = useState('index.html')
   const [isResizingSidebar, setIsResizingSidebar] = useState(false)
+  const [activeActivity, setActiveActivity] = useState('explorer')
 
   // Auth Redirect Guard (Temporarily bypassed)
   // useEffect(() => {
@@ -114,8 +127,27 @@ const MainLayout = ({
     document.addEventListener('mouseup', handleMouseUp)
   }
 
+  const handleActivityClick = (activity) => {
+    setActiveActivity(activity)
+    if (activity === 'explorer') {
+      setSidebarCollapsed(false)
+    } else if (activity === 'settings') {
+      window.location.href = '/#/Dashboard'
+    } else {
+      setSidebarCollapsed(true)
+    }
+  }
+
   return (
-    <>
+    <div className="ide-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+      {/* Animated Prism Blurs for Glassmorphism Depth */}
+      <div className="prism-bg">
+        <div className="prism-orb prism-orb-1"></div>
+        <div className="prism-orb prism-orb-2"></div>
+        <div className="prism-orb prism-orb-3"></div>
+      </div>
+
+      {/* TOP SLIM MENU BAR */}
       <Topbar 
         onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         theme={theme}
@@ -123,28 +155,84 @@ const MainLayout = ({
         filename={filename}
         setFilename={setFilename}
       />
-      <div className="app">
-        {/* Animated Prism Blurs for Glassmorphism Depth */}
-        <div className="prism-bg">
-          <div className="prism-orb prism-orb-1"></div>
-          <div className="prism-orb prism-orb-2"></div>
-          <div className="prism-orb prism-orb-3"></div>
-        </div>
 
-        <div className="shell">
-          <Sidebar collapsed={sidebarCollapsed} sidebarWidth={sidebarWidth} />
-          {!sidebarCollapsed && (
-            <div 
-              className={`resizer-v ${isResizingSidebar ? 'resizing' : ''}`} 
-              onMouseDown={handleSidebarMouseDown} 
-            />
-          )}
-          <div className="main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {children}
+      <div className="app" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* LEFT ACTIVITY BAR */}
+        <div className="activity-bar">
+          <div 
+            className={`activity-icon ${activeActivity === 'explorer' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('explorer')}
+            title="Explorer"
+          >
+            📁
+          </div>
+          <div 
+            className={`activity-icon ${activeActivity === 'search' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('search')}
+            title="Search"
+          >
+            🔍
+          </div>
+          <div 
+            className={`activity-icon ${activeActivity === 'git' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('git')}
+            title="Source Control"
+          >
+            🌿
+          </div>
+          <div 
+            className={`activity-icon ${activeActivity === 'debug' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('debug')}
+            title="Run & Debug"
+          >
+            🐞
+          </div>
+          <div style={{ flex: 1 }}></div>
+          <div 
+            className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('settings')}
+            title="Settings Control"
+          >
+            ⚙️
           </div>
         </div>
+
+        {/* SIDEBAR PANEL */}
+        <Sidebar collapsed={sidebarCollapsed} sidebarWidth={sidebarWidth} />
+
+        {/* DRAGGABLE DIVIDER (SIZING BAR) */}
+        {!sidebarCollapsed && (
+          <div 
+            className={`resizer-v ${isResizingSidebar ? 'resizing' : ''}`} 
+            onMouseDown={handleSidebarMouseDown} 
+          />
+        )}
+
+        {/* MAIN WORKSPACE */}
+        <div className="main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {children}
+        </div>
       </div>
-    </>
+
+      {/* BOTTOM SLIM STATUS BAR */}
+      <div className="status-bar">
+        <div className="status-item">
+          <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>🌿 main</span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span>✗ 0</span>
+          <span>⚠ 0</span>
+        </div>
+        <div className="status-item">
+          <span>JavaScript</span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span>Spaces: 2</span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span style={{ textTransform: 'capitalize' }}>Theme: {theme.replace('-', ' ')}</span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span style={{ color: 'var(--accent-color)' }}>GLM-4 Connection: Active</span>
+        </div>
+      </div>
+    </div>
   )
 }
 
