@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { sidebarStyles } from './sidebarStyles'
 
-const Sidebar = ({ collapsed }) => {
+const Sidebar = ({ collapsed, sidebarWidth }) => {
   const [activeItem, setActiveItem] = useState('home')
   const [folderPath, setFolderPath] = useState('')
   const [folderContents, setFolderContents] = useState([])
@@ -76,7 +76,7 @@ const Sidebar = ({ collapsed }) => {
   }
 
   return (
-    <div style={{ ...sidebarStyles.sidebar, width: collapsed ? '60px' : '230px' }}>
+    <div style={{ ...sidebarStyles.sidebar, width: collapsed ? '60px' : `${sidebarWidth}px` }}>
       <div style={sidebarStyles.logo}>
         <div style={sidebarStyles.logoBox}>X</div>
         {!collapsed && <span>Xenithra</span>}

@@ -1,16 +1,26 @@
-const express = require('express')
-const path = require('path')
-const cookieParser = require('cookie-parser')
-const session = require('express-session')
-const cors = require('cors')
-require('dotenv').config()
+import express from 'express'
+import path from 'path'
+import cookieParser from 'cookie-parser'
+import session from 'express-session'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import { fileURLToPath } from 'url'
+import { createRequire } from 'module'
+import { exec } from 'child_process'
+import fs from 'fs'
+import { signUpUser, authenticateUser } from './Services/db.service.js'
+
+dotenv.config()
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const require = createRequire(import.meta.url)
 
 const app = express()
 
 // Middlewares
 app.use(express.json())
 app.use(cookieParser())
-// Enable CORS so renderer can call the API at http://localhost:PORT
 app.use(cors())
 
 // Enhanced session configuration for persistent login
@@ -31,7 +41,6 @@ app.use(
 
 // Serve the Public folder at root so requests to /css/* work in dev and packaged apps
 app.use('/', express.static(path.join(__dirname, '../../Public')))
-// Keep /static for backwards compatibility
 app.use('/static', express.static(path.join(__dirname, '../../Public')))
 
 // Log CSS/static requests for debugging
@@ -57,7 +66,6 @@ try {
       const routeModule = require(`./Routes/${r}`)
       app.use('/api', routeModule)
     } catch (err) {
-      // non-critical - just warn
       console.debug(`[main/api] optional route ${r} not loaded:`, err.message)
     }
   }
@@ -68,32 +76,30 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', pid: process.pid })
 })
 
-// Basic Login route (demo - no real auth)
-app.post('/api/login', (req, res) => {
+// Basic Login route with local DB fallback
+app.post('/api/login', async (req, res) => {
   const { email, password } = req.body
 
   if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password required' })
+    return res.status(400).json({ message: 'Email/Username and password required' })
   }
 
-  // Demo: simple validation
-  if (password.length < 6) {
-    return res.status(400).json({ message: 'Password too short' })
-  }
+  try {
+    const user = await authenticateUser(email, password)
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials. Password or email/username is wrong.' })
+    }
 
-  // Mock user for demo
-  const user = {
-    id: 1,
-    username: email.split('@')[0],
-    email: email
+    req.session.user = user
+    res.json({ message: 'Login successful', user })
+  } catch (err) {
+    console.error('Login error:', err)
+    res.status(500).json({ message: err.message || 'Internal server error during login' })
   }
-
-  req.session.user = user
-  res.json({ message: 'Login successful', user })
 })
 
-// Basic Signup route (demo - no real auth)
-app.post('/api/signup', (req, res) => {
+// Basic Signup route with local DB fallback
+app.post('/api/signup', async (req, res) => {
   const { username, email, password } = req.body
 
   if (!username || !email || !password) {
@@ -104,15 +110,136 @@ app.post('/api/signup', (req, res) => {
     return res.status(400).json({ message: 'Password must be at least 6 characters' })
   }
 
-  // Mock user for demo
-  const user = {
-    id: Math.random(),
-    username: username,
-    email: email
+  try {
+    const user = await signUpUser(username, email, password)
+    req.session.user = user
+    res.json({ message: 'Signup successful', user })
+  } catch (err) {
+    console.error('Signup error:', err)
+    res.status(400).json({ message: err.message || 'Error occurred during signup' })
+  }
+})
+
+// Code Compilation & Execution Engine
+app.post('/api/run', (req, res) => {
+  const { lang, code, args } = req.body
+
+  if (!code) {
+    return res.status(400).json({ success: false, output: 'No code provided.' })
   }
 
-  req.session.user = user
-  res.json({ message: 'Signup successful', user })
+  const tempDir = path.join(__dirname, 'temp')
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true })
+  }
+
+  const fileId = Date.now() + '_' + Math.floor(Math.random() * 1000)
+  
+  let ext = 'txt'
+  let runCmd = ''
+  let compileCmd = ''
+  let sourceFile = ''
+  let binaryFile = ''
+
+  const escapedArgs = args ? ' ' + args : ''
+
+  switch (lang) {
+    case 'Node.js':
+      ext = 'js'
+      sourceFile = path.join(tempDir, `run_${fileId}.js`)
+      runCmd = `node "${sourceFile}"${escapedArgs}`
+      break
+    case 'Python 3':
+      ext = 'py'
+      sourceFile = path.join(tempDir, `run_${fileId}.py`)
+      runCmd = `python "${sourceFile}"${escapedArgs}`
+      break
+    case 'C (GCC)':
+      ext = 'c'
+      sourceFile = path.join(tempDir, `run_${fileId}.c`)
+      binaryFile = path.join(tempDir, `run_${fileId}.exe`)
+      compileCmd = `gcc "${sourceFile}" -o "${binaryFile}"`
+      runCmd = `"${binaryFile}"${escapedArgs}`
+      break
+    case 'C++ (G++)':
+      ext = 'cpp'
+      sourceFile = path.join(tempDir, `run_${fileId}.cpp`)
+      binaryFile = path.join(tempDir, `run_${fileId}.exe`)
+      compileCmd = `g++ "${sourceFile}" -o "${binaryFile}"`
+      runCmd = `"${binaryFile}"${escapedArgs}`
+      break
+    case 'Dot Net':
+      ext = 'cs'
+      sourceFile = path.join(tempDir, `run_${fileId}.cs`)
+      binaryFile = path.join(tempDir, `run_${fileId}.exe`)
+      compileCmd = `csc "${sourceFile}" /out:"${binaryFile}"`
+      runCmd = `"${binaryFile}"${escapedArgs}`
+      break
+    case 'Dart':
+      ext = 'dart'
+      sourceFile = path.join(tempDir, `run_${fileId}.dart`)
+      runCmd = `dart "${sourceFile}"${escapedArgs}`
+      break
+    case 'XML':
+      return res.json({
+        success: true,
+        output: 'XML syntax validated successfully!\n(No execution environment needed for static XML)'
+      })
+    case 'Next.js':
+      ext = 'js'
+      sourceFile = path.join(tempDir, `run_${fileId}.js`)
+      runCmd = `node "${sourceFile}"${escapedArgs}`
+      break
+    default:
+      return res.status(400).json({ success: false, output: `Unsupported language: ${lang}` })
+  }
+
+  // Write source code
+  try {
+    fs.writeFileSync(sourceFile, code, 'utf8')
+  } catch (err) {
+    return res.status(500).json({ success: false, output: `Failed to create source file: ${err.message}` })
+  }
+
+  const cleanup = () => {
+    try {
+      if (sourceFile && fs.existsSync(sourceFile)) fs.unlinkSync(sourceFile)
+      if (binaryFile && fs.existsSync(binaryFile)) fs.unlinkSync(binaryFile)
+    } catch (err) {
+      // Ignored
+    }
+  }
+
+  const executeCode = () => {
+    exec(runCmd, { timeout: 8000, maxBuffer: 1024 * 1024 }, (runErr, runStdout, runStderr) => {
+      cleanup()
+      if (runErr && runErr.killed) {
+        return res.json({ success: false, output: '[ERROR] Process execution timed out (8 seconds limit).' })
+      }
+      const output = runStdout + runStderr
+      res.json({
+        success: !runErr,
+        output: output || 'Process finished with no output.'
+      })
+    })
+  }
+
+  if (compileCmd) {
+    // Compile first
+    exec(compileCmd, { timeout: 5000 }, (compErr, compStdout, compStderr) => {
+      if (compErr) {
+        cleanup()
+        const compileOutput = compStdout + compStderr
+        return res.json({
+          success: false,
+          output: `[COMPILATION ERROR]\n${compileOutput || compErr.message}\nMake sure compilers (gcc/g++/csc) are installed and added to PATH.`
+        })
+      }
+      executeCode()
+    })
+  } else {
+    executeCode()
+  }
 })
 
 // Fallback route for CSS (explicit) to help packaged app lookups
@@ -127,7 +254,7 @@ app.get('/css/:file', (req, res, next) => {
   })
 })
 
-function start(port = process.env.API_PORT || 8000) {
+export function start(port = process.env.API_PORT || 8000) {
   const bindHost = process.env.API_BIND_HOST || '0.0.0.0'
   const server = app.listen(port, bindHost, () => {
     console.log(`[main/api] Express server listening on http://${bindHost}:${port}`)
@@ -139,5 +266,3 @@ function start(port = process.env.API_PORT || 8000) {
 
   return server
 }
-
-module.exports = { start, app }

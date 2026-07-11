@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Header from '../components/ui/Header'
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +8,7 @@ const SignupPage = () => {
     confirmPassword: ''
   })
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
@@ -19,6 +19,7 @@ const SignupPage = () => {
   const handleSignup = async (e) => {
     e.preventDefault()
     setError('')
+    setSuccess('')
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
@@ -44,23 +45,35 @@ const SignupPage = () => {
       }
 
       const data = await response.json()
+      setSuccess('Account generated successfully!')
       localStorage.setItem('user', JSON.stringify(data.user))
-      window.location.href = '/#/'
+      setTimeout(() => {
+        window.location.href = '/#/'
+      }, 1000)
     } catch (err) {
-      setError(err.message || 'Network error. Make sure API is running on port 8000.')
+      setError(err.message || 'Error connecting to local backend. Ensure Electron is running.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <>
-      <Header />
-      <div style={styles.container}>
+    <div style={styles.container}>
+      {/* Moving Background Prism Orbs */}
+      <div className="prism-bg">
+        <div className="prism-orb prism-orb-1" style={{ opacity: 0.35 }}></div>
+        <div className="prism-orb prism-orb-3" style={{ opacity: 0.25 }}></div>
+      </div>
+
       <div style={styles.card}>
-        <div style={styles.icon}>✨</div>
-        <h1 style={styles.title}>Sign Up</h1>
+        <div style={styles.header}>
+          <div style={styles.logoCircle}>X</div>
+          <h1 style={styles.title}>Register Account</h1>
+          <p style={styles.subtitle}>Generate authorization credentials to log in</p>
+        </div>
+
         {error && <div style={styles.error}>{error}</div>}
+        {success && <div style={styles.success}>{success}</div>}
         
         <form onSubmit={handleSignup} style={styles.form}>
           <div style={styles.formGroup}>
@@ -77,7 +90,7 @@ const SignupPage = () => {
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>Email</label>
+            <label style={styles.label}>Email Address</label>
             <input
               type="email"
               name="email"
@@ -85,7 +98,7 @@ const SignupPage = () => {
               onChange={handleChange}
               required
               style={styles.input}
-              placeholder="you@example.com"
+              placeholder="yourname@domain.com"
             />
           </div>
 
@@ -98,7 +111,7 @@ const SignupPage = () => {
               onChange={handleChange}
               required
               style={styles.input}
-              placeholder="••••••••"
+              placeholder="Minimum 6 characters"
             />
           </div>
 
@@ -111,27 +124,34 @@ const SignupPage = () => {
               onChange={handleChange}
               required
               style={styles.input}
-              placeholder="••••••••"
+              placeholder="Re-enter password"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            style={{ ...styles.button, opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+            style={{ 
+              ...styles.button, 
+              opacity: loading ? 0.6 : 1, 
+              cursor: loading ? 'not-allowed' : 'pointer' 
+            }}
           >
-            {loading ? 'Creating account...' : 'Sign Up'}
+            {loading ? 'Generating Node...' : 'Register Access Node'}
           </button>
         </form>
 
         <div style={styles.links}>
-          <a href="/#/login" style={styles.link}>
-            Already have an account? Login
+          <a href="#/Account/login" style={styles.link}>
+            Already authorized? Access Login
+          </a>
+          <br />
+          <a href="#/" style={{ ...styles.link, fontSize: '12px', marginTop: '12px', display: 'inline-block', opacity: 0.8 }}>
+            ← Back to Terminal IDE
           </a>
         </div>
       </div>
     </div>
-    </>
   )
 }
 
@@ -141,38 +161,76 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '100vh',
-    background: 'radial-gradient(circle at top left, #ff00c8 0, transparent 55%), radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%)',
-    padding: '20px'
+    width: '100vw',
+    background: 'transparent',
+    padding: '20px',
+    position: 'relative'
   },
   card: {
-    background: 'linear-gradient(135deg, rgba(11, 26, 56, 0.96), rgba(2, 6, 20, 0.96))',
-    border: '1px solid rgba(0, 229, 255, 0.3)',
-    borderRadius: '16px',
-    padding: '40px',
+    background: 'rgba(10, 15, 30, 0.45)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '20px',
+    padding: '40px 35px',
     width: '100%',
-    maxWidth: '400px',
-    boxShadow: '0 22px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 229, 255, 0.3)',
-    backdropFilter: 'blur(22px)'
+    maxWidth: '430px',
+    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    zIndex: 1,
+    animation: 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
   },
-  icon: {
-    fontSize: '48px',
-    textAlign: 'center',
-    marginBottom: '20px'
+  header: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: '25px'
+  },
+  logoCircle: {
+    width: '50px',
+    height: '50px',
+    borderRadius: '15px',
+    background: 'linear-gradient(135deg, #ff00c8, #00e5ff)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: '15px',
+    boxShadow: '0 0 25px rgba(255, 0, 200, 0.5)'
   },
   title: {
-    color: '#e8f5ff',
+    color: '#fff',
+    fontSize: '22px',
+    fontWeight: '600',
     textAlign: 'center',
-    marginBottom: '24px',
-    fontSize: '28px'
+    letterSpacing: '0.05em',
+    marginBottom: '5px'
+  },
+  subtitle: {
+    color: '#8fa0b5',
+    fontSize: '13px',
+    textAlign: 'center',
+    margin: 0
   },
   error: {
-    background: 'rgba(255, 107, 107, 0.2)',
-    color: '#ff6b6b',
-    padding: '12px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    fontSize: '14px',
-    border: '1px solid rgba(255, 107, 107, 0.4)'
+    background: 'rgba(255, 107, 107, 0.15)',
+    color: '#ff7676',
+    padding: '10px 14px',
+    borderRadius: '10px',
+    marginBottom: '20px',
+    fontSize: '13px',
+    border: '1px solid rgba(255, 107, 107, 0.25)',
+    textAlign: 'center'
+  },
+  success: {
+    background: 'rgba(0, 230, 118, 0.15)',
+    color: '#00e676',
+    padding: '10px 14px',
+    borderRadius: '10px',
+    marginBottom: '20px',
+    fontSize: '13px',
+    border: '1px solid rgba(0, 230, 118, 0.25)',
+    textAlign: 'center'
   },
   form: {
     display: 'flex',
@@ -182,34 +240,37 @@ const styles = {
   formGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px'
+    gap: '6px'
   },
   label: {
-    color: '#e0f7fa',
-    fontSize: '14px',
-    fontWeight: '600'
+    color: '#8fa0b5',
+    fontSize: '12px',
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em'
   },
   input: {
-    background: 'rgba(6, 9, 28, 0.98)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '8px',
-    color: '#e8f5ff',
-    padding: '12px',
+    background: 'rgba(5, 8, 22, 0.45)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '10px',
+    color: '#fff',
+    padding: '11px 15px',
     fontSize: '14px',
-    fontFamily: 'inherit',
-    outline: 'none'
+    outline: 'none',
+    transition: 'all 0.3s ease',
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
   },
   button: {
-    background: 'linear-gradient(120deg, #ff00c8, #00e5ff)',
+    background: 'linear-gradient(135deg, #ff00c8 0%, #00e5ff 100%)',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     color: '#fff',
-    padding: '12px',
-    fontSize: '16px',
+    padding: '13px',
+    fontSize: '15px',
     fontWeight: '600',
-    marginTop: '8px',
-    boxShadow: '0 0 22px rgba(0, 229, 255, 0.9)',
-    transition: 'transform 0.2s'
+    marginTop: '10px',
+    boxShadow: '0 0 20px rgba(255, 0, 200, 0.35)',
+    transition: 'all 0.3s ease'
   },
   links: {
     textAlign: 'center',
@@ -218,7 +279,8 @@ const styles = {
   link: {
     color: '#00e5ff',
     textDecoration: 'none',
-    fontSize: '14px'
+    fontSize: '13px',
+    transition: 'color 0.2s ease'
   }
 }
 

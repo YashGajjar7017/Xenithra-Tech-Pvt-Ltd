@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { topbarStyles } from './topbarStyles'
 
-const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename }) => {
+const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, setTheme }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [selectedLang, setSelectedLang] = useState('Node.js')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -13,6 +13,7 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename }) => {
   const [selectionDropdownOpen, setSelectionDropdownOpen] = useState(false)
   const [viewDropdownOpen, setViewDropdownOpen] = useState(false)
   const [helpDropdownOpen, setHelpDropdownOpen] = useState(false)
+  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false)
 
   const langDropdownRef = useRef(null)
   const fileMenuRef = useRef(null)
@@ -20,8 +21,34 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename }) => {
   const selectionMenuRef = useRef(null)
   const viewMenuRef = useRef(null)
   const helpMenuRef = useRef(null)
+  const themeMenuRef = useRef(null)
 
   const languages = ['C (GCC)', 'C++ (G++)', 'Python 3', 'Node.js', 'XML', 'Dot Net', 'Dart', 'Next.js']
+
+  // Check login state
+  useEffect(() => {
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr)
+        setIsLoggedIn(true)
+        setUsername(u.username || 'User')
+      } catch (e) {
+        setIsLoggedIn(false)
+      }
+    } else {
+      setIsLoggedIn(false)
+    }
+
+    // Listen to theme changed custom events
+    const handleThemeChange = (e) => {
+      if (e.detail && e.detail.theme && setTheme) {
+        setTheme(e.detail.theme)
+      }
+    }
+    window.addEventListener('theme-changed', handleThemeChange)
+    return () => window.removeEventListener('theme-changed', handleThemeChange)
+  }, [setTheme])
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -43,6 +70,9 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename }) => {
       }
       if (helpMenuRef.current && !helpMenuRef.current.contains(event.target)) {
         setHelpDropdownOpen(false)
+      }
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target)) {
+        setThemeDropdownOpen(false)
       }
     }
 
@@ -280,6 +310,19 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename }) => {
             <button onClick={handleHelpAbout}>About</button>
             <button onClick={handleHelpShortcuts}>Keyboard Shortcuts</button>
             <button onClick={handleHelpDocumentation}>Documentation</button>
+          </div>
+        )}
+      </div>
+
+      <div ref={themeMenuRef} className={`menu-item ${themeDropdownOpen ? 'open' : ''}`} onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}>
+        Theme
+        {themeDropdownOpen && (
+          <div className="dropdown-menu">
+            <button onClick={() => { setTheme('glass-dark'); document.documentElement.setAttribute('data-theme', 'glass-dark'); localStorage.setItem('theme', 'glass-dark'); }}>Glassy Dark</button>
+            <button onClick={() => { setTheme('glass-light'); document.documentElement.setAttribute('data-theme', 'glass-light'); localStorage.setItem('theme', 'glass-light'); }}>Light Frosted</button>
+            <button onClick={() => { setTheme('neon-purple'); document.documentElement.setAttribute('data-theme', 'neon-purple'); localStorage.setItem('theme', 'neon-purple'); }}>Neon Violet</button>
+            <button onClick={() => { setTheme('emerald'); document.documentElement.setAttribute('data-theme', 'emerald'); localStorage.setItem('theme', 'emerald'); }}>Emerald Matrix</button>
+            <button onClick={() => { setTheme('cyber-amber'); document.documentElement.setAttribute('data-theme', 'cyber-amber'); localStorage.setItem('theme', 'cyber-amber'); }}>Cyber Amber</button>
           </div>
         )}
       </div>

@@ -1,8 +1,10 @@
 import { app, shell, BrowserWindow, ipcMain, Menu, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-const icon = join(__dirname, '../../renderer/public/Images/github.jpg')
 import { createRequire } from 'module'
+import { start } from './api.js'
+
+const icon = join(__dirname, '../../renderer/public/Images/github.jpg')
 
 function createWindow() {
   // Create the browser window.
@@ -124,13 +126,10 @@ app.whenReady().then(() => {
     }
   })
 
-  // Start local API server (if available)
+  // Start local API server
   try {
-    const requireMain = createRequire(import.meta.url)
-    const api = requireMain/('../../electron/main/api.js')
-    if (api && typeof api.start === 'function') {
-      // Default to 8000 to match expected port; can be overridden with API_PORT env var
-      api.start(process.env.API_PORT || 8000)
+    if (typeof start === 'function') {
+      start(process.env.API_PORT || 8000)
     }
   } catch (err) {
     console.warn('Could not start local API server:', err.message)

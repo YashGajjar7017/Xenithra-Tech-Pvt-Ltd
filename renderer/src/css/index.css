@@ -1,3 +1,128 @@
+:root {
+  /* Default: Dark Prism */
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(0, 168, 255, 0.15) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(255, 0, 200, 0.15) 0%, transparent 40%),
+                  radial-gradient(circle at 50% 50%, #030611 0%, #010206 100%);
+  --panel-bg: rgba(14, 23, 48, 0.45);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --panel-border-glow: rgba(0, 229, 255, 0.15);
+  --accent-color: #00e5ff;
+  --accent-glow: 0 0 15px rgba(0, 229, 255, 0.4);
+  --text-main: #e5f2ff;
+  --text-muted: #8fa0b5;
+  --sidebar-bg: rgba(6, 11, 28, 0.6);
+  --sidebar-active: rgba(0, 229, 255, 0.15);
+  --terminal-bg: rgba(2, 4, 12, 0.85);
+  --terminal-border: rgba(0, 229, 255, 0.35);
+  --terminal-text: #00ff66;
+  --input-bg: rgba(5, 8, 22, 0.6);
+  --input-border: rgba(255, 255, 255, 0.15);
+  --button-run-bg: linear-gradient(135deg, rgba(0, 230, 118, 0.25), rgba(0, 176, 255, 0.25));
+  --button-run-text: #00ff7f;
+  --button-run-border: rgba(0, 230, 118, 0.4);
+  --button-run-glow: 0 0 15px rgba(0, 230, 118, 0.3);
+}
+
+/* Light Frosted Theme */
+[data-theme='glass-light'] {
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(0, 150, 136, 0.1) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(233, 30, 99, 0.1) 0%, transparent 40%),
+                  radial-gradient(circle at 50% 50%, #f4f6fa 0%, #e1e5f0 100%);
+  --panel-bg: rgba(255, 255, 255, 0.5);
+  --panel-border: rgba(0, 0, 0, 0.08);
+  --panel-border-glow: rgba(0, 150, 136, 0.12);
+  --accent-color: #009688;
+  --accent-glow: 0 0 12px rgba(0, 150, 136, 0.3);
+  --text-main: #1f2d3d;
+  --text-muted: #5e6d82;
+  --sidebar-bg: rgba(235, 240, 250, 0.6);
+  --sidebar-active: rgba(0, 150, 136, 0.12);
+  --terminal-bg: rgba(30, 32, 40, 0.95);
+  --terminal-border: rgba(0, 150, 136, 0.25);
+  --terminal-text: #00ff88;
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --input-border: rgba(0, 0, 0, 0.15);
+  --button-run-bg: linear-gradient(135deg, rgba(0, 150, 136, 0.2), rgba(0, 188, 212, 0.2));
+  --button-run-text: #00796b;
+  --button-run-border: rgba(0, 150, 136, 0.3);
+  --button-run-glow: 0 0 12px rgba(0, 150, 136, 0.2);
+}
+
+/* Neon Violet Theme */
+[data-theme='neon-purple'] {
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.2) 0%, transparent 45%),
+                  radial-gradient(circle at 90% 80%, rgba(218, 112, 214, 0.2) 0%, transparent 45%),
+                  radial-gradient(circle at 50% 50%, #080214 0%, #030009 100%);
+  --panel-bg: rgba(18, 5, 36, 0.55);
+  --panel-border: rgba(186, 85, 211, 0.18);
+  --panel-border-glow: rgba(138, 43, 226, 0.25);
+  --accent-color: #ba55d3;
+  --accent-glow: 0 0 15px rgba(186, 85, 211, 0.5);
+  --text-main: #f3e5f5;
+  --text-muted: #b39ddb;
+  --sidebar-bg: rgba(14, 4, 28, 0.6);
+  --sidebar-active: rgba(186, 85, 211, 0.2);
+  --terminal-bg: rgba(12, 3, 24, 0.85);
+  --terminal-border: rgba(138, 43, 226, 0.45);
+  --terminal-text: #df73ff;
+  --input-bg: rgba(8, 2, 16, 0.7);
+  --input-border: rgba(186, 85, 211, 0.25);
+  --button-run-bg: linear-gradient(135deg, rgba(138, 43, 226, 0.25), rgba(218, 112, 214, 0.25));
+  --button-run-text: #e040fb;
+  --button-run-border: rgba(138, 43, 226, 0.4);
+  --button-run-glow: 0 0 15px rgba(138, 43, 226, 0.4);
+}
+
+/* Emerald Matrix Theme */
+[data-theme='emerald'] {
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(0, 255, 135, 0.15) 0%, transparent 45%),
+                  radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.15) 0%, transparent 45%),
+                  radial-gradient(circle at 50% 50%, #000c07 0%, #000402 100%);
+  --panel-bg: rgba(2, 18, 11, 0.6);
+  --panel-border: rgba(0, 255, 135, 0.15);
+  --panel-border-glow: rgba(0, 255, 135, 0.22);
+  --accent-color: #00ff87;
+  --accent-glow: 0 0 15px rgba(0, 255, 135, 0.5);
+  --text-main: #e0f2f1;
+  --text-muted: #80cbc4;
+  --sidebar-bg: rgba(1, 14, 9, 0.65);
+  --sidebar-active: rgba(0, 255, 135, 0.15);
+  --terminal-bg: rgba(1, 10, 6, 0.9);
+  --terminal-border: rgba(0, 255, 135, 0.4);
+  --terminal-text: #00ff87;
+  --input-bg: rgba(0, 8, 4, 0.7);
+  --input-border: rgba(0, 255, 135, 0.2);
+  --button-run-bg: linear-gradient(135deg, rgba(0, 255, 135, 0.25), rgba(0, 229, 255, 0.25));
+  --button-run-text: #00ff87;
+  --button-run-border: rgba(0, 255, 135, 0.4);
+  --button-run-glow: 0 0 15px rgba(0, 255, 135, 0.4);
+}
+
+/* Cyber Amber Theme */
+[data-theme='cyber-amber'] {
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(255, 159, 0, 0.18) 0%, transparent 45%),
+                  radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.18) 0%, transparent 45%),
+                  radial-gradient(circle at 50% 50%, #0c0800 0%, #030200 100%);
+  --panel-bg: rgba(22, 14, 0, 0.6);
+  --panel-border: rgba(255, 159, 0, 0.18);
+  --panel-border-glow: rgba(255, 159, 0, 0.25);
+  --accent-color: #ff9f00;
+  --accent-glow: 0 0 15px rgba(255, 159, 0, 0.5);
+  --text-main: #fffcf5;
+  --text-muted: #d4c5a9;
+  --sidebar-bg: rgba(18, 12, 0, 0.65);
+  --sidebar-active: rgba(255, 159, 0, 0.18);
+  --terminal-bg: rgba(10, 6, 0, 0.9);
+  --terminal-border: rgba(255, 159, 0, 0.45);
+  --terminal-text: #ffb300;
+  --input-bg: rgba(8, 5, 0, 0.7);
+  --input-border: rgba(255, 159, 0, 0.2);
+  --button-run-bg: linear-gradient(135deg, rgba(255, 159, 0, 0.25), rgba(255, 0, 85, 0.25));
+  --button-run-text: #ffab00;
+  --button-run-border: rgba(255, 159, 0, 0.4);
+  --button-run-glow: 0 0 15px rgba(255, 159, 0, 0.4);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -13,26 +138,109 @@ body {
     'Segoe UI',
     sans-serif;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, #ff00c8 0, transparent 55%),
-    radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%);
-  color: #e5f2ff;
+  background: var(--bg-gradient);
+  color: var(--text-main);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0px;
+  overflow: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Background Prism Lights */
+.prism-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.prism-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.18;
+  mix-blend-mode: screen;
+  animation: floatOrb 25s infinite alternate ease-in-out;
+}
+
+.prism-orb-1 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, #ff00c8 0%, transparent 80%);
+  top: -120px;
+  left: -120px;
+  animation-duration: 18s;
+}
+
+.prism-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #00e5ff 0%, transparent 80%);
+  bottom: -150px;
+  right: -100px;
+  animation-duration: 25s;
+}
+
+.prism-orb-3 {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, #ffe600 0%, transparent 80%);
+  top: 35%;
+  left: 45%;
+  animation-duration: 22s;
+}
+
+@keyframes floatOrb {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  100% {
+    transform: translate(100px, 60px) scale(1.18) rotate(360deg);
+  }
 }
 
 /* Textarea Styles - Make Flexible and Resizable */
 textarea {
-  resize: vertical;
+  resize: none;
   overflow: auto;
   font-family: inherit;
   transition: all 0.2s ease;
 }
 
 textarea:focus {
-  outline-offset: 2px;
+  outline: none;
+}
+
+/* Draggable Split Panel Resizers */
+.resizer-v {
+  width: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: col-resize;
+  transition: all 0.2s ease;
+  z-index: 10;
+  position: relative;
+}
+.resizer-v:hover, .resizer-v.resizing {
+  background: var(--accent-color);
+  box-shadow: 0 0 12px var(--accent-color);
+  width: 5px;
+}
+
+.resizer-h {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: row-resize;
+  transition: all 0.2s ease;
+  z-index: 10;
+  position: relative;
+}
+.resizer-h:hover, .resizer-h.resizing {
+  background: var(--accent-color);
+  box-shadow: 0 0 12px var(--accent-color);
+  height: 5px;
 }
 
 .app {
@@ -40,14 +248,14 @@ textarea:focus {
   width: 100%;
   height: 100vh;
   position: relative;
-  background: radial-gradient(circle at top, rgba(14, 23, 48, 0.92), rgba(4, 7, 18, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   box-shadow:
-    0 0 40px rgba(0, 0, 0, 0.7),
-    0 0 80px rgba(255, 0, 200, 0.45),
-    0 0 120px rgba(0, 229, 255, 0.45);
-  backdrop-filter: blur(26px) saturate(180%);
+    0 0 45px rgba(0, 0, 0, 0.65),
+    0 0 15px var(--panel-border-glow);
+  backdrop-filter: blur(28px) saturate(180%);
   overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .app::before {
