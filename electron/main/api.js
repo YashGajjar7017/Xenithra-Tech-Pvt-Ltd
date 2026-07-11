@@ -51,25 +51,7 @@ app.use((req, res, next) => {
   next()
 })
 
-// Mount important routes (add more as needed)
-try {
-  const accountRoutes = require('./Routes/Account.routes')
-  app.use('/api', accountRoutes)
-} catch (err) {
-  console.warn('Failed to load Account routes:', err.message)
-}
-
-// Attach more core routes if available
-;['login.routes', 'User.routes', 'signup.routes', 'Session.routes', 'Member.routes'].forEach(
-  (r) => {
-    try {
-      const routeModule = require(`./Routes/${r}`)
-      app.use('/api', routeModule)
-    } catch (err) {
-      console.debug(`[main/api] optional route ${r} not loaded:`, err.message)
-    }
-  }
-)
+// Legacy express view routes are bypassed in the React SPA build
 
 // Basic health check
 app.get('/api/health', (req, res) => {
@@ -258,10 +240,17 @@ export function start(port = process.env.API_PORT || 8000) {
   const bindHost = process.env.API_BIND_HOST || '0.0.0.0'
   const server = app.listen(port, bindHost, () => {
     console.log(`[main/api] Express server listening on http://${bindHost}:${port}`)
+    process.env.API_PORT = port // Save successfully bound port
   })
 
   server.on('error', (err) => {
-    console.error('[main/api] Server error:', err)
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[main/api] Port ${port} in use, trying next port...`)
+      const nextPort = parseInt(port) + 1
+      start(nextPort)
+    } else {
+      console.error('[main/api] Server error:', err)
+    }
   })
 
   return server

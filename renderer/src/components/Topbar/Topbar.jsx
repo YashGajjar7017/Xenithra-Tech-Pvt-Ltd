@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { topbarStyles } from './topbarStyles'
 
-const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, setTheme }) => {
+const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [selectedLang, setSelectedLang] = useState('Node.js')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -25,7 +24,7 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, 
 
   const languages = ['C (GCC)', 'C++ (G++)', 'Python 3', 'Node.js', 'XML', 'Dot Net', 'Dart', 'Next.js']
 
-  // Check login state
+  // Check login state on mount
   useEffect(() => {
     const userStr = localStorage.getItem('user')
     if (userStr) {
@@ -83,24 +82,22 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, 
   const handleLanguageSelect = (lang) => {
     setSelectedLang(lang)
     setDropdownOpen(false)
-    console.log('Language selected:', lang)
+    // Dispatch custom event to notify editor language change
+    window.dispatchEvent(new CustomEvent('change-language', { detail: { language: lang } }))
   }
 
   const handleLogin = () => {
-    console.log('Login clicked')
     window.location.href = '/#/Account/login'
   }
 
   const handleSignup = () => {
-    console.log('Signup clicked')
     window.location.href = '/#/Account/signup'
   }
 
   // File Menu Handlers
   const handleFileNew = () => {
-    console.log('File: New - Creating new file')
     setFileDropdownOpen(false)
-    // TODO: Implement new file logic
+    window.dispatchEvent(new CustomEvent('menu-file-new'))
   }
 
   const handleFileOpen = async () => {
@@ -108,9 +105,9 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, 
     try {
       const file = await window.api.openFileDialog()
       if (file) {
-        setCode(file.content)
-        setFilename(file.name)
-        console.log('Opened file:', file.name)
+        window.dispatchEvent(new CustomEvent('open-file', {
+          detail: { filename: file.name, code: file.content }
+        }))
       }
     } catch (error) {
       console.error('Open file error:', error)
@@ -118,32 +115,16 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, 
   }
 
   const handleFileSave = () => {
-    console.log('File: Save - Saving current file:', filename)
     setFileDropdownOpen(false)
-    // Download current file
-    const blob = new Blob([code], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
+    window.dispatchEvent(new CustomEvent('menu-file-save'))
   }
 
   const handleFileSaveAs = () => {
-    console.log('File: Save As - Saving with new name')
     setFileDropdownOpen(false)
-    const blob = new Blob([code], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `xenithra_${Date.now()}.txt`
-    a.click()
-    URL.revokeObjectURL(url)
+    window.dispatchEvent(new CustomEvent('menu-file-saveas'))
   }
 
   const handleFileExit = () => {
-    console.log('File: Exit - Closing application')
     setFileDropdownOpen(false)
     if (window.ipcRenderer) {
       window.ipcRenderer.invoke('close-window')
@@ -152,51 +133,43 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, 
 
   // Edit Menu Handlers
   const handleEditUndo = () => {
-    console.log('Edit: Undo')
     setEditDropdownOpen(false)
-    // TODO: Implement undo logic
+    window.dispatchEvent(new CustomEvent('menu-edit-undo'))
   }
 
   const handleEditRedo = () => {
-    console.log('Edit: Redo')
     setEditDropdownOpen(false)
-    // TODO: Implement redo logic
+    window.dispatchEvent(new CustomEvent('menu-edit-redo'))
   }
 
   const handleEditCut = () => {
-    console.log('Edit: Cut')
     setEditDropdownOpen(false)
-    document.execCommand('cut')
+    window.dispatchEvent(new CustomEvent('menu-edit-cut'))
   }
 
   const handleEditCopy = () => {
-    console.log('Edit: Copy')
     setEditDropdownOpen(false)
-    document.execCommand('copy')
+    window.dispatchEvent(new CustomEvent('menu-edit-copy'))
   }
 
   const handleEditPaste = () => {
-    console.log('Edit: Paste')
     setEditDropdownOpen(false)
-    document.execCommand('paste')
+    window.dispatchEvent(new CustomEvent('menu-edit-paste'))
   }
 
   // Selection Menu Handlers
   const handleSelectionAll = () => {
-    console.log('Selection: Select All')
     setSelectionDropdownOpen(false)
-    document.execCommand('selectAll')
+    window.dispatchEvent(new CustomEvent('menu-selection-selectall'))
   }
 
   const handleSelectionNone = () => {
-    console.log('Selection: Select None')
     setSelectionDropdownOpen(false)
-    window.getSelection().removeAllRanges()
+    window.dispatchEvent(new CustomEvent('menu-selection-selectnone'))
   }
 
   // View Menu Handlers
   const handleViewZoomIn = () => {
-    console.log('View: Zoom In')
     setViewDropdownOpen(false)
     const currentZoom = localStorage.getItem('zoomLevel') || 100
     const newZoom = Math.min(200, parseInt(currentZoom) + 10)
@@ -205,7 +178,6 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, 
   }
 
   const handleViewZoomOut = () => {
-    console.log('View: Zoom Out')
     setViewDropdownOpen(false)
     const currentZoom = localStorage.getItem('zoomLevel') || 100
     const newZoom = Math.max(50, parseInt(currentZoom) - 10)
@@ -214,36 +186,32 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, 
   }
 
   const handleViewReset = () => {
-    console.log('View: Reset View')
     setViewDropdownOpen(false)
     localStorage.setItem('zoomLevel', 100)
     document.documentElement.style.zoom = 1
   }
 
   const handleViewToggleSidebar = () => {
-    console.log('View: Toggle Sidebar')
     setViewDropdownOpen(false)
     onToggleSidebar()
   }
 
   // Help Menu Handlers
   const handleHelpAbout = () => {
-    console.log('Help: About')
     setHelpDropdownOpen(false)
     alert('Xenithra Technologies - Modern IDE\nVersion 1.0.0\n© 2024 Xenithra Tech Pvt Ltd')
   }
 
   const handleHelpDocumentation = () => {
-    console.log('Help: Documentation')
     setHelpDropdownOpen(false)
     window.open('https://docs.xenithra.tech', '_blank')
   }
 
   const handleHelpShortcuts = () => {
-    console.log('Help: Keyboard Shortcuts')
     setHelpDropdownOpen(false)
     alert('Keyboard Shortcuts:\nCtrl+S: Save\nCtrl+O: Open\nCtrl+Z: Undo\nCtrl+Y: Redo\nCtrl+A: Select All')
   }
+
   return (
     <div className="menu-bar" style={{ height: '36px', display: 'flex', alignItems: 'center', position: 'relative', width: '100%', padding: '0 12px', background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--panel-border)' }}>
       {/* Sidenav toggle */}
@@ -360,6 +328,80 @@ const Topbar = ({ onToggleSidebar, code, setCode, filename, setFilename, theme, 
 
       {/* Right-aligned Panel Options */}
       <div className="menu-panel" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', height: '100%', zIndex: 10 }}>
+        {/* Play/Stop/Format Controls in the Navbar */}
+        <div style={{ display: 'flex', gap: '6px', marginRight: '6px' }}>
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('menu-run-code'))}
+            style={{
+              background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
+              border: 'none',
+              borderRadius: '4px',
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              padding: '3px 10px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            ▶ Run
+          </button>
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('menu-debug-code'))}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '4px',
+              color: '#fff',
+              fontSize: '11px',
+              cursor: 'pointer',
+              padding: '3px 8px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            🐞 Debug
+          </button>
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('menu-format-code'))}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '4px',
+              color: 'var(--text-main)',
+              fontSize: '11px',
+              cursor: 'pointer',
+              padding: '3px 8px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            Format
+          </button>
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('menu-stop-code'))}
+            style={{
+              background: 'rgba(255,107,107,0.15)',
+              border: '1px solid rgba(255,107,107,0.3)',
+              borderRadius: '4px',
+              color: '#ff6b6b',
+              fontSize: '11px',
+              cursor: 'pointer',
+              padding: '3px 8px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            ■ Stop
+          </button>
+        </div>
+
         <div className="lang-select" ref={langDropdownRef} style={{ fontSize: '11px', gap: '6px', color: 'var(--text-muted)' }}>
           <span>Lang:</span>
           <div className={`dropdown ${dropdownOpen ? 'open' : ''}`}>

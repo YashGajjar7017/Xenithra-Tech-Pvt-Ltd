@@ -42,6 +42,19 @@ const MainApp = () => {
         console.error('[App] Failed to get API port:', err)
       })
     }
+
+    if (window.api && typeof window.api.onOpenFiles === 'function') {
+      window.api.onOpenFiles((files) => {
+        if (files && files.length) {
+          const file = files[0]
+          const filename = file.name || file.path.split(/[\\/]/).pop()
+          const fileCode = file.content
+          window.dispatchEvent(new CustomEvent('open-file', {
+            detail: { filename, code: fileCode }
+          }))
+        }
+      })
+    }
   }, [])
 
   return (
@@ -138,8 +151,36 @@ const MainLayout = ({
     }
   }
 
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0]
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        window.dispatchEvent(new CustomEvent('open-file', {
+          detail: { 
+            filename: file.name, 
+            code: event.target.result 
+          }
+        }))
+      }
+      reader.readAsText(file)
+    }
+  }
+
   return (
-    <div className="ide-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div 
+      className="ide-container" 
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}
+    >
       {/* Animated Prism Blurs for Glassmorphism Depth */}
       <div className="prism-bg">
         <div className="prism-orb prism-orb-1"></div>

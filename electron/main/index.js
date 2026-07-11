@@ -68,6 +68,29 @@ function createWindow() {
     mainWindow.maximize()
   })
 
+  mainWindow.webContents.on('did-finish-load', () => {
+    const args = process.argv
+    const filePathArg = args.find(arg => {
+      return arg && !arg.startsWith('--') && !arg.includes('node_modules') && !arg.includes('electron') &&
+        (arg.endsWith('.js') || arg.endsWith('.html') || arg.endsWith('.css') || arg.endsWith('.py') || arg.endsWith('.c') || arg.endsWith('.cpp') || arg.endsWith('.cs') || arg.endsWith('.dart') || arg.endsWith('.json') || arg.endsWith('.md'))
+    })
+
+    if (filePathArg) {
+      const fs = require('fs')
+      const path = require('path')
+      try {
+        if (fs.existsSync(filePathArg)) {
+          const content = fs.readFileSync(filePathArg, 'utf-8')
+          mainWindow.webContents.send('open-files', [
+            { path: filePathArg, content, name: path.basename(filePathArg) }
+          ])
+        }
+      } catch (err) {
+        console.error('Failed to load command line file:', err.message)
+      }
+    }
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }

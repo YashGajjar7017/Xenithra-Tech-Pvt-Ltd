@@ -129,6 +129,14 @@
   padding: 0;
 }
 
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
 body {
   font-family:
     system-ui,
@@ -137,14 +145,8 @@ body {
     'SF Pro Text',
     'Segoe UI',
     sans-serif;
-  min-height: 100vh;
   background: var(--bg-gradient);
   color: var(--text-main);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0px;
-  overflow: hidden;
   transition: background 0.3s ease, color 0.3s ease;
 }
 

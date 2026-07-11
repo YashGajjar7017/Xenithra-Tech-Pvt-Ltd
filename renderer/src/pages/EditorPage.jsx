@@ -14,13 +14,18 @@ const EditorPage = () => {
   const [activeTerminalTab, setActiveTerminalTab] = useState('Terminal')
 
   // Layout resize states
-  const [editorHeight, setEditorHeight] = useState(380) // default editor height in pixels
+  const [editorHeight, setEditorHeight] = useState(window.innerHeight * 0.7) // default editor height to 70% of screen
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
 
   const codeAreaRef = useRef(null)
   const terminalBodyRef = useRef(null)
 
-  // Listen to open-file events from the sidebar
+  // Listen to window size and set initial 70% height
+  useEffect(() => {
+    setEditorHeight(window.innerHeight * 0.7)
+  }, [])
+
+  // Listen to open-file and change-language events
   useEffect(() => {
     const handleOpenFile = (event) => {
       if (event.detail) {
@@ -42,9 +47,124 @@ const EditorPage = () => {
         else if (ext === 'dart') setSelectedLanguage('Dart')
       }
     }
+    const handleChangeLanguage = (event) => {
+      if (event.detail && event.detail.language) {
+        setSelectedLanguage(event.detail.language)
+      }
+    }
     window.addEventListener('open-file', handleOpenFile)
-    return () => window.removeEventListener('open-file', handleOpenFile)
+    window.addEventListener('change-language', handleChangeLanguage)
+    return () => {
+      window.removeEventListener('open-file', handleOpenFile)
+      window.removeEventListener('change-language', handleChangeLanguage)
+    }
   }, [])
+
+  // Listen to Topbar menu custom events
+  useEffect(() => {
+    const onNew = () => {
+      setCode('')
+      setActiveTab('untitled.js')
+      setSelectedLanguage('Node.js')
+    }
+    const onSave = () => {
+      const blob = new Blob([code], { type: 'text/plain' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = activeTab
+      a.click()
+      URL.revokeObjectURL(url)
+      setTerminalLines(prev => [
+        ...prev,
+        { text: `[SAVED] File saved successfully: ${activeTab}`, className: 'success' },
+        { text: 'xenithra@studio:~$', className: 'prompt' }
+      ])
+    }
+    const onSaveAs = () => {
+      const newName = prompt('Enter filename to save:', activeTab)
+      if (newName) {
+        setActiveTab(newName)
+        const blob = new Blob([code], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = newName
+        a.click()
+        URL.revokeObjectURL(url)
+        setTerminalLines(prev => [
+          ...prev,
+          { text: `[SAVED] File saved as: ${newName}`, className: 'success' },
+          { text: 'xenithra@studio:~$', className: 'prompt' }
+        ])
+      }
+    }
+    const onUndo = () => {
+      if (codeAreaRef.current) {
+        codeAreaRef.current.focus()
+        document.execCommand('undo')
+      }
+    }
+    const onRedo = () => {
+      if (codeAreaRef.current) {
+        codeAreaRef.current.focus()
+        document.execCommand('redo')
+      }
+    }
+    const onCut = () => {
+      if (codeAreaRef.current) {
+        codeAreaRef.current.focus()
+        document.execCommand('cut')
+      }
+    }
+    const onCopy = () => {
+      if (codeAreaRef.current) {
+        codeAreaRef.current.focus()
+        document.execCommand('copy')
+      }
+    }
+    const onPaste = () => {
+      if (codeAreaRef.current) {
+        codeAreaRef.current.focus()
+        document.execCommand('paste')
+      }
+    }
+    const onSelectAll = () => {
+      if (codeAreaRef.current) {
+        codeAreaRef.current.focus()
+        codeAreaRef.current.select()
+      }
+    }
+    const onSelectNone = () => {
+      if (codeAreaRef.current) {
+        codeAreaRef.current.selectionStart = codeAreaRef.current.selectionEnd
+      }
+    }
+
+    window.addEventListener('menu-file-new', onNew)
+    window.addEventListener('menu-file-save', onSave)
+    window.addEventListener('menu-file-saveas', onSaveAs)
+    window.addEventListener('menu-edit-undo', onUndo)
+    window.addEventListener('menu-edit-redo', onRedo)
+    window.addEventListener('menu-edit-cut', onCut)
+    window.addEventListener('menu-edit-copy', onCopy)
+    window.addEventListener('menu-edit-paste', onPaste)
+    window.addEventListener('menu-selection-selectall', onSelectAll)
+    window.addEventListener('menu-selection-selectnone', onSelectNone)
+
+    return () => {
+      window.removeEventListener('menu-file-new', onNew)
+      window.removeEventListener('menu-file-save', onSave)
+      window.removeEventListener('menu-file-saveas', onSaveAs)
+      window.removeEventListener('menu-edit-undo', onUndo)
+      window.removeEventListener('menu-edit-redo', onRedo)
+      window.removeEventListener('menu-edit-cut', onCut)
+      window.removeEventListener('menu-edit-copy', onCopy)
+      window.removeEventListener('menu-edit-paste', onPaste)
+      window.removeEventListener('menu-selection-selectall', onSelectAll)
+      window.removeEventListener('menu-selection-selectnone', onSelectNone)
+    }
+  }, [code, activeTab])
 
   // Auto-scroll terminal
   useEffect(() => {
@@ -130,8 +250,8 @@ const EditorPage = () => {
 
   const handleStop = () => {
     setIsRunning(false)
-    setTerminalLines([
-      ...terminalLines,
+    setTerminalLines(prev => [
+      ...prev,
       { text: '[STOPPED] Execution forcefully terminated.', className: 'error' },
       { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
@@ -144,12 +264,35 @@ const EditorPage = () => {
       .join('\n')
     setCode(formatted)
 
-    setTerminalLines([
-      ...terminalLines,
+    setTerminalLines(prev => [
+      ...prev,
       { text: `[FORMAT] Source file auto-formatted successfully.`, className: 'success' },
       { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
   }
+
+  const handleDebug = () => {
+    setTerminalLines(prev => [
+      ...prev,
+      { text: `xenithra@studio:~$ debug --lang='${selectedLanguage}'`, className: 'prompt' },
+      { text: '[DEBUG] Debugger v8 inspector attached. Listening on ports...', className: 'warning' },
+      { text: 'xenithra@studio:~$', className: 'prompt' }
+    ])
+  }
+
+  // Hook up menu action listeners for Run, Debug, Stop, and Format
+  useEffect(() => {
+    window.addEventListener('menu-run-code', handleRun)
+    window.addEventListener('menu-stop-code', handleStop)
+    window.addEventListener('menu-format-code', handleFormat)
+    window.addEventListener('menu-debug-code', handleDebug)
+    return () => {
+      window.removeEventListener('menu-run-code', handleRun)
+      window.removeEventListener('menu-stop-code', handleStop)
+      window.removeEventListener('menu-format-code', handleFormat)
+      window.removeEventListener('menu-debug-code', handleDebug)
+    }
+  }, [code, selectedLanguage, cliArgs, isRunning, terminalLines])
 
   return (
     <div className="editor-wrapper" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -161,64 +304,6 @@ const EditorPage = () => {
             <span>📄</span>
             <span>{activeTab}</span>
             <span className="close-btn" style={{ cursor: 'pointer', marginLeft: '6px' }}>×</span>
-          </div>
-
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '12px' }}>
-            <button 
-              onClick={handleRun}
-              disabled={isRunning}
-              style={{
-                background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
-                border: 'none',
-                borderRadius: '4px',
-                color: '#fff',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                padding: '3px 10px',
-                height: '22px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                opacity: isRunning ? 0.6 : 1
-              }}
-            >
-              ▶ Run
-            </button>
-            <button 
-              onClick={handleFormat}
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: '4px',
-                color: 'var(--text-main)',
-                fontSize: '11px',
-                cursor: 'pointer',
-                padding: '3px 8px',
-                height: '22px',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              Format
-            </button>
-            <button 
-              onClick={handleStop}
-              style={{
-                background: 'rgba(255,107,107,0.15)',
-                border: '1px solid rgba(255,107,107,0.3)',
-                borderRadius: '4px',
-                color: '#ff6b6b',
-                fontSize: '11px',
-                cursor: 'pointer',
-                padding: '3px 8px',
-                height: '22px',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              ■ Stop
-            </button>
           </div>
         </div>
 
