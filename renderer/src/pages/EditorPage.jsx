@@ -8,11 +8,13 @@ const EditorPage = () => {
   const [leftTab, setLeftTab] = useState('index.html')
   const [leftCode, setLeftCode] = useState(`<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>`)
   const [leftLang, setLeftLang] = useState('XML')
+  const [leftFilePath, setLeftFilePath] = useState('')
 
   // Right editor state
   const [rightTab, setRightTab] = useState('untitled.js')
   const [rightCode, setRightCode] = useState(`// Sideways Split Editor\nfunction hello() {\n  console.log("Hello from sideways pane!");\n}\nhello();`)
   const [rightLang, setRightLang] = useState('Node.js')
+  const [rightFilePath, setRightFilePath] = useState('')
 
   // Computed state proxies for the active pane
   const code = activePane === 'left' ? leftCode : rightCode
@@ -31,6 +33,12 @@ const EditorPage = () => {
   const setSelectedLanguage = (val) => {
     if (activePane === 'left') setLeftLang(val)
     else setRightLang(val)
+  }
+
+  const activeFilePath = activePane === 'left' ? leftFilePath : rightFilePath
+  const setActiveFilePath = (val) => {
+    if (activePane === 'left') setLeftFilePath(val)
+    else setRightFilePath(val)
   }
 
   const [terminalLines, setTerminalLines] = useState([
@@ -60,10 +68,15 @@ const EditorPage = () => {
   useEffect(() => {
     const handleOpenFile = (event) => {
       if (event.detail) {
-        const { filename, code: fileCode } = event.detail
+        const { filename, code: fileCode, path: filePath } = event.detail
         setActiveTab(filename)
         if (fileCode) {
           setCode(fileCode)
+        }
+        if (filePath) {
+          setActiveFilePath(filePath)
+        } else {
+          setActiveFilePath('')
         }
 
         // Auto-set compilation language based on extension
@@ -237,37 +250,57 @@ const EditorPage = () => {
       setCode('')
       setActiveTab('untitled.js')
       setSelectedLanguage('Node.js')
+      setActiveFilePath('')
     }
-    const onSave = () => {
-      const blob = new Blob([code], { type: 'text/plain' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = activeTab
-      a.click()
-      URL.revokeObjectURL(url)
-      setTerminalLines(prev => [
-        ...prev,
-        { text: `[SAVED] File saved successfully: ${activeTab}`, className: 'success' },
-        { text: 'xenithra@studio:~$', className: 'prompt' }
-      ])
+    const onSave = async () => {
+      if (activeFilePath && window.api && typeof window.api.saveFile === 'function') {
+        const success = await window.api.saveFile(activeFilePath, code)
+        if (success) {
+          setTerminalLines(prev => [
+            ...prev,
+            { text: `[SAVED] File saved directly: ${activeFilePath}`, className: 'success' },
+            { text: 'xenithra@studio:~$', className: 'prompt' }
+          ])
+        } else {
+          setTerminalLines(prev => [
+            ...prev,
+            { text: `[ERROR] Failed to save file directly to ${activeFilePath}`, className: 'error' },
+            { text: 'xenithra@studio:~$', className: 'prompt' }
+          ])
+        }
+      } else {
+        await onSaveAs()
+      }
     }
-    const onSaveAs = () => {
-      const newName = prompt('Enter filename to save:', activeTab)
-      if (newName) {
-        setActiveTab(newName)
-        const blob = new Blob([code], { type: 'text/plain' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = newName
-        a.click()
-        URL.revokeObjectURL(url)
-        setTerminalLines(prev => [
-          ...prev,
-          { text: `[SAVED] File saved as: ${newName}`, className: 'success' },
-          { text: 'xenithra@studio:~$', className: 'prompt' }
-        ])
+    const onSaveAs = async () => {
+      if (window.api && typeof window.api.saveFileDialog === 'function') {
+        const file = await window.api.saveFileDialog(code, activeTab)
+        if (file) {
+          setActiveTab(file.name)
+          setActiveFilePath(file.path)
+          setTerminalLines(prev => [
+            ...prev,
+            { text: `[SAVED] File saved as: ${file.path}`, className: 'success' },
+            { text: 'xenithra@studio:~$', className: 'prompt' }
+          ])
+        }
+      } else {
+        const newName = prompt('Enter filename to save:', activeTab)
+        if (newName) {
+          setActiveTab(newName)
+          const blob = new Blob([code], { type: 'text/plain' })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = newName
+          a.click()
+          URL.revokeObjectURL(url)
+          setTerminalLines(prev => [
+            ...prev,
+            { text: `[SAVED] File saved as: ${newName}`, className: 'success' },
+            { text: 'xenithra@studio:~$', className: 'prompt' }
+          ])
+        }
       }
     }
     const onUndo = () => {
@@ -350,7 +383,7 @@ const EditorPage = () => {
       window.removeEventListener('menu-package-code', handlePackage)
       window.removeEventListener('menu-split-editor', onSplit)
     }
-  }, [code, selectedLanguage, cliArgs, isRunning, terminalLines, activePane, isSplit])
+  }, [code, selectedLanguage, cliArgs, isRunning, terminalLines, activePane, isSplit, activeFilePath])
 
   // Auto-scroll terminal
   useEffect(() => {

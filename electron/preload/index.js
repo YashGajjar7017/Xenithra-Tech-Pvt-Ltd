@@ -21,6 +21,9 @@ const api = {
   onOpenFiles: (cb) => ipcRenderer.on('open-files', (_event, files) => cb(files)),
   onToggleTheme: (cb) => ipcRenderer.on('toggle-theme', () => cb()),
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
+  saveFileDialog: (content, defaultName) => ipcRenderer.invoke('dialog:saveFile', content, defaultName),
+  saveFile: (filePath, content) => ipcRenderer.invoke('file:save', filePath, content),
+  closeWindow: () => ipcRenderer.invoke('close-window'),
   getApiPort: () => ipcRenderer.invoke('get-api-port')
 }
 

@@ -51,7 +51,7 @@ const MainApp = () => {
           const filename = file.name || file.path.split(/[\\/]/).pop()
           const fileCode = file.content
           window.dispatchEvent(new CustomEvent('open-file', {
-            detail: { filename, code: fileCode }
+            detail: { filename, code: fileCode, path: file.path }
           }))
         }
       })

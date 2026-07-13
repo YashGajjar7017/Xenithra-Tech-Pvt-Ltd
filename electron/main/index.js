@@ -149,6 +149,50 @@ app.whenReady().then(() => {
     }
   })
 
+  // File save dialog IPC
+  ipcMain.handle('dialog:saveFile', async (_event, content, defaultName) => {
+    const mainWindow = BrowserWindow.getFocusedWindow()
+    const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
+      title: 'Save Code File',
+      defaultPath: defaultName || 'untitled.js',
+      filters: [
+        { name: 'Code Files', extensions: ['js', 'jsx', 'ts', 'tsx', 'py', 'cpp', 'c', 'java', 'html', 'css', 'json'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    })
+    
+    if (canceled || !filePath) return null
+    
+    try {
+      const fs = require('fs').promises
+      await fs.writeFile(filePath, content, 'utf-8')
+      return { path: filePath, name: require('path').basename(filePath) }
+    } catch (err) {
+      console.error('File write error:', err)
+      return null
+    }
+  })
+
+  // Direct file save IPC
+  ipcMain.handle('file:save', async (_event, filePath, content) => {
+    try {
+      const fs = require('fs').promises
+      await fs.writeFile(filePath, content, 'utf-8')
+      return true
+    } catch (err) {
+      console.error('File write error:', err)
+      return false
+    }
+  })
+
+  // Close window IPC
+  ipcMain.handle('close-window', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    if (focusedWindow) {
+      focusedWindow.close()
+    }
+  })
+
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
 
   // Start local API server

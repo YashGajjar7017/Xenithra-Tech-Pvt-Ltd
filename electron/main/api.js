@@ -9,6 +9,7 @@ import { createRequire } from 'module'
 import { exec } from 'child_process'
 import fs from 'fs'
 import { signUpUser, authenticateUser } from './Services/db.service.js'
+import { runCode, packageCode } from './compiler-engine/compiler.js'
 
 dotenv.config()
 
@@ -103,195 +104,43 @@ app.post('/api/signup', async (req, res) => {
 })
 
 // Code Compilation & Execution Engine
-app.post('/api/run', (req, res) => {
+app.post('/api/run', async (req, res) => {
   const { lang, code, args } = req.body
-
-  if (!code) {
-    return res.status(400).json({ success: false, output: 'No code provided.' })
-  }
-
-  const tempDir = path.join(__dirname, 'temp')
-  if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true })
-  }
-
-  const fileId = Date.now() + '_' + Math.floor(Math.random() * 1000)
-  
-  let ext = 'txt'
-  let runCmd = ''
-  let compileCmd = ''
-  let sourceFile = ''
-  let binaryFile = ''
-
-  const escapedArgs = args ? ' ' + args : ''
-
-  switch (lang) {
-    case 'Node.js':
-      ext = 'js'
-      sourceFile = path.join(tempDir, `run_${fileId}.js`)
-      runCmd = `node "${sourceFile}"${escapedArgs}`
-      break
-    case 'Python 3':
-      ext = 'py'
-      sourceFile = path.join(tempDir, `run_${fileId}.py`)
-      runCmd = `python "${sourceFile}"${escapedArgs}`
-      break
-    case 'C (GCC)':
-      ext = 'c'
-      sourceFile = path.join(tempDir, `run_${fileId}.c`)
-      binaryFile = path.join(tempDir, `run_${fileId}.exe`)
-      compileCmd = `gcc "${sourceFile}" -o "${binaryFile}"`
-      runCmd = `"${binaryFile}"${escapedArgs}`
-      break
-    case 'C++ (G++)':
-      ext = 'cpp'
-      sourceFile = path.join(tempDir, `run_${fileId}.cpp`)
-      binaryFile = path.join(tempDir, `run_${fileId}.exe`)
-      compileCmd = `g++ "${sourceFile}" -o "${binaryFile}"`
-      runCmd = `"${binaryFile}"${escapedArgs}`
-      break
-    case 'Dot Net':
-      ext = 'cs'
-      sourceFile = path.join(tempDir, `run_${fileId}.cs`)
-      binaryFile = path.join(tempDir, `run_${fileId}.exe`)
-      compileCmd = `csc "${sourceFile}" /out:"${binaryFile}"`
-      runCmd = `"${binaryFile}"${escapedArgs}`
-      break
-    case 'Dart':
-      ext = 'dart'
-      sourceFile = path.join(tempDir, `run_${fileId}.dart`)
-      runCmd = `dart "${sourceFile}"${escapedArgs}`
-      break
-    case 'XML':
-      return res.json({
-        success: true,
-        output: 'XML syntax validated successfully!\n(No execution environment needed for static XML)'
-      })
-    case 'Next.js':
-      ext = 'js'
-      sourceFile = path.join(tempDir, `run_${fileId}.js`)
-      runCmd = `node "${sourceFile}"${escapedArgs}`
-      break
-    default:
-      return res.status(400).json({ success: false, output: `Unsupported language: ${lang}` })
-  }
-
-  // Write source code
   try {
-    fs.writeFileSync(sourceFile, code, 'utf8')
+    const result = await runCode(lang, code, args)
+    res.json(result)
   } catch (err) {
-    return res.status(500).json({ success: false, output: `Failed to create source file: ${err.message}` })
-  }
-
-  const cleanup = () => {
-    try {
-      if (sourceFile && fs.existsSync(sourceFile)) fs.unlinkSync(sourceFile)
-      if (binaryFile && fs.existsSync(binaryFile)) fs.unlinkSync(binaryFile)
-    } catch (err) {
-      // Ignored
-    }
-  }
-
-  const executeCode = () => {
-    exec(runCmd, { timeout: 8000, maxBuffer: 1024 * 1024 }, (runErr, runStdout, runStderr) => {
-      cleanup()
-      if (runErr && runErr.killed) {
-        return res.json({ success: false, output: '[ERROR] Process execution timed out (8 seconds limit).' })
-      }
-      const output = runStdout + runStderr
-      res.json({
-        success: !runErr,
-        output: output || 'Process finished with no output.'
-      })
-    })
-  }
-
-  if (compileCmd) {
-    // Compile first
-    exec(compileCmd, { timeout: 5000 }, (compErr, compStdout, compStderr) => {
-      if (compErr) {
-        cleanup()
-        const compileOutput = compStdout + compStderr
-        return res.json({
-          success: false,
-          output: `[COMPILATION ERROR]\n${compileOutput || compErr.message}\nMake sure compilers (gcc/g++/csc) are installed and added to PATH.`
-        })
-      }
-      executeCode()
-    })
-  } else {
-    executeCode()
+    console.error('Run route error:', err)
+    res.status(500).json({ success: false, output: `Internal execution engine error: ${err.message}` })
   }
 })
 
 // Compile & package binary file download endpoint
-app.post('/api/package', (req, res) => {
+app.post('/api/package', async (req, res) => {
   const { lang, code, filename } = req.body
-  if (!code) {
-    return res.status(400).json({ success: false, output: 'No code provided.' })
-  }
-
-  const fileId = uuidv4()
-  const baseName = filename ? path.basename(filename, path.extname(filename)) : 'compiled_pkg'
-  let compileCmd = ''
-  let sourceFile = ''
-  let binaryFile = ''
-
-  switch (lang) {
-    case 'C (GCC)':
-      sourceFile = path.join(tempDir, `${baseName}_${fileId}.c`)
-      binaryFile = path.join(tempDir, `${baseName}.exe`)
-      compileCmd = `gcc "${sourceFile}" -o "${binaryFile}"`
-      break
-    case 'C++ (G++)':
-      sourceFile = path.join(tempDir, `${baseName}_${fileId}.cpp`)
-      binaryFile = path.join(tempDir, `${baseName}.exe`)
-      compileCmd = `g++ "${sourceFile}" -o "${binaryFile}"`
-      break
-    case 'Dot Net':
-      sourceFile = path.join(tempDir, `${baseName}_${fileId}.cs`)
-      binaryFile = path.join(tempDir, `${baseName}.exe`)
-      compileCmd = `csc "${sourceFile}" /out:"${binaryFile}"`
-      break
-    default:
-      return res.status(400).json({ success: false, output: 'Packaging is only supported for C, C++, and .NET/C#.' })
-  }
-
   try {
-    fs.writeFileSync(sourceFile, code, 'utf8')
-  } catch (err) {
-    return res.status(500).json({ success: false, output: `Failed to create source file: ${err.message}` })
-  }
-
-  const cleanup = () => {
-    try {
-      if (sourceFile && fs.existsSync(sourceFile)) fs.unlinkSync(sourceFile)
-    } catch (e) {}
-  }
-
-  exec(compileCmd, { timeout: 8000 }, (compErr, compStdout, compStderr) => {
-    cleanup()
-    if (compErr) {
-      const compileOutput = compStdout + compStderr
-      return res.json({
-        success: false,
-        output: `[COMPILATION ERROR]\n${compileOutput || compErr.message}\nMake sure compilers (gcc/g++/csc) are installed.`
-      })
+    const result = await packageCode(lang, code, filename)
+    if (!result.success) {
+      return res.status(400).json(result)
     }
-
-    if (fs.existsSync(binaryFile)) {
-      res.download(binaryFile, `${baseName}.exe`, (err) => {
-        try {
-          if (fs.existsSync(binaryFile)) fs.unlinkSync(binaryFile)
-        } catch (e) {}
-        if (err) {
-          console.error('[main/api] Package download failed:', err.message)
+    
+    // Download the compiled executable
+    res.download(result.binaryFile, `${result.baseName}.exe`, (err) => {
+      try {
+        if (fs.existsSync(result.binaryFile)) {
+          fs.unlinkSync(result.binaryFile)
         }
-      })
-    } else {
-      res.status(500).json({ success: false, output: 'Compiled binary not found.' })
-    }
-  })
+      } catch (e) {
+        // Ignored
+      }
+      if (err) {
+        console.error('[main/api] Package download failed:', err.message)
+      }
+    })
+  } catch (err) {
+    console.error('Package route error:', err)
+    res.status(500).json({ success: false, output: `Internal packaging engine error: ${err.message}` })
+  }
 })
 
 // Fallback route for CSS (explicit) to help packaged app lookups

@@ -1,20 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 
 const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => {
-  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [activeMenu, setActiveMenu] = useState(null) // 'file', 'edit', 'selection', 'view', 'help', 'theme', or null
   const [selectedLang, setSelectedLang] = useState('Node.js')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState('')
 
-  // Menu dropdown states
-  const [fileDropdownOpen, setFileDropdownOpen] = useState(false)
-  const [editDropdownOpen, setEditDropdownOpen] = useState(false)
-  const [selectionDropdownOpen, setSelectionDropdownOpen] = useState(false)
-  const [viewDropdownOpen, setViewDropdownOpen] = useState(false)
-  const [helpDropdownOpen, setHelpDropdownOpen] = useState(false)
-  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false)
-
-  const langDropdownRef = useRef(null)
   const fileMenuRef = useRef(null)
   const editMenuRef = useRef(null)
   const selectionMenuRef = useRef(null)
@@ -52,36 +43,25 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false)
-      }
-      if (fileMenuRef.current && !fileMenuRef.current.contains(event.target)) {
-        setFileDropdownOpen(false)
-      }
-      if (editMenuRef.current && !editMenuRef.current.contains(event.target)) {
-        setEditDropdownOpen(false)
-      }
-      if (selectionMenuRef.current && !selectionMenuRef.current.contains(event.target)) {
-        setSelectionDropdownOpen(false)
-      }
-      if (viewMenuRef.current && !viewMenuRef.current.contains(event.target)) {
-        setViewDropdownOpen(false)
-      }
-      if (helpMenuRef.current && !helpMenuRef.current.contains(event.target)) {
-        setHelpDropdownOpen(false)
-      }
-      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target)) {
-        setThemeDropdownOpen(false)
+      if (
+        activeMenu &&
+        fileMenuRef.current && !fileMenuRef.current.contains(event.target) &&
+        editMenuRef.current && !editMenuRef.current.contains(event.target) &&
+        selectionMenuRef.current && !selectionMenuRef.current.contains(event.target) &&
+        viewMenuRef.current && !viewMenuRef.current.contains(event.target) &&
+        helpMenuRef.current && !helpMenuRef.current.contains(event.target) &&
+        themeMenuRef.current && !themeMenuRef.current.contains(event.target)
+      ) {
+        setActiveMenu(null)
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [activeMenu])
 
   const handleLanguageSelect = (lang) => {
     setSelectedLang(lang)
-    setDropdownOpen(false)
     // Dispatch custom event to notify editor language change
     window.dispatchEvent(new CustomEvent('change-language', { detail: { language: lang } }))
   }
@@ -94,19 +74,32 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
     window.location.href = '/#/Account/signup'
   }
 
+  // Hover menu behavior: once a menu is open, hovering opens adjacent menus
+  const handleMenuHeaderHover = (menuName) => {
+    if (activeMenu !== null) {
+      setActiveMenu(menuName)
+    }
+  }
+
+  const handleMenuHeaderClick = (menuName) => {
+    setActiveMenu(prev => prev === menuName ? null : menuName)
+  }
+
   // File Menu Handlers
-  const handleFileNew = () => {
-    setFileDropdownOpen(false)
+  const handleFileNew = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-file-new'))
   }
 
-  const handleFileOpen = async () => {
-    setFileDropdownOpen(false)
+  const handleFileOpen = async (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     try {
       const file = await window.api.openFileDialog()
       if (file) {
         window.dispatchEvent(new CustomEvent('open-file', {
-          detail: { filename: file.name, code: file.content }
+          detail: { filename: file.name, code: file.content, path: file.path }
         }))
       }
     } catch (error) {
@@ -114,185 +107,319 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
     }
   }
 
-  const handleFileSave = () => {
-    setFileDropdownOpen(false)
+  const handleFileSave = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-file-save'))
   }
 
-  const handleFileSaveAs = () => {
-    setFileDropdownOpen(false)
+  const handleFileSaveAs = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-file-saveas'))
   }
 
-  const handleFileExit = () => {
-    setFileDropdownOpen(false)
-    if (window.ipcRenderer) {
-      window.ipcRenderer.invoke('close-window')
+  const handleFileExit = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
+    if (window.api && typeof window.api.closeWindow === 'function') {
+      window.api.closeWindow()
     }
   }
 
   // Edit Menu Handlers
-  const handleEditUndo = () => {
-    setEditDropdownOpen(false)
+  const handleEditUndo = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-edit-undo'))
   }
 
-  const handleEditRedo = () => {
-    setEditDropdownOpen(false)
+  const handleEditRedo = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-edit-redo'))
   }
 
-  const handleEditCut = () => {
-    setEditDropdownOpen(false)
+  const handleEditCut = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-edit-cut'))
   }
 
-  const handleEditCopy = () => {
-    setEditDropdownOpen(false)
+  const handleEditCopy = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-edit-copy'))
   }
 
-  const handleEditPaste = () => {
-    setEditDropdownOpen(false)
+  const handleEditPaste = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-edit-paste'))
   }
 
   // Selection Menu Handlers
-  const handleSelectionAll = () => {
-    setSelectionDropdownOpen(false)
+  const handleSelectionAll = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-selection-selectall'))
   }
 
-  const handleSelectionNone = () => {
-    setSelectionDropdownOpen(false)
+  const handleSelectionNone = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-selection-selectnone'))
   }
 
   // View Menu Handlers
-  const handleViewZoomIn = () => {
-    setViewDropdownOpen(false)
+  const handleViewZoomIn = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     const currentZoom = localStorage.getItem('zoomLevel') || 100
     const newZoom = Math.min(200, parseInt(currentZoom) + 10)
     localStorage.setItem('zoomLevel', newZoom)
     document.documentElement.style.zoom = (newZoom / 100)
   }
 
-  const handleViewZoomOut = () => {
-    setViewDropdownOpen(false)
+  const handleViewZoomOut = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     const currentZoom = localStorage.getItem('zoomLevel') || 100
     const newZoom = Math.max(50, parseInt(currentZoom) - 10)
     localStorage.setItem('zoomLevel', newZoom)
     document.documentElement.style.zoom = (newZoom / 100)
   }
 
-  const handleViewReset = () => {
-    setViewDropdownOpen(false)
+  const handleViewReset = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     localStorage.setItem('zoomLevel', 100)
     document.documentElement.style.zoom = 1
   }
 
-  const handleViewToggleSidebar = () => {
-    setViewDropdownOpen(false)
+  const handleViewToggleSidebar = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     onToggleSidebar()
   }
 
   // Help Menu Handlers
-  const handleHelpAbout = () => {
-    setHelpDropdownOpen(false)
-    alert('Xenithra Technologies - Modern IDE\nVersion 1.0.0\n© 2024 Xenithra Tech Pvt Ltd')
+  const handleHelpAbout = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
+    alert('Xenithra Code Studio\nFuturistic IDE Workspace\nVersion 2.0.0\n© 2026 Xenithra Tech Pvt Ltd')
   }
 
-  const handleHelpDocumentation = () => {
-    setHelpDropdownOpen(false)
+  const handleHelpDocumentation = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
     window.open('https://docs.xenithra.tech', '_blank')
   }
 
-  const handleHelpShortcuts = () => {
-    setHelpDropdownOpen(false)
-    alert('Keyboard Shortcuts:\nCtrl+S: Save\nCtrl+O: Open\nCtrl+Z: Undo\nCtrl+Y: Redo\nCtrl+A: Select All')
+  const handleHelpShortcuts = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
+    alert('Keybindings Map:\nCtrl+S: Direct Save\nCtrl+Shift+S: Save As\nCtrl+O: Open Local File\nCtrl+Z: Undo Operation\nCtrl+Y: Redo Operation\nCtrl+A: Selection Select All')
+  }
+
+  // Theme change helper
+  const updateTheme = (e, newTheme) => {
+    e.stopPropagation()
+    setActiveMenu(null)
+    if (setTheme) {
+      setTheme(newTheme)
+      document.documentElement.setAttribute('data-theme', newTheme)
+      localStorage.setItem('theme', newTheme)
+    }
   }
 
   return (
-    <div className="menu-bar" style={{ height: '36px', display: 'flex', alignItems: 'center', position: 'relative', width: '100%', padding: '0 12px', background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--panel-border)' }}>
+    <div className="menu-bar">
       {/* Sidenav toggle */}
-      <button className="sidenav-toggle-btn" title="Toggle Sidebar" onClick={onToggleSidebar} style={{ padding: '3px 8px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>☰</button>
+      <button 
+        className="sidenav-toggle-btn" 
+        title="Toggle Sidebar" 
+        onClick={onToggleSidebar}
+      >
+        ☰
+      </button>
 
       {/* Menus Group */}
       <div style={{ display: 'flex', gap: '4px', alignItems: 'center', zIndex: 10 }}>
-        <div ref={fileMenuRef} className={`menu-item ${fileDropdownOpen ? 'open' : ''}`} onClick={() => setFileDropdownOpen(!fileDropdownOpen)}>
+        {/* FILE MENU */}
+        <div 
+          ref={fileMenuRef} 
+          className={`menu-item ${activeMenu === 'file' ? 'open' : ''}`} 
+          onClick={() => handleMenuHeaderClick('file')}
+          onMouseEnter={() => handleMenuHeaderHover('file')}
+        >
           File
-          {fileDropdownOpen && (
+          {activeMenu === 'file' && (
             <div className="dropdown-menu">
-              <button onClick={handleFileNew}>New</button>
-              <button onClick={handleFileOpen}>Open...</button>
-              <button onClick={handleFileSave}>Save</button>
-              <button onClick={handleFileSaveAs}>Save As...</button>
-              <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)' }} />
-              <button>Export as PDF</button>
-              <button>Recent Files</button>
-              <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)' }} />
-              <button onClick={handleFileExit}>Exit</button>
+              <button onClick={handleFileNew}>
+                <span>New File</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+N</span>
+              </button>
+              <button onClick={handleFileOpen}>
+                <span>Open File...</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+O</span>
+              </button>
+              <button onClick={handleFileSave}>
+                <span>Save</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+S</span>
+              </button>
+              <button onClick={handleFileSaveAs}>
+                <span>Save As...</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Shift+S</span>
+              </button>
+              <hr />
+              <button onClick={handleFileExit}>
+                <span>Exit Studio</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Alt+F4</span>
+              </button>
             </div>
           )}
         </div>
 
-        <div ref={editMenuRef} className={`menu-item ${editDropdownOpen ? 'open' : ''}`} onClick={() => setEditDropdownOpen(!editDropdownOpen)}>
+        {/* EDIT MENU */}
+        <div 
+          ref={editMenuRef} 
+          className={`menu-item ${activeMenu === 'edit' ? 'open' : ''}`} 
+          onClick={() => handleMenuHeaderClick('edit')}
+          onMouseEnter={() => handleMenuHeaderHover('edit')}
+        >
           Edit
-          {editDropdownOpen && (
+          {activeMenu === 'edit' && (
             <div className="dropdown-menu">
-              <button onClick={handleEditUndo}>Undo</button>
-              <button onClick={handleEditRedo}>Redo</button>
-              <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)' }} />
-              <button onClick={handleEditCut}>Cut</button>
-              <button onClick={handleEditCopy}>Copy</button>
-              <button onClick={handleEditPaste}>Paste</button>
+              <button onClick={handleEditUndo}>
+                <span>Undo</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Z</span>
+              </button>
+              <button onClick={handleEditRedo}>
+                <span>Redo</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Y</span>
+              </button>
+              <hr />
+              <button onClick={handleEditCut}>
+                <span>Cut</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+X</span>
+              </button>
+              <button onClick={handleEditCopy}>
+                <span>Copy</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+C</span>
+              </button>
+              <button onClick={handleEditPaste}>
+                <span>Paste</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+V</span>
+              </button>
             </div>
           )}
         </div>
 
-        <div ref={selectionMenuRef} className={`menu-item ${selectionDropdownOpen ? 'open' : ''}`} onClick={() => setSelectionDropdownOpen(!selectionDropdownOpen)}>
+        {/* SELECTION MENU */}
+        <div 
+          ref={selectionMenuRef} 
+          className={`menu-item ${activeMenu === 'selection' ? 'open' : ''}`} 
+          onClick={() => handleMenuHeaderClick('selection')}
+          onMouseEnter={() => handleMenuHeaderHover('selection')}
+        >
           Selection
-          {selectionDropdownOpen && (
+          {activeMenu === 'selection' && (
             <div className="dropdown-menu">
-              <button onClick={handleSelectionAll}>Select All</button>
-              <button onClick={handleSelectionNone}>Select None</button>
+              <button onClick={handleSelectionAll}>
+                <span>Select All</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+A</span>
+              </button>
+              <button onClick={handleSelectionNone}>
+                <span>Deselect All</span>
+              </button>
             </div>
           )}
         </div>
 
-        <div ref={viewMenuRef} className={`menu-item ${viewDropdownOpen ? 'open' : ''}`} onClick={() => setViewDropdownOpen(!viewDropdownOpen)}>
+        {/* VIEW MENU */}
+        <div 
+          ref={viewMenuRef} 
+          className={`menu-item ${activeMenu === 'view' ? 'open' : ''}`} 
+          onClick={() => handleMenuHeaderClick('view')}
+          onMouseEnter={() => handleMenuHeaderHover('view')}
+        >
           View
-          {viewDropdownOpen && (
+          {activeMenu === 'view' && (
             <div className="dropdown-menu">
-              <button onClick={handleViewZoomIn}>Zoom In (Ctrl++)</button>
-              <button onClick={handleViewZoomOut}>Zoom Out (Ctrl+-)</button>
-              <button onClick={handleViewReset}>Reset View</button>
-              <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)' }} />
-              <button onClick={handleViewToggleSidebar}>Toggle Sidebar</button>
+              <button onClick={handleViewZoomIn}>
+                <span>Zoom In</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl++</span>
+              </button>
+              <button onClick={handleViewZoomOut}>
+                <span>Zoom Out</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+-</span>
+              </button>
+              <button onClick={handleViewReset}>
+                <span>Reset Zoom</span>
+              </button>
+              <hr />
+              <button onClick={handleViewToggleSidebar}>
+                <span>Toggle Sidebar</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+B</span>
+              </button>
             </div>
           )}
         </div>
 
-        <div ref={helpMenuRef} className={`menu-item ${helpDropdownOpen ? 'open' : ''}`} onClick={() => setHelpDropdownOpen(!helpDropdownOpen)}>
+        {/* HELP MENU */}
+        <div 
+          ref={helpMenuRef} 
+          className={`menu-item ${activeMenu === 'help' ? 'open' : ''}`} 
+          onClick={() => handleMenuHeaderClick('help')}
+          onMouseEnter={() => handleMenuHeaderHover('help')}
+        >
           Help
-          {helpDropdownOpen && (
+          {activeMenu === 'help' && (
             <div className="dropdown-menu">
-              <button onClick={handleHelpAbout}>About</button>
-              <button onClick={handleHelpShortcuts}>Keyboard Shortcuts</button>
-              <button onClick={handleHelpDocumentation}>Documentation</button>
+              <button onClick={handleHelpAbout}>
+                <span>About Studio</span>
+              </button>
+              <button onClick={handleHelpShortcuts}>
+                <span>Keyboard Shortcuts</span>
+              </button>
+              <button onClick={handleHelpDocumentation}>
+                <span>Documentation</span>
+              </button>
             </div>
           )}
         </div>
 
-        <div ref={themeMenuRef} className={`menu-item ${themeDropdownOpen ? 'open' : ''}`} onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}>
+        {/* THEME MENU */}
+        <div 
+          ref={themeMenuRef} 
+          className={`menu-item ${activeMenu === 'theme' ? 'open' : ''}`} 
+          onClick={() => handleMenuHeaderClick('theme')}
+          onMouseEnter={() => handleMenuHeaderHover('theme')}
+        >
           Theme
-          {themeDropdownOpen && (
+          {activeMenu === 'theme' && (
             <div className="dropdown-menu">
-              <button onClick={() => { setTheme('glass-dark'); document.documentElement.setAttribute('data-theme', 'glass-dark'); localStorage.setItem('theme', 'glass-dark'); }}>Glassy Dark</button>
-              <button onClick={() => { setTheme('glass-light'); document.documentElement.setAttribute('data-theme', 'glass-light'); localStorage.setItem('theme', 'glass-light'); }}>Light Frosted</button>
-              <button onClick={() => { setTheme('neon-purple'); document.documentElement.setAttribute('data-theme', 'neon-purple'); localStorage.setItem('theme', 'neon-purple'); }}>Neon Violet</button>
-              <button onClick={() => { setTheme('emerald'); document.documentElement.setAttribute('data-theme', 'emerald'); localStorage.setItem('theme', 'emerald'); }}>Emerald Matrix</button>
-              <button onClick={() => { setTheme('cyber-amber'); document.documentElement.setAttribute('data-theme', 'cyber-amber'); localStorage.setItem('theme', 'cyber-amber'); }}>Cyber Amber</button>
+              <button onClick={(e) => updateTheme(e, 'glass-dark')}>
+                <span>Glassy Dark</span>
+                {theme === 'glass-dark' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
+              <button onClick={(e) => updateTheme(e, 'glass-light')}>
+                <span>Light Frosted</span>
+                {theme === 'glass-light' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
+              <button onClick={(e) => updateTheme(e, 'neon-purple')}>
+                <span>Neon Violet</span>
+                {theme === 'neon-purple' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
+              <button onClick={(e) => updateTheme(e, 'emerald')}>
+                <span>Emerald Matrix</span>
+                {theme === 'emerald' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
+              <button onClick={(e) => updateTheme(e, 'cyber-amber')}>
+                <span>Cyber Amber</span>
+                {theme === 'cyber-amber' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
             </div>
           )}
         </div>
@@ -305,41 +432,50 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
           placeholder="Search commands..." 
           style={{
             width: '100%',
-            height: '24px',
-            background: 'rgba(0,0,0,0.22)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '4px',
-            color: '#ccc',
-            fontSize: '11px',
+            height: '26px',
+            background: 'rgba(0,0,0,0.3)',
+            border: '1px solid var(--panel-border)',
+            borderRadius: '6px',
+            color: '#eee',
+            fontSize: '12px',
             textAlign: 'center',
             outline: 'none',
-            padding: '0 8px'
+            padding: '0 10px',
+            transition: 'all 0.3s ease'
           }}
           onFocus={(e) => {
             e.target.style.borderColor = 'var(--accent-color)'
-            e.target.style.background = 'rgba(0,0,0,0.35)'
+            e.target.style.background = 'rgba(0,0,0,0.5)'
+            e.target.style.boxShadow = 'var(--accent-glow)'
           }}
           onBlur={(e) => {
-            e.target.style.borderColor = 'rgba(255,255,255,0.06)'
-            e.target.style.background = 'rgba(0,0,0,0.22)'
+            e.target.style.borderColor = 'var(--panel-border)'
+            e.target.style.background = 'rgba(0,0,0,0.3)'
+            e.target.style.boxShadow = 'none'
           }}
         />
       </div>
 
       {/* Right-aligned Panel Options */}
-      <div className="menu-panel" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', height: '100%', zIndex: 10 }}>
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', height: '100%', zIndex: 10 }}>
         {!isLoggedIn ? (
           <div className="auth-section" style={{ display: 'flex', gap: '6px' }}>
-            <button className="btn-signup" onClick={handleSignup} style={{ padding: '3px 10px', height: '24px', fontSize: '11px', display: 'flex', alignItems: 'center' }}>Signup</button>
+            <button className="btn-signup" onClick={handleSignup} style={{ padding: '4px 12px', height: '26px', fontSize: '11px', display: 'flex', alignItems: 'center', fontWeight: '500' }}>Signup</button>
           </div>
         ) : (
-          <div className="user-display" style={{ display: 'flex', gap: '6px', padding: '3px 8px', height: '24px', alignItems: 'center', background: 'rgba(0, 229, 255, 0.08)', borderRadius: '4px' }}>
-            <div className="user-logo" style={{ width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👤</div>
-            <span className="user-name" style={{ fontSize: '11px' }}>{username}</span>
+          <div className="user-display">
+            <img className="user-logo-img" src="Images/session_logo.png" alt="Session Logo" />
+            <span className="user-name" style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '500' }}>{username}</span>
           </div>
         )}
 
-        <div className="account-circle" title="Account" onClick={() => isLoggedIn ? onToggleSidebar() : handleLogin()} style={{ width: '24px', height: '24px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👤</div>
+        <div className="account-circle" title="Account" onClick={() => isLoggedIn ? onToggleSidebar() : handleLogin()}>
+          {isLoggedIn ? (
+            <img className="account-circle-img" src="Images/session_logo.png" alt="Session Avatar" />
+          ) : (
+            <span style={{ fontSize: '13px' }}>👤</span>
+          )}
+        </div>
       </div>
     </div>
   )
