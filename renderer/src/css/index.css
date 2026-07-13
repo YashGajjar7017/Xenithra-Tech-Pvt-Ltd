@@ -1,26 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root, [data-theme='vscode-dark'] {
-  /* VS Code Dark Modern Theme - Pixel-Accurate colors from screenshot */
-  --bg-gradient: #0d1117;
-  --panel-bg: #0d1117;
-  --panel-border: #21262d;
-  --panel-border-glow: #1f6feb;
-  --accent-color: #58a6ff;
-  --accent-glow: 0 0 10px rgba(88, 166, 255, 0.4);
-  --text-main: #c9d1d9;
-  --text-muted: #8b949e;
-  --sidebar-bg: #07090e;
-  --sidebar-active: #161b22;
-  --terminal-bg: #0d1117;
-  --terminal-border: #21262d;
-  --terminal-text: #c9d1d9;
-  --input-bg: #0d1117;
-  --input-border: #30363d;
-  --button-run-bg: #21262d;
-  --button-run-text: #58a6ff;
-  --button-run-border: #30363d;
-  --button-run-glow: 0 0 8px rgba(88, 166, 255, 0.15);
+  /* VS Code Dark Modern Theme - Exact Dark & Grey Coder Aesthetic */
+  --bg-gradient: #1f1f1f;
+  --panel-bg: #1e1e1e;
+  --panel-border: #2d2d2d;
+  --panel-border-glow: #007acc;
+  --accent-color: #007acc;
+  --accent-glow: 0 0 8px rgba(0, 122, 204, 0.4);
+  --text-main: #cccccc;
+  --text-muted: #858585;
+  --sidebar-bg: #181818;
+  --sidebar-active: #2d2d2d;
+  --terminal-bg: #1e1e1e;
+  --terminal-border: #2d2d2d;
+  --terminal-text: #e8e8e8;
+  --input-bg: #3c3c3c;
+  --input-border: #3c3c3c;
+  --button-run-bg: #0e639c;
+  --button-run-text: #ffffff;
+  --button-run-border: #1177bb;
+  --button-run-glow: 0 0 8px rgba(0, 122, 204, 0.2);
 }
 
 [data-theme='glass-dark'] {
@@ -49,7 +49,8 @@
 }
 
 /* Hide floating background orbs when using VS Code theme */
-[data-theme='vscode-dark'] .prism-bg {
+[data-theme='vscode-dark'] .prism-bg,
+:root:not([data-theme]) .prism-bg {
   display: none !important;
 }
 

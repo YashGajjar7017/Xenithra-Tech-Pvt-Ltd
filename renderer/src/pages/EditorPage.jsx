@@ -51,18 +51,77 @@ const EditorPage = () => {
   const [activeTerminalTab, setActiveTerminalTab] = useState('Terminal')
 
   // Layout resize states
-  const [editorHeight, setEditorHeight] = useState(window.innerHeight * 0.7) // default editor height to 70% of screen
+  const [editorHeight, setEditorHeight] = useState(window.innerHeight * 0.55) // set editor height to 55% of screen
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
+
+  // AI Chat & Code Adjuster states
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true)
+  const [rightPanelTab, setRightPanelTab] = useState('chat')
+  const [chatInput, setChatInput] = useState('')
+  const [chatMessages, setChatMessages] = useState([
+    { sender: 'ai', text: 'Hello! I am your Xenithra AI Assistant. Ask me to explain code, find bugs, or adjust formatting!' }
+  ])
+  const [formatRules, setFormatRules] = useState('replace:foo->bar\nreplace:console.log->logger.info')
 
   const leftCodeAreaRef = useRef(null)
   const rightCodeAreaRef = useRef(null)
   const codeAreaRef = activePane === 'left' ? leftCodeAreaRef : rightCodeAreaRef
   const terminalBodyRef = useRef(null)
 
-  // Listen to window size and set initial 70% height
+  // Listen to window size and set initial 55% height
   useEffect(() => {
-    setEditorHeight(window.innerHeight * 0.7)
+    setEditorHeight(window.innerHeight * 0.55)
   }, [])
+
+  const handleSendChatMessage = () => {
+    if (!chatInput.trim()) return
+    const userMsg = { sender: 'user', text: chatInput }
+    setChatMessages(prev => [...prev, userMsg])
+    const prompt = chatInput
+    setChatInput('')
+
+    setTimeout(() => {
+      let aiText = "I'm on it! Let me review your code. Is there a specific language or feature you would like to implement?"
+      const textLower = prompt.toLowerCase()
+      if (textLower.includes('help') || textLower.includes('hello') || textLower.includes('hi')) {
+        aiText = "Hi! I am here to assist with editing, debugging, or formatting your workspace. Try using the ADJUSTER tab to run custom replacements!"
+      } else if (textLower.includes('format') || textLower.includes('replace')) {
+        aiText = "To format or adjust your active editor, go to the 'ADJUSTER / RULES' tab, enter search-replace definitions like `replace:old->new`, and click 'Apply Rules to Editor'."
+      } else if (textLower.includes('error') || textLower.includes('bug')) {
+        aiText = "Let me check the logs. Make sure that there are no syntax errors in your code, and the correct runtime language is selected."
+      } else {
+        aiText = `Understood. I will help you with: "${prompt}". Let me know if you would like me to rewrite or adjust any portions of the active file: ${activeTab}.`
+      }
+      setChatMessages(prev => [...prev, { sender: 'ai', text: aiText }])
+    }, 800)
+  }
+
+  const handleApplyFormatRules = () => {
+    if (!formatRules.trim()) return
+    const rules = formatRules.split('\n')
+    let currentCode = code
+    let count = 0
+    
+    rules.forEach(rule => {
+      if (rule.trim().startsWith('replace:')) {
+        const parts = rule.replace('replace:', '').split('->')
+        if (parts.length === 2) {
+          const [findStr, replaceStr] = parts
+          if (currentCode.includes(findStr)) {
+            currentCode = currentCode.replaceAll(findStr, replaceStr)
+            count++
+          }
+        }
+      }
+    })
+
+    setCode(currentCode)
+    setTerminalLines(prev => [
+      ...prev,
+      { text: `[FORMAT] Applied ${count} text adjustment replacement rules to ${activeTab}.`, className: 'success' },
+      { text: 'xenithra@studio:~$', className: 'prompt' }
+    ])
+  }
 
   // Listen to open-file and change-language events
   useEffect(() => {
@@ -70,7 +129,7 @@ const EditorPage = () => {
       if (event.detail) {
         const { filename, code: fileCode, path: filePath } = event.detail
         setActiveTab(filename)
-        if (fileCode) {
+        if (fileCode !== undefined) {
           setCode(fileCode)
         }
         if (filePath) {
@@ -102,7 +161,7 @@ const EditorPage = () => {
       window.removeEventListener('open-file', handleOpenFile)
       window.removeEventListener('change-language', handleChangeLanguage)
     }
-  }, [activePane]) // Re-run when pane toggles to ensure proper setter binds
+  }, [activePane, code]) // Re-run when pane toggles or code is set // Re-run when pane toggles to ensure proper setter binds
 
   // Handle Run - POST code to compiler engine backend
   const handleRun = async () => {
@@ -401,7 +460,8 @@ const EditorPage = () => {
 
     const handleMouseMove = (moveEvent) => {
       const deltaY = moveEvent.clientY - startY
-      const newHeight = Math.max(120, Math.min(800, startHeight + deltaY))
+      const maxEditorHeight = window.innerHeight - 250 // Maintain 250px space for terminal at bottom
+      const newHeight = Math.max(120, Math.min(maxEditorHeight, startHeight + deltaY))
       setEditorHeight(newHeight)
     }
 
@@ -417,7 +477,7 @@ const EditorPage = () => {
 
   const getLineCount = (text) => Math.max(1, text.split('\n').length)
 
-  return (
+    return (
     <div className="editor-wrapper" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Editor Main Section */}
       <div style={{ height: `${editorHeight}px`, display: 'flex', flexDirection: 'row', overflow: 'hidden', borderBottom: '1px solid var(--panel-border)', position: 'relative' }}>
@@ -425,11 +485,19 @@ const EditorPage = () => {
         {!isSplit ? (
           /* Single Pane Editor */
           <div className="editor-pane active" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <div className="editor-tabs">
+            <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
               <div className="editor-tab active">
-                <span>📄</span>
+                <i className="bx bx-file" style={{ fontSize: '13px', marginRight: '5px' }}></i>
                 <span>{leftTab}</span>
                 <span className="close-btn" style={{ cursor: 'pointer', marginLeft: '6px' }}>×</span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
+                <button onClick={() => setIsSplit(true)} style={styles.tabActionBtn} title="Split Screen Side-by-Side">
+                  <i className="bx bx-columns"></i>
+                </button>
+                <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} style={{ ...styles.tabActionBtn, color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)' }} title="AI Assistant & Adjuster Panel">
+                  <i className="bx bx-bot"></i>
+                </button>
               </div>
             </div>
             
@@ -479,11 +547,19 @@ const EditorPage = () => {
               background: activePane === 'left' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
               transition: 'background 0.2s'
             }} onClick={() => setActivePane('left')}>
-              <div className="editor-tabs">
+              <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <div className={`editor-tab ${activePane === 'left' ? 'active' : ''}`}>
-                  <span>📄</span>
+                  <i className="bx bx-file" style={{ fontSize: '13px', marginRight: '5px' }}></i>
                   <span>{leftTab}</span>
                   <span style={{ fontSize: '9px', marginLeft: '6px', color: 'var(--accent-color)', fontWeight: 'bold' }}>LEFT</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
+                  <button onClick={() => setIsSplit(false)} style={styles.tabActionBtn} title="Merge Editors">
+                    <i className="bx bx-window-close"></i>
+                  </button>
+                  <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} style={{ ...styles.tabActionBtn, color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)' }} title="AI Assistant & Adjuster Panel">
+                    <i className="bx bx-bot"></i>
+                  </button>
                 </div>
               </div>
               <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -529,11 +605,19 @@ const EditorPage = () => {
               background: activePane === 'right' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
               transition: 'background 0.2s'
             }} onClick={() => setActivePane('right')}>
-              <div className="editor-tabs">
+              <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <div className={`editor-tab ${activePane === 'right' ? 'active' : ''}`}>
-                  <span>📄</span>
+                  <i className="bx bx-file" style={{ fontSize: '13px', marginRight: '5px' }}></i>
                   <span>{rightTab}</span>
                   <span style={{ fontSize: '9px', marginLeft: '6px', color: '#ff6b6b', fontWeight: 'bold' }}>RIGHT</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
+                  <button onClick={() => setIsSplit(false)} style={styles.tabActionBtn} title="Merge Editors">
+                    <i className="bx bx-window-close"></i>
+                  </button>
+                  <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} style={{ ...styles.tabActionBtn, color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)' }} title="AI Assistant & Adjuster Panel">
+                    <i className="bx bx-bot"></i>
+                  </button>
                 </div>
               </div>
               <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -570,6 +654,165 @@ const EditorPage = () => {
             </div>
           </div>
         )}
+
+        {/* RIGHT SIDE AI CHAT & TEXT ADJUSTER DRAWER */}
+        <div style={{
+          width: isRightPanelOpen ? '320px' : '0px',
+          display: 'flex',
+          flexDirection: 'column',
+          borderLeft: isRightPanelOpen ? '1px solid var(--panel-border)' : 'none',
+          background: 'var(--sidebar-bg)',
+          overflow: 'hidden',
+          transition: 'width 0.2s ease, border 0.2s ease',
+          height: '100%',
+          zIndex: 5
+        }}>
+          {/* Drawer Header Tabs */}
+          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)', height: '35px', alignItems: 'center' }}>
+            <div 
+              onClick={() => setRightPanelTab('chat')}
+              style={{
+                flex: 1,
+                textAlign: 'center',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                color: rightPanelTab === 'chat' ? 'var(--accent-color)' : 'var(--text-muted)',
+                borderBottom: rightPanelTab === 'chat' ? '2px solid var(--accent-color)' : 'none',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              AI CHAT
+            </div>
+            <div 
+              onClick={() => setRightPanelTab('format')}
+              style={{
+                flex: 1,
+                textAlign: 'center',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                color: rightPanelTab === 'format' ? 'var(--accent-color)' : 'var(--text-muted)',
+                borderBottom: rightPanelTab === 'format' ? '2px solid var(--accent-color)' : 'none',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              ADJUSTER
+            </div>
+            <div 
+              onClick={() => setIsRightPanelOpen(false)} 
+              style={{ padding: '0 10px', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '16px' }}
+            >
+              ×
+            </div>
+          </div>
+
+          {/* Drawer Body content */}
+          {rightPanelTab === 'chat' ? (
+            /* AI Chat Tab */
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '10px' }}>
+              <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {chatMessages.map((msg, idx) => (
+                  <div 
+                    key={idx} 
+                    style={{
+                      alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                      background: msg.sender === 'user' ? 'rgba(0, 122, 204, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                      border: msg.sender === 'user' ? '1px solid rgba(0, 122, 204, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      maxWidth: '85%',
+                      fontSize: '12px',
+                      lineHeight: '1.4',
+                      color: 'var(--text-main)'
+                    }}
+                  >
+                    {msg.text}
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: '6px', borderTop: '1px solid var(--panel-border)', paddingTop: '10px' }}>
+                <input 
+                  type="text" 
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
+                  placeholder="Ask AI Assistant..."
+                  style={{
+                    flex: 1,
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--input-border)',
+                    borderRadius: '4px',
+                    color: 'var(--text-main)',
+                    fontSize: '12px',
+                    padding: '6px 10px',
+                    outline: 'none'
+                  }}
+                />
+                <button 
+                  onClick={handleSendChatMessage}
+                  style={{
+                    background: 'var(--accent-color)',
+                    border: 'none',
+                    color: '#fff',
+                    borderRadius: '4px',
+                    padding: '0 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Adjuster / Formatter Settings Tab */
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '10px', overflowY: 'auto', gap: '10px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                Enter custom replacement rules to adjust the main editor code. 
+                Use format {"replace:search->replace"} (one per line).
+              </div>
+              <textarea 
+                value={formatRules}
+                onChange={(e) => setFormatRules(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--input-border)',
+                  color: 'var(--text-main)',
+                  fontFamily: 'Consolas, monospace',
+                  fontSize: '11px',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  resize: 'none',
+                  outline: 'none',
+                  minHeight: '200px'
+                }}
+              />
+              <button 
+                onClick={handleApplyFormatRules}
+                style={{
+                  background: 'linear-gradient(135deg, #0e639c, #1177bb)',
+                  border: 'none',
+                  color: '#fff',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Apply Rules to Editor
+              </button>
+            </div>
+          )}
+        </div>
 
       </div>
 
@@ -652,6 +895,22 @@ const EditorPage = () => {
       </div>
     </div>
   )
+}
+
+const styles = {
+  tabActionBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text-muted)',
+    cursor: 'pointer',
+    fontSize: '14px',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s'
+  }
 }
 
 export default EditorPage

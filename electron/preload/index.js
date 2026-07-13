@@ -26,6 +26,7 @@ const api = {
   closeWindow: () => ipcRenderer.invoke('close-window'),
   openDirectoryDialog: () => ipcRenderer.invoke('dialog:openDirectory'),
   readDirectory: (dirPath) => ipcRenderer.invoke('file:readDirectory', dirPath),
+  readFile: (filePath) => ipcRenderer.invoke('file:read', filePath),
   getApiPort: () => ipcRenderer.invoke('get-api-port')
 }
 

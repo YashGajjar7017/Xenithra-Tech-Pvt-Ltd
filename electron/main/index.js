@@ -185,6 +185,17 @@ app.whenReady().then(() => {
     }
   })
 
+  // Read file from path IPC
+  ipcMain.handle('file:read', async (_event, filePath) => {
+    try {
+      const fs = require('fs').promises
+      return await fs.readFile(filePath, 'utf-8')
+    } catch (err) {
+      console.error('File read error:', err)
+      return null
+    }
+  })
+
   // Close window IPC
   ipcMain.handle('close-window', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow()

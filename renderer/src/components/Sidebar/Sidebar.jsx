@@ -26,12 +26,20 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
     }))
   }
 
-  const handleFileClick = (file) => {
+  const handleFileClick = async (file) => {
     setActiveFile(file.key)
+    let content = file.content
+    // If the file content is empty or cached as empty, check if we need to load it dynamically
+    if ((content === undefined || content === '') && window.api && typeof window.api.readFile === 'function') {
+      const fetchedContent = await window.api.readFile(file.key)
+      if (fetchedContent !== null) {
+        content = fetchedContent
+      }
+    }
     window.dispatchEvent(new CustomEvent('open-file', { 
       detail: { 
         filename: file.name,
-        code: file.content,
+        code: content,
         path: file.key
       } 
     }))
@@ -88,67 +96,63 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
           setExpandedDirs({ [result.tree.key]: true })
         } else {
           // Fallback to reading it as a file if it's not a directory
-          const reader = new FileReader()
-          reader.onload = (event) => {
+          if (window.api && typeof window.api.readFile === 'function') {
+            const content = await window.api.readFile(file.path)
             window.dispatchEvent(new CustomEvent('open-file', {
-              detail: { filename: file.name, code: event.target.result, path: file.path }
+              detail: { filename: file.name, code: content || '', path: file.path }
             }))
           }
-          reader.readAsText(file)
         }
       }
     }
   }
 
-  // Get cool extension icon
+  // Get flat monochrome Boxicons
   const getFileIcon = (filename) => {
     const ext = filename.split('.').pop().toLowerCase()
+    const iconStyle = { fontSize: '15px', color: 'var(--text-main)', opacity: 0.75 }
+    
     switch (ext) {
       case 'html':
       case 'xml':
-        return <span style={{ color: '#e34f26' }}>🌐</span>
+        return <i className="bx bx-code" style={iconStyle}></i>
       case 'js':
       case 'jsx':
-        return <span style={{ color: '#f7df1e' }}>🟨</span>
+        return <i className="bx bxl-javascript" style={iconStyle}></i>
       case 'ts':
       case 'tsx':
-        return <span style={{ color: '#007acc' }}>🟦</span>
+        return <i className="bx bx-code-block" style={iconStyle}></i>
       case 'css':
-        return <span style={{ color: '#1572b6' }}>🎨</span>
+        return <i className="bx bx-palette" style={iconStyle}></i>
       case 'py':
-        return <span style={{ color: '#3776ab' }}>🐍</span>
+        return <i className="bx bxl-python" style={iconStyle}></i>
       case 'cpp':
       case 'hpp':
-        return <span style={{ color: '#00599c' }}>🔷</span>
       case 'c':
       case 'h':
-        return <span style={{ color: '#659ad2' }}>🔸</span>
       case 'cs':
-        return <span style={{ color: '#178600' }}>🟩</span>
       case 'dart':
-        return <span style={{ color: '#00b4ab' }}>🎯</span>
+        return <i className="bx bx-terminal" style={iconStyle}></i>
       case 'json':
-        return <span style={{ color: '#cbcb41' }}>⚙️</span>
       case 'yml':
       case 'yaml':
-        return <span style={{ color: '#cb6141' }}>⚙️</span>
+        return <i className="bx bx-cog" style={iconStyle}></i>
       case 'md':
-        return <span style={{ color: '#007acc' }}>📝</span>
+        return <i className="bx bx-detail" style={iconStyle}></i>
       case 'png':
       case 'jpg':
       case 'jpeg':
       case 'ico':
       case 'icns':
       case 'svg':
-        return <span style={{ color: '#a07cf0' }}>🖼️</span>
+        return <i className="bx bx-image" style={iconStyle}></i>
       default:
-        return <span style={{ color: 'var(--text-muted)' }}>📄</span>
+        return <i className="bx bx-file" style={iconStyle}></i>
     }
   }
 
   // Generate VS Code Git badges like M (Modified) and U (Untracked)
   const getGitBadge = (filename) => {
-    // Exact files from screenshot
     if (filename === 'compiler.js') {
       return <span style={styles.gitBadgeUntracked} title="Untracked">U</span>
     }
@@ -185,11 +189,10 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
             }}>
               ▶
             </span>
-            <span style={{ fontSize: '14px' }}>📁</span>
+            <i className="bx bx-folder" style={{ fontSize: '15px', color: 'var(--text-main)', opacity: 0.75 }}></i>
             <span style={{ fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {node.name}
             </span>
-            {/* Folder badge decoration for directories containing changes */}
             {node.name === 'compiler-engine' || node.name === 'main' ? (
               <span style={styles.dirChangesIndicator}>•</span>
             ) : null}
@@ -239,14 +242,9 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
     )
   }
 
-  // Render collapsed sidebar view
+  // Prevent double-sidebar rendering by returning null when collapsed
   if (collapsed) {
-    return (
-      <div style={styles.collapsedSidebar}>
-        <div style={styles.collapsedIcon} onClick={handleOpenFolderClick} title="Open Workspace Folder">📂</div>
-        <div style={styles.collapsedIcon} onClick={handleOpenFileClick} title="Open Code File">📄</div>
-      </div>
-    )
+    return null
   }
 
   return (
@@ -267,14 +265,20 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
           <div style={styles.header}>
             <span style={styles.headerTitle}>{loadedFolder.name.toUpperCase()}</span>
             <div style={styles.headerActions}>
-              <span style={styles.actionIcon} onClick={handleOpenFileClick} title="Open File">📄</span>
-              <span style={styles.actionIcon} onClick={handleOpenFolderClick} title="Change Folder">📁</span>
+              <span style={styles.actionIcon} onClick={handleOpenFileClick} title="Open File">
+                <i className="bx bx-file" style={{ fontSize: '13px' }}></i>
+              </span>
+              <span style={styles.actionIcon} onClick={handleOpenFolderClick} title="Change Folder">
+                <i className="bx bx-folder" style={{ fontSize: '13px' }}></i>
+              </span>
               <span style={styles.actionIcon} onClick={async () => {
                 if (window.api && typeof window.api.readDirectory === 'function') {
                   const result = await window.api.readDirectory(loadedFolder.path)
                   if (result) setLoadedFolder(result)
                 }
-              }} title="Refresh Workspace">↻</span>
+              }} title="Refresh Workspace">
+                <i className="bx bx-refresh" style={{ fontSize: '13px' }}></i>
+              </span>
             </div>
           </div>
 
@@ -297,9 +301,11 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
           </div>
         </React.Fragment>
       ) : (
-        /* No Folder Selected: Welcome / Drag & Drop Dashboard */
+        /* Welcome / Drag & Drop Dashboard with Flat Monochrome Design */
         <div style={{ ...styles.welcomePane, borderStyle: isDragOver ? 'solid' : 'dashed' }}>
-          <div style={styles.welcomeIcon}>📂</div>
+          <div style={styles.welcomeIcon}>
+            <i className="bx bx-folder-open" style={{ fontSize: '42px', opacity: 0.7 }}></i>
+          </div>
           <h3 style={styles.welcomeHeader}>No Workspace Open</h3>
           <p style={styles.welcomeSub}>Open a folder or drag & drop directory files here to mount workspace.</p>
           
@@ -336,23 +342,6 @@ const styles = {
     transition: 'border 0.25s ease',
     userSelect: 'none'
   },
-  collapsedSidebar: {
-    width: '60px',
-    background: 'var(--sidebar-bg)',
-    borderRight: '1px solid var(--panel-border)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '16px 0',
-    gap: '20px'
-  },
-  collapsedIcon: {
-    fontSize: '20px',
-    cursor: 'pointer',
-    opacity: 0.6,
-    transition: 'all 0.2s',
-    padding: '4px'
-  },
   header: {
     display: 'flex',
     alignItems: 'center',
@@ -379,7 +368,9 @@ const styles = {
   actionIcon: {
     cursor: 'pointer',
     fontSize: '12px',
-    transition: 'opacity 0.2s'
+    transition: 'opacity 0.2s',
+    display: 'flex',
+    alignItems: 'center'
   },
   openEditorsSection: {
     borderBottom: '1px solid var(--panel-border)',
@@ -419,29 +410,31 @@ const styles = {
     position: 'relative'
   },
   gitBadgeUntracked: {
-    background: '#2ea043',
-    color: '#fff',
-    borderRadius: '3px',
+    background: '#2d3b2f',
+    color: '#8be9fd',
+    borderRadius: '4px',
     fontSize: '9px',
     fontWeight: 'bold',
-    padding: '1px 4px',
+    padding: '1px 5px',
+    border: '1px solid rgba(139, 233, 253, 0.2)',
     minWidth: '13px',
     textAlign: 'center',
     lineHeight: '1.2'
   },
   gitBadgeModified: {
-    background: '#d29922',
-    color: '#fff',
-    borderRadius: '3px',
+    background: '#3d301f',
+    color: '#ffb86c',
+    borderRadius: '4px',
     fontSize: '9px',
     fontWeight: 'bold',
-    padding: '1px 4px',
+    padding: '1px 5px',
+    border: '1px solid rgba(255, 184, 108, 0.2)',
     minWidth: '13px',
     textAlign: 'center',
     lineHeight: '1.2'
   },
   dirChangesIndicator: {
-    color: '#d29922',
+    color: '#ffb86c',
     fontSize: '18px',
     lineHeight: '1',
     marginLeft: 'auto'
@@ -461,9 +454,10 @@ const styles = {
     transition: 'all 0.3s ease'
   },
   welcomeIcon: {
-    fontSize: '36px',
     marginBottom: '14px',
-    opacity: 0.8
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   welcomeHeader: {
     fontSize: '14px',

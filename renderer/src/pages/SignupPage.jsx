@@ -229,6 +229,31 @@ const SignupPage = () => {
               {loading ? 'PROVISIONING SYSTEM ACCESS...' : success ? 'NODE ONLINE' : 'REGISTER ACCESS NODE'}
             </button>
           </form>
+          {/* Social Sign-in Options */}
+          <div style={styles.dividerContainer}>
+            <div style={styles.dividerLine} />
+            <span style={styles.dividerText}>SECURE SOCIAL FEDERATION</span>
+            <div style={styles.dividerLine} />
+          </div>
+
+          <div style={styles.socialGroup}>
+            <button 
+              type="button" 
+              onClick={() => alert('Redirecting to Google Secure Authentication...')}
+              style={{ ...styles.socialBtn, background: '#db4437', color: '#fff', border: '1px solid #c53c2f' }}
+            >
+              <i className="bx bxl-google" style={{ marginRight: '8px', fontSize: '15px' }}></i>
+              Continue with Google
+            </button>
+            <button 
+              type="button" 
+              onClick={() => alert('Redirecting to GitHub Secure Authentication...')}
+              style={{ ...styles.socialBtn, background: '#24292e', color: '#fff', border: '1px solid #1c2125' }}
+            >
+              <i className="bx bxl-github" style={{ marginRight: '8px', fontSize: '15px' }}></i>
+              Continue with GitHub
+            </button>
+          </div>
 
           <div style={styles.links}>
             <a href="#/Account/login" style={styles.link}>
@@ -466,6 +491,45 @@ const styles = {
     display: 'inline-block',
     opacity: 0.65,
     transition: 'all 0.2s ease'
+  },
+  dividerContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '20px 0 15px 0',
+    gap: '10px'
+  },
+  dividerLine: {
+    flex: 1,
+    height: '1px',
+    background: 'rgba(255, 255, 255, 0.08)'
+  },
+  dividerText: {
+    fontSize: '9px',
+    color: '#8fa6c2',
+    opacity: 0.5,
+    letterSpacing: '0.08em',
+    fontWeight: 'bold'
+  },
+  socialGroup: {
+    display: 'flex',
+    gap: '10px',
+    width: '100%',
+    marginBottom: '15px'
+  },
+  socialBtn: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '8px',
+    padding: '10px',
+    fontSize: '12px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    outline: 'none',
+    transition: 'all 0.2s ease',
+    textShadow: '0 1px 2px rgba(0,0,0,0.5)'
   }
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import './css/index.css'
+import './css/boxicons/boxicons.min.css'
 import Topbar from './components/Topbar/Topbar'
 import Toolbar from './components/Topbar/Toolbar'
 import Sidebar from './components/Sidebar/Sidebar'
@@ -209,28 +210,28 @@ const MainLayout = ({
             onClick={() => handleActivityClick('explorer')}
             title="Explorer"
           >
-            📁
+            <i className="bx bx-folder" style={{ fontSize: '20px' }}></i>
           </div>
           <div 
             className={`activity-icon ${activeActivity === 'search' ? 'active' : ''}`}
             onClick={() => handleActivityClick('search')}
             title="Search"
           >
-            🔍
+            <i className="bx bx-search" style={{ fontSize: '20px' }}></i>
           </div>
           <div 
             className={`activity-icon ${activeActivity === 'git' ? 'active' : ''}`}
             onClick={() => handleActivityClick('git')}
             title="Source Control"
           >
-            🌿
+            <i className="bx bx-git-branch" style={{ fontSize: '20px' }}></i>
           </div>
           <div 
             className={`activity-icon ${activeActivity === 'debug' ? 'active' : ''}`}
             onClick={() => handleActivityClick('debug')}
             title="Run & Debug"
           >
-            🐞
+            <i className="bx bx-bug" style={{ fontSize: '20px' }}></i>
           </div>
           <div style={{ flex: 1 }}></div>
           <div 
@@ -238,7 +239,7 @@ const MainLayout = ({
             onClick={() => handleActivityClick('settings')}
             title="Settings Control"
           >
-            ⚙️
+            <i className="bx bx-cog" style={{ fontSize: '20px' }}></i>
           </div>
         </div>
 
