@@ -24,6 +24,8 @@ const api = {
   saveFileDialog: (content, defaultName) => ipcRenderer.invoke('dialog:saveFile', content, defaultName),
   saveFile: (filePath, content) => ipcRenderer.invoke('file:save', filePath, content),
   closeWindow: () => ipcRenderer.invoke('close-window'),
+  openDirectoryDialog: () => ipcRenderer.invoke('dialog:openDirectory'),
+  readDirectory: (dirPath) => ipcRenderer.invoke('file:readDirectory', dirPath),
   getApiPort: () => ipcRenderer.invoke('get-api-port')
 }
 

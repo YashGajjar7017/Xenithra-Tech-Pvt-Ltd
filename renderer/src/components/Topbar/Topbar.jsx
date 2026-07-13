@@ -400,6 +400,10 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
           Theme
           {activeMenu === 'theme' && (
             <div className="dropdown-menu">
+              <button onClick={(e) => updateTheme(e, 'vscode-dark')}>
+                <span>VS Code Dark</span>
+                {theme === 'vscode-dark' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
               <button onClick={(e) => updateTheme(e, 'glass-dark')}>
                 <span>Glassy Dark</span>
                 {theme === 'glass-dark' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}

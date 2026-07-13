@@ -193,25 +193,103 @@ app.whenReady().then(() => {
     }
   })
 
+  // Open directory dialog IPC
+  ipcMain.handle('dialog:openDirectory', async () => {
+    const mainWindow = BrowserWindow.getFocusedWindow()
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory']
+    })
+    if (canceled || !filePaths.length) return null
+    return await readDirTree(filePaths[0])
+  })
+
+  // Direct directory tree read IPC
+  ipcMain.handle('file:readDirectory', async (_event, dirPath) => {
+    return await readDirTree(dirPath)
+  })
+
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
 
-  // Start local API server
+  // Start local API server and await binding to prevent race conditions
   try {
     if (typeof start === 'function') {
       start(process.env.API_PORT || 8000)
+        .then(() => {
+          createWindow()
+        })
+        .catch((err) => {
+          console.error('[main] API server start failed:', err)
+          createWindow()
+        })
+    } else {
+      createWindow()
     }
   } catch (err) {
     console.warn('Could not start local API server:', err.message)
+    createWindow()
   }
 
-  createWindow()
-
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
+async function readDirTree(dirPath) {
+  const fs = require('fs').promises
+  const path = require('path')
+  
+  const buildTree = async (currentPath) => {
+    const name = path.basename(currentPath)
+    let stat
+    try {
+      stat = await fs.stat(currentPath)
+    } catch (e) {
+      return null
+    }
+    const key = currentPath
+    
+    if (stat.isDirectory()) {
+      if (name === 'node_modules' || name === '.git' || name === 'dist' || name === 'out') {
+        return null
+      }
+      let files
+      try {
+        files = await fs.readdir(currentPath)
+      } catch (e) {
+        return null
+      }
+      const children = []
+      for (const file of files) {
+        const childNode = await buildTree(path.join(currentPath, file))
+        if (childNode) children.push(childNode)
+      }
+      children.sort((a, b) => {
+        if (a.isDir && !b.isDir) return -1
+        if (!a.isDir && b.isDir) return 1
+        return a.name.localeCompare(b.name)
+      })
+      return { name, isDir: true, key, children }
+    } else {
+      let content = ''
+      const ext = path.extname(currentPath).toLowerCase()
+      const textExtensions = ['.js', '.jsx', '.ts', '.tsx', '.py', '.c', '.cpp', '.cs', '.dart', '.html', '.css', '.json', '.md', '.txt']
+      if (textExtensions.includes(ext)) {
+        try {
+          content = await fs.readFile(currentPath, 'utf-8')
+        } catch (e) {}
+      }
+      return { name, isDir: false, key, content }
+    }
+  }
+
+  try {
+    const tree = await buildTree(dirPath)
+    return { tree, path: dirPath, name: path.basename(dirPath) }
+  } catch (err) {
+    console.error('Directory read error:', err)
+    return null
+  }
+}
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()

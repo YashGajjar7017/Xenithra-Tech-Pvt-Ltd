@@ -156,21 +156,23 @@ app.get('/css/:file', (req, res, next) => {
 })
 
 export function start(port = process.env.API_PORT || 8000) {
-  const bindHost = process.env.API_BIND_HOST || '0.0.0.0'
-  const server = app.listen(port, bindHost, () => {
-    console.log(`[main/api] Express server listening on http://${bindHost}:${port}`)
-    process.env.API_PORT = port // Save successfully bound port
-  })
+  return new Promise((resolve) => {
+    const bindHost = process.env.API_BIND_HOST || '0.0.0.0'
+    const server = app.listen(port, bindHost, () => {
+      console.log(`[main/api] Express server listening on http://${bindHost}:${port}`)
+      process.env.API_PORT = port // Save successfully bound port
+      resolve(server)
+    })
 
-  server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.warn(`[main/api] Port ${port} in use, trying next port...`)
-      const nextPort = parseInt(port) + 1
-      start(nextPort)
-    } else {
-      console.error('[main/api] Server error:', err)
-    }
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.warn(`[main/api] Port ${port} in use, trying next port...`)
+        const nextPort = parseInt(port) + 1
+        resolve(start(nextPort))
+      } else {
+        console.error('[main/api] Server error:', err)
+        resolve(server)
+      }
+    })
   })
-
-  return server
 }

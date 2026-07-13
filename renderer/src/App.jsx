@@ -10,7 +10,7 @@ import DashboardPage from './pages/DashboardPage'
 import EditorPage from './pages/EditorPage'
 
 const MainApp = () => {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'glass-dark')
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'vscode-dark')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(230)
 
@@ -25,7 +25,7 @@ const MainApp = () => {
     if (window.api && typeof window.api.onToggleTheme === 'function') {
       window.api.onToggleTheme(() => {
         setTheme(prev => {
-          const themes = ['glass-dark', 'glass-light', 'neon-purple', 'emerald', 'cyber-amber']
+          const themes = ['vscode-dark', 'glass-dark', 'glass-light', 'neon-purple', 'emerald', 'cyber-amber']
           const nextIdx = (themes.indexOf(prev) + 1) % themes.length
           return themes[nextIdx]
         })
