@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import './css/index.css'
-import './css/boxicons/boxicons.min.css'
+import 'boxicons/css/boxicons.min.css'
 import Topbar from './components/Topbar/Topbar'
 import Toolbar from './components/Topbar/Toolbar'
 import Sidebar from './components/Sidebar/Sidebar'

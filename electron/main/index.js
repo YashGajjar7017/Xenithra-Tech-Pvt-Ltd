@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, Menu, dialog } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
+import fs from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { createRequire } from 'module'
 import { start } from './api.js'
@@ -140,9 +141,8 @@ app.whenReady().then(() => {
     
     const filePath = filePaths[0]
     try {
-      const fs = require('fs').promises
-      const content = await fs.readFile(filePath, 'utf-8')
-      return { path: filePath, content, name: require('path').basename(filePath) }
+      const content = await fs.promises.readFile(filePath, 'utf-8')
+      return { path: filePath, content, name: path.basename(filePath) }
     } catch (err) {
       console.error('File read error:', err)
       return null
@@ -164,9 +164,8 @@ app.whenReady().then(() => {
     if (canceled || !filePath) return null
     
     try {
-      const fs = require('fs').promises
-      await fs.writeFile(filePath, content, 'utf-8')
-      return { path: filePath, name: require('path').basename(filePath) }
+      await fs.promises.writeFile(filePath, content, 'utf-8')
+      return { path: filePath, name: path.basename(filePath) }
     } catch (err) {
       console.error('File write error:', err)
       return null
@@ -176,8 +175,7 @@ app.whenReady().then(() => {
   // Direct file save IPC
   ipcMain.handle('file:save', async (_event, filePath, content) => {
     try {
-      const fs = require('fs').promises
-      await fs.writeFile(filePath, content, 'utf-8')
+      await fs.promises.writeFile(filePath, content, 'utf-8')
       return true
     } catch (err) {
       console.error('File write error:', err)
@@ -188,8 +186,7 @@ app.whenReady().then(() => {
   // Read file from path IPC
   ipcMain.handle('file:read', async (_event, filePath) => {
     try {
-      const fs = require('fs').promises
-      return await fs.readFile(filePath, 'utf-8')
+      return await fs.promises.readFile(filePath, 'utf-8')
     } catch (err) {
       console.error('File read error:', err)
       return null
@@ -246,14 +243,11 @@ app.whenReady().then(() => {
 })
 
 async function readDirTree(dirPath) {
-  const fs = require('fs').promises
-  const path = require('path')
-  
   const buildTree = async (currentPath) => {
     const name = path.basename(currentPath)
     let stat
     try {
-      stat = await fs.stat(currentPath)
+      stat = await fs.promises.stat(currentPath)
     } catch (e) {
       return null
     }
@@ -265,7 +259,7 @@ async function readDirTree(dirPath) {
       }
       let files
       try {
-        files = await fs.readdir(currentPath)
+        files = await fs.promises.readdir(currentPath)
       } catch (e) {
         return null
       }
@@ -286,7 +280,7 @@ async function readDirTree(dirPath) {
       const textExtensions = ['.js', '.jsx', '.ts', '.tsx', '.py', '.c', '.cpp', '.cs', '.dart', '.html', '.css', '.json', '.md', '.txt']
       if (textExtensions.includes(ext)) {
         try {
-          content = await fs.readFile(currentPath, 'utf-8')
+          content = await fs.promises.readFile(currentPath, 'utf-8')
         } catch (e) {}
       }
       return { name, isDir: false, key, content }
