@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import './css/index.css'
 import Topbar from './components/Topbar/Topbar'
+import Toolbar from './components/Topbar/Toolbar'
 import Sidebar from './components/Sidebar/Sidebar'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
@@ -196,6 +197,9 @@ const MainLayout = ({
         filename={filename}
         setFilename={setFilename}
       />
+
+      {/* SECONDARY TOOLBAR */}
+      <Toolbar theme={theme} setTheme={setTheme} />
 
       <div className="app" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* LEFT ACTIVITY BAR */}

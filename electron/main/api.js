@@ -224,6 +224,76 @@ app.post('/api/run', (req, res) => {
   }
 })
 
+// Compile & package binary file download endpoint
+app.post('/api/package', (req, res) => {
+  const { lang, code, filename } = req.body
+  if (!code) {
+    return res.status(400).json({ success: false, output: 'No code provided.' })
+  }
+
+  const fileId = uuidv4()
+  const baseName = filename ? path.basename(filename, path.extname(filename)) : 'compiled_pkg'
+  let compileCmd = ''
+  let sourceFile = ''
+  let binaryFile = ''
+
+  switch (lang) {
+    case 'C (GCC)':
+      sourceFile = path.join(tempDir, `${baseName}_${fileId}.c`)
+      binaryFile = path.join(tempDir, `${baseName}.exe`)
+      compileCmd = `gcc "${sourceFile}" -o "${binaryFile}"`
+      break
+    case 'C++ (G++)':
+      sourceFile = path.join(tempDir, `${baseName}_${fileId}.cpp`)
+      binaryFile = path.join(tempDir, `${baseName}.exe`)
+      compileCmd = `g++ "${sourceFile}" -o "${binaryFile}"`
+      break
+    case 'Dot Net':
+      sourceFile = path.join(tempDir, `${baseName}_${fileId}.cs`)
+      binaryFile = path.join(tempDir, `${baseName}.exe`)
+      compileCmd = `csc "${sourceFile}" /out:"${binaryFile}"`
+      break
+    default:
+      return res.status(400).json({ success: false, output: 'Packaging is only supported for C, C++, and .NET/C#.' })
+  }
+
+  try {
+    fs.writeFileSync(sourceFile, code, 'utf8')
+  } catch (err) {
+    return res.status(500).json({ success: false, output: `Failed to create source file: ${err.message}` })
+  }
+
+  const cleanup = () => {
+    try {
+      if (sourceFile && fs.existsSync(sourceFile)) fs.unlinkSync(sourceFile)
+    } catch (e) {}
+  }
+
+  exec(compileCmd, { timeout: 8000 }, (compErr, compStdout, compStderr) => {
+    cleanup()
+    if (compErr) {
+      const compileOutput = compStdout + compStderr
+      return res.json({
+        success: false,
+        output: `[COMPILATION ERROR]\n${compileOutput || compErr.message}\nMake sure compilers (gcc/g++/csc) are installed.`
+      })
+    }
+
+    if (fs.existsSync(binaryFile)) {
+      res.download(binaryFile, `${baseName}.exe`, (err) => {
+        try {
+          if (fs.existsSync(binaryFile)) fs.unlinkSync(binaryFile)
+        } catch (e) {}
+        if (err) {
+          console.error('[main/api] Package download failed:', err.message)
+        }
+      })
+    } else {
+      res.status(500).json({ success: false, output: 'Compiled binary not found.' })
+    }
+  })
+})
+
 // Fallback route for CSS (explicit) to help packaged app lookups
 app.get('/css/:file', (req, res, next) => {
   const fileName = req.params.file

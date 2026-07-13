@@ -1,9 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react'
 
 const EditorPage = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState('Node.js')
-  const [activeTab, setActiveTab] = useState('index.html')
-  const [code, setCode] = useState(`<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>`)
+  const [isSplit, setIsSplit] = useState(false)
+  const [activePane, setActivePane] = useState('left')
+
+  // Left editor state
+  const [leftTab, setLeftTab] = useState('index.html')
+  const [leftCode, setLeftCode] = useState(`<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>`)
+  const [leftLang, setLeftLang] = useState('XML')
+
+  // Right editor state
+  const [rightTab, setRightTab] = useState('untitled.js')
+  const [rightCode, setRightCode] = useState(`// Sideways Split Editor\nfunction hello() {\n  console.log("Hello from sideways pane!");\n}\nhello();`)
+  const [rightLang, setRightLang] = useState('Node.js')
+
+  // Computed state proxies for the active pane
+  const code = activePane === 'left' ? leftCode : rightCode
+  const setCode = (val) => {
+    if (activePane === 'left') setLeftCode(val)
+    else setRightCode(val)
+  }
+
+  const activeTab = activePane === 'left' ? leftTab : rightTab
+  const setActiveTab = (val) => {
+    if (activePane === 'left') setLeftTab(val)
+    else setRightTab(val)
+  }
+
+  const selectedLanguage = activePane === 'left' ? leftLang : rightLang
+  const setSelectedLanguage = (val) => {
+    if (activePane === 'left') setLeftLang(val)
+    else setRightLang(val)
+  }
+
   const [terminalLines, setTerminalLines] = useState([
     { text: 'Xenithra Technologies IDE Terminal v2.0', className: 'muted' },
     { text: 'System diagnostics operational. Compiler engine online.', className: 'muted' },
@@ -17,7 +46,9 @@ const EditorPage = () => {
   const [editorHeight, setEditorHeight] = useState(window.innerHeight * 0.7) // default editor height to 70% of screen
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
 
-  const codeAreaRef = useRef(null)
+  const leftCodeAreaRef = useRef(null)
+  const rightCodeAreaRef = useRef(null)
+  const codeAreaRef = activePane === 'left' ? leftCodeAreaRef : rightCodeAreaRef
   const terminalBodyRef = useRef(null)
 
   // Listen to window size and set initial 70% height
@@ -58,9 +89,149 @@ const EditorPage = () => {
       window.removeEventListener('open-file', handleOpenFile)
       window.removeEventListener('change-language', handleChangeLanguage)
     }
-  }, [])
+  }, [activePane]) // Re-run when pane toggles to ensure proper setter binds
 
-  // Listen to Topbar menu custom events
+  // Handle Run - POST code to compiler engine backend
+  const handleRun = async () => {
+    if (isRunning) return
+    setIsRunning(true)
+
+    const newLines = [
+      ...terminalLines,
+      { 
+        text: `xenithra@studio:~$ run --lang='${selectedLanguage}' ${cliArgs ? '--args="' + cliArgs + '"' : ''}`, 
+        className: 'prompt' 
+      },
+      { text: 'Compiling & executing source code...', className: 'muted' }
+    ]
+    setTerminalLines(newLines)
+
+    try {
+      const port = localStorage.getItem('api-port') || '8000'
+      const res = await fetch(`http://localhost:${port}/api/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          lang: selectedLanguage, 
+          args: cliArgs, 
+          code: code 
+        })
+      })
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(errText || 'Compiler server error.')
+      }
+
+      const json = await res.json()
+      
+      setTerminalLines([
+        ...newLines,
+        { text: json.output, className: json.success ? 'success' : 'error' },
+        { text: `[SYSTEM] Run complete. Exit status: ${json.success ? '0' : '1'}`, className: 'muted' },
+        { text: `xenithra@studio:~$`, className: 'prompt' }
+      ])
+    } catch (err) {
+      setTerminalLines([
+        ...newLines,
+        { text: `[ERROR] Execution failed: ${err.message}`, className: 'error' },
+        { text: `[HINT] Ensure the Electron backend compiler server is running.`, className: 'warning' },
+        { text: `xenithra@studio:~$`, className: 'prompt' }
+      ])
+    } finally {
+      setIsRunning(false)
+    }
+  }
+
+  // Handle Package Binary download trigger
+  const handlePackage = async () => {
+    if (isRunning) return
+    setIsRunning(true)
+
+    const newLines = [
+      ...terminalLines,
+      { 
+        text: `xenithra@studio:~$ package --lang='${selectedLanguage}' --file='${activeTab}'`, 
+        className: 'prompt' 
+      },
+      { text: 'Compiling & packaging standalone binary executable...', className: 'muted' }
+    ]
+    setTerminalLines(newLines)
+
+    try {
+      const port = localStorage.getItem('api-port') || '8000'
+      const res = await fetch(`http://localhost:${port}/api/package`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          lang: selectedLanguage, 
+          filename: activeTab, 
+          code: code 
+        })
+      })
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(errText || 'Compiler packaging error.')
+      }
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = activeTab.split('.').shift() + '.exe'
+      a.click()
+      URL.revokeObjectURL(url)
+
+      setTerminalLines([
+        ...newLines,
+        { text: `[SUCCESS] Binary package generated and downloaded successfully.`, className: 'success' },
+        { text: `xenithra@studio:~$`, className: 'prompt' }
+      ])
+    } catch (err) {
+      setTerminalLines([
+        ...newLines,
+        { text: `[ERROR] Packaging failed: ${err.message}`, className: 'error' },
+        { text: `xenithra@studio:~$`, className: 'prompt' }
+      ])
+    } finally {
+      setIsRunning(false)
+    }
+  }
+
+  const handleStop = () => {
+    setIsRunning(false)
+    setTerminalLines(prev => [
+      ...prev,
+      { text: '[STOPPED] Execution forcefully terminated.', className: 'error' },
+      { text: 'xenithra@studio:~$', className: 'prompt' }
+    ])
+  }
+
+  const handleFormat = () => {
+    const formatted = code
+      .split('\n')
+      .map(line => line.trimEnd())
+      .join('\n')
+    setCode(formatted)
+
+    setTerminalLines(prev => [
+      ...prev,
+      { text: `[FORMAT] Source file auto-formatted successfully.`, className: 'success' },
+      { text: 'xenithra@studio:~$', className: 'prompt' }
+    ])
+  }
+
+  const handleDebug = () => {
+    setTerminalLines(prev => [
+      ...prev,
+      { text: `xenithra@studio:~$ debug --lang='${selectedLanguage}'`, className: 'prompt' },
+      { text: '[DEBUG] Debugger v8 inspector attached. Listening on ports...', className: 'warning' },
+      { text: 'xenithra@studio:~$', className: 'prompt' }
+    ])
+  }
+
+  // Hook up menu action listeners for Run, Debug, Stop, Format, Package & Split screen toggle
   useEffect(() => {
     const onNew = () => {
       setCode('')
@@ -140,6 +311,9 @@ const EditorPage = () => {
         codeAreaRef.current.selectionStart = codeAreaRef.current.selectionEnd
       }
     }
+    const onSplit = () => {
+      setIsSplit(prev => !prev)
+    }
 
     window.addEventListener('menu-file-new', onNew)
     window.addEventListener('menu-file-save', onSave)
@@ -151,6 +325,12 @@ const EditorPage = () => {
     window.addEventListener('menu-edit-paste', onPaste)
     window.addEventListener('menu-selection-selectall', onSelectAll)
     window.addEventListener('menu-selection-selectnone', onSelectNone)
+    window.addEventListener('menu-run-code', handleRun)
+    window.addEventListener('menu-stop-code', handleStop)
+    window.addEventListener('menu-format-code', handleFormat)
+    window.addEventListener('menu-debug-code', handleDebug)
+    window.addEventListener('menu-package-code', handlePackage)
+    window.addEventListener('menu-split-editor', onSplit)
 
     return () => {
       window.removeEventListener('menu-file-new', onNew)
@@ -163,8 +343,14 @@ const EditorPage = () => {
       window.removeEventListener('menu-edit-paste', onPaste)
       window.removeEventListener('menu-selection-selectall', onSelectAll)
       window.removeEventListener('menu-selection-selectnone', onSelectNone)
+      window.removeEventListener('menu-run-code', handleRun)
+      window.removeEventListener('menu-stop-code', handleStop)
+      window.removeEventListener('menu-format-code', handleFormat)
+      window.removeEventListener('menu-debug-code', handleDebug)
+      window.removeEventListener('menu-package-code', handlePackage)
+      window.removeEventListener('menu-split-editor', onSplit)
     }
-  }, [code, activeTab])
+  }, [code, selectedLanguage, cliArgs, isRunning, terminalLines, activePane, isSplit])
 
   // Auto-scroll terminal
   useEffect(() => {
@@ -196,148 +382,162 @@ const EditorPage = () => {
     document.addEventListener('mouseup', handleMouseUp)
   }
 
-  // Handle Run - POST code to compiler engine backend
-  const handleRun = async () => {
-    if (isRunning) return
-    setIsRunning(true)
-
-    const newLines = [
-      ...terminalLines,
-      { 
-        text: `xenithra@studio:~$ run --lang='${selectedLanguage}' ${cliArgs ? '--args="' + cliArgs + '"' : ''}`, 
-        className: 'prompt' 
-      },
-      { text: 'Compiling & executing source code...', className: 'muted' }
-    ]
-    setTerminalLines(newLines)
-
-    try {
-      const port = localStorage.getItem('api-port') || '8000'
-      const res = await fetch(`http://localhost:${port}/api/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          lang: selectedLanguage, 
-          args: cliArgs, 
-          code: code 
-        })
-      })
-
-      if (!res.ok) {
-        const errText = await res.text()
-        throw new Error(errText || 'Compiler server error.')
-      }
-
-      const json = await res.json()
-      
-      setTerminalLines([
-        ...newLines,
-        { text: json.output, className: json.success ? 'success' : 'error' },
-        { text: `[SYSTEM] Run complete. Exit status: ${json.success ? '0' : '1'}`, className: 'muted' },
-        { text: `xenithra@studio:~$`, className: 'prompt' }
-      ])
-    } catch (err) {
-      setTerminalLines([
-        ...newLines,
-        { text: `[ERROR] Execution failed: ${err.message}`, className: 'error' },
-        { text: `[HINT] Ensure the Electron backend compiler server is running.`, className: 'warning' },
-        { text: `xenithra@studio:~$`, className: 'prompt' }
-      ])
-    } finally {
-      setIsRunning(false)
-    }
-  }
-
-  const handleStop = () => {
-    setIsRunning(false)
-    setTerminalLines(prev => [
-      ...prev,
-      { text: '[STOPPED] Execution forcefully terminated.', className: 'error' },
-      { text: 'xenithra@studio:~$', className: 'prompt' }
-    ])
-  }
-
-  const handleFormat = () => {
-    const formatted = code
-      .split('\n')
-      .map(line => line.trimEnd())
-      .join('\n')
-    setCode(formatted)
-
-    setTerminalLines(prev => [
-      ...prev,
-      { text: `[FORMAT] Source file auto-formatted successfully.`, className: 'success' },
-      { text: 'xenithra@studio:~$', className: 'prompt' }
-    ])
-  }
-
-  const handleDebug = () => {
-    setTerminalLines(prev => [
-      ...prev,
-      { text: `xenithra@studio:~$ debug --lang='${selectedLanguage}'`, className: 'prompt' },
-      { text: '[DEBUG] Debugger v8 inspector attached. Listening on ports...', className: 'warning' },
-      { text: 'xenithra@studio:~$', className: 'prompt' }
-    ])
-  }
-
-  // Hook up menu action listeners for Run, Debug, Stop, and Format
-  useEffect(() => {
-    window.addEventListener('menu-run-code', handleRun)
-    window.addEventListener('menu-stop-code', handleStop)
-    window.addEventListener('menu-format-code', handleFormat)
-    window.addEventListener('menu-debug-code', handleDebug)
-    return () => {
-      window.removeEventListener('menu-run-code', handleRun)
-      window.removeEventListener('menu-stop-code', handleStop)
-      window.removeEventListener('menu-format-code', handleFormat)
-      window.removeEventListener('menu-debug-code', handleDebug)
-    }
-  }, [code, selectedLanguage, cliArgs, isRunning, terminalLines])
+  const getLineCount = (text) => Math.max(1, text.split('\n').length)
 
   return (
     <div className="editor-wrapper" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Editor Main Section */}
-      <div style={{ height: `${editorHeight}px`, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderBottom: '1px solid var(--panel-border)', position: 'relative' }}>
-        {/* Editor Tabs bar */}
-        <div className="editor-tabs">
-          <div className="editor-tab active">
-            <span>📄</span>
-            <span>{activeTab}</span>
-            <span className="close-btn" style={{ cursor: 'pointer', marginLeft: '6px' }}>×</span>
-          </div>
-        </div>
-
-        {/* Editor Body (Line Numbers & Textarea) */}
-        <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          <div className="line-numbers">
-            {Array.from({ length: Math.max(1, code.split('\n').length) }).map((_, i) => (
-              <div key={i} style={{ height: '19.5px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
-                {i + 1}
+      <div style={{ height: `${editorHeight}px`, display: 'flex', flexDirection: 'row', overflow: 'hidden', borderBottom: '1px solid var(--panel-border)', position: 'relative' }}>
+        
+        {!isSplit ? (
+          /* Single Pane Editor */
+          <div className="editor-pane active" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+            <div className="editor-tabs">
+              <div className="editor-tab active">
+                <span>📄</span>
+                <span>{leftTab}</span>
+                <span className="close-btn" style={{ cursor: 'pointer', marginLeft: '6px' }}>×</span>
               </div>
-            ))}
-          </div>
+            </div>
+            
+            <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+              <div className="line-numbers">
+                {Array.from({ length: getLineCount(leftCode) }).map((_, i) => (
+                  <div key={i} style={{ height: '19.5px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
+                    {i + 1}
+                  </div>
+                ))}
+              </div>
 
-          <textarea
-            ref={codeAreaRef}
-            className="code-area"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            style={{
-              padding: '10px',
-              fontSize: '13px',
-              lineHeight: '19.5px',
-              fontFamily: "'JetBrains Mono', Consolas, monospace",
-              background: 'transparent',
-              color: 'var(--text-main)',
-              border: 'none',
-              resize: 'none',
-              outline: 'none',
+              <textarea
+                ref={leftCodeAreaRef}
+                className="code-area"
+                value={leftCode}
+                onChange={(e) => setLeftCode(e.target.value)}
+                onFocus={() => setActivePane('left')}
+                style={{
+                  padding: '10px',
+                  fontSize: '13px',
+                  lineHeight: '19.5px',
+                  fontFamily: "'JetBrains Mono', Consolas, monospace",
+                  background: 'transparent',
+                  color: 'var(--text-main)',
+                  border: 'none',
+                  resize: 'none',
+                  outline: 'none',
+                  flex: 1,
+                  height: '100%',
+                  overflowY: 'auto'
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          /* Split Sideways Editors */
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', height: '100%', overflow: 'hidden' }}>
+            {/* Left Pane */}
+            <div className="editor-pane" style={{
               flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
               height: '100%',
-              overflowY: 'auto'
-            }}
-          />
-        </div>
+              overflow: 'hidden',
+              borderRight: '1px solid var(--panel-border)',
+              background: activePane === 'left' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
+              transition: 'background 0.2s'
+            }} onClick={() => setActivePane('left')}>
+              <div className="editor-tabs">
+                <div className={`editor-tab ${activePane === 'left' ? 'active' : ''}`}>
+                  <span>📄</span>
+                  <span>{leftTab}</span>
+                  <span style={{ fontSize: '9px', marginLeft: '6px', color: 'var(--accent-color)', fontWeight: 'bold' }}>LEFT</span>
+                </div>
+              </div>
+              <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                <div className="line-numbers">
+                  {Array.from({ length: getLineCount(leftCode) }).map((_, i) => (
+                    <div key={i} style={{ height: '19.5px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
+                      {i + 1}
+                    </div>
+                  ))}
+                </div>
+
+                <textarea
+                  ref={leftCodeAreaRef}
+                  className="code-area"
+                  value={leftCode}
+                  onChange={(e) => setLeftCode(e.target.value)}
+                  onFocus={() => setActivePane('left')}
+                  style={{
+                    padding: '10px',
+                    fontSize: '13px',
+                    lineHeight: '19.5px',
+                    fontFamily: "'JetBrains Mono', Consolas, monospace",
+                    background: 'transparent',
+                    color: 'var(--text-main)',
+                    border: 'none',
+                    resize: 'none',
+                    outline: 'none',
+                    flex: 1,
+                    height: '100%',
+                    overflowY: 'auto'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Right Pane */}
+            <div className="editor-pane" style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+              overflow: 'hidden',
+              background: activePane === 'right' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
+              transition: 'background 0.2s'
+            }} onClick={() => setActivePane('right')}>
+              <div className="editor-tabs">
+                <div className={`editor-tab ${activePane === 'right' ? 'active' : ''}`}>
+                  <span>📄</span>
+                  <span>{rightTab}</span>
+                  <span style={{ fontSize: '9px', marginLeft: '6px', color: '#ff6b6b', fontWeight: 'bold' }}>RIGHT</span>
+                </div>
+              </div>
+              <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                <div className="line-numbers">
+                  {Array.from({ length: getLineCount(rightCode) }).map((_, i) => (
+                    <div key={i} style={{ height: '19.5px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
+                      {i + 1}
+                    </div>
+                  ))}
+                </div>
+
+                <textarea
+                  ref={rightCodeAreaRef}
+                  className="code-area"
+                  value={rightCode}
+                  onChange={(e) => setRightCode(e.target.value)}
+                  onFocus={() => setActivePane('right')}
+                  style={{
+                    padding: '10px',
+                    fontSize: '13px',
+                    lineHeight: '19.5px',
+                    fontFamily: "'JetBrains Mono', Consolas, monospace",
+                    background: 'transparent',
+                    color: 'var(--text-main)',
+                    border: 'none',
+                    resize: 'none',
+                    outline: 'none',
+                    flex: 1,
+                    height: '100%',
+                    overflowY: 'auto'
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* DRAGGABLE HORIZONTAL SPLIT RESIZER */}
