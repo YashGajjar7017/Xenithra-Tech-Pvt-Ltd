@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react'
 
-const Sidebar = ({ collapsed, sidebarWidth }) => {
+const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
   const [loadedFolder, setLoadedFolder] = useState(null) // { name: '', path: '', tree: {} }
   const [activeFile, setActiveFile] = useState('')
   const [expandedDirs, setExpandedDirs] = useState({})
   const [isDragOver, setIsDragOver] = useState(false)
+  const [installedExtensions, setInstalledExtensions] = useState([])
+  const [extSearchQuery, setExtSearchQuery] = useState('')
+
+  const storeExtensions = [
+    { id: 'github-theme', name: 'GitHub Theme Pack', version: '1.2.0', description: 'Clean GitHub dark and light themes.' },
+    { id: 'python-diagnostics', name: 'Python Diagnostics', version: '2.1.0', description: 'Real-time linting, formatting and troubleshooting.' },
+    { id: 'cpp-toolchain', name: 'C++ Compiler Suite', version: '1.0.5', description: 'Enables C++ execution environment and flags.' },
+    { id: 'markdown-preview', name: 'Markdown Previewer', version: '1.5.0', description: 'Renders Markdown documentation in side panel.' },
+    { id: 'vim-keybindings', name: 'Vim Keybindings', version: '0.9.0', description: 'Vim style inputs and movements in editor.' },
+    { id: 'devtools-helper', name: 'DevTools Helper', version: '1.1.0', description: 'Extra debugging utilities and log consoles.' }
+  ]
 
   // Listen to open-file event to keep track of active file highlight in sidebar
   useEffect(() => {
@@ -18,6 +29,50 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
     window.addEventListener('open-file', handleOpenFile)
     return () => window.removeEventListener('open-file', handleOpenFile)
   }, [])
+
+  // Listen to native open-directory events
+  useEffect(() => {
+    const handleOpenDirectory = (event) => {
+      if (event.detail && event.detail.tree) {
+        setLoadedFolder(event.detail)
+        setExpandedDirs({ [event.detail.tree.key]: true })
+      }
+    }
+    const handleCloseDirectory = () => {
+      setLoadedFolder(null)
+    }
+    window.addEventListener('open-directory', handleOpenDirectory)
+    window.addEventListener('close-directory', handleCloseDirectory)
+    return () => {
+      window.removeEventListener('open-directory', handleOpenDirectory)
+      window.removeEventListener('close-directory', handleCloseDirectory)
+    }
+  }, [])
+
+  // Read installed extensions on load
+  useEffect(() => {
+    if (window.api && typeof window.api.getExtensions === 'function') {
+      window.api.getExtensions().then(exts => {
+        setInstalledExtensions(exts || [])
+      })
+    }
+  }, [])
+
+  const handleInstallExtension = async (ext) => {
+    const updated = [...installedExtensions, ext]
+    setInstalledExtensions(updated)
+    if (window.api && typeof window.api.saveExtensions === 'function') {
+      await window.api.saveExtensions(updated)
+    }
+  }
+
+  const handleUninstallExtension = async (extId) => {
+    const updated = installedExtensions.filter(e => e.id !== extId)
+    setInstalledExtensions(updated)
+    if (window.api && typeof window.api.saveExtensions === 'function') {
+      await window.api.saveExtensions(updated)
+    }
+  }
 
   const toggleDirExpand = (dirKey) => {
     setExpandedDirs(prev => ({
@@ -164,6 +219,7 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
 
   // Render file tree recursively
   const renderTree = (node, depth = 0) => {
+    if (!node) return null
     const isExpanded = expandedDirs[node.key]
     const indent = depth * 12
 
@@ -258,7 +314,81 @@ const Sidebar = ({ collapsed, sidebarWidth }) => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {loadedFolder ? (
+      {activeActivity === 'extensions' ? (
+        /* Extensions Panel View */
+        <div className="extensions-panel">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.05em', color: 'var(--text-main)' }}>EXTENSION STORE</span>
+            <span style={{ fontSize: '9px', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: '10px', color: 'var(--accent-color)' }}>
+              {installedExtensions.length} Installed
+            </span>
+          </div>
+          
+          <input 
+            type="text"
+            className="extensions-search"
+            placeholder="Search extensions..."
+            value={extSearchQuery}
+            onChange={(e) => setExtSearchQuery(e.target.value)}
+          />
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div className="extensions-list-header">Installed</div>
+            {installedExtensions
+              .filter(ext => ext.name.toLowerCase().includes(extSearchQuery.toLowerCase()))
+              .map(ext => (
+                <div key={ext.id} className="extensions-item">
+                  <div className="extensions-item-icon">
+                    <i className="bx bx-plug"></i>
+                  </div>
+                  <div className="extensions-item-info">
+                    <div className="extensions-item-name">{ext.name}</div>
+                    <div className="extensions-item-desc">{ext.description}</div>
+                    <div className="extensions-item-footer">
+                      <span className="extensions-item-version">v{ext.version || '1.0.0'}</span>
+                      <button 
+                        className="extensions-btn-uninstall"
+                        onClick={() => handleUninstallExtension(ext.id)}
+                      >
+                        Uninstall
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            {installedExtensions.length === 0 && (
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '10px 0' }}>
+                No extensions installed yet.
+              </div>
+            )}
+
+            <div className="extensions-list-header">Available from Store</div>
+            {storeExtensions
+              .filter(ext => !installedExtensions.some(e => e.id === ext.id))
+              .filter(ext => ext.name.toLowerCase().includes(extSearchQuery.toLowerCase()))
+              .map(ext => (
+                <div key={ext.id} className="extensions-item">
+                  <div className="extensions-item-icon">
+                    <i className="bx bx-package"></i>
+                  </div>
+                  <div className="extensions-item-info">
+                    <div className="extensions-item-name">{ext.name}</div>
+                    <div className="extensions-item-desc">{ext.description}</div>
+                    <div className="extensions-item-footer">
+                      <span className="extensions-item-version">v{ext.version}</span>
+                      <button 
+                        className="extensions-btn-install"
+                        onClick={() => handleInstallExtension(ext)}
+                      >
+                        Install
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      ) : loadedFolder ? (
         /* Workspace Loaded File Tree */
         <React.Fragment>
           {/* Explorer Header */}

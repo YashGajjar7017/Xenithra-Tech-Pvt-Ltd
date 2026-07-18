@@ -47,144 +47,152 @@ const Toolbar = ({ theme, setTheme }) => {
       height: '32px',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'space-between',
       padding: '0 12px',
       background: 'rgba(10, 16, 32, 0.45)',
       borderBottom: '1px solid var(--panel-border)',
-      gap: '8px',
       zIndex: 5,
       backdropFilter: 'blur(12px)'
     }}>
-      {/* Primary Execution Control Actions */}
-      <button 
-        onClick={runCode} 
-        style={{
-          background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
-          border: 'none',
-          borderRadius: '4px',
-          color: '#fff',
-          fontSize: '11px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          padding: '3px 10px',
-          height: '22px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          boxShadow: '0 2px 8px rgba(0, 230, 118, 0.2)',
-          transition: 'transform 0.15s ease'
-        }}
-        onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
-        onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        <span>▶</span> Run
-      </button>
+      {/* Left: Section label/info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <i className="bx bx-play-circle" style={{ color: 'var(--accent-color)', fontSize: '14px' }}></i>
+        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Workspace Runner</span>
+      </div>
 
-      <button 
-        onClick={debugCode}
-        style={{
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: '4px',
-          color: '#00e5ff',
-          fontSize: '11px',
-          fontWeight: '500',
-          cursor: 'pointer',
-          padding: '3px 8px',
-          height: '22px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}
-      >
-        🐞 Debug
-      </button>
+      {/* Center: Primary Execution Control Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+        <button 
+          onClick={runCode} 
+          style={{
+            background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
+            border: 'none',
+            borderRadius: '4px',
+            color: '#fff',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            padding: '3px 10px',
+            height: '22px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 2px 8px rgba(0, 230, 118, 0.2)',
+            transition: 'transform 0.15s ease'
+          }}
+          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
+          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <span>▶</span> Run
+        </button>
 
-      <button 
-        onClick={stopCode}
-        style={{
-          background: 'rgba(255,107,107,0.15)',
-          border: '1px solid rgba(255,107,107,0.3)',
-          borderRadius: '4px',
-          color: '#ff6b6b',
-          fontSize: '11px',
-          cursor: 'pointer',
-          padding: '3px 8px',
-          height: '22px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}
-      >
-        ■ Stop
-      </button>
+        <button 
+          onClick={debugCode}
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '4px',
+            color: '#00e5ff',
+            fontSize: '11px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            padding: '3px 8px',
+            height: '22px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          🐞 Debug
+        </button>
 
-      <span style={{ opacity: 0.3, color: '#fff', margin: '0 4px' }}>|</span>
+        <button 
+          onClick={stopCode}
+          style={{
+            background: 'rgba(255,107,107,0.15)',
+            border: '1px solid rgba(255,107,107,0.3)',
+            borderRadius: '4px',
+            color: '#ff6b6b',
+            fontSize: '11px',
+            cursor: 'pointer',
+            padding: '3px 8px',
+            height: '22px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          ■ Stop
+        </button>
 
-      {/* Formatting & Utilities */}
-      <button 
-        onClick={formatCode}
-        style={{
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: '4px',
-          color: 'var(--text-main)',
-          fontSize: '11px',
-          cursor: 'pointer',
-          padding: '3px 8px',
-          height: '22px',
-          display: 'flex',
-          alignItems: 'center'
-        }}
-      >
-        {`{ }`} Format Code
-      </button>
+        <span style={{ opacity: 0.3, color: '#fff', margin: '0 4px' }}>|</span>
 
-      <button 
-        onClick={packageCode}
-        title="Compile and download standalone binary file"
-        style={{
-          background: 'rgba(0, 229, 255, 0.1)',
-          border: '1px solid rgba(0, 229, 255, 0.25)',
-          borderRadius: '4px',
-          color: '#00e5ff',
-          fontSize: '11px',
-          fontWeight: '500',
-          cursor: 'pointer',
-          padding: '3px 8px',
-          height: '22px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}
-      >
-        📦 Package Binary
-      </button>
+        {/* Formatting & Utilities */}
+        <button 
+          onClick={formatCode}
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '4px',
+            color: 'var(--text-main)',
+            fontSize: '11px',
+            cursor: 'pointer',
+            padding: '3px 8px',
+            height: '22px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {`{ }`} Format Code
+        </button>
 
-      <span style={{ opacity: 0.3, color: '#fff', margin: '0 4px' }}>|</span>
+        <button 
+          onClick={packageCode}
+          title="Compile and download standalone binary file"
+          style={{
+            background: 'rgba(0, 229, 255, 0.1)',
+            border: '1px solid rgba(0, 229, 255, 0.25)',
+            borderRadius: '4px',
+            color: '#00e5ff',
+            fontSize: '11px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            padding: '3px 8px',
+            height: '22px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          📦 Package Binary
+        </button>
 
-      {/* Sideways Editor Layout Control */}
-      <button 
-        onClick={splitEditor}
-        title="Toggle Sideways Split Screen Editors"
-        style={{
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: '4px',
-          color: 'var(--text-main)',
-          fontSize: '11px',
-          cursor: 'pointer',
-          padding: '3px 8px',
-          height: '22px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}
-      >
-        || Split Editor
-      </button>
+        <span style={{ opacity: 0.3, color: '#fff', margin: '0 4px' }}>|</span>
 
-      {/* Language Selector Dropdown on the Toolbar */}
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Sideways Editor Layout Control */}
+        <button 
+          onClick={splitEditor}
+          title="Toggle Sideways Split Screen Editors"
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '4px',
+            color: 'var(--text-main)',
+            fontSize: '11px',
+            cursor: 'pointer',
+            padding: '3px 8px',
+            height: '22px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          || Split Editor
+        </button>
+      </div>
+
+      {/* Right: Language Selector Dropdown on the Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <div ref={langDropdownRef} className="lang-select" style={{ fontSize: '11px', gap: '6px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
           <span>Environment:</span>
           <div className={`dropdown ${dropdownOpen ? 'open' : ''}`} style={{ position: 'relative' }}>

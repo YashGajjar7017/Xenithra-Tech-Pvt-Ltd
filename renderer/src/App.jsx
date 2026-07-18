@@ -26,7 +26,7 @@ const MainApp = () => {
     if (window.api && typeof window.api.onToggleTheme === 'function') {
       window.api.onToggleTheme(() => {
         setTheme(prev => {
-          const themes = ['vscode-dark', 'glass-dark', 'glass-light', 'neon-purple', 'emerald', 'cyber-amber']
+          const themes = ['vscode-dark', 'github-dark', 'glass-dark', 'glass-light', 'neon-purple', 'emerald', 'cyber-amber']
           const nextIdx = (themes.indexOf(prev) + 1) % themes.length
           return themes[nextIdx]
         })
@@ -53,6 +53,16 @@ const MainApp = () => {
           const fileCode = file.content
           window.dispatchEvent(new CustomEvent('open-file', {
             detail: { filename, code: fileCode, path: file.path }
+          }))
+        }
+      })
+    }
+
+    if (window.api && typeof window.api.onOpenDirectory === 'function') {
+      window.api.onOpenDirectory((dirResult) => {
+        if (dirResult) {
+          window.dispatchEvent(new CustomEvent('open-directory', {
+            detail: dirResult
           }))
         }
       })
@@ -144,7 +154,7 @@ const MainLayout = ({
 
   const handleActivityClick = (activity) => {
     setActiveActivity(activity)
-    if (activity === 'explorer') {
+    if (activity === 'explorer' || activity === 'extensions') {
       setSidebarCollapsed(false)
     } else if (activity === 'settings') {
       window.location.href = '/#/Dashboard'
@@ -233,6 +243,13 @@ const MainLayout = ({
           >
             <i className="bx bx-bug" style={{ fontSize: '20px' }}></i>
           </div>
+          <div 
+            className={`activity-icon ${activeActivity === 'extensions' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('extensions')}
+            title="Extensions Store"
+          >
+            <i className="bx bx-extension" style={{ fontSize: '20px' }}></i>
+          </div>
           <div style={{ flex: 1 }}></div>
           <div 
             className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}
@@ -244,7 +261,7 @@ const MainLayout = ({
         </div>
 
         {/* SIDEBAR PANEL */}
-        <Sidebar collapsed={sidebarCollapsed} sidebarWidth={sidebarWidth} />
+        <Sidebar collapsed={sidebarCollapsed} sidebarWidth={sidebarWidth} activeActivity={activeActivity} />
 
         {/* DRAGGABLE DIVIDER (SIZING BAR) */}
         {!sidebarCollapsed && (

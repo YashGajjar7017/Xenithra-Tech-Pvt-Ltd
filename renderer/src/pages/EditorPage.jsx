@@ -73,27 +73,60 @@ const EditorPage = () => {
     setEditorHeight(window.innerHeight * 0.55)
   }, [])
 
-  const handleSendChatMessage = () => {
+  const formatChatMessage = (text) => {
+    if (!text) return ''
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      
+    // Code blocks: ```js ... ```
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, content) => {
+      return `<pre style="background: rgba(0,0,0,0.45); padding: 8px 12px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; overflow-x: auto; margin: 6px 0; border: 1px solid var(--panel-border); color: #00ffaa; line-height: 1.5;"><code>${content}</code></pre>`
+    })
+    
+    // Inline code: `code`
+    html = html.replace(/`([^`\n]+)`/g, '<code style="background: rgba(255,255,255,0.06); padding: 2px 4px; border-radius: 3px; font-family: \'JetBrains Mono\', monospace; font-size: 11px; color: var(--accent-color);">$1</code>')
+    
+    // Bold: **text**
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong style="color: var(--accent-color); font-weight: 600;">$1</strong>')
+    
+    // Convert newlines to breaks
+    html = html.replace(/\n/g, '<br>')
+    
+    return <div dangerouslySetInnerHTML={{ __html: html }} />
+  }
+
+  const handleSendChatMessage = async () => {
     if (!chatInput.trim()) return
     const userMsg = { sender: 'user', text: chatInput }
     setChatMessages(prev => [...prev, userMsg])
     const prompt = chatInput
     setChatInput('')
 
-    setTimeout(() => {
-      let aiText = "I'm on it! Let me review your code. Is there a specific language or feature you would like to implement?"
-      const textLower = prompt.toLowerCase()
-      if (textLower.includes('help') || textLower.includes('hello') || textLower.includes('hi')) {
-        aiText = "Hi! I am here to assist with editing, debugging, or formatting your workspace. Try using the ADJUSTER tab to run custom replacements!"
-      } else if (textLower.includes('format') || textLower.includes('replace')) {
-        aiText = "To format or adjust your active editor, go to the 'ADJUSTER / RULES' tab, enter search-replace definitions like `replace:old->new`, and click 'Apply Rules to Editor'."
-      } else if (textLower.includes('error') || textLower.includes('bug')) {
-        aiText = "Let me check the logs. Make sure that there are no syntax errors in your code, and the correct runtime language is selected."
-      } else {
-        aiText = `Understood. I will help you with: "${prompt}". Let me know if you would like me to rewrite or adjust any portions of the active file: ${activeTab}.`
+    try {
+      const port = localStorage.getItem('api-port') || '8000'
+      const response = await fetch(`http://localhost:${port}/api/ai/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          code,
+          lang: selectedLanguage,
+          filename: activeTab
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('AI troubleshooter endpoint failed')
       }
-      setChatMessages(prev => [...prev, { sender: 'ai', text: aiText }])
-    }, 800)
+
+      const json = await response.json()
+      setChatMessages(prev => [...prev, { sender: 'ai', text: json.output }])
+    } catch (err) {
+      console.error('AI chat failed:', err)
+      setChatMessages(prev => [...prev, { sender: 'ai', text: "Troubleshoot Service Error: Could not connect to the backend AI host. Please make sure the local Express server is running." }])
+    }
   }
 
   const handleApplyFormatRules = () => {
@@ -733,7 +766,7 @@ const EditorPage = () => {
                       color: 'var(--text-main)'
                     }}
                   >
-                    {msg.text}
+                    {msg.sender === 'user' ? msg.text : formatChatMessage(msg.text)}
                   </div>
                 ))}
               </div>

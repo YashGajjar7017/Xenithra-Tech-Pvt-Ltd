@@ -1,19 +1,62 @@
 import { useState, useRef, useEffect } from 'react'
 
 const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => {
-  const [activeMenu, setActiveMenu] = useState(null) // 'file', 'edit', 'selection', 'view', 'help', 'theme', or null
+  const [activeMenu, setActiveMenu] = useState(null) // 'file', 'edit', 'selection', 'view', 'run', 'help', 'theme', or null
   const [selectedLang, setSelectedLang] = useState('Node.js')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState('')
+  const [showPalette, setShowPalette] = useState(false)
+  const [paletteQuery, setPaletteQuery] = useState('')
 
   const fileMenuRef = useRef(null)
   const editMenuRef = useRef(null)
   const selectionMenuRef = useRef(null)
   const viewMenuRef = useRef(null)
+  const runMenuRef = useRef(null)
   const helpMenuRef = useRef(null)
   const themeMenuRef = useRef(null)
+  const paletteRef = useRef(null)
 
   const languages = ['C (GCC)', 'C++ (G++)', 'Python 3', 'Node.js', 'XML', 'Dot Net', 'Dart', 'Next.js']
+
+  const updateTheme = (e, newTheme) => {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
+    setActiveMenu(null)
+    if (setTheme) {
+      setTheme(newTheme)
+      document.documentElement.setAttribute('data-theme', newTheme)
+      localStorage.setItem('theme', newTheme)
+    }
+  }
+
+  const commands = [
+    { name: 'Run Code', icon: '▶', action: () => window.dispatchEvent(new CustomEvent('menu-run-code')) },
+    { name: 'Debug Code', icon: '🐞', action: () => window.dispatchEvent(new CustomEvent('menu-debug-code')) },
+    { name: 'Stop Execution', icon: '■', action: () => window.dispatchEvent(new CustomEvent('menu-stop-code')) },
+    { name: 'Format Document', icon: '✨', action: () => window.dispatchEvent(new CustomEvent('menu-format-code')) },
+    { name: 'Package Standalone Binary', icon: '📦', action: () => window.dispatchEvent(new CustomEvent('menu-package-code')) },
+    { name: 'Split Editor Screen', icon: '||', action: () => window.dispatchEvent(new CustomEvent('menu-split-editor')) },
+    { name: 'Toggle Sidebar Panel', icon: '📁', action: () => onToggleSidebar() },
+    { name: 'Open Local File', icon: '📄', action: () => {
+        if (window.api && typeof window.api.openFileDialog === 'function') {
+          window.api.openFileDialog().then(file => {
+            if (file) window.dispatchEvent(new CustomEvent('open-file', { detail: { filename: file.name, code: file.content, path: file.path } }))
+          })
+        }
+      }
+    },
+    { name: 'Open Workspace Folder', icon: '📂', action: () => {
+        if (window.api && typeof window.api.openDirectoryDialog === 'function') {
+          window.api.openDirectoryDialog().then(res => {
+            if (res) window.dispatchEvent(new CustomEvent('open-directory', { detail: res }))
+          })
+        }
+      }
+    },
+    { name: 'Switch Theme: GitHub Dark', icon: '🎨', action: () => updateTheme(null, 'github-dark') },
+    { name: 'Switch Theme: VS Code Dark', icon: '🎨', action: () => updateTheme(null, 'vscode-dark') },
+    { name: 'Switch Theme: Light Frosted', icon: '🎨', action: () => updateTheme(null, 'glass-light') }
+  ]
 
   // Check login state on mount
   useEffect(() => {
@@ -40,7 +83,7 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
     return () => window.removeEventListener('theme-changed', handleThemeChange)
   }, [setTheme])
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns and command palette when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -49,16 +92,20 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
         editMenuRef.current && !editMenuRef.current.contains(event.target) &&
         selectionMenuRef.current && !selectionMenuRef.current.contains(event.target) &&
         viewMenuRef.current && !viewMenuRef.current.contains(event.target) &&
+        runMenuRef.current && !runMenuRef.current.contains(event.target) &&
         helpMenuRef.current && !helpMenuRef.current.contains(event.target) &&
         themeMenuRef.current && !themeMenuRef.current.contains(event.target)
       ) {
         setActiveMenu(null)
       }
+      if (showPalette && paletteRef.current && !paletteRef.current.contains(event.target)) {
+        setShowPalette(false)
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [activeMenu])
+  }, [activeMenu, showPalette])
 
   const handleLanguageSelect = (lang) => {
     setSelectedLang(lang)
@@ -105,6 +152,27 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
     } catch (error) {
       console.error('Open file error:', error)
     }
+  }
+
+  const handleOpenFolder = async (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
+    try {
+      const result = await window.api.openDirectoryDialog()
+      if (result) {
+        window.dispatchEvent(new CustomEvent('open-directory', {
+          detail: result
+        }))
+      }
+    } catch (error) {
+      console.error('Open directory error:', error)
+    }
+  }
+
+  const handleCloseFolder = (e) => {
+    e.stopPropagation()
+    setActiveMenu(null)
+    window.dispatchEvent(new CustomEvent('close-directory'))
   }
 
   const handleFileSave = (e) => {
@@ -222,16 +290,7 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
     alert('Keybindings Map:\nCtrl+S: Direct Save\nCtrl+Shift+S: Save As\nCtrl+O: Open Local File\nCtrl+Z: Undo Operation\nCtrl+Y: Redo Operation\nCtrl+A: Selection Select All')
   }
 
-  // Theme change helper
-  const updateTheme = (e, newTheme) => {
-    e.stopPropagation()
-    setActiveMenu(null)
-    if (setTheme) {
-      setTheme(newTheme)
-      document.documentElement.setAttribute('data-theme', newTheme)
-      localStorage.setItem('theme', newTheme)
-    }
-  }
+  // Theme updated globally via helper
 
   return (
     <div className="menu-bar">
@@ -263,6 +322,13 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
               <button onClick={handleFileOpen}>
                 <span>Open File...</span>
                 <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+O</span>
+              </button>
+              <button onClick={handleOpenFolder}>
+                <span>Open Folder...</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Shift+O</span>
+              </button>
+              <button onClick={handleCloseFolder}>
+                <span>Close Folder</span>
               </button>
               <button onClick={handleFileSave}>
                 <span>Save</span>
@@ -367,6 +433,42 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
           )}
         </div>
 
+        {/* RUN MENU */}
+        <div 
+          ref={runMenuRef} 
+          className={`menu-item ${activeMenu === 'run' ? 'open' : ''}`} 
+          onClick={() => handleMenuHeaderClick('run')}
+          onMouseEnter={() => handleMenuHeaderHover('run')}
+        >
+          Run
+          {activeMenu === 'run' && (
+            <div className="dropdown-menu">
+              <button onClick={(e) => { e.stopPropagation(); setActiveMenu(null); window.dispatchEvent(new CustomEvent('menu-run-code')) }}>
+                <span>Run Code</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>▶</span>
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setActiveMenu(null); window.dispatchEvent(new CustomEvent('menu-debug-code')) }}>
+                <span>Debug Code</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>🐞</span>
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setActiveMenu(null); window.dispatchEvent(new CustomEvent('menu-stop-code')) }}>
+                <span>Stop Code</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>■</span>
+              </button>
+              <hr />
+              <button onClick={(e) => { e.stopPropagation(); setActiveMenu(null); window.dispatchEvent(new CustomEvent('menu-format-code')) }}>
+                <span>Format Document</span>
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setActiveMenu(null); window.dispatchEvent(new CustomEvent('menu-package-code')) }}>
+                <span>Package Binary</span>
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setActiveMenu(null); window.dispatchEvent(new CustomEvent('menu-split-editor')) }}>
+                <span>Split Editor</span>
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* HELP MENU */}
         <div 
           ref={helpMenuRef} 
@@ -400,6 +502,10 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
           Theme
           {activeMenu === 'theme' && (
             <div className="dropdown-menu">
+              <button onClick={(e) => updateTheme(e, 'github-dark')}>
+                <span>GitHub Dark</span>
+                {theme === 'github-dark' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
               <button onClick={(e) => updateTheme(e, 'vscode-dark')}>
                 <span>VS Code Dark</span>
                 {theme === 'vscode-dark' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
@@ -429,10 +535,13 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
         </div>
       </div>
 
-      {/* Centralised Command Search Input */}
-      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', width: '320px', zIndex: 5 }}>
+      {/* Centralised Command Search Input with Command Palette */}
+      <div ref={paletteRef} style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', width: '320px', zIndex: 9999 }}>
         <input 
           type="text" 
+          value={paletteQuery}
+          onChange={(e) => setPaletteQuery(e.target.value)}
+          onFocus={() => setShowPalette(true)}
           placeholder="Search commands..." 
           style={{
             width: '100%',
@@ -447,17 +556,36 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
             padding: '0 10px',
             transition: 'all 0.3s ease'
           }}
-          onFocus={(e) => {
-            e.target.style.borderColor = 'var(--accent-color)'
-            e.target.style.background = 'rgba(0,0,0,0.5)'
-            e.target.style.boxShadow = 'var(--accent-glow)'
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = 'var(--panel-border)'
-            e.target.style.background = 'rgba(0,0,0,0.3)'
-            e.target.style.boxShadow = 'none'
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setShowPalette(false)
+              e.target.blur()
+            }
           }}
         />
+        {showPalette && (
+          <div className="command-palette-popover">
+            {commands
+              .filter(cmd => cmd.name.toLowerCase().includes(paletteQuery.toLowerCase()))
+              .map((cmd, idx) => (
+                <button 
+                  key={idx} 
+                  className="command-palette-item"
+                  onClick={() => {
+                    cmd.action()
+                    setShowPalette(false)
+                    setPaletteQuery('')
+                  }}
+                >
+                  <span style={{ fontSize: '12px', width: '18px', display: 'inline-block' }}>{cmd.icon}</span>
+                  <span>{cmd.name}</span>
+                </button>
+              ))}
+            {commands.filter(cmd => cmd.name.toLowerCase().includes(paletteQuery.toLowerCase())).length === 0 && (
+              <div style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--text-muted)' }}>No matching commands</div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Right-aligned Panel Options */}

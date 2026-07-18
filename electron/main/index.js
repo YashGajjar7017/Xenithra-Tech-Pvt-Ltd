@@ -7,6 +7,36 @@ import { start } from './api.js'
 
 const icon = join(__dirname, '../../renderer/public/Images/github.jpg')
 
+const xmlFilePath = join(app.getPath('temp'), 'temp_extensions.xml')
+
+function parseExtensionsXml(xmlString) {
+  const extensions = []
+  const regex = /<extension\s+([^>]+)\s*\/>/g
+  let match
+  while ((match = regex.exec(xmlString)) !== null) {
+    const attrsStr = match[1]
+    const attrs = {}
+    const attrRegex = /(\w+)="([^"]*)"/g
+    let attrMatch
+    while ((attrMatch = attrRegex.exec(attrsStr)) !== null) {
+      attrs[attrMatch[1]] = attrMatch[2]
+    }
+    if (attrs.id) {
+      extensions.push(attrs)
+    }
+  }
+  return extensions
+}
+
+function generateExtensionsXml(extensions) {
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<extensions>\n'
+  extensions.forEach(ext => {
+    xml += `  <extension id="${ext.id}" name="${ext.name}" version="${ext.version || '1.0.0'}" description="${ext.description || ''}" />\n`
+  })
+  xml += '</extensions>\n'
+  return xml
+}
+
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -28,17 +58,61 @@ function createWindow() {
         label: 'File',
         submenu: [
           {
-            label: 'Open...',
+            label: 'New File',
+            accelerator: 'Ctrl+N',
+            click: () => {
+              mainWindow.webContents.send('menu-file-new')
+            }
+          },
+          {
+            label: 'Open File...',
             accelerator: 'Ctrl+O',
             click: async () => {
               const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
                 properties: ['openFile', 'multiSelections']
               })
               if (!canceled && filePaths && filePaths.length) {
-                mainWindow.webContents.send('open-files', filePaths)
+                const filesData = await Promise.all(filePaths.map(async (filePath) => {
+                  try {
+                    const content = await fs.promises.readFile(filePath, 'utf-8')
+                    return { path: filePath, content, name: path.basename(filePath) }
+                  } catch (e) {
+                    return { path: filePath, content: '', name: path.basename(filePath) }
+                  }
+                }))
+                mainWindow.webContents.send('open-files', filesData)
               }
             }
           },
+          {
+            label: 'Open Folder...',
+            accelerator: 'Ctrl+Shift+O',
+            click: async () => {
+              const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+                properties: ['openDirectory']
+              })
+              if (!canceled && filePaths && filePaths.length) {
+                const dirPath = filePaths[0]
+                const result = await readDirTree(dirPath)
+                mainWindow.webContents.send('open-directory', result)
+              }
+            }
+          },
+          {
+            label: 'Save',
+            accelerator: 'Ctrl+S',
+            click: () => {
+              mainWindow.webContents.send('menu-file-save')
+            }
+          },
+          {
+            label: 'Save As...',
+            accelerator: 'Ctrl+Shift+S',
+            click: () => {
+              mainWindow.webContents.send('menu-file-saveas')
+            }
+          },
+          { type: 'separator' },
           { role: 'close' }
         ]
       },
@@ -77,8 +151,6 @@ function createWindow() {
     })
 
     if (filePathArg) {
-      const fs = require('fs')
-      const path = require('path')
       try {
         if (fs.existsSync(filePathArg)) {
           const content = fs.readFileSync(filePathArg, 'utf-8')
@@ -127,8 +199,8 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   // File open dialog IPC
-  ipcMain.handle('dialog:openFile', async () => {
-    const mainWindow = BrowserWindow.getFocusedWindow()
+  ipcMain.handle('dialog:openFile', async (event) => {
+    const mainWindow = BrowserWindow.fromWebContents(event.sender)
     const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile'],
       filters: [
@@ -150,8 +222,8 @@ app.whenReady().then(() => {
   })
 
   // File save dialog IPC
-  ipcMain.handle('dialog:saveFile', async (_event, content, defaultName) => {
-    const mainWindow = BrowserWindow.getFocusedWindow()
+  ipcMain.handle('dialog:saveFile', async (event, content, defaultName) => {
+    const mainWindow = BrowserWindow.fromWebContents(event.sender)
     const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
       title: 'Save Code File',
       defaultPath: defaultName || 'untitled.js',
@@ -202,8 +274,8 @@ app.whenReady().then(() => {
   })
 
   // Open directory dialog IPC
-  ipcMain.handle('dialog:openDirectory', async () => {
-    const mainWindow = BrowserWindow.getFocusedWindow()
+  ipcMain.handle('dialog:openDirectory', async (event) => {
+    const mainWindow = BrowserWindow.fromWebContents(event.sender)
     const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
       properties: ['openDirectory']
     })
@@ -214,6 +286,34 @@ app.whenReady().then(() => {
   // Direct directory tree read IPC
   ipcMain.handle('file:readDirectory', async (_event, dirPath) => {
     return await readDirTree(dirPath)
+  })
+
+  // Extensions temporary XML handlers
+  ipcMain.handle('extensions:get', async () => {
+    try {
+      if (!fs.existsSync(xmlFilePath)) {
+        const defaultXml = '<?xml version="1.0" encoding="UTF-8"?>\n<extensions>\n</extensions>\n'
+        await fs.promises.writeFile(xmlFilePath, defaultXml, 'utf-8')
+        return []
+      }
+      const content = await fs.promises.readFile(xmlFilePath, 'utf-8')
+      return parseExtensionsXml(content)
+    } catch (err) {
+      console.error('Error reading extensions XML:', err)
+      return []
+    }
+  })
+
+  ipcMain.handle('extensions:save', async (_event, extensions) => {
+    try {
+      const xml = generateExtensionsXml(extensions || [])
+      await fs.promises.writeFile(xmlFilePath, xml, 'utf-8')
+      console.log('Saved extensions to temporary XML at:', xmlFilePath)
+      return true
+    } catch (err) {
+      console.error('Error saving extensions XML:', err)
+      return false
+    }
   })
 
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)

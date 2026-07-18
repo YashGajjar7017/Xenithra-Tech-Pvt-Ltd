@@ -19,6 +19,7 @@ console.error = (...args) => {
 const api = {
   // Renderer can register callbacks for messages from main
   onOpenFiles: (cb) => ipcRenderer.on('open-files', (_event, files) => cb(files)),
+  onOpenDirectory: (cb) => ipcRenderer.on('open-directory', (_event, dirResult) => cb(dirResult)),
   onToggleTheme: (cb) => ipcRenderer.on('toggle-theme', () => cb()),
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
   saveFileDialog: (content, defaultName) => ipcRenderer.invoke('dialog:saveFile', content, defaultName),
@@ -27,7 +28,9 @@ const api = {
   openDirectoryDialog: () => ipcRenderer.invoke('dialog:openDirectory'),
   readDirectory: (dirPath) => ipcRenderer.invoke('file:readDirectory', dirPath),
   readFile: (filePath) => ipcRenderer.invoke('file:read', filePath),
-  getApiPort: () => ipcRenderer.invoke('get-api-port')
+  getApiPort: () => ipcRenderer.invoke('get-api-port'),
+  getExtensions: () => ipcRenderer.invoke('extensions:get'),
+  saveExtensions: (extensions) => ipcRenderer.invoke('extensions:save', extensions)
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).
