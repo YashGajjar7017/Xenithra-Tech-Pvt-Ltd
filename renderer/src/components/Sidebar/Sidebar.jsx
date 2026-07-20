@@ -355,6 +355,37 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
               <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Compiler Engine Port: {localStorage.getItem('api-port') || '8000'}</div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>Active Theme: {(localStorage.getItem('theme') || 'vscode-dark').replace('-', ' ')}</div>
             </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontWeight: '600', marginBottom: '6px', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>⚡ Code Snippets (Auto-Pull)</span>
+                <span style={{ fontSize: '9px', background: 'rgba(0,255,170,0.15)', color: '#00ffaa', padding: '2px 6px', borderRadius: '10px' }}>Auto Sync</span>
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                Click any snippet to auto-pull template directly into your active editor.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {[
+                  { name: 'React Component (JSX)', lang: 'jsx', code: "import React from 'react';\n\nexport default function App() {\n  return (\n    <div className=\"p-4\">\n      <h1>Hello Xenithra</h1>\n    </div>\n  );\n}" },
+                  { name: 'Express API Server', lang: 'js', code: "const express = require('express');\nconst app = express();\napp.use(express.json());\n\napp.get('/api/health', (req, res) => res.json({ status: 'ok' }));\napp.listen(3001, () => console.log('Server running on 3001'));" },
+                  { name: 'Python Async Main', lang: 'py', code: "import asyncio\n\nasync def main():\n    print('Running Xenithra Python Engine...')\n\nif __name__ == '__main__':\n    asyncio.run(main())" },
+                  { name: 'C++ Starter Template', lang: 'cpp', code: "#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << \"Xenithra C++ Engine Active\" << endl;\n    return 0;\n}" }
+                ].map((snip, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.2)', padding: '6px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '500' }}>{snip.name}</span>
+                    <button 
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('open-file', {
+                          detail: { filename: `template_${snip.lang}.${snip.lang}`, code: snip.code }
+                        }))
+                      }}
+                      style={{ background: 'var(--accent-color)', border: 'none', color: '#000', borderRadius: '3px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Auto-Pull
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       ) : activeActivity === 'extensions' ? (

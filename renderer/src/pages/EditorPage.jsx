@@ -441,15 +441,36 @@ const EditorPage = () => {
   }
 
   const handleFormat = () => {
-    const formatted = code
-      .split('\n')
-      .map(line => line.trimEnd())
-      .join('\n')
-    setCode(formatted)
+    let formatted = code
+    try {
+      if (activeTab.endsWith('.json') || (code.trim().startsWith('{') && code.trim().endsWith('}') && !code.includes('function'))) {
+        formatted = JSON.stringify(JSON.parse(code), null, 2)
+      } else {
+        const lines = code.split('\n')
+        let indentLevel = 0
+        const formattedLines = lines.map(line => {
+          let trimmed = line.trim()
+          if (!trimmed) return ''
+          if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith('</')) {
+            indentLevel = Math.max(0, indentLevel - 1)
+          }
+          const indentStr = '  '.repeat(indentLevel)
+          const result = indentStr + trimmed
+          if ((trimmed.endsWith('{') || trimmed.endsWith('[') || (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>') && trimmed.includes('>'))) && !trimmed.includes('}') && !trimmed.includes(']')) {
+            indentLevel++
+          }
+          return result
+        })
+        formatted = formattedLines.join('\n')
+      }
+    } catch (e) {
+      formatted = code.split('\n').map(l => l.trimEnd()).join('\n')
+    }
 
+    setCode(formatted)
     setTerminalLines(prev => [
       ...prev,
-      { text: `[FORMAT] Source file auto-formatted successfully.`, className: 'success' },
+      { text: `[FORMAT] Smart code formatter formatted ${activeTab} successfully.`, className: 'success' },
       { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
   }
@@ -707,27 +728,50 @@ const EditorPage = () => {
                 ))}
               </div>
 
-              <textarea
-                ref={leftCodeAreaRef}
-                className="code-area"
-                value={leftCode}
-                onChange={(e) => setLeftCode(e.target.value)}
-                onFocus={() => setActivePane('left')}
-                style={{
-                  padding: '10px',
-                  fontSize: '13px',
-                  lineHeight: '19.5px',
-                  fontFamily: "'JetBrains Mono', Consolas, monospace",
-                  background: 'transparent',
-                  color: 'var(--text-main)',
-                  border: 'none',
-                  resize: 'none',
-                  outline: 'none',
-                  flex: 1,
-                  height: '100%',
-                  overflowY: 'auto'
-                }}
-              />
+              <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex' }}>
+                <textarea
+                  ref={leftCodeAreaRef}
+                  className="code-area"
+                  value={leftCode}
+                  onChange={(e) => updateCodeWithML(e.target.value)}
+                  onKeyDown={handleEditorKeyDown}
+                  onFocus={() => setActivePane('left')}
+                  style={{
+                    padding: '10px',
+                    fontSize: '13px',
+                    lineHeight: '19.5px',
+                    fontFamily: "'JetBrains Mono', Consolas, monospace",
+                    background: 'transparent',
+                    color: 'var(--text-main)',
+                    border: 'none',
+                    resize: 'none',
+                    outline: 'none',
+                    flex: 1,
+                    height: '100%',
+                    overflowY: 'auto'
+                  }}
+                />
+                {ghostText && (
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      bottom: '10px',
+                      right: '20px',
+                      background: 'rgba(0,0,0,0.65)',
+                      border: '1px solid #00ffaa',
+                      color: '#00ffaa',
+                      borderRadius: '4px',
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontFamily: 'monospace',
+                      pointerEvents: 'none',
+                      zIndex: 10
+                    }}
+                  >
+                    💡 Auto-Suggest (Press Tab): <span style={{ opacity: 0.85, fontStyle: 'italic' }}>{ghostText}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ) : (

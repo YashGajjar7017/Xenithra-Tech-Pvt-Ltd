@@ -51,23 +51,23 @@ const Toolbar = ({ theme, setTheme }) => {
   }
 
   const toggleLiveServer = async () => {
-    if (selectedLang === 'Node.js' || selectedLang === 'Python 3' || selectedLang === 'C (GCC)' || selectedLang === 'C++ (G++)' || selectedLang === 'Dot Net' || selectedLang === 'Dart') {
-      runCode()
-      return
-    }
-
     if (!window.api || typeof window.api.startLiveServer !== 'function') return
     if (isLiveServerRunning) {
       await window.api.stopLiveServer()
       setIsLiveServerRunning(false)
     } else {
       const activeWorkspacePath = localStorage.getItem('activeWorkspacePath') || ''
-      const res = await window.api.startLiveServer(activeWorkspacePath, 5500)
-      if (res && res.success) {
-        setIsLiveServerRunning(true)
-        setLiveServerPort(res.port)
-        // Open browser
-        window.open(res.url, '_blank')
+      try {
+        const res = await window.api.startLiveServer(activeWorkspacePath, 5500)
+        if (res && res.success) {
+          setIsLiveServerRunning(true)
+          setLiveServerPort(res.port)
+          window.open(res.url, '_blank')
+        } else {
+          alert(`Live Server status: ${res ? res.message : 'Starting server...'}`)
+        }
+      } catch (err) {
+        console.error('Live Server error:', err)
       }
     }
   }

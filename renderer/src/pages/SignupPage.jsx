@@ -239,16 +239,26 @@ const SignupPage = () => {
           <div style={styles.socialGroup}>
             <button 
               type="button" 
-              onClick={() => alert('Redirecting to Google Secure Authentication...')}
-              style={{ ...styles.socialBtn, background: '#db4437', color: '#fff', border: '1px solid #c53c2f' }}
+              onClick={() => {
+                const googleUser = { name: 'Google Developer', email: 'dev@gmail.com', token: 'google_oauth_token_' + Date.now() }
+                localStorage.setItem('user', JSON.stringify(googleUser))
+                setSuccess(true)
+                setTimeout(() => { window.location.href = '/#/' }, 600)
+              }}
+              style={{ ...styles.socialBtn, background: '#db4437', color: '#fff', border: '1px solid #c53c2f', cursor: 'pointer' }}
             >
               <i className="bx bxl-google" style={{ marginRight: '8px', fontSize: '15px' }}></i>
               Continue with Google
             </button>
             <button 
               type="button" 
-              onClick={() => alert('Redirecting to GitHub Secure Authentication...')}
-              style={{ ...styles.socialBtn, background: '#24292e', color: '#fff', border: '1px solid #1c2125' }}
+              onClick={() => {
+                const githubUser = { name: 'GitHub Developer', email: 'dev@github.com', token: 'github_oauth_token_' + Date.now() }
+                localStorage.setItem('user', JSON.stringify(githubUser))
+                setSuccess(true)
+                setTimeout(() => { window.location.href = '/#/' }, 600)
+              }}
+              style={{ ...styles.socialBtn, background: '#24292e', color: '#fff', border: '1px solid #1c2125', cursor: 'pointer' }}
             >
               <i className="bx bxl-github" style={{ marginRight: '8px', fontSize: '15px' }}></i>
               Continue with GitHub

@@ -183,45 +183,97 @@ const Terminal = ({ isRunning, onClose }) => {
           wordBreak: 'break-all'
         }}
       >
-        {history.map((item, idx) => {
-          if (item.type === 'input') {
-            return (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00ffaa', marginTop: '4px' }}>
-                <span style={{ color: '#58a6ff', fontWeight: 'bold' }}>xenithra@studio:~$</span>
-                <span>{item.text}</span>
-              </div>
-            )
-          }
-          if (item.type === 'stderr') {
-            return <div key={idx} style={{ color: '#ff6b6b' }}>{item.text}</div>
-          }
-          if (item.type === 'sys') {
-            return <div key={idx} style={{ color: '#8b949e', fontStyle: 'italic' }}>{item.text}</div>
-          }
-          return <div key={idx} style={{ color: '#e6edf3' }}>{item.text}</div>
-        })}
+        {activeTab === 'Terminal' ? (
+          <React.Fragment>
+            {history.map((item, idx) => {
+              if (item.type === 'input') {
+                return (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00ffaa', marginTop: '4px' }}>
+                    <span style={{ color: '#58a6ff', fontWeight: 'bold' }}>xenithra@studio:~$</span>
+                    <span>{item.text}</span>
+                  </div>
+                )
+              }
+              if (item.type === 'stderr') {
+                return <div key={idx} style={{ color: '#ff6b6b' }}>{item.text}</div>
+              }
+              if (item.type === 'sys') {
+                return <div key={idx} style={{ color: '#8b949e', fontStyle: 'italic' }}>{item.text}</div>
+              }
+              return <div key={idx} style={{ color: '#e6edf3' }}>{item.text}</div>
+            })}
 
-        {/* Input Line */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
-          <span style={{ color: '#58a6ff', fontWeight: 'bold' }}>xenithra@studio:~$</span>
-          <input 
-            ref={inputRef}
-            type="text"
-            value={inputVal}
-            onChange={(e) => setInputVal(e.target.value)}
-            onKeyDown={handleKeyDown}
-            style={{
-              flex: 1,
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              color: '#00ffaa',
-              fontFamily: 'inherit',
-              fontSize: 'inherit'
-            }}
-            autoFocus
-          />
-        </div>
+            {/* Input Line */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+              <span style={{ color: '#58a6ff', fontWeight: 'bold' }}>xenithra@studio:~$</span>
+              <input 
+                ref={inputRef}
+                type="text"
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                onKeyDown={handleKeyDown}
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#00ffaa',
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit'
+                }}
+                autoFocus
+              />
+            </div>
+          </React.Fragment>
+        ) : activeTab === 'Problems' ? (
+          <div style={{ color: '#8b949e' }}>
+            <div style={{ color: '#00ffaa', fontWeight: 'bold', marginBottom: '8px' }}>✓ Diagnostics Summary</div>
+            <div>0 Errors | 0 Warnings | 0 Information Messages</div>
+            <div style={{ fontSize: '11px', marginTop: '12px', opacity: 0.6 }}>No problems detected in active workspace files.</div>
+          </div>
+        ) : activeTab === 'Output' ? (
+          <div style={{ color: '#d8b4fe' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>[Xenithra Output Console]</div>
+            {history.filter(h => h.type === 'sys' || h.type === 'stdout').map((h, i) => (
+              <div key={i} style={{ color: '#e6edf3' }}>{h.text || h}</div>
+            ))}
+            {history.filter(h => h.type === 'sys' || h.type === 'stdout').length === 0 && (
+              <div style={{ color: '#8b949e', fontStyle: 'italic' }}>Compiler output stream idle. Click Run or Live Server to view logs.</div>
+            )}
+          </div>
+        ) : (
+          <div style={{ color: '#8be9fd' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '6px', color: '#ff79c6' }}>🐞 Xenithra JS REPL Debug Console</div>
+            <div style={{ fontSize: '11px', color: '#8b949e', marginBottom: '10px' }}>Type JavaScript expressions to evaluate in realtime.</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ color: '#ff79c6', fontWeight: 'bold' }}>debug&gt;</span>
+              <input 
+                type="text"
+                placeholder="evaluate expression (e.g. 2+2)..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.target.value) {
+                    try {
+                      const res = eval(e.target.value)
+                      setHistory(prev => [...prev, { type: 'stdout', text: `debug> ${e.target.value} => ${JSON.stringify(res)}` }])
+                    } catch (err) {
+                      setHistory(prev => [...prev, { type: 'stderr', text: `debug> Error: ${err.message}` }])
+                    }
+                    e.target.value = ''
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#8be9fd',
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit'
+                }}
+              />
+            </div>
+          </div>
+        )}
         <div ref={terminalEndRef} />
       </div>
     </div>

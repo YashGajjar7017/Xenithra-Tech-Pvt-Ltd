@@ -91,9 +91,9 @@ export function startLiveServer(rootPath, preferredPort = 5500) {
       }
     })
 
-    const server = http.createServer(app)
-
     const tryListen = (portToTry) => {
+      const server = http.createServer(app)
+
       server.listen(portToTry, '0.0.0.0', () => {
         activePort = portToTry
         serverInstance = server
@@ -109,7 +109,7 @@ export function startLiveServer(rootPath, preferredPort = 5500) {
       })
 
       server.on('error', (err) => {
-        if (err.code === 'EADDRINUSE') {
+        if (err.code === 'EADDRINUSE' && portToTry < 5520) {
           console.warn(`[liveServer] Port ${portToTry} in use, trying ${portToTry + 1}...`)
           tryListen(portToTry + 1)
         } else {

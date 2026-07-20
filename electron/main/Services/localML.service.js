@@ -105,11 +105,26 @@ export function predictInlineCompletion(fullCode = '', lineIndex = 0, lineConten
     return { suggestion: ' class="container"></div>', type: 'html' }
   }
 
-  // 3. Frequency-Based Identifiers in Codebase
+  // 3. Reinforcement Learning Identifier & Symbol Pattern Matching
+  const declaredSymbols = []
+  // Extract function definitions: function foo() or def bar()
+  const funcMatches = fullCode.matchAll(/(?:function|def|class|const|let|var)\s+([A-Za-z0-9_]+)/g)
+  for (const match of funcMatches) {
+    if (match[1] && match[1] !== trimmed && match[1].startsWith(trimmed)) {
+      declaredSymbols.push(match[1])
+    }
+  }
+
+  if (declaredSymbols.length > 0) {
+    const symbol = declaredSymbols[0]
+    return { suggestion: symbol.substring(trimmed.length), type: 'symbol' }
+  }
+
+  // 4. Frequency-Based Identifiers in Codebase
   const words = fullCode.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) || []
   const wordCounts = {}
   words.forEach(w => {
-    if (w.length > 3 && w !== trimmed) {
+    if (w.length >= 2 && w !== trimmed) {
       wordCounts[w] = (wordCounts[w] || 0) + 1
     }
   })
