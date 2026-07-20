@@ -58,8 +58,11 @@ const SearchPanel = () => {
         overflowY: 'auto'
       }}
     >
-      <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', marginBottom: '10px' }}>
+      <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', marginBottom: '4px' }}>
         SEARCH WORKSPACE
+      </div>
+      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        In: {localStorage.getItem('activeWorkspacePath') || 'Current Root Folder'}
       </div>
 
       {/* Primary Search Input with Options */}

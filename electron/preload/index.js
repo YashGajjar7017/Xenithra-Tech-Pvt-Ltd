@@ -21,6 +21,7 @@ const api = {
   onOpenFiles: (cb) => ipcRenderer.on('open-files', (_event, files) => cb(files)),
   onOpenDirectory: (cb) => ipcRenderer.on('open-directory', (_event, dirResult) => cb(dirResult)),
   onToggleTheme: (cb) => ipcRenderer.on('toggle-theme', () => cb()),
+  onDeepLinkToken: (cb) => ipcRenderer.on('deep-link-token', (_event, data) => cb(data)),
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
   saveFileDialog: (content, defaultName) => ipcRenderer.invoke('dialog:saveFile', content, defaultName),
   saveFile: (filePath, content) => ipcRenderer.invoke('file:save', filePath, content),

@@ -38,11 +38,15 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
     const handleOpenDirectory = (event) => {
       if (event.detail && event.detail.tree) {
         setLoadedFolder(event.detail)
+        if (event.detail.path) {
+          localStorage.setItem('activeWorkspacePath', event.detail.path)
+        }
         setExpandedDirs({ [event.detail.tree.key]: true })
       }
     }
     const handleCloseDirectory = () => {
       setLoadedFolder(null)
+      localStorage.removeItem('activeWorkspacePath')
     }
     window.addEventListener('open-directory', handleOpenDirectory)
     window.addEventListener('close-directory', handleCloseDirectory)
@@ -109,6 +113,9 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
       const result = await window.api.openDirectoryDialog()
       if (result && result.tree) {
         setLoadedFolder(result)
+        if (result.path) {
+          localStorage.setItem('activeWorkspacePath', result.path)
+        }
         // Auto expand root folder
         setExpandedDirs({ [result.tree.key]: true })
       }
@@ -151,6 +158,9 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
         const result = await window.api.readDirectory(file.path)
         if (result && result.tree) {
           setLoadedFolder(result)
+          if (result.path) {
+            localStorage.setItem('activeWorkspacePath', result.path)
+          }
           setExpandedDirs({ [result.tree.key]: true })
         } else {
           // Fallback to reading it as a file if it's not a directory
@@ -323,6 +333,30 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
         <GitPanel />
       ) : activeActivity === 'debug' ? (
         <DebugPanel activeFile={activeFile} />
+      ) : activeActivity === 'settings' ? (
+        <div style={{ padding: '12px', color: 'var(--text-main)', fontSize: '12px', height: '100%', overflowY: 'auto' }}>
+          <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.05em', marginBottom: '12px', color: 'var(--accent-color)' }}>
+            STUDIO SETTINGS
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontWeight: '600', marginBottom: '4px' }}>Deep Link Protocol Handover</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Registered URI Scheme: <code>xenithra://token:</code></div>
+              <div style={{ fontSize: '10px', color: '#00ffaa', marginTop: '4px' }}>✓ Active & Listening for Web Redirects</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontWeight: '600', marginBottom: '4px' }}>Active Directory Workspace</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>
+                {localStorage.getItem('activeWorkspacePath') || 'No workspace directory mounted'}
+              </div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontWeight: '600', marginBottom: '4px' }}>Environment Configuration</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Compiler Engine Port: {localStorage.getItem('api-port') || '8000'}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>Active Theme: {(localStorage.getItem('theme') || 'vscode-dark').replace('-', ' ')}</div>
+            </div>
+          </div>
+        </div>
       ) : activeActivity === 'extensions' ? (
         /* Extensions Panel View */
         <div className="extensions-panel">

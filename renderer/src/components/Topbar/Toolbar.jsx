@@ -51,6 +51,11 @@ const Toolbar = ({ theme, setTheme }) => {
   }
 
   const toggleLiveServer = async () => {
+    if (selectedLang === 'Node.js' || selectedLang === 'Python 3' || selectedLang === 'C (GCC)' || selectedLang === 'C++ (G++)' || selectedLang === 'Dot Net' || selectedLang === 'Dart') {
+      runCode()
+      return
+    }
+
     if (!window.api || typeof window.api.startLiveServer !== 'function') return
     if (isLiveServerRunning) {
       await window.api.stopLiveServer()

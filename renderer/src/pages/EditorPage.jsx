@@ -6,17 +6,88 @@ const EditorPage = () => {
   const [isSplit, setIsSplit] = useState(false)
   const [activePane, setActivePane] = useState('left')
 
-  // Left editor state
-  const [leftTab, setLeftTab] = useState('index.html')
-  const [leftCode, setLeftCode] = useState(`<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>`)
-  const [leftLang, setLeftLang] = useState('XML')
-  const [leftFilePath, setLeftFilePath] = useState('')
+  // Multi-tab state management
+  const [openTabs, setOpenTabs] = useState([
+    {
+      id: 'default_index',
+      filename: 'index.html',
+      code: `<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>`,
+      lang: 'XML',
+      path: ''
+    }
+  ])
+  const [activeTabId, setActiveTabId] = useState('default_index')
 
-  // Right editor state
+  // Right editor state (for split pane)
   const [rightTab, setRightTab] = useState('untitled.js')
   const [rightCode, setRightCode] = useState(`// Sideways Split Editor\nfunction hello() {\n  console.log("Hello from sideways pane!");\n}\nhello();`)
   const [rightLang, setRightLang] = useState('Node.js')
   const [rightFilePath, setRightFilePath] = useState('')
+
+  const activeTabObj = openTabs.find(t => t.id === activeTabId) || openTabs[0] || {
+    id: 'empty',
+    filename: 'untitled.js',
+    code: '',
+    lang: 'Node.js',
+    path: ''
+  }
+
+  const leftCode = activeTabObj ? activeTabObj.code : ''
+  const leftTab = activeTabObj ? activeTabObj.filename : 'untitled.js'
+  const leftLang = activeTabObj ? activeTabObj.lang : 'Node.js'
+  const leftFilePath = activeTabObj ? activeTabObj.path : ''
+
+  const setLeftCode = (val) => {
+    setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, code: val } : t))
+  }
+
+  const setLeftTab = (val) => {
+    setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, filename: val } : t))
+  }
+
+  const setLeftLang = (val) => {
+    setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, lang: val } : t))
+  }
+
+  const setLeftFilePath = (val) => {
+    setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, path: val } : t))
+  }
+
+  const handleCloseTab = (tabId, e) => {
+    if (e) e.stopPropagation()
+    setOpenTabs(prev => {
+      if (prev.length <= 1) {
+        setActiveTabId('untitled_new')
+        return [{
+          id: 'untitled_new',
+          filename: 'untitled.js',
+          code: '',
+          lang: 'Node.js',
+          path: ''
+        }]
+      }
+      const newTabs = prev.filter(t => t.id !== tabId)
+      if (activeTabId === tabId) {
+        const closedIdx = prev.findIndex(t => t.id === tabId)
+        const nextActive = newTabs[Math.max(0, closedIdx - 1)]
+        if (nextActive) setActiveTabId(nextActive.id)
+      }
+      return newTabs
+    })
+  }
+
+  const handleNewTab = () => {
+    const newId = `untitled_${Date.now()}`
+    const newTab = {
+      id: newId,
+      filename: 'untitled.js',
+      code: '',
+      lang: 'Node.js',
+      path: ''
+    }
+    setOpenTabs(prev => [...prev, newTab])
+    setActiveTabId(newId)
+  }
 
   // Computed state proxies for the active pane
   const code = activePane === 'left' ? leftCode : rightCode
@@ -201,26 +272,42 @@ const EditorPage = () => {
     const handleOpenFile = (event) => {
       if (event.detail) {
         const { filename, code: fileCode, path: filePath } = event.detail
-        setActiveTab(filename)
-        if (fileCode !== undefined) {
-          setCode(fileCode)
-        }
-        if (filePath) {
-          setActiveFilePath(filePath)
-        } else {
-          setActiveFilePath('')
+        const detectLang = (fn) => {
+          const ext = fn.split('.').pop().toLowerCase()
+          if (ext === 'html' || ext === 'css' || ext === 'xml') return 'XML'
+          if (ext === 'py') return 'Python 3'
+          if (ext === 'cpp' || ext === 'hpp') return 'C++ (G++)'
+          if (ext === 'c' || ext === 'h') return 'C (GCC)'
+          if (ext === 'cs') return 'Dot Net'
+          if (ext === 'dart') return 'Dart'
+          return 'Node.js'
         }
 
-        // Auto-set compilation language based on extension
-        const ext = filename.split('.').pop()
-        if (ext === 'html') setSelectedLanguage('XML')
-        else if (ext === 'js') setSelectedLanguage('Node.js')
-        else if (ext === 'css') setSelectedLanguage('XML')
-        else if (ext === 'py') setSelectedLanguage('Python 3')
-        else if (ext === 'cpp') setSelectedLanguage('C++ (G++)')
-        else if (ext === 'c') setSelectedLanguage('C (GCC)')
-        else if (ext === 'cs') setSelectedLanguage('Dot Net')
-        else if (ext === 'dart') setSelectedLanguage('Dart')
+        setOpenTabs(prev => {
+          const existingIdx = prev.findIndex(t => (filePath && t.path === filePath) || t.filename === filename)
+          if (existingIdx !== -1) {
+            const updated = [...prev]
+            updated[existingIdx] = {
+              ...updated[existingIdx],
+              code: fileCode !== undefined ? fileCode : updated[existingIdx].code,
+              path: filePath || updated[existingIdx].path,
+              lang: detectLang(filename)
+            }
+            setActiveTabId(updated[existingIdx].id)
+            return updated
+          } else {
+            const newTabId = filePath || `${filename}_${Date.now()}`
+            const newTab = {
+              id: newTabId,
+              filename,
+              code: fileCode !== undefined ? fileCode : '',
+              path: filePath || '',
+              lang: detectLang(filename)
+            }
+            setActiveTabId(newTabId)
+            return [...prev, newTab]
+          }
+        })
       }
     }
     const handleChangeLanguage = (event) => {
@@ -558,11 +645,48 @@ const EditorPage = () => {
         {!isSplit ? (
           /* Single Pane Editor */
           <div className="editor-pane active" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <div className="editor-tab active">
-                <i className="bx bx-file" style={{ fontSize: '13px', marginRight: '5px' }}></i>
-                <span>{leftTab}</span>
-                <span className="close-btn" style={{ cursor: 'pointer', marginLeft: '6px' }}>×</span>
+            <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flex: 1, overflowX: 'auto' }}>
+                {openTabs.map(tab => (
+                  <div 
+                    key={tab.id}
+                    className={`editor-tab ${tab.id === activeTabId ? 'active' : ''}`}
+                    onClick={() => setActiveTabId(tab.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      borderRight: '1px solid var(--panel-border)',
+                      background: tab.id === activeTabId ? 'var(--sidebar-active)' : 'transparent',
+                      color: tab.id === activeTabId ? 'var(--accent-color)' : 'var(--text-muted)',
+                      borderTop: tab.id === activeTabId ? '2px solid var(--accent-color)' : '2px solid transparent',
+                      whiteSpace: 'nowrap',
+                      minWidth: '100px',
+                      maxWidth: '200px'
+                    }}
+                  >
+                    <i className="bx bx-file" style={{ fontSize: '13px' }}></i>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{tab.filename}</span>
+                    <span 
+                      onClick={(e) => handleCloseTab(tab.id, e)} 
+                      style={{ cursor: 'pointer', opacity: 0.6, fontSize: '14px', marginLeft: '4px' }}
+                      onMouseEnter={(e) => e.target.style.opacity = 1}
+                      onMouseLeave={(e) => e.target.style.opacity = 0.6}
+                    >
+                      ×
+                    </span>
+                  </div>
+                ))}
+                <button 
+                  onClick={handleNewTab} 
+                  style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '4px 10px', cursor: 'pointer', fontSize: '16px' }}
+                  title="New File Tab"
+                >
+                  +
+                </button>
               </div>
               <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
                 <button onClick={() => setIsSplit(true)} style={styles.tabActionBtn} title="Split Screen Side-by-Side">
@@ -620,11 +744,44 @@ const EditorPage = () => {
               background: activePane === 'left' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
               transition: 'background 0.2s'
             }} onClick={() => setActivePane('left')}>
-              <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <div className={`editor-tab ${activePane === 'left' ? 'active' : ''}`}>
-                  <i className="bx bx-file" style={{ fontSize: '13px', marginRight: '5px' }}></i>
-                  <span>{leftTab}</span>
-                  <span style={{ fontSize: '9px', marginLeft: '6px', color: 'var(--accent-color)', fontWeight: 'bold' }}>LEFT</span>
+              <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', flex: 1, overflowX: 'auto' }}>
+                  {openTabs.map(tab => (
+                    <div 
+                      key={tab.id}
+                      className={`editor-tab ${tab.id === activeTabId ? 'active' : ''}`}
+                      onClick={() => setActiveTabId(tab.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 10px',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        borderRight: '1px solid var(--panel-border)',
+                        background: tab.id === activeTabId ? 'var(--sidebar-active)' : 'transparent',
+                        color: tab.id === activeTabId ? 'var(--accent-color)' : 'var(--text-muted)',
+                        borderTop: tab.id === activeTabId ? '2px solid var(--accent-color)' : '2px solid transparent',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      <i className="bx bx-file" style={{ fontSize: '12px' }}></i>
+                      <span>{tab.filename}</span>
+                      <span 
+                        onClick={(e) => handleCloseTab(tab.id, e)} 
+                        style={{ cursor: 'pointer', opacity: 0.6, fontSize: '13px', marginLeft: '4px' }}
+                      >
+                        ×
+                      </span>
+                    </div>
+                  ))}
+                  <button 
+                    onClick={handleNewTab} 
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '2px 8px', cursor: 'pointer', fontSize: '14px' }}
+                    title="New File Tab"
+                  >
+                    +
+                  </button>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
                   <button onClick={() => setIsSplit(false)} style={styles.tabActionBtn} title="Merge Editors">

@@ -67,6 +67,24 @@ const MainApp = () => {
         }
       })
     }
+
+    if (window.api && typeof window.api.onDeepLinkToken === 'function') {
+      window.api.onDeepLinkToken((data) => {
+        console.log('[App] Deep link token received:', data)
+        if (data && data.token) {
+          const userData = {
+            token: data.token,
+            username: 'Authenticated User',
+            loginTime: new Date().toISOString()
+          }
+          localStorage.setItem('user', JSON.stringify(userData))
+          window.dispatchEvent(new CustomEvent('auth-token-received', { detail: userData }))
+          if (window.location.hash.includes('login') || window.location.hash.includes('signup')) {
+            window.location.hash = '#/'
+          }
+        }
+      })
+    }
   }, [])
 
   return (
@@ -153,13 +171,11 @@ const MainLayout = ({
   }
 
   const handleActivityClick = (activity) => {
-    setActiveActivity(activity)
-    if (activity === 'explorer' || activity === 'extensions') {
-      setSidebarCollapsed(false)
-    } else if (activity === 'settings') {
-      window.location.href = '/#/Dashboard'
+    if (activeActivity === activity) {
+      setSidebarCollapsed(prev => !prev)
     } else {
-      setSidebarCollapsed(true)
+      setActiveActivity(activity)
+      setSidebarCollapsed(false)
     }
   }
 

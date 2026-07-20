@@ -14,6 +14,51 @@ const icon = join(__dirname, '../../renderer/public/Images/github.jpg')
 
 const xmlFilePath = join(app.getPath('temp'), 'temp_extensions.xml')
 
+// Register custom deep link protocol: xenithra://
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('xenithra', process.execPath, [path.resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient('xenithra')
+}
+
+function handleDeepLinkUrl(url) {
+  if (!url) return
+  console.log('[DeepLink] Received protocol URL:', url)
+  let token = ''
+  // Match xenithra://token:XYZ or xenithra://token=XYZ or xenithra://?token=XYZ
+  const match = url.match(/xenithra:\/\/(?:token:|\?token=|token=)?([^&\s]+)/i)
+  if (match) {
+    token = match[1]
+  }
+  const windows = BrowserWindow.getAllWindows()
+  if (windows.length > 0) {
+    const win = windows[0]
+    if (win.isMinimized()) win.restore()
+    win.focus()
+    win.webContents.send('deep-link-token', { url, token })
+  }
+}
+
+// Single Instance Lock for handling protocol links on Windows
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', (_event, commandLine) => {
+    const deepLinkUrl = commandLine.find(arg => arg.startsWith('xenithra://'))
+    if (deepLinkUrl) {
+      handleDeepLinkUrl(deepLinkUrl)
+    }
+  })
+}
+
+app.on('open-url', (event, url) => {
+  event.preventDefault()
+  handleDeepLinkUrl(url)
+})
+
 function parseExtensionsXml(xmlString) {
   const extensions = []
   const regex = /<extension\s+([^>]+)\s*\/>/g
@@ -150,6 +195,11 @@ function createWindow() {
 
   mainWindow.webContents.on('did-finish-load', () => {
     const args = process.argv
+    const deepLinkArg = args.find(arg => arg && arg.startsWith('xenithra://'))
+    if (deepLinkArg) {
+      handleDeepLinkUrl(deepLinkArg)
+    }
+
     const filePathArg = args.find(arg => {
       return arg && !arg.startsWith('--') && !arg.includes('node_modules') && !arg.includes('electron') &&
         (arg.endsWith('.js') || arg.endsWith('.html') || arg.endsWith('.css') || arg.endsWith('.py') || arg.endsWith('.c') || arg.endsWith('.cpp') || arg.endsWith('.cs') || arg.endsWith('.dart') || arg.endsWith('.json') || arg.endsWith('.md'))
@@ -393,7 +443,7 @@ async function readDirTree(dirPath) {
     const key = currentPath
     
     if (stat.isDirectory()) {
-      if (name === 'node_modules' || name === '.git' || name === 'dist' || name === 'out') {
+      if (name === 'node_modules' || name === 'dist' || name === 'out') {
         return null
       }
       let files
@@ -416,8 +466,8 @@ async function readDirTree(dirPath) {
     } else {
       let content = ''
       const ext = path.extname(currentPath).toLowerCase()
-      const textExtensions = ['.js', '.jsx', '.ts', '.tsx', '.py', '.c', '.cpp', '.cs', '.dart', '.html', '.css', '.json', '.md', '.txt']
-      if (textExtensions.includes(ext)) {
+      const textExtensions = ['.js', '.jsx', '.ts', '.tsx', '.py', '.c', '.cpp', '.cs', '.dart', '.html', '.css', '.json', '.md', '.txt', '.env', '.gitignore', '.yaml', '.yml', '.xml', '.sh', '']
+      if (textExtensions.includes(ext) || currentPath.includes('.git') || stat.size < 500000) {
         try {
           content = await fs.promises.readFile(currentPath, 'utf-8')
         } catch (e) {}

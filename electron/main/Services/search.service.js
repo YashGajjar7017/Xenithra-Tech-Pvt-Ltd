@@ -1,11 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 
-const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', 'out', 'build', '.vscode', '.idea'])
+const IGNORED_DIRS = new Set(['node_modules', 'dist', 'out', 'build'])
 const TEXT_EXTENSIONS = new Set([
   '.js', '.jsx', '.ts', '.tsx', '.json', '.html', '.css', '.scss', 
   '.py', '.c', '.cpp', '.h', '.hpp', '.cs', '.dart', '.md', '.txt', 
-  '.xml', '.env', '.yaml', '.yml', '.sql', '.sh'
+  '.xml', '.env', '.yaml', '.yml', '.sql', '.sh', '.gitignore', ''
 ])
 
 /**
