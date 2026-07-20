@@ -4,6 +4,11 @@ import fs from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { createRequire } from 'module'
 import { start } from './api.js'
+import { initTerminalSession, writeToTerminal, killTerminalSession, executeTerminalCommand } from './Services/terminal.service.js'
+import { startLiveServer, stopLiveServer, getLiveServerStatus } from './Services/liveServer.service.js'
+import { getGitInfo, cloneGitRepo, commitGitChanges, pushGitChanges, pullGitChanges, getGitFileDiff } from './Services/git.service.js'
+import { searchWorkspace } from './Services/search.service.js'
+import { predictInlineCompletion, generateLocalAIChatResponse } from './Services/localML.service.js'
 
 const icon = join(__dirname, '../../renderer/public/Images/github.jpg')
 
@@ -315,6 +320,40 @@ app.whenReady().then(() => {
       return false
     }
   })
+
+  // Terminal Session IPC Handlers
+  ipcMain.handle('terminal:init', async (event, cwd) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    return initTerminalSession(cwd, (data) => {
+      if (window && !window.isDestroyed()) {
+        window.webContents.send('terminal:data', data)
+      }
+    })
+  })
+
+  ipcMain.handle('terminal:write', (_event, input) => writeToTerminal(input))
+  ipcMain.handle('terminal:kill', () => killTerminalSession())
+  ipcMain.handle('terminal:execute', (_event, cmd, cwd) => executeTerminalCommand(cmd, cwd))
+
+  // Live Server IPC Handlers
+  ipcMain.handle('liveserver:start', (_event, rootPath, port) => startLiveServer(rootPath, port))
+  ipcMain.handle('liveserver:stop', () => stopLiveServer())
+  ipcMain.handle('liveserver:status', () => getLiveServerStatus())
+
+  // Git IPC Handlers
+  ipcMain.handle('git:info', (_event, workspacePath) => getGitInfo(workspacePath))
+  ipcMain.handle('git:clone', (_event, repoUrl, targetDir) => cloneGitRepo(repoUrl, targetDir))
+  ipcMain.handle('git:commit', (_event, workspacePath, message) => commitGitChanges(workspacePath, message))
+  ipcMain.handle('git:push', (_event, workspacePath) => pushGitChanges(workspacePath))
+  ipcMain.handle('git:pull', (_event, workspacePath) => pullGitChanges(workspacePath))
+  ipcMain.handle('git:diff', (_event, workspacePath, filePath) => getGitFileDiff(workspacePath, filePath))
+
+  // Search IPC Handlers
+  ipcMain.handle('search:workspace', (_event, workspacePath, query, options) => searchWorkspace(workspacePath, query, options))
+
+  // Local ML IPC Handlers
+  ipcMain.handle('ml:suggest', (_event, fullCode, lineIndex, lineContent, lang) => predictInlineCompletion(fullCode, lineIndex, lineContent, lang))
+  ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename) => generateLocalAIChatResponse(prompt, code, lang, filename))
 
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
 

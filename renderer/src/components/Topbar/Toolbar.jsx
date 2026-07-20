@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
+import CompilerLogo from '../ui/CompilerLogo'
 
 const Toolbar = ({ theme, setTheme }) => {
   const [selectedLang, setSelectedLang] = useState('Node.js')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [isLiveServerRunning, setIsLiveServerRunning] = useState(false)
+  const [liveServerPort, setLiveServerPort] = useState(5500)
   const langDropdownRef = useRef(null)
 
   const languages = ['C (GCC)', 'C++ (G++)', 'Python 3', 'Node.js', 'XML', 'Dot Net', 'Dart', 'Next.js']
@@ -16,6 +19,18 @@ const Toolbar = ({ theme, setTheme }) => {
     }
     window.addEventListener('change-language', handleLangSync)
     return () => window.removeEventListener('change-language', handleLangSync)
+  }, [])
+
+  // Check initial Live Server status
+  useEffect(() => {
+    if (window.api && typeof window.api.getLiveServerStatus === 'function') {
+      window.api.getLiveServerStatus().then(status => {
+        if (status) {
+          setIsLiveServerRunning(status.running)
+          if (status.port) setLiveServerPort(status.port)
+        }
+      }).catch(e => {})
+    }
   }, [])
 
   // Close dropdown on click outside
@@ -35,6 +50,23 @@ const Toolbar = ({ theme, setTheme }) => {
     window.dispatchEvent(new CustomEvent('change-language', { detail: { language: lang } }))
   }
 
+  const toggleLiveServer = async () => {
+    if (!window.api || typeof window.api.startLiveServer !== 'function') return
+    if (isLiveServerRunning) {
+      await window.api.stopLiveServer()
+      setIsLiveServerRunning(false)
+    } else {
+      const activeWorkspacePath = localStorage.getItem('activeWorkspacePath') || ''
+      const res = await window.api.startLiveServer(activeWorkspacePath, 5500)
+      if (res && res.success) {
+        setIsLiveServerRunning(true)
+        setLiveServerPort(res.port)
+        // Open browser
+        window.open(res.url, '_blank')
+      }
+    }
+  }
+
   const runCode = () => window.dispatchEvent(new CustomEvent('menu-run-code'))
   const debugCode = () => window.dispatchEvent(new CustomEvent('menu-debug-code'))
   const formatCode = () => window.dispatchEvent(new CustomEvent('menu-format-code'))
@@ -44,20 +76,24 @@ const Toolbar = ({ theme, setTheme }) => {
 
   return (
     <div className="toolbar" style={{
-      height: '32px',
+      height: '36px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 12px',
-      background: 'rgba(10, 16, 32, 0.45)',
+      background: 'rgba(10, 16, 32, 0.65)',
       borderBottom: '1px solid var(--panel-border)',
       zIndex: 5,
       backdropFilter: 'blur(12px)'
     }}>
-      {/* Left: Section label/info */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <i className="bx bx-play-circle" style={{ color: 'var(--accent-color)', fontSize: '14px' }}></i>
-        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Workspace Runner</span>
+      {/* Left: Compiler Brand Logo & Runner label */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <CompilerLogo size={22} showText={true} textStyle={{ transform: 'scale(0.85)', transformOrigin: 'left center' }} />
+        <span style={{ opacity: 0.3, color: '#fff' }}>|</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <i className="bx bx-play-circle" style={{ color: 'var(--accent-color)', fontSize: '13px' }}></i>
+          <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Runner Engine</span>
+        </div>
       </div>
 
       {/* Center: Primary Execution Control Actions */}
@@ -73,11 +109,11 @@ const Toolbar = ({ theme, setTheme }) => {
             fontWeight: 'bold',
             cursor: 'pointer',
             padding: '3px 10px',
-            height: '22px',
+            height: '24px',
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
-            boxShadow: '0 2px 8px rgba(0, 230, 118, 0.2)',
+            boxShadow: '0 2px 8px rgba(0, 230, 118, 0.25)',
             transition: 'transform 0.15s ease'
           }}
           onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
@@ -97,7 +133,7 @@ const Toolbar = ({ theme, setTheme }) => {
             fontWeight: '500',
             cursor: 'pointer',
             padding: '3px 8px',
-            height: '22px',
+            height: '24px',
             display: 'flex',
             alignItems: 'center',
             gap: '4px'
@@ -116,7 +152,7 @@ const Toolbar = ({ theme, setTheme }) => {
             fontSize: '11px',
             cursor: 'pointer',
             padding: '3px 8px',
-            height: '22px',
+            height: '24px',
             display: 'flex',
             alignItems: 'center',
             gap: '4px'
@@ -125,7 +161,40 @@ const Toolbar = ({ theme, setTheme }) => {
           ■ Stop
         </button>
 
-        <span style={{ opacity: 0.3, color: '#fff', margin: '0 4px' }}>|</span>
+        <span style={{ opacity: 0.3, color: '#fff', margin: '0 2px' }}>|</span>
+
+        {/* Live Server Toggle Button */}
+        <button 
+          onClick={toggleLiveServer}
+          title={isLiveServerRunning ? `Live Server running on http://localhost:${liveServerPort}. Click to stop.` : "Start Live Server for root index.html"}
+          style={{
+            background: isLiveServerRunning ? 'rgba(0, 255, 170, 0.15)' : 'rgba(255,255,255,0.06)',
+            border: isLiveServerRunning ? '1px solid #00ffaa' : '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '4px',
+            color: isLiveServerRunning ? '#00ffaa' : 'var(--text-main)',
+            fontSize: '11px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            padding: '3px 9px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            transition: 'all 0.2s ease',
+            boxShadow: isLiveServerRunning ? '0 0 10px rgba(0, 255, 170, 0.3)' : 'none'
+          }}
+        >
+          <span style={{ 
+            width: '6px', 
+            height: '6px', 
+            borderRadius: '50%', 
+            background: isLiveServerRunning ? '#00ffaa' : '#888',
+            boxShadow: isLiveServerRunning ? '0 0 6px #00ffaa' : 'none'
+          }}></span>
+          <span>⚡ Live Server{isLiveServerRunning ? `: :${liveServerPort}` : ''}</span>
+        </button>
+
+        <span style={{ opacity: 0.3, color: '#fff', margin: '0 2px' }}>|</span>
 
         {/* Formatting & Utilities */}
         <button 
@@ -138,12 +207,12 @@ const Toolbar = ({ theme, setTheme }) => {
             fontSize: '11px',
             cursor: 'pointer',
             padding: '3px 8px',
-            height: '22px',
+            height: '24px',
             display: 'flex',
             alignItems: 'center'
           }}
         >
-          {`{ }`} Format Code
+          {`{ }`} Format
         </button>
 
         <button 
@@ -158,18 +227,15 @@ const Toolbar = ({ theme, setTheme }) => {
             fontWeight: '500',
             cursor: 'pointer',
             padding: '3px 8px',
-            height: '22px',
+            height: '24px',
             display: 'flex',
             alignItems: 'center',
             gap: '4px'
           }}
         >
-          📦 Package Binary
+          📦 Package
         </button>
 
-        <span style={{ opacity: 0.3, color: '#fff', margin: '0 4px' }}>|</span>
-
-        {/* Sideways Editor Layout Control */}
         <button 
           onClick={splitEditor}
           title="Toggle Sideways Split Screen Editors"
@@ -181,26 +247,26 @@ const Toolbar = ({ theme, setTheme }) => {
             fontSize: '11px',
             cursor: 'pointer',
             padding: '3px 8px',
-            height: '22px',
+            height: '24px',
             display: 'flex',
             alignItems: 'center',
             gap: '4px'
           }}
         >
-          || Split Editor
+          || Split
         </button>
       </div>
 
       {/* Right: Language Selector Dropdown on the Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <div ref={langDropdownRef} className="lang-select" style={{ fontSize: '11px', gap: '6px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
-          <span>Environment:</span>
+          <span>Env:</span>
           <div className={`dropdown ${dropdownOpen ? 'open' : ''}`} style={{ position: 'relative' }}>
             <button className="dropdown-toggle" onClick={() => setDropdownOpen(!dropdownOpen)} style={{
               padding: '2px 8px',
               borderRadius: '4px',
               fontSize: '11px',
-              height: '22px',
+              height: '24px',
               display: 'flex',
               alignItems: 'center',
               background: 'rgba(255,255,255,0.06)',
@@ -214,7 +280,7 @@ const Toolbar = ({ theme, setTheme }) => {
             {dropdownOpen && (
               <div className="dropdown-menu" style={{
                 position: 'absolute',
-                top: '26px',
+                top: '28px',
                 right: 0,
                 background: 'rgba(10, 16, 32, 0.95)',
                 border: '1px solid var(--panel-border)',

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
+import Terminal from '../components/ui/Terminal'
+import InlineSuggestOverlay from '../components/ui/InlineSuggestOverlay'
 
 const EditorPage = () => {
   const [isSplit, setIsSplit] = useState(false)
@@ -63,6 +65,40 @@ const EditorPage = () => {
   ])
   const [formatRules, setFormatRules] = useState('replace:foo->bar\nreplace:console.log->logger.info')
 
+  // Ghost text & Breakpoint states
+  const [ghostText, setGhostText] = useState('')
+  const [breakpoints, setBreakpoints] = useState([])
+
+  const updateCodeWithML = async (newCode) => {
+    setCode(newCode)
+    const lines = newCode.split('\n')
+    const currentLineIdx = lines.length - 1
+    const currentLineContent = lines[currentLineIdx] || ''
+
+    if (window.api && typeof window.api.predictInlineCompletion === 'function') {
+      try {
+        const pred = await window.api.predictInlineCompletion(newCode, currentLineIdx, currentLineContent, selectedLanguage)
+        setGhostText(pred ? pred.suggestion : '')
+      } catch (e) {
+        setGhostText('')
+      }
+    }
+  }
+
+  const handleEditorKeyDown = (e) => {
+    if (e.key === 'Tab' && ghostText) {
+      e.preventDefault()
+      setCode(code + ghostText)
+      setGhostText('')
+    }
+  }
+
+  const toggleBreakpoint = (lineNum) => {
+    setBreakpoints(prev => 
+      prev.includes(lineNum) ? prev.filter(l => l !== lineNum) : [...prev, lineNum]
+    )
+  }
+
   const leftCodeAreaRef = useRef(null)
   const rightCodeAreaRef = useRef(null)
   const codeAreaRef = activePane === 'left' ? leftCodeAreaRef : rightCodeAreaRef
@@ -124,8 +160,12 @@ const EditorPage = () => {
       const json = await response.json()
       setChatMessages(prev => [...prev, { sender: 'ai', text: json.output }])
     } catch (err) {
-      console.error('AI chat failed:', err)
-      setChatMessages(prev => [...prev, { sender: 'ai', text: "Troubleshoot Service Error: Could not connect to the backend AI host. Please make sure the local Express server is running." }])
+      if (window.api && typeof window.api.generateLocalAIChat === 'function') {
+        const localReply = await window.api.generateLocalAIChat(prompt, code, selectedLanguage, activeTab)
+        setChatMessages(prev => [...prev, { sender: 'ai', text: localReply }])
+      } else {
+        setChatMessages(prev => [...prev, { sender: 'ai', text: "Xenithra Local AI Model active. Ready for diagnostics!" }])
+      }
     }
   }
 
@@ -857,74 +897,8 @@ const EditorPage = () => {
       />
 
       {/* Terminal View panel */}
-      <div className="terminal" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Terminal Header Tabs */}
-        <div className="terminal-tabs">
-          <div 
-            className={`terminal-tab ${activeTerminalTab === 'Problems' ? 'active' : ''}`}
-            onClick={() => setActiveTerminalTab('Problems')}
-          >
-            Problems
-          </div>
-          <div 
-            className={`terminal-tab ${activeTerminalTab === 'Output' ? 'active' : ''}`}
-            onClick={() => setActiveTerminalTab('Output')}
-          >
-            Output
-          </div>
-          <div 
-            className={`terminal-tab ${activeTerminalTab === 'Debug' ? 'active' : ''}`}
-            onClick={() => setActiveTerminalTab('Debug')}
-          >
-            Debug Console
-          </div>
-          <div 
-            className={`terminal-tab ${activeTerminalTab === 'Terminal' ? 'active' : ''}`}
-            onClick={() => setActiveTerminalTab('Terminal')}
-          >
-            Terminal
-          </div>
-        </div>
-
-        {/* Terminal Body Console log */}
-        <div 
-          className="terminal-body" 
-          ref={terminalBodyRef}
-          style={{
-            flex: 1,
-            padding: '12px',
-            overflowY: 'auto',
-            background: 'var(--terminal-bg)',
-            fontFamily: "'JetBrains Mono', Consolas, monospace",
-            fontSize: '12px',
-            lineHeight: '1.6',
-            color: 'var(--terminal-text)'
-          }}
-        >
-          {activeTerminalTab === 'Terminal' ? (
-            terminalLines.map((line, idx) => (
-              <div 
-                key={idx} 
-                style={{
-                  color: line.className === 'prompt' ? 'var(--accent-color)' : 
-                         line.className === 'error' ? '#ff5252' : 
-                         line.className === 'success' ? '#00e676' : 
-                         line.className === 'warning' ? '#ffd740' : 'var(--text-main)',
-                  whiteSpace: 'pre-wrap',
-                  marginBottom: '4px'
-                }}
-              >
-                {line.text}
-              </div>
-            ))
-          ) : activeTerminalTab === 'Problems' ? (
-            <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No problems have been detected in the workspace.</div>
-          ) : activeTerminalTab === 'Output' ? (
-            <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>[Xenithra Output Shell is operational]</div>
-          ) : (
-            <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>[Debugger console initialized]</div>
-          )}
-        </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Terminal isRunning={isRunning} />
       </div>
     </div>
   )

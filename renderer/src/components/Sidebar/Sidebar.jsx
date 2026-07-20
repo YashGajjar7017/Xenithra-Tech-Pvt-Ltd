@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import GitPanel from './GitPanel'
+import SearchPanel from './SearchPanel'
+import DebugPanel from '../ui/DebugPanel'
 
 const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
   const [loadedFolder, setLoadedFolder] = useState(null) // { name: '', path: '', tree: {} }
@@ -314,7 +317,13 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {activeActivity === 'extensions' ? (
+      {activeActivity === 'search' ? (
+        <SearchPanel />
+      ) : activeActivity === 'git' ? (
+        <GitPanel />
+      ) : activeActivity === 'debug' ? (
+        <DebugPanel activeFile={activeFile} />
+      ) : activeActivity === 'extensions' ? (
         /* Extensions Panel View */
         <div className="extensions-panel">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
