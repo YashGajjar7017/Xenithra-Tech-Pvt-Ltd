@@ -139,6 +139,7 @@ const EditorPage = () => {
   // Ghost text & Breakpoint states
   const [ghostText, setGhostText] = useState('')
   const [breakpoints, setBreakpoints] = useState([])
+  const [hoverInfo, setHoverInfo] = useState({ visible: false, symbol: '', type: '', value: '', line: 0, x: 0, y: 0 })
 
   const updateCodeWithML = async (newCode) => {
     setCode(newCode)
@@ -159,9 +160,181 @@ const EditorPage = () => {
   const handleEditorKeyDown = (e) => {
     if (e.key === 'Tab' && ghostText) {
       e.preventDefault()
+      const lines = code.split('\n')
+      const currentLineContent = lines[lines.length - 1] || ''
+
+      // Train ML Model with accepted completion
+      if (window.api && typeof window.api.trainML === 'function') {
+        window.api.trainML(currentLineContent, ghostText, selectedLanguage)
+      }
+
       setCode(code + ghostText)
       setGhostText('')
     }
+  }
+
+  // Ctrl + Click Go-to-Definition Jump Handler
+  const handleEditorClick = (e) => {
+    if (!e.ctrlKey && !e.metaKey) return
+    const target = e.target
+    if (!target || !target.value) return
+
+    const pos = target.selectionStart
+    const text = target.value
+
+    let start = pos
+    while (start > 0 && /[A-Za-z0-9_]/.test(text[start - 1])) {
+      start--
+    }
+    let end = pos
+    while (end < text.length && /[A-Za-z0-9_]/.test(text[end])) {
+      end++
+    }
+
+    const clickedWord = text.slice(start, end).trim()
+    if (!clickedWord || clickedWord.length < 2) return
+
+    const lines = text.split('\n')
+    const defIndex = lines.findIndex(l => 
+      l.includes(`function ${clickedWord}`) ||
+      l.includes(`def ${clickedWord}`) ||
+      l.includes(`class ${clickedWord}`) ||
+      l.includes(`const ${clickedWord}`) ||
+      l.includes(`let ${clickedWord}`) ||
+      l.includes(`var ${clickedWord}`)
+    )
+
+    if (defIndex !== -1) {
+      const charPos = lines.slice(0, defIndex).join('\n').length + (defIndex > 0 ? 1 : 0)
+      target.focus()
+      target.setSelectionRange(charPos, charPos + lines[defIndex].length)
+      
+      const lineHeight = 19.5
+      target.scrollTop = defIndex * lineHeight - 50
+
+      setTerminalLines(prev => [
+        ...prev,
+        { text: `[NAVIGATION] Ctrl+Click redirected to definition of '${clickedWord}' at line ${defIndex + 1}`, className: 'success' },
+        { text: 'xenithra@studio:~$', className: 'prompt' }
+      ])
+    }
+  }
+
+  // Hover Tooltip Event Handlers
+  const handleEditorMouseMove = (e) => {
+    const target = e.target
+    if (!target || !target.value) return
+
+    const rect = target.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+
+    const lineHeight = 19.5
+    const charWidth = 7.8
+    const lineIndex = Math.floor(y / lineHeight)
+    const colIndex = Math.floor(x / charWidth)
+
+    const lines = target.value.split('\n')
+    if (lineIndex < 0 || lineIndex >= lines.length) {
+      setHoverInfo({ visible: false })
+      return
+    }
+
+    const lineText = lines[lineIndex] || ''
+    const leftMatch = lineText.slice(0, colIndex).match(/[A-Za-z0-9_]+$/)
+    const rightMatch = lineText.slice(colIndex).match(/^[A-Za-z0-9_]+/)
+
+    const word = (leftMatch ? leftMatch[0] : '') + (rightMatch ? rightMatch[0] : '')
+    if (!word || word.length < 2) {
+      setHoverInfo({ visible: false })
+      return
+    }
+
+    let symbolType = 'variable'
+    let symbolValue = `(variable) ${word}`
+
+    const keywords = ['function', 'const', 'let', 'var', 'if', 'else', 'return', 'import', 'export', 'async', 'await', 'def', 'class', 'for', 'while']
+    if (keywords.includes(word)) {
+      symbolType = 'keyword'
+      symbolValue = `(keyword) ${word}`
+    } else {
+      const isFuncDef = target.value.includes(`function ${word}`) || target.value.includes(`def ${word}`)
+      const isFuncCall = lineText.includes(`${word}(`)
+      if (isFuncDef) {
+        symbolType = 'function declaration'
+        const defLine = lines.find(l => l.includes(`function ${word}`) || l.includes(`def ${word}`)) || ''
+        symbolValue = `(function) ${defLine.trim()}`
+      } else if (isFuncCall) {
+        symbolType = 'function call'
+        symbolValue = `(function call) ${word}(...)`
+      } else {
+        const assignLine = lines.find(l => l.includes(`${word} =`))
+        if (assignLine) {
+          symbolType = 'variable'
+          symbolValue = `(variable) ${assignLine.trim()}`
+        }
+      }
+    }
+
+    setHoverInfo({
+      visible: true,
+      symbol: word,
+      type: symbolType,
+      value: symbolValue,
+      line: lineIndex + 1,
+      x: e.clientX + 10,
+      y: e.clientY + 15
+    })
+  }
+
+  const handleEditorMouseLeave = () => {
+    setHoverInfo({ visible: false })
+  }
+
+  // Syntax Color Differentiation Renderer
+  const renderHighlightedCode = (text) => {
+    if (!text) return null
+    const lines = text.split('\n')
+    
+    return lines.map((line, lIdx) => {
+      const tokens = line.split(/(\s+|[{}()[\];,.:=+\-*/%&|^<>!~"'`#])/g)
+      
+      const lineElements = tokens.map((token, tIdx) => {
+        if (!token) return null
+        
+        if (token.startsWith('"') || token.startsWith("'") || token.startsWith('`')) {
+          return <span key={tIdx} style={{ color: '#ce9178' }}>{token}</span>
+        }
+        if (token.startsWith('//') || token.startsWith('#')) {
+          return <span key={tIdx} style={{ color: '#6a9955', fontStyle: 'italic' }}>{token}</span>
+        }
+        const keywords = ['function', 'const', 'let', 'var', 'if', 'else', 'return', 'import', 'export', 'from', 'default', 'async', 'await', 'def', 'class', 'for', 'while', 'try', 'catch', 'public', 'private', 'new', 'switch', 'case', 'typeof', 'void']
+        if (keywords.includes(token)) {
+          return <span key={tIdx} style={{ color: '#c586c0', fontWeight: 'bold' }}>{token}</span>
+        }
+        if (/^\d+$/.test(token) || token === 'true' || token === 'false' || token === 'null' || token === 'undefined') {
+          return <span key={tIdx} style={{ color: '#b5cea8' }}>{token}</span>
+        }
+        const nextToken = tokens[tIdx + 1] || ''
+        const prevToken = tokens[tIdx - 1] || ''
+        if (prevToken === 'function' || prevToken === 'def' || prevToken === 'class') {
+          return <span key={tIdx} style={{ color: '#dcdcaa', fontWeight: '600' }}>{token}</span>
+        }
+        if (nextToken.trim() === '(' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
+          return <span key={tIdx} style={{ color: '#61afef' }}>{token}</span>
+        }
+        if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
+          return <span key={tIdx} style={{ color: '#9cdcfe' }}>{token}</span>
+        }
+        return <span key={tIdx} style={{ color: 'var(--text-main)' }}>{token}</span>
+      })
+
+      return (
+        <div key={lIdx} style={{ height: '19.5px', whiteSpace: 'pre' }}>
+          {lineElements}
+        </div>
+      )
+    })
   }
 
   const toggleBreakpoint = (lineNum) => {
@@ -773,13 +946,36 @@ const EditorPage = () => {
                 })}
               </div>
 
-              <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex' }}>
+              <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex', overflow: 'hidden' }}>
+                {/* Syntax Color Highlighting Backdrop */}
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    padding: '10px',
+                    fontSize: '13px',
+                    lineHeight: '19.5px',
+                    fontFamily: "'JetBrains Mono', Consolas, monospace",
+                    pointerEvents: 'none',
+                    overflow: 'hidden',
+                    zIndex: 1
+                  }}
+                >
+                  {renderHighlightedCode(leftCode)}
+                </div>
+
                 <textarea
                   ref={leftCodeAreaRef}
                   className="code-area"
                   value={leftCode}
                   onChange={(e) => updateCodeWithML(e.target.value)}
                   onKeyDown={handleEditorKeyDown}
+                  onClick={handleEditorClick}
+                  onMouseMove={handleEditorMouseMove}
+                  onMouseLeave={handleEditorMouseLeave}
                   onFocus={() => setActivePane('left')}
                   style={{
                     padding: '10px',
@@ -787,15 +983,51 @@ const EditorPage = () => {
                     lineHeight: '19.5px',
                     fontFamily: "'JetBrains Mono', Consolas, monospace",
                     background: 'transparent',
-                    color: 'var(--text-main)',
+                    color: 'transparent',
+                    caretColor: 'var(--accent-color)',
                     border: 'none',
                     resize: 'none',
                     outline: 'none',
                     flex: 1,
                     height: '100%',
-                    overflowY: 'auto'
+                    overflowY: 'auto',
+                    zIndex: 2
                   }}
                 />
+
+                {/* Floating Hover Tooltip Popup for Functions & Variables */}
+                {hoverInfo.visible && (
+                  <div 
+                    style={{
+                      position: 'fixed',
+                      top: `${hoverInfo.y}px`,
+                      left: `${hoverInfo.x}px`,
+                      background: '#1e1e2e',
+                      border: '1px solid #00ffaa',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                      borderRadius: '6px',
+                      padding: '8px 12px',
+                      fontSize: '11px',
+                      fontFamily: "'JetBrains Mono', monospace",
+                      color: '#c9d1d9',
+                      zIndex: 9999,
+                      pointerEvents: 'none',
+                      maxWidth: '350px'
+                    }}
+                  >
+                    <div style={{ color: '#00ffaa', fontWeight: 'bold', marginBottom: '2px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+                      <span>{hoverInfo.symbol}</span>
+                      <span style={{ color: '#8b949e', fontSize: '10px' }}>Line {hoverInfo.line}</span>
+                    </div>
+                    <div style={{ color: '#58a6ff', fontSize: '10px', fontStyle: 'italic', marginBottom: '4px' }}>
+                      Type: {hoverInfo.type}
+                    </div>
+                    <div style={{ background: 'rgba(0,0,0,0.4)', padding: '4px 6px', borderRadius: '4px', color: '#ff79c6', wordBreak: 'break-all' }}>
+                      {hoverInfo.value}
+                    </div>
+                  </div>
+                )}
+
                 {ghostText && (
                   <div 
                     style={{

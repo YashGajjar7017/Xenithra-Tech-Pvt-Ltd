@@ -58,6 +58,7 @@ const api = {
 
   // Local ML API
   predictInlineCompletion: (fullCode, lineIndex, lineContent, lang) => ipcRenderer.invoke('ml:suggest', fullCode, lineIndex, lineContent, lang),
+  trainML: (prefix, completion, lang) => ipcRenderer.invoke('ml:train', prefix, completion, lang),
   generateLocalAIChat: (prompt, code, lang, filename) => ipcRenderer.invoke('ml:chat', prompt, code, lang, filename)
 }
 

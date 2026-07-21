@@ -9,7 +9,7 @@ import { createRequire } from 'module'
 import { exec } from 'child_process'
 import fs from 'fs'
 import { signUpUser, authenticateUser } from './Services/db.service.js'
-import { runCode, packageCode } from './compiler-engine/compiler.js'
+import { runCode, packageCode } from './code-runner/runner.js'
 
 dotenv.config()
 

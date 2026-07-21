@@ -3,6 +3,24 @@
  * Provides offline AI Chatbot intelligence and real-time inline ghost-text code completions.
  */
 
+// Dynamically learned ML completions cache trained from user typing sessions
+const ADAPTIVE_ML_MODEL_CACHE = {}
+
+/**
+ * Record and train ML model with user accepted line completion
+ * @param {string} prefix 
+ * @param {string} completion 
+ * @param {string} lang 
+ */
+export function trainLocalMLModel(prefix = '', completion = '', lang = 'Node.js') {
+  if (!prefix || !completion) return
+  const langKey = resolveLangKey(lang)
+  if (!ADAPTIVE_ML_MODEL_CACHE[langKey]) {
+    ADAPTIVE_ML_MODEL_CACHE[langKey] = {}
+  }
+  ADAPTIVE_ML_MODEL_CACHE[langKey][prefix.trim()] = completion
+}
+
 // Language common snippet dictionary
 const LANGUAGE_SNIPPETS = {
   javascript: {
@@ -56,6 +74,12 @@ export function predictInlineCompletion(fullCode = '', lineIndex = 0, lineConten
   if (!trimmed) return { suggestion: '', type: 'none' }
 
   const langKey = resolveLangKey(lang)
+  
+  // 0. Check Adaptive Trained ML Model Cache
+  if (ADAPTIVE_ML_MODEL_CACHE[langKey] && ADAPTIVE_ML_MODEL_CACHE[langKey][trimmed]) {
+    return { suggestion: ADAPTIVE_ML_MODEL_CACHE[langKey][trimmed], type: 'ml-trained' }
+  }
+
   const snippets = LANGUAGE_SNIPPETS[langKey] || LANGUAGE_SNIPPETS['javascript']
 
   // 1. Direct Keyword Snippet Match

@@ -8,9 +8,9 @@ import { initTerminalSession, writeToTerminal, killTerminalSession, executeTermi
 import { startLiveServer, stopLiveServer, getLiveServerStatus } from './Services/liveServer.service.js'
 import { getGitInfo, cloneGitRepo, commitGitChanges, pushGitChanges, pullGitChanges, getGitFileDiff } from './Services/git.service.js'
 import { searchWorkspace } from './Services/search.service.js'
-import { predictInlineCompletion, generateLocalAIChatResponse } from './Services/localML.service.js'
+import { predictInlineCompletion, generateLocalAIChatResponse, trainLocalMLModel } from './Services/localML.service.js'
 
-const icon = join(__dirname, '../../renderer/public/Images/github.jpg')
+const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
 
 const xmlFilePath = join(app.getPath('temp'), 'temp_extensions.xml')
 
@@ -182,8 +182,8 @@ function createWindow() {
       { role: 'help', submenu: [{ label: 'Learn More', click: () => shell.openExternal('https://electronjs.org') }] }
     ]
 
-    const menu = Menu.buildFromTemplate(template)
-    Menu.setApplicationMenu(menu)
+    Menu.setApplicationMenu(null)
+    mainWindow.setMenuBarVisibility(false)
   } catch (err) {
     console.warn('Could not set application menu:', err.message)
   }
@@ -404,6 +404,7 @@ app.whenReady().then(() => {
 
   // Local ML IPC Handlers
   ipcMain.handle('ml:suggest', (_event, fullCode, lineIndex, lineContent, lang) => predictInlineCompletion(fullCode, lineIndex, lineContent, lang))
+  ipcMain.handle('ml:train', (_event, prefix, completion, lang) => trainLocalMLModel(prefix, completion, lang))
   ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename) => generateLocalAIChatResponse(prompt, code, lang, filename))
 
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)

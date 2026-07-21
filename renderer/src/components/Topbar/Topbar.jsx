@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => {
   const [activeMenu, setActiveMenu] = useState(null) // 'file', 'edit', 'selection', 'view', 'run', 'help', 'theme', or null
   const [selectedLang, setSelectedLang] = useState('Node.js')
+  const [autoSave, setAutoSave] = useState(localStorage.getItem('autoSave') === 'true')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState('')
   const [showPalette, setShowPalette] = useState(false)
@@ -132,15 +133,64 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
     setActiveMenu(prev => prev === menuName ? null : menuName)
   }
 
+  // Single Alt key listener to prevent native menu bar / popup toggle
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Alt') {
+        e.preventDefault()
+        setActiveMenu(null)
+      }
+    }
+    const handleKeyUp = (e) => {
+      if (e.key === 'Alt') {
+        e.preventDefault()
+        setActiveMenu(null)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
+
   // File Menu Handlers
   const handleFileNew = (e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-file-new'))
   }
 
+  const handleFileNewDialog = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    const fname = prompt('Enter new file name:', 'script.js')
+    if (fname) {
+      window.dispatchEvent(new CustomEvent('open-file', {
+        detail: { filename: fname, code: `// New File: ${fname}\n`, path: '' }
+      }))
+    }
+  }
+
+  const handleNewWindow = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    window.open(window.location.href, '_blank')
+  }
+
+  const handleNewWindowWithProfile = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    const profile = prompt('Select profile (Default, Development, Data Science, Fullstack):', 'Development')
+    if (profile) {
+      alert(`Launched new window workspace with '${profile}' profile!`)
+      window.open(window.location.href, '_blank')
+    }
+  }
+
   const handleFileOpen = async (e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     setActiveMenu(null)
     try {
       const file = await window.api.openFileDialog()
@@ -155,7 +205,7 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
   }
 
   const handleOpenFolder = async (e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     setActiveMenu(null)
     try {
       const result = await window.api.openDirectoryDialog()
@@ -169,26 +219,100 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
     }
   }
 
+  const handleOpenWorkspaceFromFile = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    handleOpenFolder()
+  }
+
+  const handleOpenRecent = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    alert('Recent Files:\n- index.html\n- main.js\n- app.py\n- styles.css')
+  }
+
+  const handleAddFolderToWorkspace = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    handleOpenFolder()
+  }
+
+  const handleSaveWorkspaceAs = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    window.dispatchEvent(new CustomEvent('menu-file-saveas'))
+  }
+
+  const handleDuplicateWorkspace = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    window.open(window.location.href, '_blank')
+  }
+
   const handleCloseFolder = (e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('close-directory'))
   }
 
   const handleFileSave = (e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-file-save'))
   }
 
   const handleFileSaveAs = (e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     setActiveMenu(null)
     window.dispatchEvent(new CustomEvent('menu-file-saveas'))
   }
 
+  const handleSaveAll = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    window.dispatchEvent(new CustomEvent('menu-file-save'))
+  }
+
+  const handleShare = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    navigator.clipboard.writeText(window.location.href)
+    alert('Workspace share link copied to clipboard!')
+  }
+
+  const handleToggleAutoSave = (e) => {
+    if (e) e.stopPropagation()
+    const nextVal = !autoSave
+    setAutoSave(nextVal)
+    localStorage.setItem('autoSave', nextVal ? 'true' : 'false')
+    window.dispatchEvent(new CustomEvent('toggle-autosave', { detail: { enabled: nextVal } }))
+  }
+
+  const handlePreferences = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu('theme')
+  }
+
+  const handleRevertFile = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    window.dispatchEvent(new CustomEvent('menu-revert-file'))
+  }
+
+  const handleCloseEditor = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    window.dispatchEvent(new CustomEvent('menu-close-editor'))
+  }
+
+  const handleCloseWindow = (e) => {
+    if (e) e.stopPropagation()
+    setActiveMenu(null)
+    handleFileExit()
+  }
+
   const handleFileExit = (e) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     setActiveMenu(null)
     if (window.api && typeof window.api.closeWindow === 'function') {
       window.api.closeWindow()
@@ -314,22 +438,56 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
         >
           File
           {activeMenu === 'file' && (
-            <div className="dropdown-menu">
+            <div className="dropdown-menu" style={{ width: '270px' }}>
               <button onClick={handleFileNew}>
-                <span>New File</span>
+                <span>New Text File</span>
                 <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+N</span>
               </button>
+              <button onClick={handleFileNewDialog}>
+                <span>New File...</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Alt+Win+N</span>
+              </button>
+              <button onClick={handleNewWindow}>
+                <span>New Window</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Shift+N</span>
+              </button>
+              <button onClick={handleNewWindowWithProfile} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>New Window with Profile</span>
+                <span style={{ opacity: 0.5 }}>›</span>
+              </button>
+
+              <hr />
+
               <button onClick={handleFileOpen}>
                 <span>Open File...</span>
                 <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+O</span>
               </button>
               <button onClick={handleOpenFolder}>
                 <span>Open Folder...</span>
-                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Shift+O</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+K Ctrl+O</span>
               </button>
-              <button onClick={handleCloseFolder}>
-                <span>Close Folder</span>
+              <button onClick={handleOpenWorkspaceFromFile}>
+                <span>Open Workspace from File...</span>
               </button>
+              <button onClick={handleOpenRecent} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Open Recent</span>
+                <span style={{ opacity: 0.5 }}>›</span>
+              </button>
+
+              <hr />
+
+              <button onClick={handleAddFolderToWorkspace}>
+                <span>Add Folder to Workspace...</span>
+              </button>
+              <button onClick={handleSaveWorkspaceAs}>
+                <span>Save Workspace As...</span>
+              </button>
+              <button onClick={handleDuplicateWorkspace}>
+                <span>Duplicate Workspace</span>
+              </button>
+
+              <hr />
+
               <button onClick={handleFileSave}>
                 <span>Save</span>
                 <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+S</span>
@@ -338,10 +496,51 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
                 <span>Save As...</span>
                 <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Shift+S</span>
               </button>
+              <button onClick={handleSaveAll}>
+                <span>Save All</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+K S</span>
+              </button>
+
               <hr />
-              <button onClick={handleFileExit}>
-                <span>Exit Studio</span>
+
+              <button onClick={handleShare} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Share</span>
+                <span style={{ opacity: 0.5 }}>›</span>
+              </button>
+
+              <hr />
+
+              <button onClick={handleToggleAutoSave} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Auto Save</span>
+                {autoSave && <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>✓</span>}
+              </button>
+              <button onClick={handlePreferences} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Preferences</span>
+                <span style={{ opacity: 0.5 }}>›</span>
+              </button>
+
+              <hr />
+
+              <button onClick={handleRevertFile}>
+                <span>Revert File</span>
+              </button>
+              <button onClick={handleCloseEditor}>
+                <span>Close Editor</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+F4</span>
+              </button>
+              <button onClick={handleCloseFolder}>
+                <span>Close Folder</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+K F</span>
+              </button>
+              <button onClick={handleCloseWindow}>
+                <span>Close Window</span>
                 <span style={{ opacity: 0.4, fontSize: '10px' }}>Alt+F4</span>
+              </button>
+
+              <hr />
+
+              <button onClick={handleFileExit}>
+                <span>Exit</span>
               </button>
             </div>
           )}
