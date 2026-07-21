@@ -10,6 +10,7 @@ import { getGitInfo, cloneGitRepo, commitGitChanges, pushGitChanges, pullGitChan
 import { searchWorkspace } from './Services/search.service.js'
 import { predictInlineCompletion, generateLocalAIChatResponse, trainLocalMLModel } from './Services/localML.service.js'
 import { getDockerContainers, getDockerImages, startDockerContainer, stopDockerContainer, restartDockerContainer, getDockerLogs } from './Services/docker.service.js'
+import { createGitHubGist, createRtcRoom, joinRtcRoom, syncRtcCode } from './Services/collaboration.service.js'
 
 const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
 
@@ -451,6 +452,12 @@ app.whenReady().then(() => {
       return { success: false, error: err.message }
     }
   })
+
+  // GitHub Gist & RTC IPC Handlers
+  ipcMain.handle('github:shareGist', (_event, filename, content, desc, isPublic, token) => createGitHubGist(filename, content, desc, isPublic, token))
+  ipcMain.handle('rtc:createRoom', (_event, initialCode) => createRtcRoom('host_user', initialCode))
+  ipcMain.handle('rtc:joinRoom', (_event, roomCode) => joinRtcRoom('peer_user', roomCode))
+  ipcMain.handle('rtc:sync', (_event, roomCode, text, pos) => syncRtcCode(roomCode, text, pos))
 
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
 

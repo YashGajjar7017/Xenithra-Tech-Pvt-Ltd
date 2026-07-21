@@ -71,7 +71,13 @@ const api = {
 
   // Workspace XML API
   saveWorkspaceXml: (data) => ipcRenderer.invoke('workspace:saveXml', data),
-  loadWorkspaceXml: () => ipcRenderer.invoke('workspace:loadXml')
+  loadWorkspaceXml: () => ipcRenderer.invoke('workspace:loadXml'),
+
+  // Collaboration API
+  shareGitHubGist: (filename, content, desc, isPublic, token) => ipcRenderer.invoke('github:shareGist', filename, content, desc, isPublic, token),
+  createRtcRoom: (initialCode) => ipcRenderer.invoke('rtc:createRoom', initialCode),
+  joinRtcRoom: (roomCode) => ipcRenderer.invoke('rtc:joinRoom', roomCode),
+  syncRtcCode: (roomCode, text, pos) => ipcRenderer.invoke('rtc:sync', roomCode, text, pos)
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).

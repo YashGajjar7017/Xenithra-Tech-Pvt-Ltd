@@ -78,6 +78,8 @@ const Toolbar = ({ theme, setTheme }) => {
   const stopCode = () => window.dispatchEvent(new CustomEvent('menu-stop-code'))
   const packageCode = () => window.dispatchEvent(new CustomEvent('menu-package-code'))
   const splitEditor = () => window.dispatchEvent(new CustomEvent('menu-split-editor'))
+  const shareGist = () => window.dispatchEvent(new CustomEvent('menu-share-gist'))
+  const liveShare = () => window.dispatchEvent(new CustomEvent('menu-live-share'))
 
   return (
     <div className="toolbar" style={{
@@ -259,6 +261,48 @@ const Toolbar = ({ theme, setTheme }) => {
           }}
         >
           || Split
+        </button>
+
+        <button 
+          onClick={shareGist}
+          title="Share code via GitHub Gist"
+          style={{
+            background: 'rgba(216, 180, 254, 0.15)',
+            border: '1px solid #d8b4fe',
+            borderRadius: '4px',
+            color: '#d8b4fe',
+            fontSize: '11px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            padding: '3px 8px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          🐙 Gist
+        </button>
+
+        <button 
+          onClick={liveShare}
+          title="Start or Join 2-Player Realtime RTC Live Coding Session"
+          style={{
+            background: 'rgba(0, 255, 170, 0.15)',
+            border: '1px solid #00ffaa',
+            borderRadius: '4px',
+            color: '#00ffaa',
+            fontSize: '11px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            padding: '3px 8px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          🌐 Live Share
         </button>
       </div>
 

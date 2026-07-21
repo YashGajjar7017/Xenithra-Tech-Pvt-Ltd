@@ -305,8 +305,21 @@ const EditorPage = () => {
   }
 
   const [scrollTop, setScrollTop] = useState(0)
+  const tabsContainerRef = useRef(null)
 
-  // Syntax Color Differentiation Renderer with Windowed Line Virtualization
+  const scrollTabsLeft = () => {
+    if (tabsContainerRef.current) {
+      tabsContainerRef.current.scrollBy({ left: -160, behavior: 'smooth' })
+    }
+  }
+
+  const scrollTabsRight = () => {
+    if (tabsContainerRef.current) {
+      tabsContainerRef.current.scrollBy({ left: 160, behavior: 'smooth' })
+    }
+  }
+
+  // Syntax Color Differentiation Renderer matching Image 2
   const renderHighlightedCode = (text, isMinimap = false) => {
     if (!text) return null
     const lines = text.split('\n')
@@ -343,10 +356,13 @@ const EditorPage = () => {
         const nextToken = tokens[tIdx + 1] || ''
         const prevToken = tokens[tIdx - 1] || ''
         if (prevToken === 'function' || prevToken === 'def' || prevToken === 'class') {
-          return <span key={tIdx} style={{ color: '#dcdcaa', fontWeight: '600' }}>{token}</span>
+          return <span key={tIdx} style={{ color: '#ff79c6', fontWeight: 'bold' }}>{token}</span>
         }
         if (nextToken.trim() === '(' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
-          return <span key={tIdx} style={{ color: '#61afef' }}>{token}</span>
+          return <span key={tIdx} style={{ color: '#ff79c6', fontWeight: '500' }}>{token}</span>
+        }
+        if (nextToken.trim() === ':' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
+          return <span key={tIdx} style={{ color: '#58a6ff' }}>{token}</span>
         }
         if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
           return <span key={tIdx} style={{ color: '#9cdcfe' }}>{token}</span>
@@ -355,7 +371,7 @@ const EditorPage = () => {
       })
 
       return (
-        <div key={lIdx} style={{ height: '19.5px', whiteSpace: 'pre' }}>
+        <div key={lIdx} style={{ height: '19.5px', lineHeight: '19.5px', whiteSpace: 'pre' }}>
           {lineElements}
         </div>
       )
@@ -895,8 +911,18 @@ const EditorPage = () => {
         {!isSplit ? (
           /* Single Pane Editor */
           <div className="editor-pane active" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', flex: 1, overflowX: 'auto' }}>
+            <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)', position: 'relative' }}>
+              
+              {/* Left Scroll Navigation Button */}
+              <button 
+                onClick={scrollTabsLeft}
+                style={{ background: 'transparent', border: 'none', color: '#8b949e', padding: '0 6px', height: '30px', cursor: 'pointer', fontSize: '10px', zIndex: 5 }}
+                title="Scroll Tabs Left"
+              >
+                ◀
+              </button>
+
+              <div ref={tabsContainerRef} style={{ display: 'flex', alignItems: 'center', flex: 1, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {openTabs.map(tab => {
                   const isDirty = tab.code !== (tab.savedCode !== undefined ? tab.savedCode : tab.code)
                   return (
@@ -916,7 +942,7 @@ const EditorPage = () => {
                         color: tab.id === activeTabId ? 'var(--accent-color)' : 'var(--text-muted)',
                         borderTop: tab.id === activeTabId ? '2px solid var(--accent-color)' : '2px solid transparent',
                         whiteSpace: 'nowrap',
-                        minWidth: '100px',
+                        minWidth: '110px',
                         maxWidth: '200px'
                       }}
                     >
@@ -936,7 +962,16 @@ const EditorPage = () => {
                     </div>
                   )
                 })}
-                <button 
+              </div>
+
+              {/* Right Scroll Navigation Button */}
+              <button 
+                onClick={scrollTabsRight}
+                style={{ background: 'transparent', border: 'none', color: '#8b949e', padding: '0 6px', height: '30px', cursor: 'pointer', fontSize: '10px', zIndex: 5 }}
+                title="Scroll Tabs Right"
+              >
+                ▶
+              </button>     <button 
                   onClick={handleNewTab} 
                   style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '4px 10px', cursor: 'pointer', fontSize: '16px' }}
                   title="New File Tab"

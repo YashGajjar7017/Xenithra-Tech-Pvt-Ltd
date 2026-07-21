@@ -7,6 +7,8 @@ import Toolbar from './components/Topbar/Toolbar'
 import Sidebar from './components/Sidebar/Sidebar'
 import SettingsModal from './components/ui/SettingsModal'
 import KeyboardShortcutsModal from './components/ui/KeyboardShortcutsModal'
+import ShareGistModal from './components/ui/ShareGistModal'
+import LiveShareModal from './components/ui/LiveShareModal'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
@@ -144,16 +146,43 @@ const MainLayout = ({
   const [activeActivity, setActiveActivity] = useState('explorer')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isKeybindingsOpen, setIsKeybindingsOpen] = useState(false)
+  const [isShareGistOpen, setIsShareGistOpen] = useState(false)
+  const [isLiveShareOpen, setIsLiveShareOpen] = useState(false)
 
   useEffect(() => {
     const handleOpenSettings = () => setIsSettingsOpen(true)
     const handleOpenKeybindings = () => setIsKeybindingsOpen(true)
+    const handleShareGist = () => setIsShareGistOpen(true)
+    const handleLiveShare = () => setIsLiveShareOpen(true)
+
     window.addEventListener('open-settings', handleOpenSettings)
     window.addEventListener('open-keybindings', handleOpenKeybindings)
+    window.addEventListener('menu-share-gist', handleShareGist)
+    window.addEventListener('menu-live-share', handleLiveShare)
+
     return () => {
       window.removeEventListener('open-settings', handleOpenSettings)
       window.removeEventListener('open-keybindings', handleOpenKeybindings)
+      window.removeEventListener('menu-share-gist', handleShareGist)
+      window.removeEventListener('menu-live-share', handleLiveShare)
     }
+  }, [])
+
+  // Ctrl+K Ctrl+S shortcut listener
+  useEffect(() => {
+    let ctrlKPressed = false
+    const handleGlobalKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        ctrlKPressed = true
+        setTimeout(() => { ctrlKPressed = false }, 1200)
+      } else if (ctrlKPressed && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        ctrlKPressed = false
+        setIsKeybindingsOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
   }, [])
 
   // Auth Redirect Guard (Temporarily bypassed)
@@ -344,6 +373,16 @@ const MainLayout = ({
       <KeyboardShortcutsModal 
         isOpen={isKeybindingsOpen} 
         onClose={() => setIsKeybindingsOpen(false)} 
+      />
+
+      <ShareGistModal 
+        isOpen={isShareGistOpen} 
+        onClose={() => setIsShareGistOpen(false)} 
+      />
+
+      <LiveShareModal 
+        isOpen={isLiveShareOpen} 
+        onClose={() => setIsLiveShareOpen(false)} 
       />
     </div>
   )
