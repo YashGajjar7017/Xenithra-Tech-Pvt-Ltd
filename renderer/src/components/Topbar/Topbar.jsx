@@ -290,7 +290,8 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
 
   const handlePreferences = (e) => {
     if (e) e.stopPropagation()
-    setActiveMenu('theme')
+    setActiveMenu(null)
+    window.dispatchEvent(new CustomEvent('open-settings'))
   }
 
   const handleRevertFile = (e) => {

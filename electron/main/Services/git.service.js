@@ -151,8 +151,21 @@ export async function commitGitChanges(workspacePath, message) {
 export async function pushGitChanges(workspacePath) {
   const targetDir = workspacePath || process.cwd()
   try {
-    const output = await runGitCmd('git push', targetDir)
-    return { success: true, output }
+    let currentBranch = 'main'
+    try {
+      currentBranch = await runGitCmd('git rev-parse --abbrev-ref HEAD', targetDir)
+    } catch (e) {}
+
+    try {
+      const output = await runGitCmd('git push', targetDir)
+      return { success: true, output: output || 'Pushed successfully.' }
+    } catch (err) {
+      if (err.message.includes('no upstream branch') || err.message.includes('--set-upstream') || err.message.includes('has no upstream')) {
+        const output = await runGitCmd(`git push -u origin ${currentBranch}`, targetDir)
+        return { success: true, output: output || `Pushed and set upstream to origin/${currentBranch}` }
+      }
+      throw err
+    }
   } catch (err) {
     return { success: false, error: err.message }
   }
@@ -165,8 +178,18 @@ export async function pushGitChanges(workspacePath) {
 export async function pullGitChanges(workspacePath) {
   const targetDir = workspacePath || process.cwd()
   try {
-    const output = await runGitCmd('git pull', targetDir)
-    return { success: true, output }
+    let currentBranch = 'main'
+    try {
+      currentBranch = await runGitCmd('git rev-parse --abbrev-ref HEAD', targetDir)
+    } catch (e) {}
+
+    try {
+      const output = await runGitCmd('git pull', targetDir)
+      return { success: true, output: output || 'Pulled changes successfully.' }
+    } catch (err) {
+      const output = await runGitCmd(`git pull origin ${currentBranch}`, targetDir)
+      return { success: true, output: output || 'Pulled from origin successfully.' }
+    }
   } catch (err) {
     return { success: false, error: err.message }
   }

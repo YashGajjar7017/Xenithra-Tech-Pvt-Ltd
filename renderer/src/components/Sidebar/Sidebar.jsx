@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import GitPanel from './GitPanel'
 import SearchPanel from './SearchPanel'
 import DebugPanel from '../ui/DebugPanel'
+import DockerPanel from '../ui/DockerPanel'
 
 const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
   const [loadedFolder, setLoadedFolder] = useState(null) // { name: '', path: '', tree: {} }
@@ -348,6 +349,8 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
         <GitPanel />
       ) : activeActivity === 'debug' ? (
         <DebugPanel activeFile={activeFile} />
+      ) : activeActivity === 'docker' ? (
+        <DockerPanel />
       ) : activeActivity === 'settings' ? (
         <div style={{ padding: '12px', color: 'var(--text-main)', fontSize: '12px', height: '100%', overflowY: 'auto' }}>
           <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.05em', marginBottom: '12px', color: 'var(--accent-color)' }}>

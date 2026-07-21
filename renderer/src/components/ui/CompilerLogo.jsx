@@ -25,10 +25,14 @@ const CompilerLogo = ({ size = 28, showText = true, textStyle = {} }) => {
           }}
         />
 
-        {/* Core App Logo Image Emblem */}
+        {/* Core App Logo Image Emblem with Electron Atom fallback */}
         <img 
-          src="Images/app_logo.png" 
+          src="/Images/app_logo.png" 
           alt="Xenithra App Logo"
+          onError={(e) => {
+            e.target.style.display = 'none'
+            if (e.target.nextSibling) e.target.nextSibling.style.display = 'block'
+          }}
           style={{ 
             position: 'relative', 
             zIndex: 2, 
@@ -38,6 +42,17 @@ const CompilerLogo = ({ size = 28, showText = true, textStyle = {} }) => {
             objectFit: 'cover' 
           }} 
         />
+        <svg 
+          viewBox="0 0 24 24" 
+          width={size} 
+          height={size} 
+          style={{ display: 'none', position: 'relative', zIndex: 2 }}
+        >
+          <ellipse cx="12" cy="12" rx="10" ry="4" fill="none" stroke="#00e5ff" strokeWidth="1.5" transform="rotate(30 12 12)" />
+          <ellipse cx="12" cy="12" rx="10" ry="4" fill="none" stroke="#00e5ff" strokeWidth="1.5" transform="rotate(-30 12 12)" />
+          <ellipse cx="12" cy="12" rx="10" ry="4" fill="none" stroke="#00e5ff" strokeWidth="1.5" transform="rotate(90 12 12)" />
+          <circle cx="12" cy="12" r="2.5" fill="#00ffaa" />
+        </svg>
       </div>
 
       {showText && (

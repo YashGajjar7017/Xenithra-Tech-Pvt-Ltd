@@ -347,9 +347,22 @@ const EditorPage = () => {
   }
 
   const leftCodeAreaRef = useRef(null)
+  const leftLineNumbersRef = useRef(null)
+  const leftHighlightRef = useRef(null)
   const rightCodeAreaRef = useRef(null)
   const codeAreaRef = activePane === 'left' ? leftCodeAreaRef : rightCodeAreaRef
   const terminalBodyRef = useRef(null)
+
+  const handleLeftScroll = (e) => {
+    const { scrollTop, scrollLeft } = e.target
+    if (leftHighlightRef.current) {
+      leftHighlightRef.current.scrollTop = scrollTop
+      leftHighlightRef.current.scrollLeft = scrollLeft
+    }
+    if (leftLineNumbersRef.current) {
+      leftLineNumbersRef.current.scrollTop = scrollTop
+    }
+  }
 
   // Listen to window size and set initial 55% height
   useEffect(() => {
@@ -916,7 +929,7 @@ const EditorPage = () => {
             </div>
             
             <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-              <div className="line-numbers" style={{ userSelect: 'none' }}>
+              <div ref={leftLineNumbersRef} className="line-numbers" style={{ userSelect: 'none', overflow: 'hidden' }}>
                 {Array.from({ length: getLineCount(leftCode) }).map((_, i) => {
                   const lineNum = i + 1
                   const isBreakpoint = (breakpoints[activeTabId] || []).includes(lineNum)
@@ -947,8 +960,9 @@ const EditorPage = () => {
               </div>
 
               <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex', overflow: 'hidden' }}>
-                {/* Syntax Color Highlighting Backdrop */}
+                {/* Syntax Color Highlighting Backdrop Layer */}
                 <div 
+                  ref={leftHighlightRef}
                   style={{
                     position: 'absolute',
                     top: 0,
@@ -973,6 +987,7 @@ const EditorPage = () => {
                   value={leftCode}
                   onChange={(e) => updateCodeWithML(e.target.value)}
                   onKeyDown={handleEditorKeyDown}
+                  onScroll={handleLeftScroll}
                   onClick={handleEditorClick}
                   onMouseMove={handleEditorMouseMove}
                   onMouseLeave={handleEditorMouseLeave}
@@ -991,6 +1006,7 @@ const EditorPage = () => {
                     flex: 1,
                     height: '100%',
                     overflowY: 'auto',
+                    overflowX: 'auto',
                     zIndex: 2
                   }}
                 />
@@ -1048,6 +1064,25 @@ const EditorPage = () => {
                     💡 Auto-Suggest (Press Tab): <span style={{ opacity: 0.85, fontStyle: 'italic' }}>{ghostText}</span>
                   </div>
                 )}
+              </div>
+
+              {/* VS Code Style Code Minimap Column */}
+              <div 
+                style={{
+                  width: '90px',
+                  background: 'rgba(0,0,0,0.3)',
+                  borderLeft: '1px solid var(--panel-border)',
+                  overflow: 'hidden',
+                  userSelect: 'none',
+                  padding: '4px 2px',
+                  fontSize: '2px',
+                  lineHeight: '3px',
+                  fontFamily: "'JetBrains Mono', Consolas, monospace",
+                  opacity: 0.75,
+                  pointerEvents: 'none'
+                }}
+              >
+                {renderHighlightedCode(leftCode)}
               </div>
             </div>
           </div>

@@ -5,6 +5,7 @@ import 'boxicons/css/boxicons.min.css'
 import Topbar from './components/Topbar/Topbar'
 import Toolbar from './components/Topbar/Toolbar'
 import Sidebar from './components/Sidebar/Sidebar'
+import SettingsModal from './components/ui/SettingsModal'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
@@ -140,6 +141,13 @@ const MainLayout = ({
   const [filename, setFilename] = useState('index.html')
   const [isResizingSidebar, setIsResizingSidebar] = useState(false)
   const [activeActivity, setActiveActivity] = useState('explorer')
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
+  useEffect(() => {
+    const handleOpenSettings = () => setIsSettingsOpen(true)
+    window.addEventListener('open-settings', handleOpenSettings)
+    return () => window.removeEventListener('open-settings', handleOpenSettings)
+  }, [])
 
   // Auth Redirect Guard (Temporarily bypassed)
   // useEffect(() => {
@@ -266,10 +274,17 @@ const MainLayout = ({
           >
             <i className="bx bx-extension" style={{ fontSize: '20px' }}></i>
           </div>
+          <div 
+            className={`activity-icon ${activeActivity === 'docker' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('docker')}
+            title="Docker Container Manager"
+          >
+            <span style={{ fontSize: '18px' }}>🐳</span>
+          </div>
           <div style={{ flex: 1 }}></div>
           <div 
             className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('settings')}
+            onClick={() => setIsSettingsOpen(true)}
             title="Settings Control"
           >
             <i className="bx bx-cog" style={{ fontSize: '20px' }}></i>
@@ -311,6 +326,13 @@ const MainLayout = ({
           <span style={{ color: 'var(--accent-color)' }}>GLM-4 Connection: Active</span>
         </div>
       </div>
+
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        theme={theme} 
+        setTheme={setTheme} 
+      />
     </div>
   )
 }

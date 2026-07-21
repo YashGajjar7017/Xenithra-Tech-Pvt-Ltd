@@ -59,7 +59,15 @@ const api = {
   // Local ML API
   predictInlineCompletion: (fullCode, lineIndex, lineContent, lang) => ipcRenderer.invoke('ml:suggest', fullCode, lineIndex, lineContent, lang),
   trainML: (prefix, completion, lang) => ipcRenderer.invoke('ml:train', prefix, completion, lang),
-  generateLocalAIChat: (prompt, code, lang, filename) => ipcRenderer.invoke('ml:chat', prompt, code, lang, filename)
+  generateLocalAIChat: (prompt, code, lang, filename) => ipcRenderer.invoke('ml:chat', prompt, code, lang, filename),
+
+  // Docker API
+  getDockerContainers: () => ipcRenderer.invoke('docker:containers'),
+  getDockerImages: () => ipcRenderer.invoke('docker:images'),
+  startDockerContainer: (id) => ipcRenderer.invoke('docker:start', id),
+  stopDockerContainer: (id) => ipcRenderer.invoke('docker:stop', id),
+  restartDockerContainer: (id) => ipcRenderer.invoke('docker:restart', id),
+  getDockerLogs: (id) => ipcRenderer.invoke('docker:logs', id)
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).

@@ -9,6 +9,7 @@ import { startLiveServer, stopLiveServer, getLiveServerStatus } from './Services
 import { getGitInfo, cloneGitRepo, commitGitChanges, pushGitChanges, pullGitChanges, getGitFileDiff } from './Services/git.service.js'
 import { searchWorkspace } from './Services/search.service.js'
 import { predictInlineCompletion, generateLocalAIChatResponse, trainLocalMLModel } from './Services/localML.service.js'
+import { getDockerContainers, getDockerImages, startDockerContainer, stopDockerContainer, restartDockerContainer, getDockerLogs } from './Services/docker.service.js'
 
 const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
 
@@ -406,6 +407,14 @@ app.whenReady().then(() => {
   ipcMain.handle('ml:suggest', (_event, fullCode, lineIndex, lineContent, lang) => predictInlineCompletion(fullCode, lineIndex, lineContent, lang))
   ipcMain.handle('ml:train', (_event, prefix, completion, lang) => trainLocalMLModel(prefix, completion, lang))
   ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename) => generateLocalAIChatResponse(prompt, code, lang, filename))
+
+  // Docker IPC Handlers
+  ipcMain.handle('docker:containers', () => getDockerContainers())
+  ipcMain.handle('docker:images', () => getDockerImages())
+  ipcMain.handle('docker:start', (_event, id) => startDockerContainer(id))
+  ipcMain.handle('docker:stop', (_event, id) => stopDockerContainer(id))
+  ipcMain.handle('docker:restart', (_event, id) => restartDockerContainer(id))
+  ipcMain.handle('docker:logs', (_event, id) => getDockerLogs(id))
 
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
 
