@@ -299,13 +299,14 @@ app.whenReady().then(() => {
     }
   })
 
-  // Direct file save IPC
+  // Direct file save IPC (saves directly to local SSD / disk path)
   ipcMain.handle('file:save', async (_event, filePath, content) => {
+    if (!filePath) return false
     try {
       await fs.promises.writeFile(filePath, content, 'utf-8')
       return true
     } catch (err) {
-      console.error('File write error:', err)
+      console.error('[file:save error]', err)
       return false
     }
   })

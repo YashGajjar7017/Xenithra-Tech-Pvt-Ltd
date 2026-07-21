@@ -58,7 +58,9 @@
   "build": {
     "appId": "com.xenithra.ide",
     "productName": "XenithraIDE",
+    "icon": "renderer/public/Images/app_logo.png",
     "win": {
+      "icon": "renderer/public/Images/app_logo.png",
       "target": [
         {
           "target": "nsis",

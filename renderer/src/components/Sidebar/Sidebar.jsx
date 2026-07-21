@@ -65,6 +65,21 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
     }
   }, [])
 
+  // Auto-restore workspace folder tree on mount (e.g., after sign in or page refresh)
+  useEffect(() => {
+    const savedPath = localStorage.getItem('activeWorkspacePath')
+    if (savedPath && !loadedFolder && window.api && typeof window.api.readDirectory === 'function') {
+      window.api.readDirectory(savedPath).then(dirResult => {
+        if (dirResult && dirResult.tree) {
+          setLoadedFolder(dirResult)
+          setExpandedDirs({ [dirResult.tree.key]: true })
+        }
+      }).catch(err => {
+        console.warn('Auto-restore directory error:', err)
+      })
+    }
+  }, [])
+
   const handleInstallExtension = async (ext) => {
     const updated = [...installedExtensions, ext]
     setInstalledExtensions(updated)

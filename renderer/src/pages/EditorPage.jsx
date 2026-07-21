@@ -165,9 +165,12 @@ const EditorPage = () => {
   }
 
   const toggleBreakpoint = (lineNum) => {
-    setBreakpoints(prev => 
-      prev.includes(lineNum) ? prev.filter(l => l !== lineNum) : [...prev, lineNum]
-    )
+    setBreakpoints(prev => {
+      const current = Array.isArray(prev) ? prev : (prev[activeTabId] || [])
+      const exists = current.includes(lineNum)
+      const updated = exists ? current.filter(l => l !== lineNum) : [...current, lineNum]
+      return { ...(typeof prev === 'object' && !Array.isArray(prev) ? prev : {}), [activeTabId]: updated }
+    })
   }
 
   const leftCodeAreaRef = useRef(null)
@@ -321,7 +324,14 @@ const EditorPage = () => {
       window.removeEventListener('open-file', handleOpenFile)
       window.removeEventListener('change-language', handleChangeLanguage)
     }
-  }, [activePane, code]) // Re-run when pane toggles or code is set // Re-run when pane toggles to ensure proper setter binds
+  }, [activePane, code])
+
+  // Sync active language to Toolbar dropdown whenever active tab changes
+  useEffect(() => {
+    if (activeTabObj && activeTabObj.lang) {
+      window.dispatchEvent(new CustomEvent('change-language', { detail: { language: activeTabObj.lang } }))
+    }
+  }, [activeTabId, activeTabObj?.lang]) // Re-run when pane toggles or code is set // Re-run when pane toggles to ensure proper setter binds
 
   // Handle Run - POST code to compiler engine backend
   const handleRun = async () => {
@@ -492,13 +502,17 @@ const EditorPage = () => {
       setSelectedLanguage('Node.js')
       setActiveFilePath('')
     }
+    const markTabSaved = () => {
+      setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, savedCode: code } : t))
+    }
     const onSave = async () => {
       if (activeFilePath && window.api && typeof window.api.saveFile === 'function') {
         const success = await window.api.saveFile(activeFilePath, code)
         if (success) {
+          markTabSaved()
           setTerminalLines(prev => [
             ...prev,
-            { text: `[SAVED] File saved directly: ${activeFilePath}`, className: 'success' },
+            { text: `[SAVED] File saved directly to disk: ${activeFilePath}`, className: 'success' },
             { text: 'xenithra@studio:~$', className: 'prompt' }
           ])
         } else {
@@ -518,6 +532,7 @@ const EditorPage = () => {
         if (file) {
           setActiveTab(file.name)
           setActiveFilePath(file.path)
+          markTabSaved()
           setTerminalLines(prev => [
             ...prev,
             { text: `[SAVED] File saved as: ${file.path}`, className: 'success' },
@@ -528,6 +543,7 @@ const EditorPage = () => {
         const newName = prompt('Enter filename to save:', activeTab)
         if (newName) {
           setActiveTab(newName)
+          markTabSaved()
           const blob = new Blob([code], { type: 'text/plain' })
           const url = URL.createObjectURL(blob)
           const a = document.createElement('a')
@@ -656,6 +672,7 @@ const EditorPage = () => {
     document.addEventListener('mouseup', handleMouseUp)
   }
 
+
   const getLineCount = (text) => Math.max(1, text.split('\n').length)
 
     return (
@@ -668,39 +685,45 @@ const EditorPage = () => {
           <div className="editor-pane active" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
             <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', flex: 1, overflowX: 'auto' }}>
-                {openTabs.map(tab => (
-                  <div 
-                    key={tab.id}
-                    className={`editor-tab ${tab.id === activeTabId ? 'active' : ''}`}
-                    onClick={() => setActiveTabId(tab.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      borderRight: '1px solid var(--panel-border)',
-                      background: tab.id === activeTabId ? 'var(--sidebar-active)' : 'transparent',
-                      color: tab.id === activeTabId ? 'var(--accent-color)' : 'var(--text-muted)',
-                      borderTop: tab.id === activeTabId ? '2px solid var(--accent-color)' : '2px solid transparent',
-                      whiteSpace: 'nowrap',
-                      minWidth: '100px',
-                      maxWidth: '200px'
-                    }}
-                  >
-                    <i className="bx bx-file" style={{ fontSize: '13px' }}></i>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{tab.filename}</span>
-                    <span 
-                      onClick={(e) => handleCloseTab(tab.id, e)} 
-                      style={{ cursor: 'pointer', opacity: 0.6, fontSize: '14px', marginLeft: '4px' }}
-                      onMouseEnter={(e) => e.target.style.opacity = 1}
-                      onMouseLeave={(e) => e.target.style.opacity = 0.6}
+                {openTabs.map(tab => {
+                  const isDirty = tab.code !== (tab.savedCode !== undefined ? tab.savedCode : tab.code)
+                  return (
+                    <div 
+                      key={tab.id}
+                      className={`editor-tab ${tab.id === activeTabId ? 'active' : ''}`}
+                      onClick={() => setActiveTabId(tab.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        borderRight: '1px solid var(--panel-border)',
+                        background: tab.id === activeTabId ? 'var(--sidebar-active)' : 'transparent',
+                        color: tab.id === activeTabId ? 'var(--accent-color)' : 'var(--text-muted)',
+                        borderTop: tab.id === activeTabId ? '2px solid var(--accent-color)' : '2px solid transparent',
+                        whiteSpace: 'nowrap',
+                        minWidth: '100px',
+                        maxWidth: '200px'
+                      }}
                     >
-                      ×
-                    </span>
-                  </div>
-                ))}
+                      <i className="bx bx-file" style={{ fontSize: '13px' }}></i>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{tab.filename}</span>
+                      {isDirty && (
+                        <span title="Unsaved changes" style={{ color: '#00ffaa', fontSize: '11px', marginLeft: '2px', fontWeight: 'bold' }}>●</span>
+                      )}
+                      <span 
+                        onClick={(e) => handleCloseTab(tab.id, e)} 
+                        style={{ cursor: 'pointer', opacity: 0.6, fontSize: '14px', marginLeft: '4px' }}
+                        onMouseEnter={(e) => e.target.style.opacity = 1}
+                        onMouseLeave={(e) => e.target.style.opacity = 0.6}
+                      >
+                        ×
+                      </span>
+                    </div>
+                  )
+                })}
                 <button 
                   onClick={handleNewTab} 
                   style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '4px 10px', cursor: 'pointer', fontSize: '16px' }}
@@ -720,12 +743,34 @@ const EditorPage = () => {
             </div>
             
             <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-              <div className="line-numbers">
-                {Array.from({ length: getLineCount(leftCode) }).map((_, i) => (
-                  <div key={i} style={{ height: '19.5px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
-                    {i + 1}
-                  </div>
-                ))}
+              <div className="line-numbers" style={{ userSelect: 'none' }}>
+                {Array.from({ length: getLineCount(leftCode) }).map((_, i) => {
+                  const lineNum = i + 1
+                  const isBreakpoint = (breakpoints[activeTabId] || []).includes(lineNum)
+                  return (
+                    <div 
+                      key={i} 
+                      onClick={() => toggleBreakpoint(lineNum)}
+                      style={{ 
+                        height: '19.5px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'flex-end', 
+                        paddingRight: '6px',
+                        cursor: 'pointer',
+                        color: isBreakpoint ? '#ff4d4d' : 'inherit'
+                      }}
+                      title={isBreakpoint ? `Breakpoint active on line ${lineNum}` : `Click to toggle breakpoint on line ${lineNum}`}
+                    >
+                      {isBreakpoint && (
+                        <span style={{ fontSize: '10px', marginRight: '3px', filter: 'drop-shadow(0 0 3px #ff0055)' }}>
+                          🔴
+                        </span>
+                      )}
+                      {lineNum}
+                    </div>
+                  )
+                })}
               </div>
 
               <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex' }}>
