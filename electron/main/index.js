@@ -416,6 +416,42 @@ app.whenReady().then(() => {
   ipcMain.handle('docker:restart', (_event, id) => restartDockerContainer(id))
   ipcMain.handle('docker:logs', (_event, id) => getDockerLogs(id))
 
+  // Workspace XML Profile Handlers
+  ipcMain.handle('workspace:saveXml', async (_event, data) => {
+    try {
+      const xmlPath = join(app.getPath('userData'), 'user_workspace_profile.xml')
+      const openTabsXml = (data.openTabs || []).map(t => `
+    <tab id="${t.id || ''}" filename="${t.filename || ''}" lang="${t.lang || ''}">
+      <path>${t.path || ''}</path>
+    </tab>`).join('')
+
+      const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<userWorkspaceProfile version="1.0">
+  <activePath>${data.activePath || ''}</activePath>
+  <activeTabId>${data.activeTabId || ''}</activeTabId>
+  <theme>${data.theme || 'vscode-dark'}</theme>
+  <selectedLanguage>${data.selectedLanguage || 'Node.js'}</selectedLanguage>
+  <openTabs>${openTabsXml}
+  </openTabs>
+</userWorkspaceProfile>`
+      await fs.promises.writeFile(xmlPath, xmlContent, 'utf-8')
+      return { success: true, path: xmlPath }
+    } catch (err) {
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('workspace:loadXml', async () => {
+    try {
+      const xmlPath = join(app.getPath('userData'), 'user_workspace_profile.xml')
+      if (!fs.existsSync(xmlPath)) return { success: false, message: 'No profile xml found.' }
+      const content = await fs.promises.readFile(xmlPath, 'utf-8')
+      return { success: true, xml: content }
+    } catch (err) {
+      return { success: false, error: err.message }
+    }
+  })
+
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
 
   // Start local API server and await binding to prevent race conditions

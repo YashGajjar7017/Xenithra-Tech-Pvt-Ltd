@@ -114,6 +114,19 @@ const EditorPage = () => {
     else setRightFilePath(val)
   }
 
+  // Listen to Toolbar "Env:" language changes and sync with active tab & pane
+  useEffect(() => {
+    const handleLangChange = (e) => {
+      if (e.detail && e.detail.language) {
+        if (activePane === 'left') setLeftLang(e.detail.language)
+        else setRightLang(e.detail.language)
+        setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, lang: e.detail.language } : t))
+      }
+    }
+    window.addEventListener('change-language', handleLangChange)
+    return () => window.removeEventListener('change-language', handleLangChange)
+  }, [activeTabId, activePane])
+
   const [terminalLines, setTerminalLines] = useState([
     { text: 'Xenithra Technologies IDE Terminal v2.0', className: 'muted' },
     { text: 'System diagnostics operational. Compiler engine online.', className: 'muted' },
@@ -291,12 +304,24 @@ const EditorPage = () => {
     setHoverInfo({ visible: false })
   }
 
-  // Syntax Color Differentiation Renderer
-  const renderHighlightedCode = (text) => {
+  const [scrollTop, setScrollTop] = useState(0)
+
+  // Syntax Color Differentiation Renderer with Windowed Line Virtualization
+  const renderHighlightedCode = (text, isMinimap = false) => {
     if (!text) return null
     const lines = text.split('\n')
-    
+    const total = lines.length
+
+    const lineHeight = 19.5
+    const visibleStart = isMinimap ? 0 : Math.max(0, Math.floor(scrollTop / lineHeight) - 25)
+    const visibleEnd = isMinimap ? total : Math.min(total, Math.ceil((scrollTop + (editorHeight || 600)) / lineHeight) + 25)
+
     return lines.map((line, lIdx) => {
+      // Off-screen line spacer for 60fps performance on large files
+      if (!isMinimap && total > 150 && (lIdx < visibleStart || lIdx > visibleEnd)) {
+        return <div key={lIdx} style={{ height: '19.5px' }} />
+      }
+
       const tokens = line.split(/(\s+|[{}()[\];,.:=+\-*/%&|^<>!~"'`#])/g)
       
       const lineElements = tokens.map((token, tIdx) => {
@@ -355,6 +380,7 @@ const EditorPage = () => {
 
   const handleLeftScroll = (e) => {
     const { scrollTop, scrollLeft } = e.target
+    setScrollTop(scrollTop)
     if (leftHighlightRef.current) {
       leftHighlightRef.current.scrollTop = scrollTop
       leftHighlightRef.current.scrollLeft = scrollLeft

@@ -6,6 +6,7 @@ import Topbar from './components/Topbar/Topbar'
 import Toolbar from './components/Topbar/Toolbar'
 import Sidebar from './components/Sidebar/Sidebar'
 import SettingsModal from './components/ui/SettingsModal'
+import KeyboardShortcutsModal from './components/ui/KeyboardShortcutsModal'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
@@ -142,11 +143,17 @@ const MainLayout = ({
   const [isResizingSidebar, setIsResizingSidebar] = useState(false)
   const [activeActivity, setActiveActivity] = useState('explorer')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isKeybindingsOpen, setIsKeybindingsOpen] = useState(false)
 
   useEffect(() => {
     const handleOpenSettings = () => setIsSettingsOpen(true)
+    const handleOpenKeybindings = () => setIsKeybindingsOpen(true)
     window.addEventListener('open-settings', handleOpenSettings)
-    return () => window.removeEventListener('open-settings', handleOpenSettings)
+    window.addEventListener('open-keybindings', handleOpenKeybindings)
+    return () => {
+      window.removeEventListener('open-settings', handleOpenSettings)
+      window.removeEventListener('open-keybindings', handleOpenKeybindings)
+    }
   }, [])
 
   // Auth Redirect Guard (Temporarily bypassed)
@@ -332,6 +339,11 @@ const MainLayout = ({
         onClose={() => setIsSettingsOpen(false)} 
         theme={theme} 
         setTheme={setTheme} 
+      />
+
+      <KeyboardShortcutsModal 
+        isOpen={isKeybindingsOpen} 
+        onClose={() => setIsKeybindingsOpen(false)} 
       />
     </div>
   )

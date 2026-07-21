@@ -67,7 +67,11 @@ const api = {
   startDockerContainer: (id) => ipcRenderer.invoke('docker:start', id),
   stopDockerContainer: (id) => ipcRenderer.invoke('docker:stop', id),
   restartDockerContainer: (id) => ipcRenderer.invoke('docker:restart', id),
-  getDockerLogs: (id) => ipcRenderer.invoke('docker:logs', id)
+  getDockerLogs: (id) => ipcRenderer.invoke('docker:logs', id),
+
+  // Workspace XML API
+  saveWorkspaceXml: (data) => ipcRenderer.invoke('workspace:saveXml', data),
+  loadWorkspaceXml: () => ipcRenderer.invoke('workspace:loadXml')
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).
