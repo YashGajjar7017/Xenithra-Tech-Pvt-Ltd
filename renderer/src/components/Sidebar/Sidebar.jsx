@@ -3,6 +3,7 @@ import GitPanel from './GitPanel'
 import SearchPanel from './SearchPanel'
 import DebugPanel from '../ui/DebugPanel'
 import DockerPanel from '../ui/DockerPanel'
+import FirebasePanel from './FirebasePanel'
 
 const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
   const [loadedFolder, setLoadedFolder] = useState(null) // { name: '', path: '', tree: {} }
@@ -13,6 +14,7 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
   const [extSearchQuery, setExtSearchQuery] = useState('')
 
   const storeExtensions = [
+    { id: 'firebase-extension', name: 'Firebase Console Extension', version: '1.0.0', description: 'Firebase hosting deployment, auth database viewer, and firestore client.' },
     { id: 'github-theme', name: 'GitHub Theme Pack', version: '1.2.0', description: 'Clean GitHub dark and light themes.' },
     { id: 'python-diagnostics', name: 'Python Diagnostics', version: '2.1.0', description: 'Real-time linting, formatting and troubleshooting.' },
     { id: 'cpp-toolchain', name: 'C++ Compiler Suite', version: '1.0.5', description: 'Enables C++ execution environment and flags.' },
@@ -351,6 +353,8 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
         <DebugPanel activeFile={activeFile} />
       ) : activeActivity === 'docker' ? (
         <DockerPanel />
+      ) : activeActivity === 'firebase' ? (
+        <FirebasePanel />
       ) : activeActivity === 'settings' ? (
         <div style={{ padding: '12px', color: 'var(--text-main)', fontSize: '12px', height: '100%', overflowY: 'auto' }}>
           <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.05em', marginBottom: '12px', color: 'var(--accent-color)' }}>
@@ -381,6 +385,12 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
                 Click any snippet to auto-pull template directly into your active editor.
               </div>
+              <button 
+                onClick={() => window.location.hash = '#/preferences'}
+                style={{ width: '100%', background: 'rgba(0, 255, 170, 0.1)', border: '1px solid rgba(0, 255, 170, 0.25)', color: 'var(--accent-color)', borderRadius: '4px', padding: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px' }}
+              >
+                ⚙ Manage Custom Snippets & Keys
+              </button>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {[
                   { name: 'React Component (JSX)', lang: 'jsx', code: "import React from 'react';\n\nexport default function App() {\n  return (\n    <div className=\"p-4\">\n      <h1>Hello Xenithra</h1>\n    </div>\n  );\n}" },

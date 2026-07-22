@@ -77,7 +77,13 @@ const api = {
   shareGitHubGist: (filename, content, desc, isPublic, token) => ipcRenderer.invoke('github:shareGist', filename, content, desc, isPublic, token),
   createRtcRoom: (initialCode) => ipcRenderer.invoke('rtc:createRoom', initialCode),
   joinRtcRoom: (roomCode) => ipcRenderer.invoke('rtc:joinRoom', roomCode),
-  syncRtcCode: (roomCode, text, pos) => ipcRenderer.invoke('rtc:sync', roomCode, text, pos)
+  syncRtcCode: (roomCode, text, pos) => ipcRenderer.invoke('rtc:sync', roomCode, text, pos),
+
+  // XAMPP Service API
+  getXamppStatus: () => ipcRenderer.invoke('xampp:status'),
+  checkXamppInstalled: () => ipcRenderer.invoke('xampp:check-installed'),
+  startXamppService: (service) => ipcRenderer.invoke('xampp:start', service),
+  stopXamppService: (service) => ipcRenderer.invoke('xampp:stop', service)
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).

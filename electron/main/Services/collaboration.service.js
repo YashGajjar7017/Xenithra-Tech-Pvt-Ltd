@@ -1,4 +1,4 @@
-import { https } from 'follow-redirects'
+import https from 'https'
 
 /**
  * Publishes user code snippet to GitHub Gist

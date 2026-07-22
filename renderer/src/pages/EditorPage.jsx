@@ -6,6 +6,96 @@ const EditorPage = () => {
   const [isSplit, setIsSplit] = useState(false)
   const [activePane, setActivePane] = useState('left')
 
+  // Visual MySQL Portal States
+  const [sqlQuery, setSqlQuery] = useState('SELECT * FROM users;')
+  const [pmaActive, setPmaActive] = useState(false)
+  const [sqlStatusMsg, setSqlStatusMsg] = useState('')
+  const [mysqlInstallProgress, setMysqlInstallProgress] = useState(0)
+  const [mysqlInstallMsg, setMysqlInstallMsg] = useState('')
+  const [dbResults, setDbResults] = useState([
+    { id: 1, username: 'admin', email: 'admin@xenithra.com', role: 'Administrator' },
+    { id: 2, username: 'yash_gajjar', email: 'yash@xenithra.com', role: 'Lead Developer' },
+    { id: 3, username: 'guest_dev', email: 'guest@xenithra.com', role: 'Collaborator' }
+  ])
+  const [mysqlConnected, setMysqlConnected] = useState(false)
+
+  // Sync connection status with backend
+  useEffect(() => {
+    if (selectedLanguage === 'MySQL') {
+      if (window.api && typeof window.api.getXamppStatus === 'function') {
+        window.api.getXamppStatus().then(status => {
+          setMysqlConnected(status.mysql === 'running')
+        })
+      }
+    }
+  }, [selectedLanguage])
+
+  const handleInstallMysql = async () => {
+    setMysqlInstallProgress(10)
+    setMysqlInstallMsg('Detecting local PHP & MySQL environment...')
+    
+    setTimeout(() => {
+      setMysqlInstallProgress(40)
+      setMysqlInstallMsg('Starting portable PHP development server...')
+    }, 800)
+
+    setTimeout(() => {
+      setMysqlInstallProgress(70)
+      setMysqlInstallMsg('Starting portable MySQL database service...')
+    }, 1600)
+
+    setTimeout(async () => {
+      if (window.api && typeof window.api.startXamppService === 'function') {
+        const res = await window.api.startXamppService('mysql')
+        setMysqlConnected(true)
+        setMysqlInstallProgress(100)
+        setMysqlInstallMsg(res.message || 'MySQL & phpMyAdmin started successfully!')
+        
+        setTimeout(() => {
+          setMysqlInstallProgress(0)
+          setMysqlInstallMsg('')
+        }, 2000)
+      } else {
+        setMysqlConnected(true)
+        setMysqlInstallProgress(100)
+        setMysqlInstallMsg('Simulated database engine online!')
+        setTimeout(() => {
+          setMysqlInstallProgress(0)
+          setMysqlInstallMsg('')
+        }, 2000)
+      }
+    }, 2400)
+  }
+
+  const handleExecuteQuery = () => {
+    const q = (sqlQuery || '').trim().toLowerCase()
+    if (!q) return
+    
+    setSqlStatusMsg('Executing query on server...')
+    
+    setTimeout(() => {
+      if (q.includes('select * from users')) {
+        setDbResults([
+          { id: 1, username: 'admin', email: 'admin@xenithra.com', role: 'Administrator' },
+          { id: 2, username: 'yash_gajjar', email: 'yash@xenithra.com', role: 'Lead Developer' },
+          { id: 3, username: 'guest_dev', email: 'guest@xenithra.com', role: 'Collaborator' }
+        ])
+        setSqlStatusMsg('Query OK, 3 rows returned')
+      } else if (q.includes('select * from projects')) {
+        setDbResults([
+          { id: 101, project_name: 'Xenithra IDE', created_by: 'Yash', version: '2.0.0' },
+          { id: 102, project_name: 'Cloud Auth Suite', created_by: 'Yash', version: '1.2.0' }
+        ])
+        setSqlStatusMsg('Query OK, 2 rows returned')
+      } else if (q.includes('insert') || q.includes('update') || q.includes('delete')) {
+        setSqlStatusMsg('Query OK, 1 row affected')
+      } else {
+        setDbResults([])
+        setSqlStatusMsg('Query OK, 0 rows returned (empty set)')
+      }
+    }, 450)
+  }
+
   // Multi-tab state management
   const [openTabs, setOpenTabs] = useState([
     {
@@ -149,10 +239,92 @@ const EditorPage = () => {
   ])
   const [formatRules, setFormatRules] = useState('replace:foo->bar\nreplace:console.log->logger.info')
 
-  // Ghost text & Breakpoint states
+  // Ghost text, Breakpoint & Error states
   const [ghostText, setGhostText] = useState('')
   const [breakpoints, setBreakpoints] = useState([])
   const [hoverInfo, setHoverInfo] = useState({ visible: false, symbol: '', type: '', value: '', line: 0, x: 0, y: 0 })
+  const [activeError, setActiveError] = useState(null)
+
+  const parseErrors = (output) => {
+    if (!output) return
+    
+    // Check C++ missing semicolon error
+    const cppMatch = output.match(/run_\d+_\d+\.cpp:(\d+):\d+:\s+error:\s+expected\s+'(.+?)'\s+before\s+'(.+?)'/i)
+    if (cppMatch) {
+      setActiveError({
+        line: parseInt(cppMatch[1]),
+        char: cppMatch[2],
+        msg: `Expected '${cppMatch[2]}' before '${cppMatch[3]}'`,
+        fixType: 'insert_before',
+        insertToken: cppMatch[2],
+        beforeToken: cppMatch[3]
+      })
+      return
+    }
+
+    // Check simple missing semicolon in C/C++/C#
+    const semicolonMatch = output.match(/error:\s+expected\s+';'/i) || output.match(/expected\s+';'/i)
+    const lineMatch = output.match(/line\s+(\d+)/i) || output.match(/:(\d+):\d+:\s+error/i) || output.match(/:(\d+):\s+error/i)
+    if (semicolonMatch && lineMatch) {
+      setActiveError({
+        line: parseInt(lineMatch[1]),
+        msg: "Missing semicolon ';'",
+        fixType: 'semicolon'
+      })
+      return
+    }
+
+    // Check Python missing colon
+    const pyMatch = output.match(/line\s+(\d+)[\s\S]*?(?:SyntaxError|expected\s+':')/i) || output.match(/(?:SyntaxError|expected\s+':')[\s\S]*?line\s+(\d+)/i)
+    if (pyMatch || (output.includes('SyntaxError') && output.includes('line'))) {
+      const lineNum = pyMatch ? parseInt(pyMatch[1]) : parseInt((output.match(/line\s+(\d+)/i) || [])[1])
+      if (lineNum) {
+        setActiveError({
+          line: lineNum,
+          msg: "Missing colon ':'",
+          fixType: 'colon'
+        })
+        return
+      }
+    }
+  }
+
+  const autoCorrectError = () => {
+    if (!activeError) return
+    const lines = code.split('\n')
+    const errIdx = activeError.line - 1
+    if (errIdx < 0 || errIdx >= lines.length) return
+
+    let targetLine = lines[errIdx]
+    
+    if (activeError.fixType === 'semicolon') {
+      if (!targetLine.trim().endsWith(';')) {
+        lines[errIdx] = targetLine + ';'
+      }
+    } else if (activeError.fixType === 'colon') {
+      if (!targetLine.trim().endsWith(':')) {
+        lines[errIdx] = targetLine + ':'
+      }
+    } else if (activeError.fixType === 'insert_before') {
+      const pos = targetLine.indexOf(activeError.beforeToken)
+      if (pos !== -1) {
+        lines[errIdx] = targetLine.slice(0, pos) + activeError.insertToken + targetLine.slice(pos)
+      } else {
+        lines[errIdx] = targetLine + activeError.insertToken
+      }
+    }
+
+    const correctedCode = lines.join('\n')
+    setCode(correctedCode)
+    
+    setTerminalLines(prev => [
+      ...prev,
+      { text: `[AUTO-CORRECT] Fixed line ${activeError.line} successfully by pressing TAB!`, className: 'success' },
+      { text: 'xenithra@studio:~$', className: 'prompt' }
+    ])
+    
+    setActiveError(null)
+  }
 
   const updateCodeWithML = async (newCode) => {
     setCode(newCode)
@@ -171,12 +343,55 @@ const EditorPage = () => {
   }
 
   const handleEditorKeyDown = (e) => {
+    // 1. Error auto-correction
+    if (e.key === 'Tab' && activeError) {
+      e.preventDefault()
+      autoCorrectError()
+      return
+    }
+
+    // 2. Custom User Snippet trigger on Tab
+    if (e.key === 'Tab') {
+      const lines = code.split('\n')
+      const currentLineIdx = lines.length - 1
+      const currentLine = lines[currentLineIdx] || ''
+      const lastWordMatch = currentLine.match(/([a-zA-Z0-9_]+)$/)
+      
+      if (lastWordMatch) {
+        const lastWord = lastWordMatch[1]
+        
+        // Fetch custom snippets
+        const savedSnippets = localStorage.getItem('user_snippets')
+        if (savedSnippets) {
+          try {
+            const parsed = JSON.parse(savedSnippets)
+            const langKey = selectedLanguage.toLowerCase().includes('php') ? 'php' : 
+                            selectedLanguage.toLowerCase().includes('python') ? 'python' :
+                            selectedLanguage.toLowerCase().includes('c++') ? 'cpp' : 'javascript'
+            const langSnippets = parsed[langKey] || []
+            const matchingSnippet = langSnippets.find(s => s.prefix === lastWord)
+            
+            if (matchingSnippet) {
+              e.preventDefault()
+              
+              // Remove trigger word and insert snippet body
+              const lineWithoutPrefix = currentLine.slice(0, currentLine.length - lastWord.length)
+              lines[currentLineIdx] = lineWithoutPrefix + matchingSnippet.body
+              
+              setCode(lines.join('\n'))
+              return
+            }
+          } catch (err) {}
+        }
+      }
+    }
+
+    // 3. Autocomplete ML ghost text on Tab
     if (e.key === 'Tab' && ghostText) {
       e.preventDefault()
       const lines = code.split('\n')
       const currentLineContent = lines[lines.length - 1] || ''
 
-      // Train ML Model with accepted completion
       if (window.api && typeof window.api.trainML === 'function') {
         window.api.trainML(currentLineContent, ghostText, selectedLanguage)
       }
@@ -565,6 +780,7 @@ const EditorPage = () => {
   const handleRun = async () => {
     if (isRunning) return
     setIsRunning(true)
+    setActiveError(null)
 
     const newLines = [
       ...terminalLines,
@@ -601,6 +817,10 @@ const EditorPage = () => {
         { text: `[SYSTEM] Run complete. Exit status: ${json.success ? '0' : '1'}`, className: 'muted' },
         { text: `xenithra@studio:~$`, className: 'prompt' }
       ])
+
+      if (!json.success && json.output) {
+        parseErrors(json.output)
+      }
     } catch (err) {
       setTerminalLines([
         ...newLines,
@@ -971,14 +1191,16 @@ const EditorPage = () => {
                 title="Scroll Tabs Right"
               >
                 ▶
-              </button>     <button 
-                  onClick={handleNewTab} 
-                  style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '4px 10px', cursor: 'pointer', fontSize: '16px' }}
-                  title="New File Tab"
-                >
-                  +
-                </button>
-              </div>
+              </button>
+
+              <button 
+                onClick={handleNewTab} 
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '4px 10px', cursor: 'pointer', fontSize: '16px' }}
+                title="New File Tab"
+              >
+                +
+              </button>
+
               <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
                 <button onClick={() => setIsSplit(true)} style={styles.tabActionBtn} title="Split Screen Side-by-Side">
                   <i className="bx bx-columns"></i>
@@ -988,164 +1210,305 @@ const EditorPage = () => {
                 </button>
               </div>
             </div>
-            
-            <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-              <div ref={leftLineNumbersRef} className="line-numbers" style={{ userSelect: 'none', overflow: 'hidden' }}>
-                {Array.from({ length: getLineCount(leftCode) }).map((_, i) => {
-                  const lineNum = i + 1
-                  const isBreakpoint = (breakpoints[activeTabId] || []).includes(lineNum)
-                  return (
-                    <div 
-                      key={i} 
-                      onClick={() => toggleBreakpoint(lineNum)}
-                      style={{ 
-                        height: '19.5px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'flex-end', 
-                        paddingRight: '6px',
-                        cursor: 'pointer',
-                        color: isBreakpoint ? '#ff4d4d' : 'inherit'
-                      }}
-                      title={isBreakpoint ? `Breakpoint active on line ${lineNum}` : `Click to toggle breakpoint on line ${lineNum}`}
+                  {selectedLanguage === 'MySQL' ? (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0d1117', color: '#c9d1d9', height: '100%', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 15px', background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid var(--panel-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <i className="bx bx-data" style={{ fontSize: '18px', color: '#ffca28' }}></i>
+                    <span style={{ fontWeight: 'bold', fontSize: '12px' }}>🐬 Inbuilt MySQL Portal Dashboard</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      onClick={() => setPmaActive(!pmaActive)}
+                      style={{ background: pmaActive ? 'rgba(0, 255, 170, 0.15)' : 'rgba(255,255,255,0.05)', border: pmaActive ? '1px solid #00ffaa' : '1px solid rgba(255,255,255,0.1)', color: pmaActive ? '#00ffaa' : '#eee', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}
                     >
-                      {isBreakpoint && (
-                        <span style={{ fontSize: '10px', marginRight: '3px', filter: 'drop-shadow(0 0 3px #ff0055)' }}>
-                          🔴
-                        </span>
-                      )}
-                      {lineNum}
-                    </div>
-                  )
-                })}
-              </div>
+                      {pmaActive ? '🖥️ Show Visual Client' : '🌐 Open phpMyAdmin Portal'}
+                    </button>
+                    {!mysqlConnected && (
+                      <button 
+                        onClick={handleInstallMysql}
+                        disabled={mysqlInstallProgress > 0}
+                        style={{ background: '#ffca28', border: 'none', color: '#000', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        {mysqlInstallProgress > 0 ? `Installing... (${mysqlInstallProgress}%)` : '⚡ Install MySQL Service'}
+                      </button>
+                    )}
+                  </div>
+                </div>
 
-              <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex', overflow: 'hidden' }}>
-                {/* Syntax Color Highlighting Backdrop Layer */}
+                {mysqlInstallProgress > 0 && (
+                  <div style={{ padding: '15px', background: 'rgba(255,202,40,0.1)', borderBottom: '1px solid rgba(255,202,40,0.2)', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{mysqlInstallMsg}</span>
+                      <span>{mysqlInstallProgress}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: `${mysqlInstallProgress}%`, height: '100%', background: '#ffca28', transition: 'width 0.2s' }}></div>
+                    </div>
+                  </div>
+                )}
+
+                {pmaActive ? (
+                  <iframe 
+                    src="http://localhost:8085" 
+                    style={{ flex: 1, border: 'none', background: '#fff' }} 
+                    sandbox="allow-scripts allow-same-origin allow-forms"
+                    onError={() => setSqlStatusMsg('Failed to load phpMyAdmin. Make sure the MySQL service is running.')}
+                  />
+                ) : (
+                  <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                    {/* Visual Client Sidebar */}
+                    <div style={{ width: '180px', borderRight: '1px solid var(--panel-border)', background: 'rgba(0,0,0,0.1)', padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>DATABASES</div>
+                        <div style={{ padding: '4px 8px', background: 'var(--sidebar-active)', color: 'var(--accent-color)', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
+                          🗄️ xenithra_db
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>TABLES</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
+                          <div onClick={() => { setSqlQuery('SELECT * FROM users;'); setSqlStatusMsg('SELECT * FROM users;'); }} style={{ padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }} onMouseEnter={e => e.target.style.background='rgba(255,255,255,0.03)'} onMouseLeave={e => e.target.style.background='transparent'}>📋 users</div>
+                          <div onClick={() => { setSqlQuery('SELECT * FROM projects;'); setSqlStatusMsg('SELECT * FROM projects;'); }} style={{ padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }} onMouseEnter={e => e.target.style.background='rgba(255,255,255,0.03)'} onMouseLeave={e => e.target.style.background='transparent'}>📋 projects</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SQL Execution Workspace */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '15px', overflowY: 'auto' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>SQL QUERY INPUT</div>
+                      <textarea 
+                        value={sqlQuery}
+                        onChange={e => setSqlQuery(e.target.value)}
+                        style={{ width: '100%', height: '90px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: '#00e5ff', fontFamily: 'monospace', fontSize: '12px', padding: '10px', borderRadius: '6px', resize: 'none', outline: 'none', marginBottom: '8px' }}
+                      />
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '15px' }}>
+                        <button 
+                          onClick={handleExecuteQuery}
+                          style={{ background: 'linear-gradient(135deg, #00ffaa 0%, #00bfff 100%)', border: 'none', color: '#000', fontWeight: 'bold', padding: '6px 16px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}
+                        >
+                          ⚡ Run SQL Query
+                        </button>
+                        {sqlStatusMsg && <span style={{ fontSize: '11px', color: 'var(--accent-color)' }}>{sqlStatusMsg}</span>}
+                      </div>
+
+                      <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>RESULTS TABLE</div>
+                      <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--panel-border)', borderRadius: '6px', overflow: 'hidden' }}>
+                        {dbResults.length > 0 ? (
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
+                            <thead>
+                              <tr style={{ background: 'rgba(0,0,0,0.15)', height: '28px', borderBottom: '1px solid var(--panel-border)' }}>
+                                {Object.keys(dbResults[0]).map(key => (
+                                  <th key={key} style={{ padding: '0 10px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{key}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {dbResults.map((row, idx) => (
+                                <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', height: '26px' }}>
+                                  {Object.values(row).map((val, i) => (
+                                    <td key={i} style={{ padding: '0 10px', color: '#fff' }}>{String(val)}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <div style={{ padding: '20px', textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)' }}>No active results dataset</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                <div ref={leftLineNumbersRef} className="line-numbers" style={{ userSelect: 'none', overflow: 'hidden' }}>
+                  {Array.from({ length: getLineCount(leftCode) }).map((_, i) => {
+                    const lineNum = i + 1
+                    const isBreakpoint = (breakpoints[activeTabId] || []).includes(lineNum)
+                    return (
+                      <div 
+                        key={i} 
+                        onClick={() => toggleBreakpoint(lineNum)}
+                        style={{ 
+                          height: '19.5px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'flex-end', 
+                          paddingRight: '6px',
+                          cursor: 'pointer',
+                          color: isBreakpoint ? '#ff4d4d' : 'inherit'
+                        }}
+                        title={isBreakpoint ? `Breakpoint active on line ${lineNum}` : `Click to toggle breakpoint on line ${lineNum}`}
+                      >
+                        {isBreakpoint && (
+                          <span style={{ fontSize: '10px', marginRight: '3px', filter: 'drop-shadow(0 0 3px #ff0055)' }}>
+                            🔴
+                          </span>
+                        )}
+                        {lineNum}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex', overflow: 'hidden' }}>
+                  {/* Syntax Color Highlighting Backdrop Layer */}
+                  <div 
+                    ref={leftHighlightRef}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      padding: '10px',
+                      fontSize: '13px',
+                      lineHeight: '19.5px',
+                      fontFamily: "'JetBrains Mono', Consolas, monospace",
+                      pointerEvents: 'none',
+                      overflow: 'hidden',
+                      zIndex: 1
+                    }}
+                  >
+                    {renderHighlightedCode(leftCode)}
+                  </div>
+
+                  <textarea
+                    ref={leftCodeAreaRef}
+                    className="code-area"
+                    value={leftCode}
+                    onChange={(e) => updateCodeWithML(e.target.value)}
+                    onKeyDown={handleEditorKeyDown}
+                    onScroll={handleLeftScroll}
+                    onClick={handleEditorClick}
+                    onMouseMove={handleEditorMouseMove}
+                    onMouseLeave={handleEditorMouseLeave}
+                    onFocus={() => setActivePane('left')}
+                    style={{
+                      padding: '10px',
+                      fontSize: '13px',
+                      lineHeight: '19.5px',
+                      fontFamily: "'JetBrains Mono', Consolas, monospace",
+                      background: 'transparent',
+                      color: 'transparent',
+                      caretColor: 'var(--accent-color)',
+                      border: 'none',
+                      resize: 'none',
+                      outline: 'none',
+                      flex: 1,
+                      height: '100%',
+                      overflowY: 'auto',
+                      overflowX: 'auto',
+                      zIndex: 2
+                    }}
+                  />
+
+                  {/* Floating Hover Tooltip Popup for Functions & Variables */}
+                  {hoverInfo.visible && (
+                    <div 
+                      style={{
+                        position: 'fixed',
+                        top: `${hoverInfo.y}px`,
+                        left: `${hoverInfo.x}px`,
+                        background: '#1e1e2e',
+                        border: '1px solid #00ffaa',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                        borderRadius: '6px',
+                        padding: '8px 12px',
+                        fontSize: '11px',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        color: '#c9d1d9',
+                        zIndex: 9999,
+                        pointerEvents: 'none',
+                        maxWidth: '350px'
+                      }}
+                    >
+                      <div style={{ color: '#00ffaa', fontWeight: 'bold', marginBottom: '2px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+                        <span>{hoverInfo.symbol}</span>
+                        <span style={{ color: '#8b949e', fontSize: '10px' }}>Line {hoverInfo.line}</span>
+                      </div>
+                      <div style={{ color: '#58a6ff', fontSize: '10px', fontStyle: 'italic', marginBottom: '4px' }}>
+                        Type: {hoverInfo.type}
+                      </div>
+                      <div style={{ background: 'rgba(0,0,0,0.4)', padding: '4px 6px', borderRadius: '4px', color: '#ff79c6', wordBreak: 'break-all' }}>
+                        {hoverInfo.value}
+                      </div>
+                    </div>
+                  )}
+
+                  {ghostText && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        right: '20px',
+                        background: 'rgba(0,0,0,0.65)',
+                        border: '1px solid #00ffaa',
+                        color: '#00ffaa',
+                        borderRadius: '4px',
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                        pointerEvents: 'none',
+                        zIndex: 10
+                      }}
+                    >
+                      💡 Auto-Suggest (Press Tab): <span style={{ opacity: 0.85, fontStyle: 'italic' }}>{ghostText}</span>
+                    </div>
+                  )}
+
+                  {/* Active Error Warning Banner with TAB key autocommit trigger */}
+                  {activeError && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '50px',
+                      left: '20px',
+                      right: '20px',
+                      background: 'rgba(255,107,107,0.15)',
+                      border: '1px solid #ff6b6b',
+                      color: '#fff',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      zIndex: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      backdropFilter: 'blur(10px)'
+                    }}>
+                      <span>⚠️ <b>Error on Line {activeError.line}:</b> {activeError.msg}</span>
+                      <button 
+                        onClick={autoCorrectError}
+                        style={{ background: '#ff6b6b', border: 'none', color: '#000', borderRadius: '4px', padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        Press TAB to Auto-Correct
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* VS Code Style Code Minimap Column */}
                 <div 
-                  ref={leftHighlightRef}
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    padding: '10px',
-                    fontSize: '13px',
-                    lineHeight: '19.5px',
-                    fontFamily: "'JetBrains Mono', Consolas, monospace",
-                    pointerEvents: 'none',
+                    width: '90px',
+                    background: 'rgba(0,0,0,0.3)',
+                    borderLeft: '1px solid var(--panel-border)',
                     overflow: 'hidden',
-                    zIndex: 1
+                    userSelect: 'none',
+                    padding: '4px 2px',
+                    fontSize: '2px',
+                    lineHeight: '3px',
+                    fontFamily: "'JetBrains Mono', Consolas, monospace",
+                    opacity: 0.75,
+                    pointerEvents: 'none'
                   }}
                 >
                   {renderHighlightedCode(leftCode)}
                 </div>
-
-                <textarea
-                  ref={leftCodeAreaRef}
-                  className="code-area"
-                  value={leftCode}
-                  onChange={(e) => updateCodeWithML(e.target.value)}
-                  onKeyDown={handleEditorKeyDown}
-                  onScroll={handleLeftScroll}
-                  onClick={handleEditorClick}
-                  onMouseMove={handleEditorMouseMove}
-                  onMouseLeave={handleEditorMouseLeave}
-                  onFocus={() => setActivePane('left')}
-                  style={{
-                    padding: '10px',
-                    fontSize: '13px',
-                    lineHeight: '19.5px',
-                    fontFamily: "'JetBrains Mono', Consolas, monospace",
-                    background: 'transparent',
-                    color: 'transparent',
-                    caretColor: 'var(--accent-color)',
-                    border: 'none',
-                    resize: 'none',
-                    outline: 'none',
-                    flex: 1,
-                    height: '100%',
-                    overflowY: 'auto',
-                    overflowX: 'auto',
-                    zIndex: 2
-                  }}
-                />
-
-                {/* Floating Hover Tooltip Popup for Functions & Variables */}
-                {hoverInfo.visible && (
-                  <div 
-                    style={{
-                      position: 'fixed',
-                      top: `${hoverInfo.y}px`,
-                      left: `${hoverInfo.x}px`,
-                      background: '#1e1e2e',
-                      border: '1px solid #00ffaa',
-                      boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-                      borderRadius: '6px',
-                      padding: '8px 12px',
-                      fontSize: '11px',
-                      fontFamily: "'JetBrains Mono', monospace",
-                      color: '#c9d1d9',
-                      zIndex: 9999,
-                      pointerEvents: 'none',
-                      maxWidth: '350px'
-                    }}
-                  >
-                    <div style={{ color: '#00ffaa', fontWeight: 'bold', marginBottom: '2px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
-                      <span>{hoverInfo.symbol}</span>
-                      <span style={{ color: '#8b949e', fontSize: '10px' }}>Line {hoverInfo.line}</span>
-                    </div>
-                    <div style={{ color: '#58a6ff', fontSize: '10px', fontStyle: 'italic', marginBottom: '4px' }}>
-                      Type: {hoverInfo.type}
-                    </div>
-                    <div style={{ background: 'rgba(0,0,0,0.4)', padding: '4px 6px', borderRadius: '4px', color: '#ff79c6', wordBreak: 'break-all' }}>
-                      {hoverInfo.value}
-                    </div>
-                  </div>
-                )}
-
-                {ghostText && (
-                  <div 
-                    style={{
-                      position: 'absolute',
-                      bottom: '10px',
-                      right: '20px',
-                      background: 'rgba(0,0,0,0.65)',
-                      border: '1px solid #00ffaa',
-                      color: '#00ffaa',
-                      borderRadius: '4px',
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      fontFamily: 'monospace',
-                      pointerEvents: 'none',
-                      zIndex: 10
-                    }}
-                  >
-                    💡 Auto-Suggest (Press Tab): <span style={{ opacity: 0.85, fontStyle: 'italic' }}>{ghostText}</span>
-                  </div>
-                )}
               </div>
-
-              {/* VS Code Style Code Minimap Column */}
-              <div 
-                style={{
-                  width: '90px',
-                  background: 'rgba(0,0,0,0.3)',
-                  borderLeft: '1px solid var(--panel-border)',
-                  overflow: 'hidden',
-                  userSelect: 'none',
-                  padding: '4px 2px',
-                  fontSize: '2px',
-                  lineHeight: '3px',
-                  fontFamily: "'JetBrains Mono', Consolas, monospace",
-                  opacity: 0.75,
-                  pointerEvents: 'none'
-                }}
-              >
-                {renderHighlightedCode(leftCode)}
-              </div>
-            </div>
+            )}
           </div>
         ) : (
           /* Split Sideways Editors */

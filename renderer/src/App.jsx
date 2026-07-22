@@ -13,6 +13,7 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
 import EditorPage from './pages/EditorPage'
+import PreferencesPage from './pages/PreferencesPage'
 
 const MainApp = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'vscode-dark')
@@ -96,6 +97,7 @@ const MainApp = () => {
       <Routes>
         <Route path="/Account/login" element={<LoginPage />} />
         <Route path="/Account/signup" element={<SignupPage />} />
+        <Route path="/preferences" element={<PreferencesPage />} />
         <Route 
           path="/Dashboard" 
           element={
@@ -148,6 +150,17 @@ const MainLayout = ({
   const [isKeybindingsOpen, setIsKeybindingsOpen] = useState(false)
   const [isShareGistOpen, setIsShareGistOpen] = useState(false)
   const [isLiveShareOpen, setIsLiveShareOpen] = useState(false)
+  const [activeLanguage, setActiveLanguage] = useState('Node.js')
+
+  useEffect(() => {
+    const handleLangSync = (e) => {
+      if (e.detail && e.detail.language) {
+        setActiveLanguage(e.detail.language)
+      }
+    }
+    window.addEventListener('change-language', handleLangSync)
+    return () => window.removeEventListener('change-language', handleLangSync)
+  }, [])
 
   useEffect(() => {
     const handleOpenSettings = () => setIsSettingsOpen(true)
@@ -317,6 +330,13 @@ const MainLayout = ({
           >
             <span style={{ fontSize: '18px' }}>🐳</span>
           </div>
+          <div 
+            className={`activity-icon ${activeActivity === 'firebase' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('firebase')}
+            title="Firebase Explorer & Console"
+          >
+            <i className="bx bxl-firebase" style={{ fontSize: '20px', color: '#ffca28' }}></i>
+          </div>
           <div style={{ flex: 1 }}></div>
           <div 
             className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}
@@ -353,7 +373,7 @@ const MainLayout = ({
           <span>⚠ 0</span>
         </div>
         <div className="status-item">
-          <span>JavaScript</span>
+          <span>{activeLanguage}</span>
           <span style={{ opacity: 0.4 }}>|</span>
           <span>Spaces: 2</span>
           <span style={{ opacity: 0.4 }}>|</span>

@@ -11,6 +11,7 @@ import { searchWorkspace } from './Services/search.service.js'
 import { predictInlineCompletion, generateLocalAIChatResponse, trainLocalMLModel } from './Services/localML.service.js'
 import { getDockerContainers, getDockerImages, startDockerContainer, stopDockerContainer, restartDockerContainer, getDockerLogs } from './Services/docker.service.js'
 import { createGitHubGist, createRtcRoom, joinRtcRoom, syncRtcCode } from './Services/collaboration.service.js'
+import { getXamppStatus, checkSystemInstalled, startPhpService, startMysqlService, stopXamppService } from './Services/xampp.service.js'
 
 const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
 
@@ -416,6 +417,16 @@ app.whenReady().then(() => {
   ipcMain.handle('docker:stop', (_event, id) => stopDockerContainer(id))
   ipcMain.handle('docker:restart', (_event, id) => restartDockerContainer(id))
   ipcMain.handle('docker:logs', (_event, id) => getDockerLogs(id))
+
+  // XAMPP Services IPC Handlers
+  ipcMain.handle('xampp:status', () => getXamppStatus())
+  ipcMain.handle('xampp:check-installed', () => checkSystemInstalled())
+  ipcMain.handle('xampp:start', async (_event, serviceName) => {
+    if (serviceName === 'php') return await startPhpService()
+    if (serviceName === 'mysql') return await startMysqlService()
+    return { success: false, message: 'Unknown service' }
+  })
+  ipcMain.handle('xampp:stop', (_event, serviceName) => stopXamppService(serviceName))
 
   // Workspace XML Profile Handlers
   ipcMain.handle('workspace:saveXml', async (_event, data) => {

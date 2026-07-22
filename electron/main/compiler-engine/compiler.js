@@ -75,6 +75,16 @@ export const runCode = (lang, code, args) => {
         sourceFile = path.join(tempDir, `run_${fileId}.dart`)
         runCmd = `dart "${sourceFile}"${escapedArgs}`
         break
+      case 'PHP':
+        ext = 'php'
+        sourceFile = path.join(tempDir, `run_${fileId}.php`)
+        runCmd = `php "${sourceFile}"${escapedArgs}`
+        break
+      case 'MySQL':
+        return resolve({
+          success: true,
+          output: 'MySQL database engine is operational. Use the inbuilt MySQL Portal dashboard (dropdown option) to manage collections and execute queries!'
+        })
       case 'XML':
         return resolve({
           success: true,

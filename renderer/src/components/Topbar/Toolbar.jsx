@@ -8,7 +8,7 @@ const Toolbar = ({ theme, setTheme }) => {
   const [liveServerPort, setLiveServerPort] = useState(5500)
   const langDropdownRef = useRef(null)
 
-  const languages = ['C (GCC)', 'C++ (G++)', 'Python 3', 'Node.js', 'XML', 'Dot Net', 'Dart', 'Next.js']
+  const languages = ['C (GCC)', 'C++ (G++)', 'Python 3', 'Node.js', 'XML', 'Dot Net', 'Dart', 'Next.js', 'PHP', 'MySQL']
 
   // Sync language selection when changed elsewhere
   useEffect(() => {
@@ -48,6 +48,14 @@ const Toolbar = ({ theme, setTheme }) => {
     setSelectedLang(lang)
     setDropdownOpen(false)
     window.dispatchEvent(new CustomEvent('change-language', { detail: { language: lang } }))
+    
+    if (lang === 'PHP' || lang === 'MySQL') {
+      if (window.api && typeof window.api.startXamppService === 'function') {
+        window.api.startXamppService('php').then(() => {
+          window.api.startXamppService('mysql')
+        })
+      }
+    }
   }
 
   const toggleLiveServer = async () => {

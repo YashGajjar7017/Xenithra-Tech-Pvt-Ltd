@@ -419,15 +419,6 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
 
   return (
     <div className="menu-bar">
-      {/* Sidenav toggle */}
-      <button 
-        className="sidenav-toggle-btn" 
-        title="Toggle Sidebar" 
-        onClick={onToggleSidebar}
-      >
-        ☰
-      </button>
-
       {/* Menus Group */}
       <div style={{ display: 'flex', gap: '4px', alignItems: 'center', zIndex: 10 }}>
         {/* FILE MENU */}
@@ -518,6 +509,10 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
               <button onClick={handlePreferences} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Preferences</span>
                 <span style={{ opacity: 0.5 }}>›</span>
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setActiveMenu(null); window.location.hash = '#/preferences'; }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Keybindings & Snippets</span>
+                <span style={{ opacity: 0.5 }}>⚙</span>
               </button>
 
               <hr />
