@@ -19,17 +19,6 @@ const EditorPage = () => {
   ])
   const [mysqlConnected, setMysqlConnected] = useState(false)
 
-  // Sync connection status with backend
-  useEffect(() => {
-    if (selectedLanguage === 'MySQL') {
-      if (window.api && typeof window.api.getXamppStatus === 'function') {
-        window.api.getXamppStatus().then(status => {
-          setMysqlConnected(status.mysql === 'running')
-        })
-      }
-    }
-  }, [selectedLanguage])
-
   const handleInstallMysql = async () => {
     setMysqlInstallProgress(10)
     setMysqlInstallMsg('Detecting local PHP & MySQL environment...')
@@ -197,6 +186,17 @@ const EditorPage = () => {
     if (activePane === 'left') setLeftLang(val)
     else setRightLang(val)
   }
+
+  // Sync connection status with backend
+  useEffect(() => {
+    if (selectedLanguage === 'MySQL') {
+      if (window.api && typeof window.api.getXamppStatus === 'function') {
+        window.api.getXamppStatus().then(status => {
+          setMysqlConnected(status.mysql === 'running')
+        })
+      }
+    }
+  }, [selectedLanguage])
 
   const activeFilePath = activePane === 'left' ? leftFilePath : rightFilePath
   const setActiveFilePath = (val) => {
