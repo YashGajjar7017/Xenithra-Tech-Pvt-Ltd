@@ -16,9 +16,9 @@ const ensureTempDir = () => {
 
 /**
  * Runs code in a sandbox/subprocess and returns output
- * @param {string} lang 
- * @param {string} code 
- * @param {string} args 
+ * @param {string} lang
+ * @param {string} code
+ * @param {string} args
  * @returns {Promise<{success: boolean, output: string}>}
  */
 export const runCode = (lang, code, args) => {
@@ -83,12 +83,14 @@ export const runCode = (lang, code, args) => {
       case 'MySQL':
         return resolve({
           success: true,
-          output: 'MySQL database engine is operational. Use the inbuilt MySQL Portal dashboard (dropdown option) to manage collections and execute queries!'
+          output:
+            'MySQL database engine is operational. Use the inbuilt MySQL Portal dashboard (dropdown option) to manage collections and execute queries!'
         })
       case 'XML':
         return resolve({
           success: true,
-          output: 'XML syntax validated successfully!\n(No execution environment needed for static XML)'
+          output:
+            'XML syntax validated successfully!\n(No execution environment needed for static XML)'
         })
       case 'Next.js':
         ext = 'js'
@@ -119,7 +121,10 @@ export const runCode = (lang, code, args) => {
       exec(runCmd, { timeout: 8000, maxBuffer: 1024 * 1024 }, (runErr, runStdout, runStderr) => {
         cleanup()
         if (runErr && runErr.killed) {
-          return resolve({ success: false, output: '[ERROR] Process execution timed out (8 seconds limit).' })
+          return resolve({
+            success: false,
+            output: '[ERROR] Process execution timed out (8 seconds limit).'
+          })
         }
         const output = runStdout + runStderr
         resolve({
@@ -149,9 +154,9 @@ export const runCode = (lang, code, args) => {
 
 /**
  * Compiles code into a downloadable binary
- * @param {string} lang 
- * @param {string} code 
- * @param {string} filename 
+ * @param {string} lang
+ * @param {string} code
+ * @param {string} filename
  * @returns {Promise<{success: boolean, binaryFile: string, baseName: string, output?: string}>}
  */
 export const packageCode = (lang, code, filename) => {
@@ -185,7 +190,10 @@ export const packageCode = (lang, code, filename) => {
         compileCmd = `csc "${sourceFile}" /out:"${binaryFile}"`
         break
       default:
-        return resolve({ success: false, output: 'Packaging is only supported for C, C++, and .NET/C#.' })
+        return resolve({
+          success: false,
+          output: 'Packaging is only supported for C, C++, and .NET/C#.'
+        })
     }
 
     try {

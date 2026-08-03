@@ -1,6 +1,15 @@
 import React, { useState } from 'react'
 
-const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJumpToLine, onStartDebug, onStepOver, onStepInto, onStopDebug }) => {
+const DebugPanel = ({
+  breakpoints = [],
+  activeFile = '',
+  lang = 'Node.js',
+  onJumpToLine,
+  onStartDebug,
+  onStepOver,
+  onStepInto,
+  onStopDebug
+}) => {
   const [selectedConfig, setSelectedConfig] = useState('Debug All')
   const [showConfigDropdown, setShowConfigDropdown] = useState(false)
   const [isDebugging, setIsDebugging] = useState(false)
@@ -37,18 +46,33 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
   const [newWatchInput, setNewWatchInput] = useState('')
 
   const [callStack, setCallStack] = useState([
-    { name: 'main', file: activeFile.split(/[\\/]/).pop() || 'index.js', line: breakpoints[0] || 1, address: '0x7ffc82a1' },
-    { name: 'Module._compile', file: 'node:internal/modules/cjs/loader', line: 1159, address: '0x7ffc8110' },
-    { name: 'Module._extensions..js', file: 'node:internal/modules/cjs/loader', line: 1218, address: '0x7ffc8004' }
+    {
+      name: 'main',
+      file: activeFile.split(/[\\/]/).pop() || 'index.js',
+      line: breakpoints[0] || 1,
+      address: '0x7ffc82a1'
+    },
+    {
+      name: 'Module._compile',
+      file: 'node:internal/modules/cjs/loader',
+      line: 1159,
+      address: '0x7ffc8110'
+    },
+    {
+      name: 'Module._extensions..js',
+      file: 'node:internal/modules/cjs/loader',
+      line: 1218,
+      address: '0x7ffc8004'
+    }
   ])
 
   const toggleSection = (section) => {
-    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }))
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }))
   }
 
   const handleAddWatch = () => {
     if (!newWatchInput.trim()) return
-    setWatchList(prev => [...prev, { expression: newWatchInput.trim(), value: 'undefined' }])
+    setWatchList((prev) => [...prev, { expression: newWatchInput.trim(), value: 'undefined' }])
     setNewWatchInput('')
   }
 
@@ -83,7 +107,7 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
   ]
 
   return (
-    <div 
+    <div
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -98,20 +122,46 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
     >
       {/* Top Header & Launch Config Selector Dropdown */}
       <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{ fontWeight: '700', fontSize: '11px', letterSpacing: '0.05em', color: '#c9d1d9' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '8px'
+          }}
+        >
+          <span
+            style={{
+              fontWeight: '700',
+              fontSize: '11px',
+              letterSpacing: '0.05em',
+              color: '#c9d1d9'
+            }}
+          >
             RUN AND DEBUG
           </span>
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            <button 
+            <button
               onClick={() => setShowConfigDropdown(!showConfigDropdown)}
-              style={{ background: 'transparent', border: 'none', color: '#8b949e', cursor: 'pointer', fontSize: '14px' }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#8b949e',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
               title="Configure Settings"
             >
               ⚙
             </button>
-            <button 
-              style={{ background: 'transparent', border: 'none', color: '#8b949e', cursor: 'pointer', fontSize: '14px' }}
+            <button
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#8b949e',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
               title="More Actions"
             >
               ...
@@ -121,7 +171,7 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
 
         {/* Debug Launcher Select Button */}
         <div style={{ position: 'relative' }}>
-          <div 
+          <div
             onClick={() => setShowConfigDropdown(!showConfigDropdown)}
             style={{
               display: 'flex',
@@ -143,7 +193,7 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
 
           {/* Configuration Dropdown Items */}
           {showConfigDropdown && (
-            <div 
+            <div
               style={{
                 position: 'absolute',
                 top: '100%',
@@ -159,7 +209,7 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
               }}
             >
               {configs.map((cfg, idx) => (
-                <div 
+                <div
                   key={idx}
                   onClick={() => {
                     setSelectedConfig(cfg)
@@ -173,8 +223,13 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
                     background: cfg === selectedConfig ? 'rgba(0, 255, 170, 0.1)' : 'transparent',
                     borderTop: idx === 2 ? '1px solid rgba(255,255,255,0.08)' : 'none'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = cfg === selectedConfig ? 'rgba(0, 255, 170, 0.1)' : 'transparent'}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background =
+                      cfg === selectedConfig ? 'rgba(0, 255, 170, 0.1)' : 'transparent')
+                  }
                 >
                   {cfg}
                 </div>
@@ -186,17 +241,70 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
         {/* Debug Execution Toolbar Controls */}
         <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
           {!isDebugging ? (
-            <button 
+            <button
               onClick={handleStartDebugSession}
-              style={{ flex: 1, background: '#00e676', border: 'none', color: '#000', borderRadius: '4px', padding: '5px', fontWeight: 'bold', cursor: 'pointer', fontSize: '11px' }}
+              style={{
+                flex: 1,
+                background: '#00e676',
+                border: 'none',
+                color: '#000',
+                borderRadius: '4px',
+                padding: '5px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '11px'
+              }}
             >
               ▶ Start Debugging (F5)
             </button>
           ) : (
             <React.Fragment>
-              <button onClick={handleStepOverAction} title="Step Over (F10)" style={{ flex: 1, background: '#58a6ff', border: 'none', color: '#fff', borderRadius: '3px', padding: '4px', cursor: 'pointer', fontSize: '10px' }}>↷ Step</button>
-              <button onClick={handleStartDebugSession} title="Restart (Ctrl+Shift+F5)" style={{ background: '#d8b4fe', border: 'none', color: '#000', borderRadius: '3px', padding: '4px 8px', cursor: 'pointer', fontSize: '10px' }}>↻</button>
-              <button onClick={handleStopDebugSession} title="Stop (Shift+F5)" style={{ background: '#ff4d4d', border: 'none', color: '#fff', borderRadius: '3px', padding: '4px 8px', cursor: 'pointer', fontSize: '10px' }}>■</button>
+              <button
+                onClick={handleStepOverAction}
+                title="Step Over (F10)"
+                style={{
+                  flex: 1,
+                  background: '#58a6ff',
+                  border: 'none',
+                  color: '#fff',
+                  borderRadius: '3px',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  fontSize: '10px'
+                }}
+              >
+                ↷ Step
+              </button>
+              <button
+                onClick={handleStartDebugSession}
+                title="Restart (Ctrl+Shift+F5)"
+                style={{
+                  background: '#d8b4fe',
+                  border: 'none',
+                  color: '#000',
+                  borderRadius: '3px',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  fontSize: '10px'
+                }}
+              >
+                ↻
+              </button>
+              <button
+                onClick={handleStopDebugSession}
+                title="Stop (Shift+F5)"
+                style={{
+                  background: '#ff4d4d',
+                  border: 'none',
+                  color: '#fff',
+                  borderRadius: '3px',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  fontSize: '10px'
+                }}
+              >
+                ■
+              </button>
             </React.Fragment>
           )}
         </div>
@@ -204,25 +312,72 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
 
       {/* Accordion 1: VARIABLES */}
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div 
+        <div
           onClick={() => toggleSection('variables')}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', color: '#8b949e', background: 'rgba(255,255,255,0.02)' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '11px',
+            color: '#8b949e',
+            background: 'rgba(255,255,255,0.02)'
+          }}
         >
           <span>{openSections.variables ? '▾' : '▸'}</span>
           <span>Variables</span>
         </div>
         {openSections.variables && (
-          <div style={{ padding: '4px 12px 8px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div
+            style={{
+              padding: '4px 12px 8px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px'
+            }}
+          >
             <div style={{ fontWeight: '600', color: '#58a6ff', fontSize: '10px' }}>Local</div>
             {variables.Local.map((v, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', paddingLeft: '8px' }}>
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '11px',
+                  paddingLeft: '8px'
+                }}
+              >
                 <span style={{ color: '#9cdcfe' }}>{v.name}:</span>
-                <span style={{ color: '#ce9178', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.value}</span>
+                <span
+                  style={{
+                    color: '#ce9178',
+                    maxWidth: '140px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {v.value}
+                </span>
               </div>
             ))}
-            <div style={{ fontWeight: '600', color: '#58a6ff', fontSize: '10px', marginTop: '4px' }}>Global</div>
+            <div
+              style={{ fontWeight: '600', color: '#58a6ff', fontSize: '10px', marginTop: '4px' }}
+            >
+              Global
+            </div>
             {variables.Global.map((v, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', paddingLeft: '8px' }}>
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '11px',
+                  paddingLeft: '8px'
+                }}
+              >
                 <span style={{ color: '#9cdcfe' }}>{v.name}:</span>
                 <span style={{ color: '#8b949e' }}>{v.value}</span>
               </div>
@@ -233,30 +388,66 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
 
       {/* Accordion 2: WATCH */}
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div 
+        <div
           onClick={() => toggleSection('watch')}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', color: '#8b949e', background: 'rgba(255,255,255,0.02)' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '6px 12px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '11px',
+            color: '#8b949e',
+            background: 'rgba(255,255,255,0.02)'
+          }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span>{openSections.watch ? '▾' : '▸'}</span>
             <span>Watch</span>
           </div>
-          <span onClick={(e) => { e.stopPropagation(); handleAddWatch() }} style={{ color: '#58a6ff', fontSize: '14px', cursor: 'pointer' }}>+</span>
+          <span
+            onClick={(e) => {
+              e.stopPropagation()
+              handleAddWatch()
+            }}
+            style={{ color: '#58a6ff', fontSize: '14px', cursor: 'pointer' }}
+          >
+            +
+          </span>
         </div>
         {openSections.watch && (
-          <div style={{ padding: '4px 12px 8px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div
+            style={{
+              padding: '4px 12px 8px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px'
+            }}
+          >
             <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-              <input 
-                type="text" 
-                placeholder="Expression to watch..." 
-                value={newWatchInput} 
+              <input
+                type="text"
+                placeholder="Expression to watch..."
+                value={newWatchInput}
                 onChange={(e) => setNewWatchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddWatch()}
-                style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '10px' }}
+                style={{
+                  flex: 1,
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#fff',
+                  padding: '3px 6px',
+                  borderRadius: '3px',
+                  fontSize: '10px'
+                }}
               />
             </div>
             {watchList.map((w, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+              <div
+                key={idx}
+                style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}
+              >
                 <span style={{ color: '#d8b4fe' }}>{w.expression}</span>
                 <span style={{ color: '#00ffaa' }}>{w.value}</span>
               </div>
@@ -267,19 +458,46 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
 
       {/* Accordion 3: CALL STACK */}
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div 
+        <div
           onClick={() => toggleSection('callStack')}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', color: '#8b949e', background: 'rgba(255,255,255,0.02)' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '11px',
+            color: '#8b949e',
+            background: 'rgba(255,255,255,0.02)'
+          }}
         >
           <span>{openSections.callStack ? '▾' : '▸'}</span>
           <span>Call Stack</span>
         </div>
         {openSections.callStack && (
-          <div style={{ padding: '4px 12px 8px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div
+            style={{
+              padding: '4px 12px 8px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px'
+            }}
+          >
             {callStack.map((cs, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: idx === 0 ? '#00ffaa' : '#c9d1d9' }}>
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '11px',
+                  color: idx === 0 ? '#00ffaa' : '#c9d1d9'
+                }}
+              >
                 <span>{cs.name}</span>
-                <span style={{ color: '#8b949e', fontSize: '10px' }}>{cs.file}:{cs.line}</span>
+                <span style={{ color: '#8b949e', fontSize: '10px' }}>
+                  {cs.file}:{cs.line}
+                </span>
               </div>
             ))}
           </div>
@@ -288,26 +506,47 @@ const DebugPanel = ({ breakpoints = [], activeFile = '', lang = 'Node.js', onJum
 
       {/* Accordion 4: BREAKPOINTS */}
       <div>
-        <div 
+        <div
           onClick={() => toggleSection('breakpoints')}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', color: '#8b949e', background: 'rgba(255,255,255,0.02)' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '11px',
+            color: '#8b949e',
+            background: 'rgba(255,255,255,0.02)'
+          }}
         >
           <span>{openSections.breakpoints ? '▾' : '▸'}</span>
           <span>Breakpoints</span>
         </div>
         {openSections.breakpoints && (
-          <div style={{ padding: '4px 12px 8px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div
+            style={{
+              padding: '4px 12px 8px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px'
+            }}
+          >
             {breakpoints.length === 0 ? (
-              <div style={{ fontSize: '10px', color: '#8b949e', fontStyle: 'italic' }}>No line breakpoints active.</div>
+              <div style={{ fontSize: '10px', color: '#8b949e', fontStyle: 'italic' }}>
+                No line breakpoints active.
+              </div>
             ) : (
               breakpoints.map((bpLine, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   onClick={() => onJumpToLine && onJumpToLine(bpLine)}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                 >
                   <input type="checkbox" defaultChecked style={{ width: '12px', height: '12px' }} />
-                  <span style={{ color: '#ff4d4d', fontWeight: 'bold' }}>● {activeFile.split(/[\\/]/).pop() || 'index.js'}</span>
+                  <span style={{ color: '#ff4d4d', fontWeight: 'bold' }}>
+                    ● {activeFile.split(/[\\/]/).pop() || 'index.js'}
+                  </span>
                   <span style={{ fontSize: '10px', color: '#58a6ff' }}>{bpLine}</span>
                 </div>
               ))

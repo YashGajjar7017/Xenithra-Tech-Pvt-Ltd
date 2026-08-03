@@ -49,6 +49,7 @@
 ## Data Flow Diagram
 
 ### Signup Flow
+
 ```
 User Input
     │
@@ -77,6 +78,7 @@ POST /api/signup
 ```
 
 ### Login Flow
+
 ```
 User Input
     │
@@ -214,8 +216,8 @@ POST /api/login
         ├─ Sidebar   Form       Form    Cards         Classroom
         ├─ Editor    Inputs     Inputs  Stats        Maintenance
         ├─ Terminal  Buttons    Buttons Links        NotFound
-        ├─ TopBar                               
-        └─ MenuBar                                
+        ├─ TopBar
+        └─ MenuBar
              │
              └─ Navigation (handleNavigation)
                   │

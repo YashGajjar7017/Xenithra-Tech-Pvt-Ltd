@@ -8,7 +8,8 @@ const signupStyles = {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '100vh',
-    background: 'radial-gradient(circle at top left, #ff00c8 0, transparent 55%), radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%)',
+    background:
+      'radial-gradient(circle at top left, #ff00c8 0, transparent 55%), radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%)',
     padding: '20px'
   },
   card: {
@@ -51,7 +52,8 @@ const signupStyles = {
     background: 'rgba(255, 255, 255, 0.25)',
     color: '#ffffffdd',
     fontSize: '15px',
-    boxShadow: 'inset 2px 2px 6px rgba(255, 255, 255, 0.15), inset -2px -2px 6px rgba(0, 0, 0, 0.3)',
+    boxShadow:
+      'inset 2px 2px 6px rgba(255, 255, 255, 0.15), inset -2px -2px 6px rgba(0, 0, 0, 0.3)',
     transition: 'all 0.3s ease',
     outline: 'none',
     backdropFilter: 'blur(10px)',
@@ -68,7 +70,8 @@ const signupStyles = {
     background: 'rgba(255, 255, 255, 0.25)',
     color: '#ffffffdd',
     fontSize: '15px',
-    boxShadow: 'inset 2px 2px 6px rgba(255, 255, 255, 0.15), inset -2px -2px 6px rgba(0, 0, 0, 0.3)',
+    boxShadow:
+      'inset 2px 2px 6px rgba(255, 255, 255, 0.15), inset -2px -2px 6px rgba(0, 0, 0, 0.3)',
     transition: 'all 0.3s ease',
     outline: 'none',
     backdropFilter: 'blur(10px)',

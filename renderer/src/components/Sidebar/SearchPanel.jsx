@@ -35,18 +35,20 @@ const SearchPanel = () => {
       content = await window.api.readFile(filePath)
     }
     const fileName = filePath.split(/[\\/]/).pop()
-    window.dispatchEvent(new CustomEvent('open-file', {
-      detail: {
-        filename: fileName,
-        code: content || '',
-        path: filePath,
-        jumpLine: lineNumber
-      }
-    }))
+    window.dispatchEvent(
+      new CustomEvent('open-file', {
+        detail: {
+          filename: fileName,
+          code: content || '',
+          path: filePath,
+          jumpLine: lineNumber
+        }
+      })
+    )
   }
 
   return (
-    <div 
+    <div
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -58,20 +60,36 @@ const SearchPanel = () => {
         overflowY: 'auto'
       }}
     >
-      <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', marginBottom: '4px' }}>
+      <div
+        style={{
+          fontSize: '11px',
+          fontWeight: '700',
+          letterSpacing: '0.05em',
+          marginBottom: '4px'
+        }}
+      >
         SEARCH WORKSPACE
       </div>
-      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div
+        style={{
+          fontSize: '10px',
+          color: 'var(--text-muted)',
+          marginBottom: '10px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }}
+      >
         In: {localStorage.getItem('activeWorkspacePath') || 'Current Root Folder'}
       </div>
 
       {/* Primary Search Input with Options */}
       <div style={{ marginBottom: '10px', position: 'relative' }}>
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-          <input 
-            type="text" 
-            placeholder="Search all files..." 
-            value={query} 
+          <input
+            type="text"
+            placeholder="Search all files..."
+            value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             style={{
@@ -84,7 +102,7 @@ const SearchPanel = () => {
               fontSize: '12px'
             }}
           />
-          <button 
+          <button
             onClick={handleSearch}
             style={{
               background: '#00ffaa',
@@ -103,7 +121,7 @@ const SearchPanel = () => {
 
         {/* Options Toggles */}
         <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
-          <button 
+          <button
             onClick={() => setCaseSensitive(!caseSensitive)}
             style={{
               background: caseSensitive ? 'rgba(0, 255, 170, 0.2)' : 'rgba(255,255,255,0.04)',
@@ -119,7 +137,7 @@ const SearchPanel = () => {
             Aa
           </button>
 
-          <button 
+          <button
             onClick={() => setMatchWholeWord(!matchWholeWord)}
             style={{
               background: matchWholeWord ? 'rgba(0, 255, 170, 0.2)' : 'rgba(255,255,255,0.04)',
@@ -135,7 +153,7 @@ const SearchPanel = () => {
             "W"
           </button>
 
-          <button 
+          <button
             onClick={() => setUseRegex(!useRegex)}
             style={{
               background: useRegex ? 'rgba(0, 255, 170, 0.2)' : 'rgba(255,255,255,0.04)',
@@ -151,10 +169,10 @@ const SearchPanel = () => {
             .*
           </button>
 
-          <input 
-            type="text" 
-            placeholder="files to include (e.g. *.js)" 
-            value={includesPattern} 
+          <input
+            type="text"
+            placeholder="files to include (e.g. *.js)"
+            value={includesPattern}
             onChange={(e) => setIncludesPattern(e.target.value)}
             style={{
               flex: 1,
@@ -171,51 +189,84 @@ const SearchPanel = () => {
 
       {/* Results Header / Loading */}
       {isSearching && (
-        <div style={{ color: '#58a6ff', fontSize: '11px', padding: '8px 0' }}>Searching workspace files...</div>
+        <div style={{ color: '#58a6ff', fontSize: '11px', padding: '8px 0' }}>
+          Searching workspace files...
+        </div>
       )}
 
       {searchResults && (
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '11px', color: '#8b949e', marginBottom: '8px' }}>
-            Found {searchResults.totalMatches || 0} results across {searchResults.results ? searchResults.results.length : 0} files.
+            Found {searchResults.totalMatches || 0} results across{' '}
+            {searchResults.results ? searchResults.results.length : 0} files.
           </div>
 
-          {searchResults.results && searchResults.results.map((fileRes, idx) => (
-            <div key={idx} style={{ marginBottom: '10px' }}>
-              {/* File title header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#58a6ff', fontWeight: 'bold', fontSize: '11px', padding: '2px 0' }}>
-                <i className="bx bx-file"></i>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fileRes.relativePath}</span>
-                <span style={{ fontSize: '9px', background: 'rgba(255,255,255,0.08)', padding: '1px 4px', borderRadius: '3px', color: '#8b949e', marginLeft: 'auto' }}>
-                  {fileRes.matchesCount}
-                </span>
-              </div>
-
-              {/* Matching lines */}
-              {fileRes.matches.map((m, mIdx) => (
-                <div 
-                  key={mIdx}
-                  onClick={() => handleLineClick(fileRes.path, m.lineNumber)}
+          {searchResults.results &&
+            searchResults.results.map((fileRes, idx) => (
+              <div key={idx} style={{ marginBottom: '10px' }}>
+                {/* File title header */}
+                <div
                   style={{
-                    padding: '3px 8px',
-                    marginLeft: '12px',
-                    fontSize: '11px',
-                    cursor: 'pointer',
-                    borderRadius: '3px',
                     display: 'flex',
-                    gap: '8px',
-                    fontFamily: 'monospace',
-                    color: '#c9d1d9'
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#58a6ff',
+                    fontWeight: 'bold',
+                    fontSize: '11px',
+                    padding: '2px 0'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 229, 255, 0.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  <span style={{ color: '#8b949e', minWidth: '24px' }}>Line {m.lineNumber}:</span>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.lineContent}</span>
+                  <i className="bx bx-file"></i>
+                  <span
+                    style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  >
+                    {fileRes.relativePath}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      background: 'rgba(255,255,255,0.08)',
+                      padding: '1px 4px',
+                      borderRadius: '3px',
+                      color: '#8b949e',
+                      marginLeft: 'auto'
+                    }}
+                  >
+                    {fileRes.matchesCount}
+                  </span>
                 </div>
-              ))}
-            </div>
-          ))}
+
+                {/* Matching lines */}
+                {fileRes.matches.map((m, mIdx) => (
+                  <div
+                    key={mIdx}
+                    onClick={() => handleLineClick(fileRes.path, m.lineNumber)}
+                    style={{
+                      padding: '3px 8px',
+                      marginLeft: '12px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      borderRadius: '3px',
+                      display: 'flex',
+                      gap: '8px',
+                      fontFamily: 'monospace',
+                      color: '#c9d1d9'
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = 'rgba(0, 229, 255, 0.1)')
+                    }
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <span style={{ color: '#8b949e', minWidth: '24px' }}>Line {m.lineNumber}:</span>
+                    <span
+                      style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    >
+                      {m.lineContent}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ))}
         </div>
       )}
     </div>

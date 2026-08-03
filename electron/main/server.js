@@ -21,14 +21,14 @@ const connectDatabase = async () => {
   try {
     const mongoose = await import('mongoose')
     const mongooseDefault = mongoose.default || mongoose
-    
+
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/xenithra_db'
     await mongooseDefault.connect(mongoUri)
     console.log('MongoDB Connected Successfully')
     mongooseConnected = true
     return true
   } catch (error) {
-    console.warn('~ MongoDB Connection Error:', (error).message)
+    console.warn('~ MongoDB Connection Error:', error.message)
     console.warn('~ Running without database - use npm install mongoose to enable')
     return false
   }
@@ -44,14 +44,14 @@ const loadRoutes = async () => {
       console.log('Auth routes loaded')
     }
   } catch (error) {
-    console.warn('~ Could not load auth routes:', (error).message)
+    console.warn('~ Could not load auth routes:', error.message)
   }
 }
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     message: 'Server is running',
     database: mongooseConnected ? 'Connected' : 'Not connected'
   })
@@ -77,14 +77,14 @@ const startServer = async () => {
     // Try to connect to database
     await connectDatabase()
   } catch (error) {
-    console.warn('Database connection failed:', (error).message)
+    console.warn('Database connection failed:', error.message)
   }
 
   try {
     // Load routes
     await loadRoutes()
   } catch (error) {
-    console.warn('Failed to load routes:', (error).message)
+    console.warn('Failed to load routes:', error.message)
   }
 
   return new Promise((resolve) => {

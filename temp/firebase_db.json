@@ -1,0 +1,64 @@
+{
+  "config": {
+    "projectId": "xenithra-app-1002",
+    "apiKey": "AIzaSyA1b2C3d4E5f6G7h8I9j0K1L2M3N4O5P",
+    "connected": false
+  },
+  "users": [
+    {
+      "uid": "usr_0918",
+      "email": "lead@xenithra.com",
+      "created": "2026-07-10",
+      "lastLogin": "2026-07-22"
+    },
+    {
+      "uid": "usr_8471",
+      "email": "yash@xenithra.tech",
+      "created": "2026-07-12",
+      "lastLogin": "2026-07-21"
+    },
+    {
+      "uid": "usr_3920",
+      "email": "guest@google.com",
+      "created": "2026-07-18",
+      "lastLogin": "2026-07-18"
+    }
+  ],
+  "collections": {
+    "users": [
+      {
+        "id": "usr_0918",
+        "data": {
+          "username": "admin",
+          "role": "Administrator",
+          "theme": "vscode-dark"
+        }
+      },
+      {
+        "id": "usr_8471",
+        "data": {
+          "username": "yash_gajjar",
+          "role": "Lead Developer",
+          "theme": "glass-dark"
+        }
+      }
+    ],
+    "settings": [
+      {
+        "id": "editor_config",
+        "data": {
+          "tabSize": 4,
+          "autoSave": true,
+          "wordWrap": "on"
+        }
+      },
+      {
+        "id": "network_config",
+        "data": {
+          "bindHost": "0.0.0.0",
+          "apiPort": 8000
+        }
+      }
+    ]
+  }
+}

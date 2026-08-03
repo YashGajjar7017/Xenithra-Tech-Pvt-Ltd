@@ -11,6 +11,7 @@ This document provides a detailed breakdown of every change made to implement th
 ### File: `renderer/src/components/Topbar/Topbar.jsx`
 
 #### What Changed:
+
 - Added `useRef` imports for dropdown references
 - Added `useEffect` hook for click-outside detection
 - Implemented language dropdown with proper state management
@@ -22,6 +23,7 @@ This document provides a detailed breakdown of every change made to implement th
   - Help menu (about, shortcuts, documentation)
 
 #### Key Improvements:
+
 ```javascript
 // BEFORE:
 const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -39,13 +41,15 @@ useEffect(() => {
 ```
 
 #### Menu Structure Added:
+
 - File Menu: New, Open, Save, Exit
-- Edit Menu: Undo, Redo, Cut, Copy, Paste  
+- Edit Menu: Undo, Redo, Cut, Copy, Paste
 - Selection Menu: Select All, Select None
 - View Menu: Zoom In, Zoom Out, Reset View, Toggle Sidebar
 - Help Menu: About, Keyboard Shortcuts, Documentation
 
 #### Language Dropdown:
+
 - Fixed to show selected language
 - Closes on selection
 - Dropdown text changes dynamically
@@ -57,6 +61,7 @@ useEffect(() => {
 ### File: `renderer/src/components/Sidebar/Sidebar.jsx`
 
 #### What Changed:
+
 - Changed from static button list to dynamic folder browser
 - Added state for `currentPath` and `expandedDirs`
 - Implemented `handleOpenFolder()` function
@@ -85,6 +90,7 @@ const menuItems = [
 ```
 
 #### New Functionality:
+
 ```javascript
 const handleOpenFolder = async () => {
   if (window.ipcRenderer) {
@@ -107,6 +113,7 @@ const handleMenuItemClick = (itemId) => {
 ```
 
 #### Explorer View:
+
 - Shows current folder path in sidebar
 - Appears as: `📂 /path/to/folder`
 - Updates when folder is opened
@@ -118,6 +125,7 @@ const handleMenuItemClick = (itemId) => {
 ### File 1: `renderer/src/css/index.css`
 
 #### Changes:
+
 ```css
 /* Added after body styles */
 textarea {
@@ -135,6 +143,7 @@ textarea:focus {
 ### File 2: `renderer/src/css/auth.css`
 
 #### Changes:
+
 ```css
 /* Added textarea styles for form controls */
 textarea.form-control {
@@ -150,6 +159,7 @@ textarea.form-control:focus {
 ```
 
 #### Result:
+
 - All textareas now resizable
 - Vertical resize enabled by default
 - Both directions when focused
@@ -202,6 +212,7 @@ textarea.form-control:focus {
 ```
 
 #### Benefits:
+
 - Resizable in both directions
 - Proper min-height constraint
 - Full width usage
@@ -214,9 +225,11 @@ textarea.form-control:focus {
 ### File: `renderer/src/pages/DashboardPage.jsx`
 
 #### Complete Rewrite:
+
 From simple stats display to full dashboard with settings.
 
 #### State Variables Added:
+
 ```javascript
 const [username, setUsername] = useState('User')
 const [email, setEmail] = useState('user@example.com')
@@ -252,6 +265,7 @@ const [isSaving, setIsSaving] = useState(false)
    - Success message
 
 #### CSS Added:
+
 ```css
 .settings-section {
   background: white;
@@ -284,9 +298,11 @@ const [isSaving, setIsSaving] = useState(false)
 ### File: `renderer/src/JS/app-handlers.js`
 
 #### Purpose:
+
 Centralized handler system for all menu items and buttons.
 
 #### Exports:
+
 1. **fileMenuHandlers** - File menu operations
 2. **editMenuHandlers** - Edit menu operations
 3. **viewMenuHandlers** - View menu operations with zoom
@@ -298,28 +314,57 @@ Centralized handler system for all menu items and buttons.
 9. **setupKeyboardShortcuts()** - Setup keyboard shortcuts
 
 #### Key Functions:
+
 ```javascript
 export const fileMenuHandlers = {
-  new: () => { /* implement */ },
-  open: () => { /* file dialog */ },
-  save: () => { /* save operation */ },
-  saveAs: () => { /* save as */ },
-  exit: () => { /* close app */ }
+  new: () => {
+    /* implement */
+  },
+  open: () => {
+    /* file dialog */
+  },
+  save: () => {
+    /* save operation */
+  },
+  saveAs: () => {
+    /* save as */
+  },
+  exit: () => {
+    /* close app */
+  }
 }
 
 export const viewMenuHandlers = {
-  zoomIn: () => { /* zoom += 10% */ },
-  zoomOut: () => { /* zoom -= 10% */ },
-  resetZoom: () => { /* zoom = 100% */ },
-  toggleSidebar: () => { /* show/hide */ },
-  toggleFullscreen: () => { /* fullscreen */ }
+  zoomIn: () => {
+    /* zoom += 10% */
+  },
+  zoomOut: () => {
+    /* zoom -= 10% */
+  },
+  resetZoom: () => {
+    /* zoom = 100% */
+  },
+  toggleSidebar: () => {
+    /* show/hide */
+  },
+  toggleFullscreen: () => {
+    /* fullscreen */
+  }
 }
 
 export const settingsHandlers = {
-  saveUserSettings: (settings) => { /* save */ },
-  loadUserSettings: () => { /* load */ },
-  resetSettings: () => { /* reset */ },
-  toggleTheme: () => { /* light/dark */ }
+  saveUserSettings: (settings) => {
+    /* save */
+  },
+  loadUserSettings: () => {
+    /* load */
+  },
+  resetSettings: () => {
+    /* reset */
+  },
+  toggleTheme: () => {
+    /* light/dark */
+  }
 }
 ```
 
@@ -327,20 +372,21 @@ export const settingsHandlers = {
 
 ## Summary Table
 
-| Component | File | Changes | Impact |
-|-----------|------|---------|--------|
-| Topbar | `Topbar.jsx` | Added menu handlers, dropdown refs, click-outside detection | Menus now work |
-| Sidebar | `Sidebar.jsx` | Added folder dialog, path display, menu changes | Can open folders |
-| Editor | `Editor.jsx` | Added resize CSS properties | Textarea resizable |
-| CSS | `index.css` + `auth.css` | Added textarea styles | All textareas flexible |
-| Dashboard | `DashboardPage.jsx` | Complete rewrite with settings | Settings management |
-| Handlers | `app-handlers.js` | NEW file created | Centralized system |
+| Component | File                     | Changes                                                     | Impact                 |
+| --------- | ------------------------ | ----------------------------------------------------------- | ---------------------- |
+| Topbar    | `Topbar.jsx`             | Added menu handlers, dropdown refs, click-outside detection | Menus now work         |
+| Sidebar   | `Sidebar.jsx`            | Added folder dialog, path display, menu changes             | Can open folders       |
+| Editor    | `Editor.jsx`             | Added resize CSS properties                                 | Textarea resizable     |
+| CSS       | `index.css` + `auth.css` | Added textarea styles                                       | All textareas flexible |
+| Dashboard | `DashboardPage.jsx`      | Complete rewrite with settings                              | Settings management    |
+| Handlers  | `app-handlers.js`        | NEW file created                                            | Centralized system     |
 
 ---
 
 ## Testing Each Change
 
 ### 1. Topbar Changes
+
 ```
 Navigate to app
 Click "File" → Opens dropdown with 4 items
@@ -352,6 +398,7 @@ All work as expected ✓
 ```
 
 ### 2. Sidebar Changes
+
 ```
 See sidebar with 4 menu items (Home, Open Folder, Dashboard, Settings)
 Click "Open Folder" → File dialog opens
@@ -360,6 +407,7 @@ Click "Dashboard" → Navigate to dashboard ✓
 ```
 
 ### 3. Textarea Changes
+
 ```
 Open any form with textarea
 Click in textarea
@@ -368,6 +416,7 @@ Drag to resize → Works horizontally and vertically ✓
 ```
 
 ### 4. Dashboard Changes
+
 ```
 Navigate to Dashboard
 See statistics cards at top
@@ -383,6 +432,7 @@ Close and reopen → Settings loaded ✓
 ## Performance Impact
 
 ✅ **Minimal Performance Impact**
+
 - No heavy libraries added
 - Using native browser APIs
 - CSS transitions are GPU-accelerated
@@ -393,6 +443,7 @@ Close and reopen → Settings loaded ✓
 ## Browser Compatibility
 
 ✅ **Works in All Modern Browsers**
+
 - Chrome/Electron ✓
 - Firefox ✓
 - Safari ✓
@@ -424,6 +475,7 @@ Close and reopen → Settings loaded ✓
 ## Code Quality
 
 ✅ **Code Standards Met**
+
 - Clear function names
 - Proper error handling
 - Comments where needed

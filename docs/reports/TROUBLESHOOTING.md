@@ -5,17 +5,20 @@
 ### ✅ STATUS: FIXED
 
 ### What Caused It
+
 - Missing or incorrectly configured main.jsx file
 - Path resolution issue in electron.vite.config.mjs
 - Incorrect script tag in index.html
 
 ### How It Was Fixed
+
 1. Verified main.jsx exists in: `renderer/src/main.jsx`
 2. Confirmed correct React 19.x API usage (createRoot)
 3. Verified electron.vite.config.mjs paths
 4. Confirmed index.html script tag: `<script type="module" src="/src/main.jsx"></script>`
 
 ### Verification
+
 ```bash
 # Check file exists
 ls -la renderer/src/main.jsx
@@ -29,11 +32,13 @@ ls -la renderer/src/main.jsx
 ## Issue 2: Component Imports Not Working
 
 ### Problem
+
 ```
 Module not found: Can't resolve './components/Sidebar'
 ```
 
 ### Solution
+
 Use path aliases defined in electron.vite.config.mjs:
 
 ```jsx
@@ -45,7 +50,9 @@ import Sidebar from '@components/Sidebar'
 ```
 
 ### Configure Aliases
+
 The following aliases are already configured:
+
 - `@` → `renderer/src`
 - `@components` → `renderer/src/components`
 - `@pages` → `renderer/src/pages`
@@ -60,11 +67,13 @@ The following aliases are already configured:
 ## Issue 3: CSS Not Loading
 
 ### Problem
+
 ```
 Styles are not applied to components
 ```
 
 ### Solution 1: Check Import Path
+
 ```jsx
 // ✅ Correct
 import '../styles/Sidebar.css'
@@ -74,12 +83,14 @@ import './styles/Sidebar.css'
 ```
 
 ### Solution 2: Check CSS File Exists
+
 ```bash
 # Verify file location
 ls renderer/src/styles/Sidebar.css
 ```
 
 ### Solution 3: Check CSS Class Names
+
 ```jsx
 // HTML
 <div className="sidebar">
@@ -91,6 +102,7 @@ ls renderer/src/styles/Sidebar.css
 ```
 
 ### Solution 4: Clear Browser Cache
+
 1. Press `Ctrl+Shift+Delete` (Chrome) or `Cmd+Shift+Delete` (Safari)
 2. Select "All Time" and "Cached images and files"
 3. Click "Clear data"
@@ -101,9 +113,11 @@ ls renderer/src/styles/Sidebar.css
 ## Issue 4: Component Not Displaying
 
 ### Problem
+
 Component renders but doesn't appear on page
 
 ### Checklist
+
 ```
 □ Component is exported: export default ComponentName
 □ Component is imported: import ComponentName from '...'
@@ -118,6 +132,7 @@ Component renders but doesn't appear on page
 ```
 
 ### Example Fix
+
 ```jsx
 // ❌ WRONG - Not exported
 function Sidebar() {
@@ -136,9 +151,11 @@ export default Sidebar
 ## Issue 5: State Not Updating
 
 ### Problem
+
 Clicking button doesn't update state
 
 ### Checklist
+
 ```
 □ Using const [state, setState] = useState(initial)
 □ Calling setState correctly: setState(newValue)
@@ -148,10 +165,11 @@ Clicking button doesn't update state
 ```
 
 ### Example Fix
+
 ```jsx
 // ❌ WRONG - Direct mutation
 const handleClick = () => {
-  items[0] = 'new value'  // Won't work
+  items[0] = 'new value' // Won't work
 }
 
 // ✅ CORRECT - Create new array
@@ -165,9 +183,11 @@ const handleClick = () => {
 ## Issue 6: React Router Not Working
 
 ### Problem
+
 Routes not rendering correctly
 
 ### Checklist
+
 ```
 □ BrowserRouter wraps Routes
 □ Route paths are correct
@@ -177,6 +197,7 @@ Routes not rendering correctly
 ```
 
 ### Example Correct Setup
+
 ```jsx
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 
@@ -197,9 +218,11 @@ function App() {
 ## Issue 7: Editor Textarea Not Accepting Input
 
 ### Problem
+
 Can't type in the code editor
 
 ### Solution 1: Check onChange Handler
+
 ```jsx
 // ✅ CORRECT
 <textarea
@@ -212,6 +235,7 @@ Can't type in the code editor
 ```
 
 ### Solution 2: Check for ReadOnly
+
 ```jsx
 // Remove readonly attribute if present
 <textarea readOnly /> ❌
@@ -221,6 +245,7 @@ Can't type in the code editor
 ```
 
 ### Solution 3: Check CSS Overflow
+
 ```css
 /* Make sure textarea is visible */
 .code-editor {
@@ -236,9 +261,11 @@ Can't type in the code editor
 ## Issue 8: Terminal Input Not Working
 
 ### Problem
+
 Can't type commands in terminal
 
 ### Solution
+
 Ensure event handler is correct:
 
 ```jsx
@@ -259,9 +286,11 @@ Ensure event handler is correct:
 ## Issue 9: Sidebar Not Collapsing
 
 ### Problem
+
 Sidebar width doesn't change
 
 ### Solution
+
 Check state management:
 
 ```jsx
@@ -281,11 +310,13 @@ const [collapsed, setCollapsed] = useState(false)
 ## Issue 10: Dev Server Not Starting
 
 ### Problem
+
 ```
 ERROR: ENOENT: no such file or directory
 ```
 
 ### Solution 1: Check Node Modules
+
 ```bash
 # Reinstall dependencies
 rm -rf node_modules package-lock.json
@@ -293,6 +324,7 @@ npm install
 ```
 
 ### Solution 2: Check File Exists
+
 ```bash
 # Verify main.jsx exists
 ls renderer/src/main.jsx
@@ -302,12 +334,14 @@ ls package.json
 ```
 
 ### Solution 3: Check Electron Config
+
 ```bash
 # Verify electron.vite.config.mjs exists
 ls electron.vite.config.mjs
 ```
 
 ### Solution 4: Kill Existing Process
+
 ```bash
 # Find and kill process on port 3000
 netstat -ano | findstr :3000
@@ -319,20 +353,29 @@ taskkill /PID <PID> /F
 ## Issue 11: Styles Conflict
 
 ### Problem
+
 Multiple components have same class names causing conflicts
 
 ### Solution: Use BEM Naming Convention
+
 ```css
 /* ✅ CORRECT - Component scoped */
-.sidebar { }
-.sidebar__header { }
-.sidebar__nav { }
-.sidebar__item { }
+.sidebar {
+}
+.sidebar__header {
+}
+.sidebar__nav {
+}
+.sidebar__item {
+}
 
 /* ❌ WRONG - Too generic */
-.container { }
-.header { }
-.item { }
+.container {
+}
+.header {
+}
+.item {
+}
 ```
 
 ---
@@ -340,9 +383,11 @@ Multiple components have same class names causing conflicts
 ## Issue 12: TypeScript Errors (if using TS)
 
 ### Current Status
+
 The project uses **JSX only**, no TypeScript needed.
 
 If you want to add TypeScript later:
+
 ```bash
 npm install --save-dev typescript @types/react @types/react-dom
 ```
@@ -354,11 +399,13 @@ Rename files: `.jsx` → `.tsx`
 ## Issue 13: Build Fails
 
 ### Problem
+
 ```
 npm run build fails with errors
 ```
 
 ### Solutions
+
 ```bash
 # 1. Check for syntax errors
 npm run lint
@@ -378,9 +425,11 @@ cat electron.vite.config.mjs
 ## Issue 14: Blank Page After Build
 
 ### Problem
+
 App builds but shows blank page
 
 ### Checklist
+
 ```
 □ #root div exists in index.html
 □ main.jsx imports App
@@ -395,9 +444,11 @@ App builds but shows blank page
 ## Issue 15: Component Memory Leak
 
 ### Problem
+
 Console warning: "Can't perform a React state update on an unmounted component"
 
 ### Solution: Add Cleanup
+
 ```jsx
 useEffect(() => {
   const timer = setInterval(() => {
@@ -416,6 +467,7 @@ useEffect(() => {
 When something doesn't work:
 
 ### 1. Check Console (F12)
+
 ```
 ✓ No errors?
 ✓ No warnings?
@@ -423,6 +475,7 @@ When something doesn't work:
 ```
 
 ### 2. Check Network Tab
+
 ```
 ✓ All files loading (200 status)?
 ✓ No 404 errors?
@@ -431,6 +484,7 @@ When something doesn't work:
 ```
 
 ### 3. Check React DevTools
+
 ```
 ✓ Components mounted?
 ✓ Props correct?
@@ -439,6 +493,7 @@ When something doesn't work:
 ```
 
 ### 4. Check File System
+
 ```
 ✓ File exists in editor?
 ✓ File path correct?
@@ -447,6 +502,7 @@ When something doesn't work:
 ```
 
 ### 5. Check Configuration
+
 ```
 ✓ electron.vite.config.mjs correct?
 ✓ package.json has dependencies?
@@ -461,11 +517,13 @@ When something doesn't work:
 ### Problem: App Slow/Laggy
 
 ### Solutions
+
 1. **Reduce Re-renders**
+
    ```jsx
    // Use useCallback for handlers
    const handleClick = useCallback(() => {
-     setCount(c => c + 1)
+     setCount((c) => c + 1)
    }, [])
    ```
 
@@ -475,6 +533,7 @@ When something doesn't work:
    - Move animations to GPU (transform, opacity)
 
 3. **Check Bundle Size**
+
    ```bash
    npm run build
    # Check size of out/ folder
@@ -490,12 +549,14 @@ When something doesn't work:
 ## Getting Help
 
 ### Documentation Files
+
 - `COMPONENT_SETUP_SUMMARY.md` - Detailed setup guide
 - `QUICK_REFERENCE.md` - Quick start guide
 - `ARCHITECTURE_VISUAL_GUIDE.md` - Visual architecture
 - `VERIFICATION_CHECKLIST.md` - Complete checklist
 
 ### Browser Console
+
 ```javascript
 // Debug component state
 console.log('State:', state)
@@ -508,6 +569,7 @@ console.log('Event:', event)
 ```
 
 ### React DevTools
+
 ```
 1. Install React DevTools browser extension
 2. Open DevTools (F12)

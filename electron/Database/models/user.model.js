@@ -84,11 +84,9 @@ export const initUserModel = async () => {
 
     // Generate refresh token
     userSchema.methods.generateRefreshToken = function () {
-      return jwt.sign(
-        { _id: this._id },
-        process.env.REFRESH_TOKEN_SECRET || 'secret',
-        { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
-      )
+      return jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET || 'secret', {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d'
+      })
     }
 
     User = mongoose.model('User', userSchema)

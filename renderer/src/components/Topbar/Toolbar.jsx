@@ -8,7 +8,18 @@ const Toolbar = ({ theme, setTheme }) => {
   const [liveServerPort, setLiveServerPort] = useState(5500)
   const langDropdownRef = useRef(null)
 
-  const languages = ['C (GCC)', 'C++ (G++)', 'Python 3', 'Node.js', 'XML', 'Dot Net', 'Dart', 'Next.js', 'PHP', 'MySQL']
+  const languages = [
+    'C (GCC)',
+    'C++ (G++)',
+    'Python 3',
+    'Node.js',
+    'XML',
+    'Dot Net',
+    'Dart',
+    'Next.js',
+    'PHP',
+    'MySQL'
+  ]
 
   // Sync language selection when changed elsewhere
   useEffect(() => {
@@ -24,12 +35,15 @@ const Toolbar = ({ theme, setTheme }) => {
   // Check initial Live Server status
   useEffect(() => {
     if (window.api && typeof window.api.getLiveServerStatus === 'function') {
-      window.api.getLiveServerStatus().then(status => {
-        if (status) {
-          setIsLiveServerRunning(status.running)
-          if (status.port) setLiveServerPort(status.port)
-        }
-      }).catch(e => {})
+      window.api
+        .getLiveServerStatus()
+        .then((status) => {
+          if (status) {
+            setIsLiveServerRunning(status.running)
+            if (status.port) setLiveServerPort(status.port)
+          }
+        })
+        .catch((e) => {})
     }
   }, [])
 
@@ -48,7 +62,7 @@ const Toolbar = ({ theme, setTheme }) => {
     setSelectedLang(lang)
     setDropdownOpen(false)
     window.dispatchEvent(new CustomEvent('change-language', { detail: { language: lang } }))
-    
+
     if (lang === 'PHP' || lang === 'MySQL') {
       if (window.api && typeof window.api.startXamppService === 'function') {
         window.api.startXamppService('php').then(() => {
@@ -90,31 +104,60 @@ const Toolbar = ({ theme, setTheme }) => {
   const liveShare = () => window.dispatchEvent(new CustomEvent('menu-live-share'))
 
   return (
-    <div className="toolbar" style={{
-      height: '36px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 12px',
-      background: 'rgba(10, 16, 32, 0.65)',
-      borderBottom: '1px solid var(--panel-border)',
-      zIndex: 5,
-      backdropFilter: 'blur(12px)'
-    }}>
+    <div
+      className="toolbar"
+      style={{
+        height: '36px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 12px',
+        background: 'rgba(10, 16, 32, 0.65)',
+        borderBottom: '1px solid var(--panel-border)',
+        zIndex: 5,
+        backdropFilter: 'blur(12px)'
+      }}
+    >
       {/* Left: Compiler Brand Logo & Runner label */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <CompilerLogo size={22} showText={true} textStyle={{ transform: 'scale(0.85)', transformOrigin: 'left center' }} />
+        <CompilerLogo
+          size={22}
+          showText={true}
+          textStyle={{ transform: 'scale(0.85)', transformOrigin: 'left center' }}
+        />
         <span style={{ opacity: 0.3, color: '#fff' }}>|</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <i className="bx bx-play-circle" style={{ color: 'var(--accent-color)', fontSize: '13px' }}></i>
-          <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Runner Engine</span>
+          <i
+            className="bx bx-play-circle"
+            style={{ color: 'var(--accent-color)', fontSize: '13px' }}
+          ></i>
+          <span
+            style={{
+              fontSize: '10px',
+              fontWeight: '600',
+              color: 'var(--text-muted)',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase'
+            }}
+          >
+            Runner Engine
+          </span>
         </div>
       </div>
 
       {/* Center: Primary Execution Control Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-        <button 
-          onClick={runCode} 
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)'
+        }}
+      >
+        <button
+          onClick={runCode}
           style={{
             background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
             border: 'none',
@@ -131,13 +174,13 @@ const Toolbar = ({ theme, setTheme }) => {
             boxShadow: '0 2px 8px rgba(0, 230, 118, 0.25)',
             transition: 'transform 0.15s ease'
           }}
-          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
-          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.95)')}
+          onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
         >
           <span>▶</span> Run
         </button>
 
-        <button 
+        <button
           onClick={debugCode}
           style={{
             background: 'rgba(255,255,255,0.06)',
@@ -157,7 +200,7 @@ const Toolbar = ({ theme, setTheme }) => {
           🐞 Debug
         </button>
 
-        <button 
+        <button
           onClick={stopCode}
           style={{
             background: 'rgba(255,107,107,0.15)',
@@ -179,9 +222,13 @@ const Toolbar = ({ theme, setTheme }) => {
         <span style={{ opacity: 0.3, color: '#fff', margin: '0 2px' }}>|</span>
 
         {/* Live Server Toggle Button */}
-        <button 
+        <button
           onClick={toggleLiveServer}
-          title={isLiveServerRunning ? `Live Server running on http://localhost:${liveServerPort}. Click to stop.` : "Start Live Server for root index.html"}
+          title={
+            isLiveServerRunning
+              ? `Live Server running on http://localhost:${liveServerPort}. Click to stop.`
+              : 'Start Live Server for root index.html'
+          }
           style={{
             background: isLiveServerRunning ? 'rgba(0, 255, 170, 0.15)' : 'rgba(255,255,255,0.06)',
             border: isLiveServerRunning ? '1px solid #00ffaa' : '1px solid rgba(255,255,255,0.12)',
@@ -199,20 +246,22 @@ const Toolbar = ({ theme, setTheme }) => {
             boxShadow: isLiveServerRunning ? '0 0 10px rgba(0, 255, 170, 0.3)' : 'none'
           }}
         >
-          <span style={{ 
-            width: '6px', 
-            height: '6px', 
-            borderRadius: '50%', 
-            background: isLiveServerRunning ? '#00ffaa' : '#888',
-            boxShadow: isLiveServerRunning ? '0 0 6px #00ffaa' : 'none'
-          }}></span>
+          <span
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: isLiveServerRunning ? '#00ffaa' : '#888',
+              boxShadow: isLiveServerRunning ? '0 0 6px #00ffaa' : 'none'
+            }}
+          ></span>
           <span>⚡ Live Server{isLiveServerRunning ? `: :${liveServerPort}` : ''}</span>
         </button>
 
         <span style={{ opacity: 0.3, color: '#fff', margin: '0 2px' }}>|</span>
 
         {/* Formatting & Utilities */}
-        <button 
+        <button
           onClick={formatCode}
           style={{
             background: 'rgba(255,255,255,0.06)',
@@ -230,7 +279,7 @@ const Toolbar = ({ theme, setTheme }) => {
           {`{ }`} Format
         </button>
 
-        <button 
+        <button
           onClick={packageCode}
           title="Compile and download standalone binary file"
           style={{
@@ -251,7 +300,7 @@ const Toolbar = ({ theme, setTheme }) => {
           📦 Package
         </button>
 
-        <button 
+        <button
           onClick={splitEditor}
           title="Toggle Sideways Split Screen Editors"
           style={{
@@ -271,7 +320,7 @@ const Toolbar = ({ theme, setTheme }) => {
           || Split
         </button>
 
-        <button 
+        <button
           onClick={shareGist}
           title="Share code via GitHub Gist"
           style={{
@@ -292,7 +341,7 @@ const Toolbar = ({ theme, setTheme }) => {
           🐙 Gist
         </button>
 
-        <button 
+        <button
           onClick={liveShare}
           title="Start or Join 2-Player Realtime RTC Live Coding Session"
           style={{
@@ -316,50 +365,77 @@ const Toolbar = ({ theme, setTheme }) => {
 
       {/* Right: Language Selector Dropdown on the Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <div ref={langDropdownRef} className="lang-select" style={{ fontSize: '11px', gap: '6px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+        <div
+          ref={langDropdownRef}
+          className="lang-select"
+          style={{
+            fontSize: '11px',
+            gap: '6px',
+            color: 'var(--text-muted)',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
           <span>Env:</span>
-          <div className={`dropdown ${dropdownOpen ? 'open' : ''}`} style={{ position: 'relative' }}>
-            <button className="dropdown-toggle" onClick={() => setDropdownOpen(!dropdownOpen)} style={{
-              padding: '2px 8px',
-              borderRadius: '4px',
-              fontSize: '11px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: 'var(--text-main)',
-              cursor: 'pointer'
-            }}>
+          <div
+            className={`dropdown ${dropdownOpen ? 'open' : ''}`}
+            style={{ position: 'relative' }}
+          >
+            <button
+              className="dropdown-toggle"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              style={{
+                padding: '2px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: 'var(--text-main)',
+                cursor: 'pointer'
+              }}
+            >
               <span>{selectedLang}</span>
-              <span className="arrow" style={{ marginLeft: '4px' }}>▾</span>
+              <span className="arrow" style={{ marginLeft: '4px' }}>
+                ▾
+              </span>
             </button>
             {dropdownOpen && (
-              <div className="dropdown-menu" style={{
-                position: 'absolute',
-                top: '28px',
-                right: 0,
-                background: 'rgba(10, 16, 32, 0.95)',
-                border: '1px solid var(--panel-border)',
-                borderRadius: '6px',
-                minWidth: '120px',
-                padding: '4px 0',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                zIndex: 20
-              }}>
+              <div
+                className="dropdown-menu"
+                style={{
+                  position: 'absolute',
+                  top: '28px',
+                  right: 0,
+                  background: 'rgba(10, 16, 32, 0.95)',
+                  border: '1px solid var(--panel-border)',
+                  borderRadius: '6px',
+                  minWidth: '120px',
+                  padding: '4px 0',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                  zIndex: 20
+                }}
+              >
                 {languages.map((lang) => (
-                  <button key={lang} onClick={() => handleLanguageSelect(lang)} style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--text-main)',
-                    textAlign: 'left',
-                    fontSize: '11px',
-                    padding: '6px 12px',
-                    cursor: 'pointer',
-                    transition: 'background 0.15s'
-                  }} onMouseEnter={(e) => e.target.style.background = 'rgba(0, 229, 255, 0.15)'}
-                     onMouseLeave={(e) => e.target.style.background = 'transparent'}>
+                  <button
+                    key={lang}
+                    onClick={() => handleLanguageSelect(lang)}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'var(--text-main)',
+                      textAlign: 'left',
+                      fontSize: '11px',
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.target.style.background = 'rgba(0, 229, 255, 0.15)')}
+                    onMouseLeave={(e) => (e.target.style.background = 'transparent')}
+                  >
                     {lang}
                   </button>
                 ))}

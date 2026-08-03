@@ -3,6 +3,7 @@
 ## 📋 Overview
 
 This project now includes:
+
 - ✅ Component-based React frontend (Beta_Index as main app)
 - ✅ Express.js backend with proper routing
 - ✅ MongoDB database connection
@@ -41,6 +42,7 @@ renderer/renderer/src/
 ## 🔧 Configuration
 
 ### 1. Environment Variables (.env)
+
 Create a `.env` file in the project root:
 
 ```env
@@ -66,6 +68,7 @@ RENDERER_PORT=3000
 ### 2. MongoDB Setup
 
 #### Option A: Local MongoDB
+
 ```bash
 # Install MongoDB Community Edition
 # Start MongoDB service
@@ -73,6 +76,7 @@ mongod
 ```
 
 #### Option B: MongoDB Atlas (Cloud)
+
 1. Create account at https://www.mongodb.com/cloud/atlas
 2. Create a cluster
 3. Get connection string
@@ -85,26 +89,31 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/xenithra_db?retr
 ## 🚀 Getting Started
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Start Development Server
+
 ```bash
 npm run dev
 ```
 
 This will start:
+
 - **Backend API**: http://localhost:5000
 - **Frontend**: http://localhost:3000
 - **Electron App**: Native desktop app
 
 ### 3. Build for Production
+
 ```bash
 npm run build
 ```
 
 ### 4. Build for Specific Platform
+
 ```bash
 npm run build:win    # Windows
 npm run build:mac    # macOS
@@ -114,6 +123,7 @@ npm run build:linux  # Linux
 ## 🔐 Authentication Flow
 
 ### Signup
+
 ```
 POST /api/signup
 {
@@ -136,6 +146,7 @@ Response:
 ```
 
 ### Login
+
 ```
 POST /api/login
 {
@@ -156,6 +167,7 @@ Response:
 ```
 
 ### Refresh Token
+
 ```
 POST /api/refresh-token
 {
@@ -210,12 +222,15 @@ const tokens = await authAPI.refreshToken(refreshToken)
 
 ```javascript
 // After successful login/signup
-localStorage.setItem('user', JSON.stringify({
-  id: user._id,
-  username: user.username,
-  email: user.email,
-  token: accessToken
-}))
+localStorage.setItem(
+  'user',
+  JSON.stringify({
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    token: accessToken
+  })
+)
 
 // Retrieving user data
 const user = JSON.parse(localStorage.getItem('user'))
@@ -226,14 +241,14 @@ localStorage.removeItem('user')
 
 ## 🛣️ API Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/signup` | Create new account | No |
-| POST | `/api/login` | User login | No |
-| POST | `/api/logout` | User logout | Yes |
-| POST | `/api/refresh-token` | Refresh access token | No |
-| GET | `/api/me` | Get current user | Yes |
-| GET | `/api/health` | Health check | No |
+| Method | Endpoint             | Description          | Auth Required |
+| ------ | -------------------- | -------------------- | ------------- |
+| POST   | `/api/signup`        | Create new account   | No            |
+| POST   | `/api/login`         | User login           | No            |
+| POST   | `/api/logout`        | User logout          | Yes           |
+| POST   | `/api/refresh-token` | Refresh access token | No            |
+| GET    | `/api/me`            | Get current user     | Yes           |
+| GET    | `/api/health`        | Health check         | No            |
 
 ## 🎨 Available Routes in App
 
@@ -249,6 +264,7 @@ localStorage.removeItem('user')
 ## 💾 Database Models
 
 ### User Model
+
 ```javascript
 {
   username: String (unique, lowercase),
@@ -276,27 +292,35 @@ localStorage.removeItem('user')
 ## 🐛 Troubleshooting
 
 ### MongoDB Connection Error
+
 ```
 ❌ MongoDB Connection Error: connect ECONNREFUSED 127.0.0.1:27017
 ```
+
 **Solution**: Ensure MongoDB is running
+
 ```bash
 mongod  # Start MongoDB service
 ```
 
 ### Port Already in Use
+
 ```
 ❌ Error: listen EADDRINUSE: address already in use :::5000
 ```
+
 **Solution**: Kill process on that port or change PORT in .env
 
 ### CORS Error
+
 ```
 ❌ No 'Access-Control-Allow-Origin' header
 ```
+
 **Solution**: Ensure CORS is configured in server.js (already done)
 
 ### Authentication Failed
+
 - Verify credentials in database
 - Check JWT_SECRET is consistent
 - Ensure token is sent in Authorization header
@@ -325,6 +349,7 @@ mongod  # Start MongoDB service
 ## 📞 Support
 
 For issues or questions:
+
 1. Check the troubleshooting section
 2. Review error messages carefully
 3. Check browser console and server logs

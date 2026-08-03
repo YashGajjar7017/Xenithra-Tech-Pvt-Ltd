@@ -40,7 +40,7 @@ const Session = () => {
         setSessions(sessions.filter((s) => s.id !== sessionId))
       }
     } catch (err) {
-      alert('Failed to logout session',err)
+      alert('Failed to logout session', err)
     }
   }
 

@@ -7,10 +7,7 @@ function Topbar() {
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <button
-          className="menu-toggle"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
+        <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           ☰
         </button>
         <h2>Code Editor</h2>

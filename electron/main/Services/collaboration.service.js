@@ -2,13 +2,19 @@ import https from 'https'
 
 /**
  * Publishes user code snippet to GitHub Gist
- * @param {string} filename 
- * @param {string} content 
- * @param {string} description 
- * @param {boolean} isPublic 
- * @param {string} githubToken 
+ * @param {string} filename
+ * @param {string} content
+ * @param {string} description
+ * @param {boolean} isPublic
+ * @param {string} githubToken
  */
-export async function createGitHubGist(filename, content, description = 'Shared from Xenithra IDE', isPublic = true, githubToken = '') {
+export async function createGitHubGist(
+  filename,
+  content,
+  description = 'Shared from Xenithra IDE',
+  isPublic = true,
+  githubToken = ''
+) {
   return new Promise((resolve) => {
     const payload = JSON.stringify({
       description: description || 'Xenithra IDE Shared Snippet',
@@ -28,27 +34,35 @@ export async function createGitHubGist(filename, content, description = 'Shared 
       headers['Authorization'] = `token ${githubToken}`
     }
 
-    const req = https.request({
-      hostname: 'api.github.com',
-      path: '/gists',
-      method: 'POST',
-      headers
-    }, (res) => {
-      let data = ''
-      res.on('data', chunk => data += chunk)
-      res.on('end', () => {
-        try {
-          const json = JSON.parse(data)
-          if (json.html_url) {
-            resolve({ success: true, url: json.html_url, id: json.id, rawUrl: json.files[filename]?.raw_url })
-          } else {
-            resolve({ success: false, error: json.message || 'GitHub Gist API error' })
+    const req = https.request(
+      {
+        hostname: 'api.github.com',
+        path: '/gists',
+        method: 'POST',
+        headers
+      },
+      (res) => {
+        let data = ''
+        res.on('data', (chunk) => (data += chunk))
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data)
+            if (json.html_url) {
+              resolve({
+                success: true,
+                url: json.html_url,
+                id: json.id,
+                rawUrl: json.files[filename]?.raw_url
+              })
+            } else {
+              resolve({ success: false, error: json.message || 'GitHub Gist API error' })
+            }
+          } catch (e) {
+            resolve({ success: false, error: e.message })
           }
-        } catch (e) {
-          resolve({ success: false, error: e.message })
-        }
-      })
-    })
+        })
+      }
+    )
 
     req.on('error', (err) => {
       resolve({ success: false, error: err.message })
@@ -81,7 +95,12 @@ export function joinRtcRoom(peerClientId, roomCode) {
   if (!room.peers.includes(peerClientId)) {
     room.peers.push(peerClientId)
   }
-  return { success: true, roomCode, currentText: room.currentText, peersCount: room.peers.length + 1 }
+  return {
+    success: true,
+    roomCode,
+    currentText: room.currentText,
+    peersCount: room.peers.length + 1
+  }
 }
 
 export function syncRtcCode(roomCode, text, cursorPosition) {

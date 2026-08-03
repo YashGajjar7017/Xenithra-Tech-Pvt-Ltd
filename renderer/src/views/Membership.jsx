@@ -1,4 +1,3 @@
-
 const Membership = () => {
   const plans = [
     { name: 'Basic', price: '$9.99', features: ['Feature 1', 'Feature 2', 'Feature 3'] },

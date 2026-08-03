@@ -57,36 +57,36 @@ ENABLE_COLLABORATION=true
 import { API_CONFIG, API_PREFIX, API_BASE_URL } from '../config/api.config'
 
 // Access specific endpoints
-API_CONFIG.auth.login           // /api/login
-API_CONFIG.auth.signup          // /api/signup
-API_CONFIG.files.list           // /api/files
-API_CONFIG.compiler.execute     // /api/compiler/execute
+API_CONFIG.auth.login // /api/login
+API_CONFIG.auth.signup // /api/signup
+API_CONFIG.files.list // /api/files
+API_CONFIG.compiler.execute // /api/compiler/execute
 API_CONFIG.classroom.createClass // /api/classroom/create
 ```
 
 ### All Endpoint Categories
 
-| Category | Example Endpoints |
-|----------|------------------|
-| **Auth** | login, signup, logout, refresh, verify-otp |
-| **Users** | getById, update, getProfile, updateSettings |
-| **Compiler** | compile, execute, format, analyze, lint |
-| **Files** | list, create, upload, download, share, delete |
-| **Sessions** | create, join, leave, getHistory, exportCode |
-| **Classroom** | createClass, joinClass, getMembers, getAssignments |
+| Category          | Example Endpoints                                   |
+| ----------------- | --------------------------------------------------- |
+| **Auth**          | login, signup, logout, refresh, verify-otp          |
+| **Users**         | getById, update, getProfile, updateSettings         |
+| **Compiler**      | compile, execute, format, analyze, lint             |
+| **Files**         | list, create, upload, download, share, delete       |
+| **Sessions**      | create, join, leave, getHistory, exportCode         |
+| **Classroom**     | createClass, joinClass, getMembers, getAssignments  |
 | **Collaboration** | invite, acceptInvite, createTeam, listCollaborators |
-| **Achievements** | getAll, getUserAchievements, getLeaderboard |
-| **Analytics** | getDashboard, getStats, getCodeStats |
-| **Admin** | getDashboard, getUsers, getSystemHealth, getLogs |
+| **Achievements**  | getAll, getUserAchievements, getLeaderboard         |
+| **Analytics**     | getDashboard, getStats, getCodeStats                |
+| **Admin**         | getDashboard, getUsers, getSystemHealth, getLogs    |
 
 ## Button Handlers
 
 ### Import Handlers
 
 ```javascript
-import { 
-  fileMenuHandlers, 
-  editMenuHandlers, 
+import {
+  fileMenuHandlers,
+  editMenuHandlers,
   viewMenuHandlers,
   compilerHandlers,
   authHandlers,
@@ -99,54 +99,54 @@ import {
 ### File Menu Handlers
 
 ```javascript
-fileMenuHandlers.new()          // Create new file
-fileMenuHandlers.open()         // Open file dialog
-fileMenuHandlers.save()         // Save current file
-fileMenuHandlers.saveAs()       // Save as new file
+fileMenuHandlers.new() // Create new file
+fileMenuHandlers.open() // Open file dialog
+fileMenuHandlers.save() // Save current file
+fileMenuHandlers.saveAs() // Save as new file
 fileMenuHandlers.export('json') // Export as JSON/TXT
-fileMenuHandlers.exit()         // Close app
+fileMenuHandlers.exit() // Close app
 ```
 
 ### Edit Menu Handlers
 
 ```javascript
-editMenuHandlers.undo()         // Undo
-editMenuHandlers.redo()         // Redo
-editMenuHandlers.cut()          // Cut
-editMenuHandlers.copy()         // Copy
-editMenuHandlers.paste()        // Paste
-editMenuHandlers.selectAll()    // Select all
-editMenuHandlers.delete()       // Delete
+editMenuHandlers.undo() // Undo
+editMenuHandlers.redo() // Redo
+editMenuHandlers.cut() // Cut
+editMenuHandlers.copy() // Copy
+editMenuHandlers.paste() // Paste
+editMenuHandlers.selectAll() // Select all
+editMenuHandlers.delete() // Delete
 ```
 
 ### View Menu Handlers
 
 ```javascript
-viewMenuHandlers.zoomIn()           // Zoom in
-viewMenuHandlers.zoomOut()          // Zoom out
-viewMenuHandlers.resetZoom()        // Reset zoom
-viewMenuHandlers.toggleSidebar()    // Toggle sidebar
+viewMenuHandlers.zoomIn() // Zoom in
+viewMenuHandlers.zoomOut() // Zoom out
+viewMenuHandlers.resetZoom() // Reset zoom
+viewMenuHandlers.toggleSidebar() // Toggle sidebar
 viewMenuHandlers.toggleFullscreen() // Fullscreen
-viewMenuHandlers.toggleDarkMode()   // Dark/Light mode
+viewMenuHandlers.toggleDarkMode() // Dark/Light mode
 ```
 
 ### Compiler Handlers
 
 ```javascript
-compilerHandlers.run()      // Execute code
-compilerHandlers.debug()    // Start debugger
-compilerHandlers.stop()     // Stop execution
-compilerHandlers.format()   // Format code
-compilerHandlers.analyze()  // Analyze code
+compilerHandlers.run() // Execute code
+compilerHandlers.debug() // Start debugger
+compilerHandlers.stop() // Stop execution
+compilerHandlers.format() // Format code
+compilerHandlers.analyze() // Analyze code
 ```
 
 ### Auth Handlers
 
 ```javascript
-authHandlers.login(credentials)      // Login
-authHandlers.signup(credentials)     // Signup
-authHandlers.logout()                // Logout
-authHandlers.github()                // GitHub OAuth
+authHandlers.login(credentials) // Login
+authHandlers.signup(credentials) // Signup
+authHandlers.logout() // Logout
+authHandlers.github() // GitHub OAuth
 ```
 
 ## API Client Functions
@@ -154,10 +154,10 @@ authHandlers.github()                // GitHub OAuth
 ### Import API Functions
 
 ```javascript
-import { 
-  authAPI, 
-  userAPI, 
-  fileAPI, 
+import {
+  authAPI,
+  userAPI,
+  fileAPI,
   compilerAPI,
   sessionAPI,
   classroomAPI,
@@ -181,7 +181,7 @@ await authAPI.verifyOTP(email, otp)
 ### File API
 
 ```javascript
-await fileAPI.list(page=1)
+await fileAPI.list((page = 1))
 await fileAPI.create({ name, content })
 await fileAPI.getById(id)
 await fileAPI.update(id, data)
@@ -236,10 +236,10 @@ await achievementAPI.getProgress()
 
 ```javascript
 await adminAPI.getDashboard()
-await adminAPI.getUsers(page=1)
+await adminAPI.getUsers((page = 1))
 await adminAPI.deleteUser(id)
 await adminAPI.getSystemHealth()
-await adminAPI.getLogs(page=1)
+await adminAPI.getLogs((page = 1))
 ```
 
 ## React Component Example

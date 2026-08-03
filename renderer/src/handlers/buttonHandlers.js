@@ -14,14 +14,14 @@ export const fileMenuHandlers = {
       console.log('Creating new file...')
       const filename = prompt('Enter filename:')
       if (!filename) return
-      
+
       // Dispatch event or call API
       const response = await apiCall('POST', `${API_CONFIG.files.create}`, {
         name: filename,
         content: '',
         language: 'javascript'
       })
-      
+
       if (response.success) {
         console.log('File created successfully:', response.data)
         document.dispatchEvent(new CustomEvent('file-created', { detail: response.data }))
@@ -40,13 +40,15 @@ export const fileMenuHandlers = {
       input.onchange = async (e) => {
         const file = e.target.files[0]
         if (!file) return
-        
+
         const reader = new FileReader()
         reader.onload = async (event) => {
           const content = event.target.result
-          document.dispatchEvent(new CustomEvent('file-opened', { 
-            detail: { name: file.name, content } 
-          }))
+          document.dispatchEvent(
+            new CustomEvent('file-opened', {
+              detail: { name: file.name, content }
+            })
+          )
         }
         reader.readAsText(file)
       }
@@ -62,12 +64,12 @@ export const fileMenuHandlers = {
       console.log('Saving file...')
       const codeContent = document.querySelector('[data-code-editor]')?.textContent || ''
       const filename = document.querySelector('[data-filename]')?.value || 'untitled.js'
-      
+
       const response = await apiCall('POST', `${API_CONFIG.files.create}`, {
         name: filename,
         content: codeContent
       })
-      
+
       if (response.success) {
         showNotification('File saved successfully', 'success')
         document.dispatchEvent(new CustomEvent('file-saved', { detail: response.data }))
@@ -82,14 +84,14 @@ export const fileMenuHandlers = {
     try {
       const filename = prompt('Save file as:', 'untitled.js')
       if (!filename) return
-      
+
       const codeContent = document.querySelector('[data-code-editor]')?.textContent || ''
-      
+
       const response = await apiCall('POST', `${API_CONFIG.files.create}`, {
         name: filename,
         content: codeContent
       })
-      
+
       if (response.success) {
         showNotification('File saved successfully', 'success')
         document.dispatchEvent(new CustomEvent('file-saved', { detail: response.data }))
@@ -104,14 +106,14 @@ export const fileMenuHandlers = {
     try {
       console.log(`Exporting code as ${format}...`)
       const codeContent = document.querySelector('[data-code-editor]')?.textContent || ''
-      
+
       if (format === 'json') {
         const data = { code: codeContent, timestamp: new Date().toISOString() }
         downloadFile(JSON.stringify(data, null, 2), 'code.json', 'application/json')
       } else if (format === 'txt') {
         downloadFile(codeContent, 'code.txt', 'text/plain')
       }
-      
+
       showNotification('File exported successfully', 'success')
     } catch (error) {
       console.error('Error exporting file:', error)
@@ -208,7 +210,7 @@ export const viewMenuHandlers = {
     if (document.fullscreenElement) {
       document.exitFullscreen()
     } else {
-      document.documentElement.requestFullscreen().catch(error => {
+      document.documentElement.requestFullscreen().catch((error) => {
         console.error('Fullscreen error:', error)
       })
     }
@@ -232,17 +234,19 @@ export const compilerHandlers = {
       console.log('Running code...')
       const code = document.querySelector('[data-code-editor]')?.textContent || ''
       const language = document.querySelector('[data-language-select]')?.value || 'javascript'
-      
+
       const response = await apiCall('POST', API_CONFIG.compiler.execute, {
         code,
         language
       })
-      
+
       if (response.success) {
         console.log('Execution output:', response.data.output)
-        document.dispatchEvent(new CustomEvent('code-executed', { 
-          detail: { output: response.data.output, error: response.data.error } 
-        }))
+        document.dispatchEvent(
+          new CustomEvent('code-executed', {
+            detail: { output: response.data.output, error: response.data.error }
+          })
+        )
       }
     } catch (error) {
       console.error('Execution error:', error)
@@ -271,16 +275,18 @@ export const compilerHandlers = {
       console.log('Formatting code...')
       const code = document.querySelector('[data-code-editor]')?.textContent || ''
       const language = document.querySelector('[data-language-select]')?.value || 'javascript'
-      
+
       const response = await apiCall('POST', API_CONFIG.compiler.format, {
         code,
         language
       })
-      
+
       if (response.success) {
-        document.dispatchEvent(new CustomEvent('code-formatted', { 
-          detail: { code: response.data.formatted_code } 
-        }))
+        document.dispatchEvent(
+          new CustomEvent('code-formatted', {
+            detail: { code: response.data.formatted_code }
+          })
+        )
         showNotification('Code formatted successfully', 'success')
       }
     } catch (error) {
@@ -294,16 +300,18 @@ export const compilerHandlers = {
       console.log('Analyzing code...')
       const code = document.querySelector('[data-code-editor]')?.textContent || ''
       const language = document.querySelector('[data-language-select]')?.value || 'javascript'
-      
+
       const response = await apiCall('POST', API_CONFIG.compiler.analyze, {
         code,
         language
       })
-      
+
       if (response.success) {
-        document.dispatchEvent(new CustomEvent('code-analyzed', { 
-          detail: response.data 
-        }))
+        document.dispatchEvent(
+          new CustomEvent('code-analyzed', {
+            detail: response.data
+          })
+        )
       }
     } catch (error) {
       console.error('Analysis error:', error)
@@ -320,7 +328,7 @@ export const authHandlers = {
     try {
       console.log('Attempting login...')
       const response = await apiCall('POST', API_CONFIG.auth.login, credentials)
-      
+
       if (response.success) {
         localStorage.setItem('token', response.data.token)
         localStorage.setItem('user', JSON.stringify(response.data.user))
@@ -339,7 +347,7 @@ export const authHandlers = {
     try {
       console.log('Attempting signup...')
       const response = await apiCall('POST', API_CONFIG.auth.signup, credentials)
-      
+
       if (response.success) {
         localStorage.setItem('token', response.data.token)
         localStorage.setItem('user', JSON.stringify(response.data.user))
@@ -387,11 +395,11 @@ export const collaborationHandlers = {
       console.log('Sharing file:', fileId)
       const email = prompt('Enter email to share with:')
       if (!email) return
-      
+
       const response = await apiCall('POST', `${API_CONFIG.files.share(fileId)}`, {
         email
       })
-      
+
       if (response.success) {
         showNotification('File shared successfully', 'success')
       }
@@ -405,18 +413,18 @@ export const collaborationHandlers = {
     try {
       console.log('Inviting collaborators to session:', sessionId)
       const emails = prompt('Enter emails (comma-separated):')?.split(',') || []
-      
+
       for (const email of emails) {
         const response = await apiCall('POST', API_CONFIG.collaboration.invite, {
           sessionId,
           email: email.trim()
         })
-        
+
         if (!response.success) {
           showNotification(`Failed to invite ${email}`, 'error')
         }
       }
-      
+
       showNotification('Invitations sent', 'success')
     } catch (error) {
       console.error('Invite error:', error)
@@ -433,11 +441,11 @@ export const classroomHandlers = {
     try {
       const className = prompt('Enter class name:')
       if (!className) return
-      
+
       const response = await apiCall('POST', API_CONFIG.classroom.createClass, {
         name: className
       })
-      
+
       if (response.success) {
         showNotification('Class created successfully', 'success')
         document.dispatchEvent(new CustomEvent('class-created', { detail: response.data }))
@@ -452,11 +460,11 @@ export const classroomHandlers = {
     try {
       const classCode = prompt('Enter class code:')
       if (!classCode) return
-      
+
       const response = await apiCall('POST', API_CONFIG.classroom.joinClass, {
         code: classCode
       })
-      
+
       if (response.success) {
         showNotification('Joined class successfully', 'success')
         document.dispatchEvent(new CustomEvent('class-joined', { detail: response.data }))
@@ -475,11 +483,13 @@ export const adminHandlers = {
   refreshDashboard: async () => {
     try {
       const response = await apiCall('GET', API_CONFIG.admin.getDashboard)
-      
+
       if (response.success) {
-        document.dispatchEvent(new CustomEvent('admin-dashboard-updated', { 
-          detail: response.data 
-        }))
+        document.dispatchEvent(
+          new CustomEvent('admin-dashboard-updated', {
+            detail: response.data
+          })
+        )
       }
     } catch (error) {
       console.error('Dashboard refresh error:', error)
@@ -488,10 +498,10 @@ export const adminHandlers = {
 
   deleteUser: async (userId) => {
     if (!confirm('Are you sure you want to delete this user?')) return
-    
+
     try {
       const response = await apiCall('DELETE', API_CONFIG.admin.deleteUser(userId))
-      
+
       if (response.success) {
         showNotification('User deleted successfully', 'success')
         document.dispatchEvent(new CustomEvent('user-deleted', { detail: userId }))
@@ -515,7 +525,7 @@ async function apiCall(method, url, data = null) {
     const token = localStorage.getItem('token')
     const headers = {
       'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
+      ...(token && { Authorization: `Bearer ${token}` })
     }
 
     const config = {
@@ -559,11 +569,13 @@ function downloadFile(content, filename, mimeType = 'text/plain') {
  */
 function showNotification(message, type = 'info') {
   console.log(`[${type.toUpperCase()}] ${message}`)
-  
+
   // Dispatch custom event for notification UI
-  document.dispatchEvent(new CustomEvent('show-notification', {
-    detail: { message, type }
-  }))
+  document.dispatchEvent(
+    new CustomEvent('show-notification', {
+      detail: { message, type }
+    })
+  )
 }
 
 /**

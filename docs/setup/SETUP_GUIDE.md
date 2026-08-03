@@ -59,6 +59,7 @@ node renderer/src/utils/envValidator.js
 ```
 
 The validator will:
+
 - ✅ Check all required variables are configured
 - ⚠️ Warn about missing optional variables
 - ❌ Report any configuration errors
@@ -70,6 +71,7 @@ The validator will:
 ### 1. API Configuration File
 
 All API endpoints are centralized in:
+
 ```
 renderer/src/config/api.config.js
 ```
@@ -80,10 +82,10 @@ renderer/src/config/api.config.js
 import { API_CONFIG } from '../config/api.config'
 
 // Access API endpoints
-console.log(API_CONFIG.auth.login)        // http://localhost:3000/api/login
-console.log(API_CONFIG.auth.signup)       // http://localhost:3000/api/signup
-console.log(API_CONFIG.files.list)        // http://localhost:3000/api/files
-console.log(API_CONFIG.compiler.execute)  // http://localhost:3000/api/compiler/execute
+console.log(API_CONFIG.auth.login) // http://localhost:3000/api/login
+console.log(API_CONFIG.auth.signup) // http://localhost:3000/api/signup
+console.log(API_CONFIG.files.list) // http://localhost:3000/api/files
+console.log(API_CONFIG.compiler.execute) // http://localhost:3000/api/compiler/execute
 ```
 
 ### 2. Endpoint Categories
@@ -108,6 +110,7 @@ The API configuration includes these endpoint categories:
 ### 1. Button Handlers Module
 
 All button click handlers are centralized in:
+
 ```
 renderer/src/handlers/buttonHandlers.js
 ```
@@ -115,85 +118,93 @@ renderer/src/handlers/buttonHandlers.js
 ### 2. Available Handler Groups
 
 #### File Menu
+
 ```javascript
 import { fileMenuHandlers } from '../handlers/buttonHandlers'
 
-fileMenuHandlers.new()          // Create new file
-fileMenuHandlers.open()         // Open file dialog
-fileMenuHandlers.save()         // Save current file
-fileMenuHandlers.saveAs()       // Save as new file
+fileMenuHandlers.new() // Create new file
+fileMenuHandlers.open() // Open file dialog
+fileMenuHandlers.save() // Save current file
+fileMenuHandlers.saveAs() // Save as new file
 fileMenuHandlers.export('json') // Export file
-fileMenuHandlers.exit()         // Close application
+fileMenuHandlers.exit() // Close application
 ```
 
 #### Edit Menu
+
 ```javascript
 import { editMenuHandlers } from '../handlers/buttonHandlers'
 
-editMenuHandlers.undo()         // Undo last action
-editMenuHandlers.redo()         // Redo action
-editMenuHandlers.cut()          // Cut selected text
-editMenuHandlers.copy()         // Copy selected text
-editMenuHandlers.paste()        // Paste from clipboard
-editMenuHandlers.selectAll()    // Select all text
-editMenuHandlers.delete()       // Delete selected text
+editMenuHandlers.undo() // Undo last action
+editMenuHandlers.redo() // Redo action
+editMenuHandlers.cut() // Cut selected text
+editMenuHandlers.copy() // Copy selected text
+editMenuHandlers.paste() // Paste from clipboard
+editMenuHandlers.selectAll() // Select all text
+editMenuHandlers.delete() // Delete selected text
 ```
 
 #### View Menu
+
 ```javascript
 import { viewMenuHandlers } from '../handlers/buttonHandlers'
 
-viewMenuHandlers.zoomIn()           // Increase zoom level
-viewMenuHandlers.zoomOut()          // Decrease zoom level
-viewMenuHandlers.resetZoom()        // Reset zoom to 100%
-viewMenuHandlers.toggleSidebar()    // Toggle sidebar visibility
+viewMenuHandlers.zoomIn() // Increase zoom level
+viewMenuHandlers.zoomOut() // Decrease zoom level
+viewMenuHandlers.resetZoom() // Reset zoom to 100%
+viewMenuHandlers.toggleSidebar() // Toggle sidebar visibility
 viewMenuHandlers.toggleFullscreen() // Toggle fullscreen mode
-viewMenuHandlers.toggleDarkMode()   // Toggle dark mode
+viewMenuHandlers.toggleDarkMode() // Toggle dark mode
 ```
 
 #### Compiler
+
 ```javascript
 import { compilerHandlers } from '../handlers/buttonHandlers'
 
-compilerHandlers.run()      // Execute code
-compilerHandlers.debug()    // Start debugger
-compilerHandlers.stop()     // Stop execution
-compilerHandlers.format()   // Format code
-compilerHandlers.analyze()  // Analyze code
+compilerHandlers.run() // Execute code
+compilerHandlers.debug() // Start debugger
+compilerHandlers.stop() // Stop execution
+compilerHandlers.format() // Format code
+compilerHandlers.analyze() // Analyze code
 ```
 
 #### Authentication
+
 ```javascript
 import { authHandlers } from '../handlers/buttonHandlers'
 
-authHandlers.login(credentials)      // Login user
-authHandlers.signup(credentials)     // Register new user
-authHandlers.logout()                // Logout user
-authHandlers.github()                // GitHub OAuth login
+authHandlers.login(credentials) // Login user
+authHandlers.signup(credentials) // Register new user
+authHandlers.logout() // Logout user
+authHandlers.github() // GitHub OAuth login
 ```
 
 #### Collaboration
+
 ```javascript
 import { collaborationHandlers } from '../handlers/buttonHandlers'
 
-collaborationHandlers.share(fileId)         // Share file with user
-collaborationHandlers.invite(sessionId)     // Invite collaborators
+collaborationHandlers.share(fileId) // Share file with user
+collaborationHandlers.invite(sessionId) // Invite collaborators
 ```
 
 #### Classroom
+
 ```javascript
 import { classroomHandlers } from '../handlers/buttonHandlers'
 
-classroomHandlers.create()  // Create new class
-classroomHandlers.join()    // Join existing class
+classroomHandlers.create() // Create new class
+classroomHandlers.join() // Join existing class
 ```
 
 #### Admin
+
 ```javascript
 import { adminHandlers } from '../handlers/buttonHandlers'
 
-adminHandlers.refreshDashboard()    // Refresh admin dashboard
-adminHandlers.deleteUser(userId)    // Delete user account
+adminHandlers.refreshDashboard() // Refresh admin dashboard
+adminHandlers.deleteUser(userId) // Delete user account
 ```
 
 ### 3. Using Button Handlers in React Components
@@ -237,6 +248,7 @@ export default EditorComponent
 ### 1. API Client Module
 
 All API functions are in:
+
 ```
 renderer/src/utils/apiClient.js
 ```
@@ -260,10 +272,7 @@ const file = document.querySelector('input[type="file"]').files[0]
 const fileResponse = await fileAPI.upload(file)
 
 // Compile code
-const result = await compilerAPI.compile(
-  'console.log("Hello")',
-  'javascript'
-)
+const result = await compilerAPI.compile('console.log("Hello")', 'javascript')
 
 // Update profile
 await userAPI.updateProfile({
@@ -378,12 +387,7 @@ function CodeEditor() {
         <option value="java">Java</option>
       </select>
 
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        rows="10"
-        cols="50"
-      />
+      <textarea value={code} onChange={(e) => setCode(e.target.value)} rows="10" cols="50" />
 
       <button onClick={handleRun} disabled={running}>
         {running ? 'Running...' : 'Run Code'}
@@ -428,7 +432,7 @@ function FileManager() {
 
     try {
       await fileAPI.delete(fileId)
-      setFiles(files.filter(f => f.id !== fileId))
+      setFiles(files.filter((f) => f.id !== fileId))
     } catch (error) {
       console.error('Failed to delete file:', error)
     }
@@ -441,7 +445,7 @@ function FileManager() {
         <p>Loading...</p>
       ) : (
         <ul>
-          {files.map(file => (
+          {files.map((file) => (
             <li key={file.id}>
               {file.name}
               <button onClick={() => handleDelete(file.id)}>Delete</button>
@@ -463,6 +467,7 @@ export default FileManager
 ### Issue: API calls returning 401 Unauthorized
 
 **Solution:**
+
 - Check if token is stored in localStorage: `localStorage.getItem('token')`
 - Verify token is not expired
 - Re-login if token is invalid
@@ -479,6 +484,7 @@ if (!token) {
 ### Issue: CORS errors
 
 **Solution:**
+
 - Ensure `CORS_ORIGIN=*` in `.env` or configure with specific origins
 - Verify API base URL matches the backend server
 
@@ -491,6 +497,7 @@ console.log('API Base URL:', API_CONFIG.baseURL)
 ### Issue: Button handlers not working
 
 **Solution:**
+
 - Import handlers correctly from `../handlers/buttonHandlers`
 - Ensure you're calling them as functions: `handler()` not `handler`
 - Check console for error messages
@@ -510,6 +517,7 @@ save() // May not work as 'this' context is lost
 ### Issue: Environment variables not loading
 
 **Solution:**
+
 - Create `.env` file in project root
 - Run validator: `node renderer/src/utils/envValidator.js`
 - Restart development server after changing `.env`
@@ -532,20 +540,15 @@ save() // May not work as 'this' context is lost
 
 ```javascript
 // Button handlers
-import { 
-  fileMenuHandlers, 
-  editMenuHandlers, 
+import {
+  fileMenuHandlers,
+  editMenuHandlers,
   compilerHandlers,
-  authHandlers 
+  authHandlers
 } from '../handlers/buttonHandlers'
 
 // API functions
-import { 
-  authAPI, 
-  fileAPI, 
-  compilerAPI, 
-  userAPI 
-} from '../utils/apiClient'
+import { authAPI, fileAPI, compilerAPI, userAPI } from '../utils/apiClient'
 
 // Configuration
 import { API_CONFIG } from '../config/api.config'
@@ -578,6 +581,7 @@ await adminAPI.getDashboard()
 ## Support
 
 For issues or questions:
+
 1. Check the console for error messages
 2. Run the environment validator
 3. Review the API documentation in [api.config.js](./renderer/src/config/api.config.js)

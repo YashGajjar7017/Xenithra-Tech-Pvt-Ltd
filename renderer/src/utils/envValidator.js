@@ -22,7 +22,10 @@ const REQUIRED_ENV_VARS = {
   API_URL: { type: 'string', example: 'http://localhost:3000' },
 
   // Security
-  JWT_SECRET: { type: 'string', example: '4f8a9b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456' },
+  JWT_SECRET: {
+    type: 'string',
+    example: '4f8a9b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456'
+  },
   JWT_EXPIRY: { type: 'string', example: '7d' },
   ACCESS_TOKEN_SECRET: { type: 'string', example: 'access_secret_key' },
   REFRESH_TOKEN_SECRET: { type: 'string', example: 'refresh_secret_key' },
@@ -236,11 +239,11 @@ function validateEnvironment() {
   // Environment-specific checks
   if (env.NODE_ENV === 'production') {
     console.log('Running PRODUCTION-specific checks...')
-    
+
     if (env.DEBUG === 'true') {
       result.addWarning('DEBUG', 'Debug mode is enabled in production')
     }
-    
+
     if (env.API_BASE_URL?.includes('localhost')) {
       result.addError('API_BASE_URL', 'Must not point to localhost in production')
       result.valid = false
@@ -252,7 +255,7 @@ function validateEnvironment() {
   // Database connectivity check (if in Node.js environment)
   if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     console.log('Running database connectivity checks...')
-    
+
     if (env.MONGODB_URI) {
       result.addInfo('MONGODB_URI', 'MongoDB connection string is configured')
     }

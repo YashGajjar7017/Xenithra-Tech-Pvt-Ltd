@@ -3,23 +3,28 @@
 ## ✅ Verification Checklist
 
 ### 1. Backend Server Start
+
 - [ ] npm run dev starts without errors
 - [ ] Server shows "✅ MongoDB Connected Successfully" (or continues without DB)
 - [ ] "🚀 Server running at http://localhost:5000" appears in console
 - [ ] Renderer shows "dev server running at http://localhost:3000"
 
 ### 2. Test Health Endpoint
+
 ```bash
 curl http://localhost:5000/api/health
 ```
+
 Expected response:
+
 ```json
-{"status": "OK", "message": "Server is running"}
+{ "status": "OK", "message": "Server is running" }
 ```
 
 ### 3. Test Signup Endpoint
 
 **Using cURL:**
+
 ```bash
 curl -X POST http://localhost:5000/api/signup \
   -H "Content-Type: application/json" \
@@ -33,6 +38,7 @@ curl -X POST http://localhost:5000/api/signup \
 ```
 
 **Expected Response (Success):**
+
 ```json
 {
   "success": true,
@@ -52,6 +58,7 @@ curl -X POST http://localhost:5000/api/signup \
 ```
 
 **Test Cases:**
+
 - ❌ Missing fields → Error: "All fields are required"
 - ❌ Passwords don't match → Error: "Passwords do not match"
 - ❌ User exists → Error: "User already exists..."
@@ -60,6 +67,7 @@ curl -X POST http://localhost:5000/api/signup \
 ### 4. Test Login Endpoint
 
 **Using cURL:**
+
 ```bash
 curl -X POST http://localhost:5000/api/login \
   -H "Content-Type: application/json" \
@@ -71,6 +79,7 @@ curl -X POST http://localhost:5000/api/login \
 ```
 
 **Expected Response (Success):**
+
 ```json
 {
   "success": true,
@@ -89,6 +98,7 @@ curl -X POST http://localhost:5000/api/login \
 ```
 
 **Test Cases:**
+
 - ❌ Wrong password → Error: "Invalid credentials"
 - ❌ User not found → Error: "Invalid credentials"
 - ❌ Missing fields → Error: "Username/Email and password are required"
@@ -106,6 +116,7 @@ curl -X POST http://localhost:5000/api/login \
 4. Expected: Should navigate to `/dashboard` and store user in localStorage
 
 **Verify with DevTools:**
+
 ```javascript
 // In browser console:
 JSON.parse(localStorage.getItem('user'))
@@ -136,6 +147,7 @@ JSON.parse(localStorage.getItem('user'))
 ### 8. localStorage Verification
 
 After successful login/signup, check:
+
 ```javascript
 // In browser console
 const user = JSON.parse(localStorage.getItem('user'))
@@ -153,34 +165,45 @@ console.log(user)
 ## 🔍 Common Issues & Solutions
 
 ### Issue: CORS Error
+
 ```
 Access to XMLHttpRequest blocked by CORS policy
 ```
+
 **Solution**: CORS is enabled in server.js. Clear browser cache and hard refresh.
 
 ### Issue: 404 Not Found
+
 ```
 GET http://localhost:5000/api/login 404 (Not Found)
 ```
+
 **Solution**: Make sure:
+
 - Server is running (`npm run dev`)
 - API base URL is correct (http://localhost:5000)
 - Route path is correct (/api/login, not /api/auth/login)
 
 ### Issue: Network Error
+
 ```
 Network error. Please try again.
 ```
+
 **Solution**:
+
 - Verify backend is running: `curl http://localhost:5000/api/health`
 - Check if port 5000 is open
 - Check browser console for detailed error
 
 ### Issue: Mongoose Connection Error
+
 ```
 ❌ MongoDB Connection Error: connect ECONNREFUSED 127.0.0.1:27017
 ```
-**Solution**: 
+
+**Solution**:
+
 - Install MongoDB locally OR
 - Use MongoDB Atlas and update MONGODB_URI in .env
 - Server will continue without database (for testing)
@@ -188,6 +211,7 @@ Network error. Please try again.
 ## 📊 Test Scenarios
 
 ### Scenario 1: New User Signup Flow
+
 1. User navigates to `/signup`
 2. Fills form and submits
 3. Backend validates and hashes password
@@ -195,34 +219,38 @@ Network error. Please try again.
 5. JWT token generated
 6. Token stored in localStorage
 7. User redirected to `/dashboard`
-✅ **Result**: Should see dashboard with user info
+   ✅ **Result**: Should see dashboard with user info
 
 ### Scenario 2: Returning User Login Flow
+
 1. User navigates to `/login`
 2. Enters credentials
 3. Backend validates credentials
 4. JWT token generated
 5. Token stored in localStorage
 6. User redirected to `/dashboard`
-✅ **Result**: Should see dashboard with user info
+   ✅ **Result**: Should see dashboard with user info
 
 ### Scenario 3: Invalid Credentials
+
 1. User attempts login with wrong password
 2. Backend returns "Invalid credentials" error
 3. Error shown on login page
 4. User remains on login page
-✅ **Result**: Error message displays, can retry
+   ✅ **Result**: Error message displays, can retry
 
 ### Scenario 4: Duplicate Username
+
 1. User tries to signup with existing username
 2. Backend returns error
 3. User sees error message
 4. User can try different username
-✅ **Result**: Error handled gracefully
+   ✅ **Result**: Error handled gracefully
 
 ## 🎯 Performance Testing
 
 ### Load Testing
+
 ```bash
 # Using Apache Bench (ab)
 ab -n 100 -c 10 http://localhost:5000/api/health
@@ -231,6 +259,7 @@ ab -n 100 -c 10 http://localhost:5000/api/health
 ```
 
 ### Response Time
+
 - Expected: < 200ms for most endpoints
 - With DB query: < 500ms
 

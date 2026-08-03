@@ -1,4 +1,3 @@
-
 /**
  * AuthLayout - Layout wrapper for authentication pages
  * @param {ReactNode} children - Page content

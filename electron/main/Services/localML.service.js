@@ -8,9 +8,9 @@ const ADAPTIVE_ML_MODEL_CACHE = {}
 
 /**
  * Record and train ML model with user accepted line completion
- * @param {string} prefix 
- * @param {string} completion 
- * @param {string} lang 
+ * @param {string} prefix
+ * @param {string} completion
+ * @param {string} lang
  */
 export function trainLocalMLModel(prefix = '', completion = '', lang = 'Node.js') {
   if (!prefix || !completion) return
@@ -24,57 +24,64 @@ export function trainLocalMLModel(prefix = '', completion = '', lang = 'Node.js'
 // Language common snippet dictionary
 const LANGUAGE_SNIPPETS = {
   javascript: {
-    'func': 'function name(params) {\n  // body\n}',
-    'clg': 'console.log();',
-    'imp': 'import React from "react";',
-    'async': 'async function fetchData() {\n  try {\n    const res = await fetch(url);\n    const data = await res.json();\n    return data;\n  } catch (err) {\n    console.error(err);\n  }\n}',
-    'req': 'const express = require("express");',
-    'if': 'if (condition) {\n  // execute\n}',
-    'for': 'for (let i = 0; i < array.length; i++) {\n  const item = array[i];\n}',
-    'map': '.map((item) => {\n  return item;\n})',
-    'try': 'try {\n  // dangerous op\n} catch (err) {\n  console.error(err);\n}'
+    func: 'function name(params) {\n  // body\n}',
+    clg: 'console.log();',
+    imp: 'import React from "react";',
+    async:
+      'async function fetchData() {\n  try {\n    const res = await fetch(url);\n    const data = await res.json();\n    return data;\n  } catch (err) {\n    console.error(err);\n  }\n}',
+    req: 'const express = require("express");',
+    if: 'if (condition) {\n  // execute\n}',
+    for: 'for (let i = 0; i < array.length; i++) {\n  const item = array[i];\n}',
+    map: '.map((item) => {\n  return item;\n})',
+    try: 'try {\n  // dangerous op\n} catch (err) {\n  console.error(err);\n}'
   },
   typescript: {
-    'interface': 'interface UserProfile {\n  id: string;\n  name: string;\n}',
-    'type': 'type ResponseData<T> = {\n  status: number;\n  data: T;\n};'
+    interface: 'interface UserProfile {\n  id: string;\n  name: string;\n}',
+    type: 'type ResponseData<T> = {\n  status: number;\n  data: T;\n};'
   },
   python: {
-    'def': 'def function_name(self, arg):\n    """Docstring description"""\n    pass',
-    'ifmain': 'if __name__ == "__main__":\n    main()',
-    'try': 'try:\n    pass\nexcept Exception as e:\n    print(f"Error: {e}")',
-    'class': 'class MyClass:\n    def __init__(self):\n        pass',
-    'with': 'with open("filename.txt", "r") as f:\n    content = f.read()'
+    def: 'def function_name(self, arg):\n    """Docstring description"""\n    pass',
+    ifmain: 'if __name__ == "__main__":\n    main()',
+    try: 'try:\n    pass\nexcept Exception as e:\n    print(f"Error: {e}")',
+    class: 'class MyClass:\n    def __init__(self):\n        pass',
+    with: 'with open("filename.txt", "r") as f:\n    content = f.read()'
   },
   cpp: {
-    'inc': '#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;',
-    'main': 'int main(int argc, char* argv[]) {\n    std::cout << "Hello Xenithra!" << std::endl;\n    return 0;\n}',
-    'for': 'for (size_t i = 0; i < vec.size(); ++i) {\n    // process\n}',
-    'struct': 'struct Node {\n    int data;\n    Node* next;\n};'
+    inc: '#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;',
+    main: 'int main(int argc, char* argv[]) {\n    std::cout << "Hello Xenithra!" << std::endl;\n    return 0;\n}',
+    for: 'for (size_t i = 0; i < vec.size(); ++i) {\n    // process\n}',
+    struct: 'struct Node {\n    int data;\n    Node* next;\n};'
   },
   c: {
-    'inc': '#include <stdio.h>\n#include <stdlib.h>',
-    'main': 'int main() {\n    printf("Hello World\\n");\n    return 0;\n}'
+    inc: '#include <stdio.h>\n#include <stdlib.h>',
+    main: 'int main() {\n    printf("Hello World\\n");\n    return 0;\n}'
   },
   html: {
-    'html5': '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  \n</body>\n</html>',
-    'div': '<div className="container">\n  \n</div>'
+    html5:
+      '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  \n</body>\n</html>',
+    div: '<div className="container">\n  \n</div>'
   }
 }
 
 /**
  * Predicts next inline code completion string (ghost text) based on current line context
- * @param {string} fullCode 
- * @param {number} lineIndex 
- * @param {string} lineContent 
- * @param {string} lang 
+ * @param {string} fullCode
+ * @param {number} lineIndex
+ * @param {string} lineContent
+ * @param {string} lang
  * @returns {{suggestion: string, type: string}}
  */
-export function predictInlineCompletion(fullCode = '', lineIndex = 0, lineContent = '', lang = 'Node.js') {
+export function predictInlineCompletion(
+  fullCode = '',
+  lineIndex = 0,
+  lineContent = '',
+  lang = 'Node.js'
+) {
   const trimmed = lineContent.trim()
   if (!trimmed) return { suggestion: '', type: 'none' }
 
   const langKey = resolveLangKey(lang)
-  
+
   // 0. Check Adaptive Trained ML Model Cache
   if (ADAPTIVE_ML_MODEL_CACHE[langKey] && ADAPTIVE_ML_MODEL_CACHE[langKey][trimmed]) {
     return { suggestion: ADAPTIVE_ML_MODEL_CACHE[langKey][trimmed], type: 'ml-trained' }
@@ -97,9 +104,12 @@ export function predictInlineCompletion(fullCode = '', lineIndex = 0, lineConten
   }
 
   if (trimmed.startsWith('const ') && trimmed.includes('=') && !trimmed.endsWith(';')) {
-    if (trimmed.includes('require(') && !trimmed.endsWith(')')) return { suggestion: ');', type: 'syntax' }
-    if (trimmed.includes('fetch(') && !trimmed.endsWith(')')) return { suggestion: ');', type: 'syntax' }
-    if (trimmed.includes('use') && !trimmed.endsWith(')')) return { suggestion: '();', type: 'syntax' }
+    if (trimmed.includes('require(') && !trimmed.endsWith(')'))
+      return { suggestion: ');', type: 'syntax' }
+    if (trimmed.includes('fetch(') && !trimmed.endsWith(')'))
+      return { suggestion: ');', type: 'syntax' }
+    if (trimmed.includes('use') && !trimmed.endsWith(')'))
+      return { suggestion: '();', type: 'syntax' }
     return { suggestion: ';', type: 'syntax' }
   }
 
@@ -147,14 +157,14 @@ export function predictInlineCompletion(fullCode = '', lineIndex = 0, lineConten
   // 4. Frequency-Based Identifiers in Codebase
   const words = fullCode.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) || []
   const wordCounts = {}
-  words.forEach(w => {
+  words.forEach((w) => {
     if (w.length >= 2 && w !== trimmed) {
       wordCounts[w] = (wordCounts[w] || 0) + 1
     }
   })
 
   const matchingWord = Object.keys(wordCounts)
-    .filter(w => w.startsWith(trimmed) && w.length > trimmed.length)
+    .filter((w) => w.startsWith(trimmed) && w.length > trimmed.length)
     .sort((a, b) => wordCounts[b] - wordCounts[a])[0]
 
   if (matchingWord) {
@@ -166,12 +176,17 @@ export function predictInlineCompletion(fullCode = '', lineIndex = 0, lineConten
 
 /**
  * Local offline AI chatbot model logic
- * @param {string} prompt 
- * @param {string} code 
- * @param {string} lang 
- * @param {string} filename 
+ * @param {string} prompt
+ * @param {string} code
+ * @param {string} lang
+ * @param {string} filename
  */
-export function generateLocalAIChatResponse(prompt = '', code = '', lang = 'Node.js', filename = '') {
+export function generateLocalAIChatResponse(
+  prompt = '',
+  code = '',
+  lang = 'Node.js',
+  filename = ''
+) {
   const p = prompt.toLowerCase()
   let reply = ''
 
@@ -189,19 +204,27 @@ export function generateLocalAIChatResponse(prompt = '', code = '', lang = 'Node
       reply += `- **Functions & Classes**: Defines custom modular logic units for execution.\n`
     }
     reply += `\n**Overview**: This \`${lang}\` file contains workspace logic that runs inside Xenithra's execution engine. Let me know if you want line-by-line breakdown!`
-
-  } else if (p.includes('fix') || p.includes('bug') || p.includes('error') || p.includes('troubleshoot')) {
+  } else if (
+    p.includes('fix') ||
+    p.includes('bug') ||
+    p.includes('error') ||
+    p.includes('troubleshoot')
+  ) {
     reply = `### 🛠️ Local AI Bug Inspector\n\n`
     const issues = []
 
     if (code.includes('console.log') && lang.includes('C')) {
-      issues.push('- Found JS `console.log` inside a C/C++ file. Use `printf()` or `std::cout` instead.')
+      issues.push(
+        '- Found JS `console.log` inside a C/C++ file. Use `printf()` or `std::cout` instead.'
+      )
     }
     if ((lang === 'C (GCC)' || lang === 'C++ (G++)') && !code.includes('main')) {
       issues.push('- Missing `int main()` entry point required by C compilers.')
     }
     if (lang === 'Python 3' && (code.includes('{') || code.includes('}'))) {
-      issues.push('- Curly braces `{}` detected in Python file. Ensure proper indentation with colons `:` instead.')
+      issues.push(
+        '- Curly braces `{}` detected in Python file. Ensure proper indentation with colons `:` instead.'
+      )
     }
 
     if (issues.length > 0) {
@@ -210,13 +233,11 @@ export function generateLocalAIChatResponse(prompt = '', code = '', lang = 'Node
       reply += `No critical syntax anomalies detected in static analysis of \`${filename || 'untitled'}\`!\n\n`
     }
     reply += `**Tips**: Run the code with **🐞 Debug** (Ctrl+Shift+D) to trace runtime execution logs!`
-
   } else if (p.includes('optimiz') || p.includes('refactor') || p.includes('clean')) {
     reply = `### ⚡ Code Optimization & Clean Code Recommendations\n\n`
     reply += `1. **Modularity**: Break down long methods into sub-helpers under 30 lines.\n`
     reply += `2. **Error Handling**: Wrap risky operations inside \`try { ... } catch (err)\` blocks.\n`
     reply += `3. **Memory Management**: Dispose of unneeded listeners and timers when closing components.\n`
-
   } else {
     reply = `### 🤖 Xenithra Local ML AI Assistant\n\n`
     reply += `I analyzed your prompt: *"${prompt}"*\n\n`

@@ -14,18 +14,19 @@ const initializeControllers = async () => {
     refreshAccessToken = authModule.refreshAccessToken
     getCurrentUser = authModule.getCurrentUser
     initDependencies = authModule.initDependencies
-    
+
     // Initialize dependencies
     if (initDependencies) {
       await initDependencies()
     }
   } catch (error) {
-    console.warn('⚠️  Auth controllers not available:', (error).message)
+    console.warn('⚠️  Auth controllers not available:', error.message)
     // Provide fallback error responses
     const errorHandler = (req, res) => {
       res.status(503).json({
         success: false,
-        message: 'Authentication service not available. Please install dependencies: npm install mongoose bcryptjs jsonwebtoken'
+        message:
+          'Authentication service not available. Please install dependencies: npm install mongoose bcryptjs jsonwebtoken'
       })
     }
     signup = errorHandler

@@ -15,9 +15,7 @@ const Layout = ({ children }) => {
           <Sidebar collapsed={sidebarCollapsed} />
           <div style={layoutStyles.main}>
             <Topbar onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)} />
-            <div style={layoutStyles.content}>
-              {children}
-            </div>
+            <div style={layoutStyles.content}>{children}</div>
           </div>
         </div>
       </div>

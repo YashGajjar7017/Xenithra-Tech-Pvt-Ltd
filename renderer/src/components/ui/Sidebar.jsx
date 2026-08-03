@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 const Sidebar = () => {
   return (
@@ -8,10 +8,18 @@ const Sidebar = () => {
         <span id="logoText">Xenithra Technologics</span>
       </div>
       <div className="collapsed-icons" id="collapsedIcons">
-        <button className="collapsed-icon" data-page="dashboard" title="Dashboard">📊</button>
-        <button className="collapsed-icon" data-page="projects" title="Projects">📁</button>
-        <button className="collapsed-icon" data-page="snippets" title="Snippets">📝</button>
-        <button className="collapsed-icon" data-page="playground" title="Playground">🎮</button>
+        <button className="collapsed-icon" data-page="dashboard" title="Dashboard">
+          📊
+        </button>
+        <button className="collapsed-icon" data-page="projects" title="Projects">
+          📁
+        </button>
+        <button className="collapsed-icon" data-page="snippets" title="Snippets">
+          📝
+        </button>
+        <button className="collapsed-icon" data-page="playground" title="Playground">
+          🎮
+        </button>
       </div>
       <div className="sidebar-content" id="sidebarContent">
         <div className="subtitle">Frosted neon playground for modern C/C++ builds.</div>
@@ -22,18 +30,20 @@ const Sidebar = () => {
         <button>Snippets</button>
         <button>Playground</button>
       </div>
-      <div className="user-section" id="userSection" style={{display: 'none'}}>
+      <div className="user-section" id="userSection" style={{ display: 'none' }}>
         <div className="user-info">
           <div className="user-logo">👤</div>
           <span className="user-name">John Doe</span>
         </div>
-        <div className="pill-label" style={{marginTop: '14px'}}>Account</div>
+        <div className="pill-label" style={{ marginTop: '14px' }}>
+          Account
+        </div>
         <button>Profile</button>
         <button>Settings</button>
         <button>Logout</button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar

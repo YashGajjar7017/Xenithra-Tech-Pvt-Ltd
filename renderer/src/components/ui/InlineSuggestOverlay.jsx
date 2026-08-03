@@ -4,7 +4,7 @@ const InlineSuggestOverlay = ({ ghostText = '', onAccept }) => {
   if (!ghostText) return null
 
   return (
-    <div 
+    <div
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -19,7 +19,7 @@ const InlineSuggestOverlay = ({ ghostText = '', onAccept }) => {
       }}
     >
       <span>{ghostText}</span>
-      <span 
+      <span
         style={{
           fontSize: '9px',
           fontStyle: 'normal',

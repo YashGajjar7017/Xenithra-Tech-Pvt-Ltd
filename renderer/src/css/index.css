@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
 
-:root, [data-theme='vscode-dark'] {
+:root,
+[data-theme='vscode-dark'] {
   /* VS Code Dark Modern Theme - Exact Dark & Grey Coder Aesthetic */
   --bg-gradient: #1f1f1f;
   --panel-bg: #1e1e1e;
@@ -25,9 +26,10 @@
 
 [data-theme='glass-dark'] {
   /* Ultra Futuristic Dark Glass */
-  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.12) 0%, transparent 45%),
-                  radial-gradient(circle at 90% 80%, rgba(255, 0, 200, 0.12) 0%, transparent 45%),
-                  radial-gradient(circle at 50% 50%, #060919 0%, #020308 100%);
+  --bg-gradient:
+    radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(255, 0, 200, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, #060919 0%, #020308 100%);
   --panel-bg: rgba(10, 17, 38, 0.45);
   --panel-border: rgba(255, 255, 255, 0.08);
   --panel-border-glow: rgba(0, 229, 255, 0.18);
@@ -56,9 +58,10 @@
 
 /* Light Frosted Theme */
 [data-theme='glass-light'] {
-  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(0, 150, 136, 0.08) 0%, transparent 40%),
-                  radial-gradient(circle at 90% 80%, rgba(233, 30, 99, 0.08) 0%, transparent 40%),
-                  radial-gradient(circle at 50% 50%, #f5f7fc 0%, #e2e7f3 100%);
+  --bg-gradient:
+    radial-gradient(circle at 10% 20%, rgba(0, 150, 136, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(233, 30, 99, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, #f5f7fc 0%, #e2e7f3 100%);
   --panel-bg: rgba(255, 255, 255, 0.5);
   --panel-border: rgba(0, 0, 0, 0.06);
   --panel-border-glow: rgba(0, 150, 136, 0.15);
@@ -81,9 +84,10 @@
 
 /* Neon Violet Theme */
 [data-theme='neon-purple'] {
-  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(186, 85, 211, 0.18) 0%, transparent 45%),
-                  radial-gradient(circle at 90% 80%, rgba(138, 43, 226, 0.18) 0%, transparent 45%),
-                  radial-gradient(circle at 50% 50%, #0a0418 0%, #030109 100%);
+  --bg-gradient:
+    radial-gradient(circle at 10% 20%, rgba(186, 85, 211, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(138, 43, 226, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, #0a0418 0%, #030109 100%);
   --panel-bg: rgba(20, 7, 41, 0.5);
   --panel-border: rgba(186, 85, 211, 0.15);
   --panel-border-glow: rgba(138, 43, 226, 0.25);
@@ -106,9 +110,10 @@
 
 /* Emerald Matrix Theme */
 [data-theme='emerald'] {
-  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(0, 255, 135, 0.12) 0%, transparent 45%),
-                  radial-gradient(circle at 90% 80%, rgba(0, 188, 212, 0.12) 0%, transparent 45%),
-                  radial-gradient(circle at 50% 50%, #010c06 0%, #000402 100%);
+  --bg-gradient:
+    radial-gradient(circle at 10% 20%, rgba(0, 255, 135, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(0, 188, 212, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, #010c06 0%, #000402 100%);
   --panel-bg: rgba(2, 20, 12, 0.55);
   --panel-border: rgba(0, 255, 135, 0.12);
   --panel-border-glow: rgba(0, 255, 135, 0.2);
@@ -131,9 +136,10 @@
 
 /* Cyber Amber Theme */
 [data-theme='cyber-amber'] {
-  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(255, 159, 0, 0.15) 0%, transparent 45%),
-                  radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.15) 0%, transparent 45%),
-                  radial-gradient(circle at 50% 50%, #0d0801 0%, #030200 100%);
+  --bg-gradient:
+    radial-gradient(circle at 10% 20%, rgba(255, 159, 0, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, #0d0801 0%, #030200 100%);
   --panel-bg: rgba(24, 15, 2, 0.55);
   --panel-border: rgba(255, 159, 0, 0.15);
   --panel-border-glow: rgba(255, 159, 0, 0.25);
@@ -184,10 +190,16 @@
 }
 
 body {
-  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Outfit',
+    system-ui,
+    -apple-system,
+    sans-serif;
   background: var(--bg-gradient);
   color: var(--text-main);
-  transition: background 0.5s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+  transition:
+    background 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.3s ease;
   overflow: hidden;
   height: 100vh;
   width: 100vw;
@@ -323,7 +335,8 @@ body {
   transition: all 0.2s ease;
 }
 
-.menu-item:hover, .menu-item.open {
+.menu-item:hover,
+.menu-item.open {
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.05);
 }
@@ -337,7 +350,9 @@ body {
   min-width: 190px;
   background: rgba(10, 16, 36, 0.94);
   border: 1px solid var(--panel-border);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.02);
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.7),
+    inset 0 0 20px rgba(255, 255, 255, 0.02);
   border-radius: 8px;
   backdrop-filter: blur(25px);
   padding: 6px 0;
@@ -395,7 +410,8 @@ body {
   z-index: 100;
 }
 
-.resizer-v:hover, .resizer-v.resizing {
+.resizer-v:hover,
+.resizer-v.resizing {
   background: var(--accent-color);
   box-shadow: var(--accent-glow);
 }
@@ -408,7 +424,8 @@ body {
   z-index: 100;
 }
 
-.resizer-h:hover, .resizer-h.resizing {
+.resizer-h:hover,
+.resizer-h.resizing {
   background: var(--accent-color);
   box-shadow: var(--accent-glow);
 }
@@ -750,7 +767,11 @@ body {
 }
 
 .btn-signup {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25) 0%, rgba(255, 0, 200, 0.25) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 229, 255, 0.25) 0%,
+    rgba(255, 0, 200, 0.25) 100%
+  ) !important;
   border-color: var(--panel-border-glow) !important;
   color: #fff !important;
   box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
@@ -952,7 +973,7 @@ body {
   width: 100%;
   background: rgba(20, 20, 30, 0.98);
   border: 1px solid var(--panel-border);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   border-radius: 6px;
   max-height: 250px;
   overflow-y: auto;

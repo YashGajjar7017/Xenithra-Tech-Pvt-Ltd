@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from 'react'
 
 const Terminal = ({ isRunning, onClose }) => {
   const [history, setHistory] = useState([
-    { type: 'sys', text: 'Xenithra Integrated Terminal Engine v2.0 initialized.\nConnected to backend native shell process (kernel32.dll / cmd.exe).' }
+    {
+      type: 'sys',
+      text: 'Xenithra Integrated Terminal Engine v2.0 initialized.\nConnected to backend native shell process (kernel32.dll / cmd.exe).'
+    }
   ])
   const [inputVal, setInputVal] = useState('')
   const [cmdHistory, setCmdHistory] = useState([])
@@ -18,14 +21,17 @@ const Terminal = ({ isRunning, onClose }) => {
 
     if (window.api && typeof window.api.onTerminalData === 'function') {
       unsubscribe = window.api.onTerminalData((data) => {
-        setHistory(prev => [...prev, data])
+        setHistory((prev) => [...prev, data])
       })
     }
 
     if (window.api && typeof window.api.initTerminal === 'function') {
       const activePath = localStorage.getItem('activeWorkspacePath') || ''
-      window.api.initTerminal(activePath).catch(err => {
-        setHistory(prev => [...prev, { type: 'stderr', text: `Failed to initialize backend shell: ${err.message}` }])
+      window.api.initTerminal(activePath).catch((err) => {
+        setHistory((prev) => [
+          ...prev,
+          { type: 'stderr', text: `Failed to initialize backend shell: ${err.message}` }
+        ])
       })
     }
 
@@ -48,18 +54,21 @@ const Terminal = ({ isRunning, onClose }) => {
       if (!cmd.trim()) return
 
       // Add to command history
-      setCmdHistory(prev => [...prev, cmd])
+      setCmdHistory((prev) => [...prev, cmd])
       setHistoryIdx(-1)
 
       // Print input line
-      setHistory(prev => [...prev, { type: 'input', text: cmd }])
+      setHistory((prev) => [...prev, { type: 'input', text: cmd }])
       setInputVal('')
 
       // Send to backend shell process
       if (window.api && typeof window.api.writeTerminal === 'function') {
         window.api.writeTerminal(cmd)
       } else {
-        setHistory(prev => [...prev, { type: 'stderr', text: 'Backend terminal IPC unavailable.' }])
+        setHistory((prev) => [
+          ...prev,
+          { type: 'stderr', text: 'Backend terminal IPC unavailable.' }
+        ])
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
@@ -86,8 +95,8 @@ const Terminal = ({ isRunning, onClose }) => {
   }
 
   return (
-    <div 
-      className="terminal-window" 
+    <div
+      className="terminal-window"
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -103,7 +112,7 @@ const Terminal = ({ isRunning, onClose }) => {
       onClick={() => inputRef.current && inputRef.current.focus()}
     >
       {/* Terminal Header Bar */}
-      <div 
+      <div
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -116,8 +125,8 @@ const Terminal = ({ isRunning, onClose }) => {
       >
         {/* Left Tabs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {['Terminal', 'Problems', 'Output', 'Debug Console'].map(tab => (
-            <span 
+          {['Terminal', 'Problems', 'Output', 'Debug Console'].map((tab) => (
+            <span
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
@@ -125,7 +134,8 @@ const Terminal = ({ isRunning, onClose }) => {
                 fontWeight: activeTab === tab ? '600' : 'normal',
                 color: activeTab === tab ? 'var(--accent-color)' : '#8b949e',
                 cursor: 'pointer',
-                borderBottom: activeTab === tab ? '2px solid var(--accent-color)' : '2px solid transparent',
+                borderBottom:
+                  activeTab === tab ? '2px solid var(--accent-color)' : '2px solid transparent',
                 paddingBottom: '2px',
                 transition: 'all 0.2s ease'
               }}
@@ -137,7 +147,7 @@ const Terminal = ({ isRunning, onClose }) => {
 
         {/* Right Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button 
+          <button
             onClick={handleClear}
             style={{
               background: 'transparent',
@@ -148,14 +158,14 @@ const Terminal = ({ isRunning, onClose }) => {
               padding: '2px 6px',
               borderRadius: '3px'
             }}
-            onMouseEnter={(e) => e.target.style.color = '#fff'}
-            onMouseLeave={(e) => e.target.style.color = '#8b949e'}
+            onMouseEnter={(e) => (e.target.style.color = '#fff')}
+            onMouseLeave={(e) => (e.target.style.color = '#8b949e')}
             title="Clear Terminal Output"
           >
             🗑 Clear
           </button>
           {onClose && (
-            <button 
+            <button
               onClick={onClose}
               style={{
                 background: 'transparent',
@@ -173,7 +183,7 @@ const Terminal = ({ isRunning, onClose }) => {
       </div>
 
       {/* Terminal Content Body */}
-      <div 
+      <div
         style={{
           flex: 1,
           padding: '10px 14px',
@@ -188,25 +198,46 @@ const Terminal = ({ isRunning, onClose }) => {
             {history.map((item, idx) => {
               if (item.type === 'input') {
                 return (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00ffaa', marginTop: '4px' }}>
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      color: '#00ffaa',
+                      marginTop: '4px'
+                    }}
+                  >
                     <span style={{ color: '#58a6ff', fontWeight: 'bold' }}>xenithra@studio:~$</span>
                     <span>{item.text}</span>
                   </div>
                 )
               }
               if (item.type === 'stderr') {
-                return <div key={idx} style={{ color: '#ff6b6b' }}>{item.text}</div>
+                return (
+                  <div key={idx} style={{ color: '#ff6b6b' }}>
+                    {item.text}
+                  </div>
+                )
               }
               if (item.type === 'sys') {
-                return <div key={idx} style={{ color: '#8b949e', fontStyle: 'italic' }}>{item.text}</div>
+                return (
+                  <div key={idx} style={{ color: '#8b949e', fontStyle: 'italic' }}>
+                    {item.text}
+                  </div>
+                )
               }
-              return <div key={idx} style={{ color: '#e6edf3' }}>{item.text}</div>
+              return (
+                <div key={idx} style={{ color: '#e6edf3' }}>
+                  {item.text}
+                </div>
+              )
             })}
 
             {/* Input Line */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
               <span style={{ color: '#58a6ff', fontWeight: 'bold' }}>xenithra@studio:~$</span>
-              <input 
+              <input
                 ref={inputRef}
                 type="text"
                 value={inputVal}
@@ -227,36 +258,59 @@ const Terminal = ({ isRunning, onClose }) => {
           </React.Fragment>
         ) : activeTab === 'Problems' ? (
           <div style={{ color: '#8b949e' }}>
-            <div style={{ color: '#00ffaa', fontWeight: 'bold', marginBottom: '8px' }}>✓ Diagnostics Summary</div>
+            <div style={{ color: '#00ffaa', fontWeight: 'bold', marginBottom: '8px' }}>
+              ✓ Diagnostics Summary
+            </div>
             <div>0 Errors | 0 Warnings | 0 Information Messages</div>
-            <div style={{ fontSize: '11px', marginTop: '12px', opacity: 0.6 }}>No problems detected in active workspace files.</div>
+            <div style={{ fontSize: '11px', marginTop: '12px', opacity: 0.6 }}>
+              No problems detected in active workspace files.
+            </div>
           </div>
         ) : activeTab === 'Output' ? (
           <div style={{ color: '#d8b4fe' }}>
             <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>[Xenithra Output Console]</div>
-            {history.filter(h => h.type === 'sys' || h.type === 'stdout').map((h, i) => (
-              <div key={i} style={{ color: '#e6edf3' }}>{h.text || h}</div>
-            ))}
-            {history.filter(h => h.type === 'sys' || h.type === 'stdout').length === 0 && (
-              <div style={{ color: '#8b949e', fontStyle: 'italic' }}>Compiler output stream idle. Click Run or Live Server to view logs.</div>
+            {history
+              .filter((h) => h.type === 'sys' || h.type === 'stdout')
+              .map((h, i) => (
+                <div key={i} style={{ color: '#e6edf3' }}>
+                  {h.text || h}
+                </div>
+              ))}
+            {history.filter((h) => h.type === 'sys' || h.type === 'stdout').length === 0 && (
+              <div style={{ color: '#8b949e', fontStyle: 'italic' }}>
+                Compiler output stream idle. Click Run or Live Server to view logs.
+              </div>
             )}
           </div>
         ) : (
           <div style={{ color: '#8be9fd' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '6px', color: '#ff79c6' }}>🐞 Xenithra JS REPL Debug Console</div>
-            <div style={{ fontSize: '11px', color: '#8b949e', marginBottom: '10px' }}>Type JavaScript expressions to evaluate in realtime.</div>
+            <div style={{ fontWeight: 'bold', marginBottom: '6px', color: '#ff79c6' }}>
+              🐞 Xenithra JS REPL Debug Console
+            </div>
+            <div style={{ fontSize: '11px', color: '#8b949e', marginBottom: '10px' }}>
+              Type JavaScript expressions to evaluate in realtime.
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ color: '#ff79c6', fontWeight: 'bold' }}>debug&gt;</span>
-              <input 
+              <input
                 type="text"
                 placeholder="evaluate expression (e.g. 2+2)..."
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && e.target.value) {
                     try {
                       const res = eval(e.target.value)
-                      setHistory(prev => [...prev, { type: 'stdout', text: `debug> ${e.target.value} => ${JSON.stringify(res)}` }])
+                      setHistory((prev) => [
+                        ...prev,
+                        {
+                          type: 'stdout',
+                          text: `debug> ${e.target.value} => ${JSON.stringify(res)}`
+                        }
+                      ])
                     } catch (err) {
-                      setHistory(prev => [...prev, { type: 'stderr', text: `debug> Error: ${err.message}` }])
+                      setHistory((prev) => [
+                        ...prev,
+                        { type: 'stderr', text: `debug> Error: ${err.message}` }
+                      ])
                     }
                     e.target.value = ''
                   }

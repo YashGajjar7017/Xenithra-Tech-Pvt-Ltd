@@ -51,7 +51,7 @@
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .endpoint-header {
@@ -104,11 +104,15 @@
   margin-bottom: 15px;
 }
 
-.parameters, .request-body, .response {
+.parameters,
+.request-body,
+.response {
   margin-bottom: 20px;
 }
 
-.parameters h4, .request-body h4, .response h4 {
+.parameters h4,
+.request-body h4,
+.response h4 {
   color: #333;
   font-size: 1rem;
   margin-bottom: 10px;

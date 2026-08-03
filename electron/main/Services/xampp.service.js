@@ -62,7 +62,10 @@ export const startPhpService = (docRoot = '') => {
           // Fallback to simulated PHP service
           servicesState.php.status = 'running'
           startSimulatedPhpServer(servicesState.php.port)
-          return resolve({ success: true, message: 'Simulated PHP web server started (PHP not found in PATH)' })
+          return resolve({
+            success: true,
+            message: 'Simulated PHP web server started (PHP not found in PATH)'
+          })
         }
       } else {
         phpPath = stdout.split('\r\n')[0].trim()
@@ -149,7 +152,7 @@ export const stopXamppService = (name) => {
     servicesState[name].process = null
   }
   servicesState[name].status = 'stopped'
-  
+
   if (name === 'mysql') {
     stopXamppService('phpmyadmin')
   }
@@ -166,7 +169,12 @@ const startPhpmyadminService = () => {
       let phpPath = err ? 'C:\\xampp\\php\\php.exe' : stdout.split('\r\n')[0].trim()
       if (fs.existsSync(phpPath)) {
         try {
-          const pmaProc = spawn(phpPath, ['-S', `localhost:${servicesState.phpmyadmin.port}`, '-t', pmaPath])
+          const pmaProc = spawn(phpPath, [
+            '-S',
+            `localhost:${servicesState.phpmyadmin.port}`,
+            '-t',
+            pmaPath
+          ])
           servicesState.phpmyadmin.process = pmaProc
           servicesState.phpmyadmin.status = 'running'
 

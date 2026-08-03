@@ -64,17 +64,32 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "msi",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
     "fileAssociations": [
       {
-        "ext": ["js", "html", "css", "py", "c", "cpp", "cs", "dart", "json", "md"],
+        "ext": [
+          "js",
+          "html",
+          "css",
+          "py",
+          "c",
+          "cpp",
+          "cs",
+          "dart",
+          "json",
+          "md"
+        ],
         "name": "Xenithra Code File",
         "role": "Editor"
       }

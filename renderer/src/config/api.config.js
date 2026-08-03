@@ -8,8 +8,8 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 const isProduction = process.env.NODE_ENV === 'production'
 
 // API Base URLs
-const API_BASE_URL = isDevelopment 
-  ? 'http://localhost:8000/api' 
+const API_BASE_URL = isDevelopment
+  ? 'http://localhost:8000/api'
   : process.env.REACT_APP_API_URL || 'http://localhost:8000/api'
 
 const API_PREFIX = `${API_BASE_URL}/api`
@@ -34,7 +34,7 @@ const API_CONFIG = {
     retryDelay: 1000,
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json'
     }
   },
 
@@ -52,7 +52,7 @@ const API_CONFIG = {
     sendOTP: `${API_PREFIX}/send-otp`,
     enable2FA: `${API_PREFIX}/2fa/enable`,
     disable2FA: `${API_PREFIX}/2fa/disable`,
-    verify2FA: `${API_PREFIX}/2fa/verify`,
+    verify2FA: `${API_PREFIX}/2fa/verify`
   },
 
   // User Management Endpoints
@@ -68,7 +68,7 @@ const API_CONFIG = {
     uploadAvatar: `${API_PREFIX}/users/avatar`,
     search: `${API_PREFIX}/users/search`,
     ban: (id) => `${API_PREFIX}/users/${id}/ban`,
-    unban: (id) => `${API_PREFIX}/users/${id}/unban`,
+    unban: (id) => `${API_PREFIX}/users/${id}/unban`
   },
 
   // Code Compilation Endpoints
@@ -79,7 +79,7 @@ const API_CONFIG = {
     analyze: `${API_PREFIX}/compiler/analyze`,
     lint: `${API_PREFIX}/compiler/lint`,
     getLanguages: `${API_PREFIX}/compiler/languages`,
-    getVersions: (language) => `${API_PREFIX}/compiler/languages/${language}/versions`,
+    getVersions: (language) => `${API_PREFIX}/compiler/languages/${language}/versions`
   },
 
   // File Management Endpoints
@@ -98,7 +98,7 @@ const API_CONFIG = {
     copy: (id) => `${API_PREFIX}/files/${id}/copy`,
     trash: (id) => `${API_PREFIX}/files/${id}/trash`,
     restore: (id) => `${API_PREFIX}/files/${id}/restore`,
-    permanentDelete: (id) => `${API_PREFIX}/files/${id}/delete-permanent`,
+    permanentDelete: (id) => `${API_PREFIX}/files/${id}/delete-permanent`
   },
 
   // Session Management Endpoints
@@ -112,7 +112,7 @@ const API_CONFIG = {
     delete: (id) => `${API_PREFIX}/sessions/${id}`,
     listParticipants: (id) => `${API_PREFIX}/sessions/${id}/participants`,
     getHistory: (id) => `${API_PREFIX}/sessions/${id}/history`,
-    exportCode: (id) => `${API_PREFIX}/sessions/${id}/export`,
+    exportCode: (id) => `${API_PREFIX}/sessions/${id}/export`
   },
 
   // Collaboration Endpoints
@@ -126,7 +126,7 @@ const API_CONFIG = {
     createTeam: `${API_PREFIX}/collaboration/teams`,
     getTeams: `${API_PREFIX}/collaboration/teams`,
     updateTeam: (id) => `${API_PREFIX}/collaboration/teams/${id}`,
-    deleteTeam: (id) => `${API_PREFIX}/collaboration/teams/${id}`,
+    deleteTeam: (id) => `${API_PREFIX}/collaboration/teams/${id}`
   },
 
   // Classroom Endpoints
@@ -143,7 +143,8 @@ const API_CONFIG = {
     removeMember: (id, memberId) => `${API_PREFIX}/classroom/${id}/members/${memberId}`,
     getAssignments: (id) => `${API_PREFIX}/classroom/${id}/assignments`,
     createAssignment: (id) => `${API_PREFIX}/classroom/${id}/assignments`,
-    submitAssignment: (id, assignmentId) => `${API_PREFIX}/classroom/${id}/assignments/${assignmentId}/submit`,
+    submitAssignment: (id, assignmentId) =>
+      `${API_PREFIX}/classroom/${id}/assignments/${assignmentId}/submit`
   },
 
   // Achievements Endpoints
@@ -154,7 +155,7 @@ const API_CONFIG = {
     unlockAchievement: (id) => `${API_PREFIX}/achievements/${id}/unlock`,
     getProgress: `${API_PREFIX}/achievements/progress`,
     getLeaderboard: `${API_PREFIX}/achievements/leaderboard`,
-    getLeaderboardPeriod: (period) => `${API_PREFIX}/achievements/leaderboard/${period}`,
+    getLeaderboardPeriod: (period) => `${API_PREFIX}/achievements/leaderboard/${period}`
   },
 
   // Analytics Endpoints
@@ -165,7 +166,7 @@ const API_CONFIG = {
     getCompilationHistory: `${API_PREFIX}/analytics/compilation-history`,
     getUserAnalytics: `${API_PREFIX}/analytics/user`,
     getSystemAnalytics: `${API_PREFIX}/analytics/system`,
-    exportAnalytics: (format = 'json') => `${API_PREFIX}/analytics/export?format=${format}`,
+    exportAnalytics: (format = 'json') => `${API_PREFIX}/analytics/export?format=${format}`
   },
 
   // Admin Endpoints
@@ -180,7 +181,7 @@ const API_CONFIG = {
     getServerStats: `${API_PREFIX}/admin/server-stats`,
     getLogs: `${API_PREFIX}/admin/logs`,
     clearCache: `${API_PREFIX}/admin/cache/clear`,
-    maintenance: `${API_PREFIX}/admin/maintenance`,
+    maintenance: `${API_PREFIX}/admin/maintenance`
   },
 
   // Payment/Billing Endpoints
@@ -190,7 +191,7 @@ const API_CONFIG = {
     cancelSubscription: `${API_PREFIX}/billing/subscription/cancel`,
     updatePaymentMethod: `${API_PREFIX}/billing/payment-method`,
     getInvoices: `${API_PREFIX}/billing/invoices`,
-    downloadInvoice: (id) => `${API_PREFIX}/billing/invoices/${id}/download`,
+    downloadInvoice: (id) => `${API_PREFIX}/billing/invoices/${id}/download`
   },
 
   // Notification Endpoints
@@ -200,7 +201,7 @@ const API_CONFIG = {
     markAsRead: (id) => `${API_PREFIX}/notifications/${id}/read`,
     markAllAsRead: `${API_PREFIX}/notifications/read-all`,
     delete: (id) => `${API_PREFIX}/notifications/${id}`,
-    deleteAll: `${API_PREFIX}/notifications/delete-all`,
+    deleteAll: `${API_PREFIX}/notifications/delete-all`
   },
 
   // Search Endpoints
@@ -208,13 +209,13 @@ const API_CONFIG = {
     global: `${API_PREFIX}/search`,
     users: `${API_PREFIX}/search/users`,
     files: `${API_PREFIX}/search/files`,
-    code: `${API_PREFIX}/search/code`,
+    code: `${API_PREFIX}/search/code`
   },
 
   // Health Check
   health: {
     status: `${API_PREFIX}/health`,
-    ping: `${API_BASE_URL}/ping`,
+    ping: `${API_BASE_URL}/ping`
   }
 }
 
@@ -227,7 +228,7 @@ const WEBRTC_CONFIG = {
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
     { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
+    { urls: 'stun:stun4.l.google.com:19302' }
   ],
   constraints: {
     video: {
@@ -252,7 +253,19 @@ const UI_CONFIG = {
   notificationDuration: 5000,
   autoSaveInterval: 30000,
   maxFileSize: 10 * 1024 * 1024, // 10MB
-  supportedFileTypes: ['.js', '.html', '.css', '.json', '.py', '.java', '.cpp', '.c', '.ts', '.jsx', '.tsx'],
+  supportedFileTypes: [
+    '.js',
+    '.html',
+    '.css',
+    '.json',
+    '.py',
+    '.java',
+    '.cpp',
+    '.c',
+    '.ts',
+    '.jsx',
+    '.tsx'
+  ],
   codeEditorTheme: 'dracula',
   codeEditorFontSize: 14,
   codeEditorFontFamily: '"Fira Code", "Courier New", monospace'

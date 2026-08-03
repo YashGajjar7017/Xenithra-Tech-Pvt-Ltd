@@ -52,38 +52,48 @@ function DashboardPage() {
       <div className="dashboard" style={styles.dashboard}>
         <div style={styles.headerRow}>
           <h1 style={styles.title}>System Control Center</h1>
-          <button onClick={handleLogout} style={styles.btnLogout}>Disconnect Session (Logout)</button>
+          <button onClick={handleLogout} style={styles.btnLogout}>
+            Disconnect Session (Logout)
+          </button>
         </div>
-        
+
         {/* Statistics Cards */}
         <div className="dashboard-grid" style={styles.grid}>
           <div className="dashboard-card" style={styles.card}>
             <h3 style={styles.cardTitle}>Environment Status</h3>
-            <p className="stat" style={styles.statActive}>ONLINE</p>
+            <p className="stat" style={styles.statActive}>
+              ONLINE
+            </p>
           </div>
           <div className="dashboard-card" style={styles.card}>
             <h3 style={styles.cardTitle}>Project Repositories</h3>
-            <p className="stat" style={styles.stat}>4 Active</p>
+            <p className="stat" style={styles.stat}>
+              4 Active
+            </p>
           </div>
           <div className="dashboard-card" style={styles.card}>
             <h3 style={styles.cardTitle}>Active Terminals</h3>
-            <p className="stat" style={styles.stat}>2 Shells</p>
+            <p className="stat" style={styles.stat}>
+              2 Shells
+            </p>
           </div>
           <div className="dashboard-card" style={styles.card}>
             <h3 style={styles.cardTitle}>Memory Usage</h3>
-            <p className="stat" style={styles.stat}>68 MB</p>
+            <p className="stat" style={styles.stat}>
+              68 MB
+            </p>
           </div>
         </div>
 
         {/* Settings Section */}
         <div className="settings-section" style={styles.settingsSection}>
           <h2 style={styles.sectionTitle}>System Settings</h2>
-          
+
           <div className="settings-grid" style={styles.settingsGrid}>
             {/* Account Settings */}
             <div className="settings-group" style={styles.group}>
               <h3 style={styles.groupTitle}>User Profile</h3>
-              
+
               <div className="form-group" style={styles.formGroup}>
                 <label style={styles.label}>Profile Username</label>
                 <input
@@ -110,7 +120,7 @@ function DashboardPage() {
             {/* Appearance Settings */}
             <div className="settings-group" style={styles.group}>
               <h3 style={styles.groupTitle}>Visual Interface</h3>
-              
+
               <div className="form-group" style={styles.formGroup}>
                 <label style={styles.label}>Prism Theming</label>
                 <select
@@ -142,7 +152,7 @@ function DashboardPage() {
             {/* Preferences */}
             <div className="settings-group" style={styles.group}>
               <h3 style={styles.groupTitle}>System Directives</h3>
-              
+
               <div className="form-group" style={styles.formGroup}>
                 <label style={styles.label}>Default Dialect</label>
                 <select
@@ -159,7 +169,16 @@ function DashboardPage() {
               </div>
 
               <div className="form-group" style={styles.formGroup}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontSize: '13px', cursor: 'pointer' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'var(--text-main)',
+                    fontSize: '13px',
+                    cursor: 'pointer'
+                  }}
+                >
                   <input
                     type="checkbox"
                     checked={notifications}
@@ -174,11 +193,7 @@ function DashboardPage() {
 
           {/* Save Button */}
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            <button
-              onClick={handleSaveSettings}
-              disabled={isSaving}
-              style={styles.btnSave}
-            >
+            <button onClick={handleSaveSettings} disabled={isSaving} style={styles.btnSave}>
               {isSaving ? 'Syncing...' : 'Sync System Settings'}
             </button>
           </div>

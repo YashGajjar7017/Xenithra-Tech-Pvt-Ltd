@@ -3,16 +3,38 @@ import path from 'path'
 
 const IGNORED_DIRS = new Set(['node_modules', 'dist', 'out', 'build'])
 const TEXT_EXTENSIONS = new Set([
-  '.js', '.jsx', '.ts', '.tsx', '.json', '.html', '.css', '.scss', 
-  '.py', '.c', '.cpp', '.h', '.hpp', '.cs', '.dart', '.md', '.txt', 
-  '.xml', '.env', '.yaml', '.yml', '.sql', '.sh', '.gitignore', ''
+  '.js',
+  '.jsx',
+  '.ts',
+  '.tsx',
+  '.json',
+  '.html',
+  '.css',
+  '.scss',
+  '.py',
+  '.c',
+  '.cpp',
+  '.h',
+  '.hpp',
+  '.cs',
+  '.dart',
+  '.md',
+  '.txt',
+  '.xml',
+  '.env',
+  '.yaml',
+  '.yml',
+  '.sql',
+  '.sh',
+  '.gitignore',
+  ''
 ])
 
 /**
  * Searches across all files in workspace directory
- * @param {string} workspacePath 
- * @param {string} query 
- * @param {object} options 
+ * @param {string} workspacePath
+ * @param {string} query
+ * @param {object} options
  */
 export async function searchWorkspace(workspacePath, query, options = {}) {
   if (!query || !query.trim()) {
@@ -20,7 +42,12 @@ export async function searchWorkspace(workspacePath, query, options = {}) {
   }
 
   const rootDir = workspacePath && fs.existsSync(workspacePath) ? workspacePath : process.cwd()
-  const { caseSensitive = false, matchWholeWord = false, useRegex = false, includesPattern = '' } = options
+  const {
+    caseSensitive = false,
+    matchWholeWord = false,
+    useRegex = false,
+    includesPattern = ''
+  } = options
 
   let regex = null
   try {

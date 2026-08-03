@@ -32,7 +32,7 @@ class APIClient {
     const token = this.getToken()
     const headers = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       ...this.config.request?.headers,
       ...customHeaders
     }
@@ -49,7 +49,7 @@ class APIClient {
    */
   async request(method, url, data = null, options = {}) {
     let lastError
-    
+
     for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
       try {
         const response = await this.fetchWithTimeout(
@@ -131,7 +131,7 @@ class APIClient {
    */
   async parseResponse(response) {
     const contentType = response.headers.get('content-type')
-    
+
     if (contentType?.includes('application/json')) {
       try {
         return await response.json()
@@ -164,7 +164,7 @@ class APIClient {
    * Delay helper
    */
   delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   /**
@@ -281,7 +281,8 @@ export const authAPI = {
 // User APIs
 // ==========================================
 export const userAPI = {
-  getAll: (page = 1, limit = 10) => api.get(`${API_CONFIG.users.getAll}?page=${page}&limit=${limit}`),
+  getAll: (page = 1, limit = 10) =>
+    api.get(`${API_CONFIG.users.getAll}?page=${page}&limit=${limit}`),
   getById: (id) => api.get(API_CONFIG.users.getById(id)),
   update: (id, data) => api.put(API_CONFIG.users.update(id), data),
   delete: (id) => api.delete(API_CONFIG.users.delete(id)),
@@ -305,16 +306,12 @@ export const userAPI = {
 // Compiler APIs
 // ==========================================
 export const compilerAPI = {
-  compile: (code, language, version = 'latest') => 
+  compile: (code, language, version = 'latest') =>
     api.post(API_CONFIG.compiler.compile, { code, language, version }),
-  execute: (code, language) => 
-    api.post(API_CONFIG.compiler.execute, { code, language }),
-  format: (code, language) => 
-    api.post(API_CONFIG.compiler.format, { code, language }),
-  analyze: (code, language) => 
-    api.post(API_CONFIG.compiler.analyze, { code, language }),
-  lint: (code, language) => 
-    api.post(API_CONFIG.compiler.lint, { code, language }),
+  execute: (code, language) => api.post(API_CONFIG.compiler.execute, { code, language }),
+  format: (code, language) => api.post(API_CONFIG.compiler.format, { code, language }),
+  analyze: (code, language) => api.post(API_CONFIG.compiler.analyze, { code, language }),
+  lint: (code, language) => api.post(API_CONFIG.compiler.lint, { code, language }),
   getLanguages: () => api.get(API_CONFIG.compiler.getLanguages),
   getVersions: (language) => api.get(API_CONFIG.compiler.getVersions(language))
 }
@@ -394,7 +391,7 @@ export const classroomAPI = {
   removeMember: (id, memberId) => api.delete(API_CONFIG.classroom.removeMember(id, memberId)),
   getAssignments: (id) => api.get(API_CONFIG.classroom.getAssignments(id)),
   createAssignment: (id, data) => api.post(API_CONFIG.classroom.createAssignment(id), data),
-  submitAssignment: (id, assignmentId, data) => 
+  submitAssignment: (id, assignmentId, data) =>
     api.post(API_CONFIG.classroom.submitAssignment(id, assignmentId), data)
 }
 
@@ -464,7 +461,16 @@ export const healthAPI = {
 /**
  * Export API client and utilities
  */
-export { api, APIClient, APIError, UnauthorizedError, ForbiddenError, NotFoundError, RateLimitError, TimeoutError }
+export {
+  api,
+  APIClient,
+  APIError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  RateLimitError,
+  TimeoutError
+}
 
 export default {
   api,

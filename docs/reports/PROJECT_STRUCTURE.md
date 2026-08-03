@@ -57,21 +57,25 @@ xenithra-technologies/
 ## 🚀 Quick Start
 
 ### Installation
+
 ```bash
 npm install
 ```
 
 ### Development
+
 ```bash
 npm run dev
 ```
 
 ### Build
+
 ```bash
 npm run build
 ```
 
 ### Build for Specific Platform
+
 ```bash
 npm run build:win
 npm run build:mac
@@ -101,12 +105,14 @@ components/
 ## 📝 Configuration
 
 ### Electron Vite Config
+
 - **Main Entry**: `electron/main/index.ts`
 - **Preload Entry**: `electron/preload/index.ts`
 - **Renderer Root**: `renderer/`
 - **Renderer Entry**: `renderer/index.html`
 
 ### Path Aliases (in electron.vite.config.mjs)
+
 ```javascript
 '@': 'renderer/src'
 '@components': 'renderer/src/components'
@@ -122,16 +128,19 @@ components/
 ## 🔧 Development
 
 ### Adding a New Page
+
 1. Create a new component in `renderer/src/pages/`
 2. Add the route in `renderer/src/App.jsx`
 3. Create styles in `renderer/src/styles/`
 
 ### Adding a New Component
+
 1. Create component in `renderer/src/components/`
 2. Add corresponding styles in `renderer/src/styles/`
 3. Export from component's `index.js` (barrel export)
 
 ### Adding Backend Routes
+
 1. Create new route file in `electron/main/Routes/`
 2. Import and use in `electron/main/api.js`
 3. Define controller logic in `electron/main/controller/`
@@ -154,4 +163,3 @@ components/
 5. Keep API calls in service files
 6. Use custom hooks for shared logic
 7. Maintain consistent naming conventions
-

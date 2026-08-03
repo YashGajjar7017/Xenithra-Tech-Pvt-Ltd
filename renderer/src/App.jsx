@@ -30,8 +30,16 @@ const MainApp = () => {
   useEffect(() => {
     if (window.api && typeof window.api.onToggleTheme === 'function') {
       window.api.onToggleTheme(() => {
-        setTheme(prev => {
-          const themes = ['vscode-dark', 'github-dark', 'glass-dark', 'glass-light', 'neon-purple', 'emerald', 'cyber-amber']
+        setTheme((prev) => {
+          const themes = [
+            'vscode-dark',
+            'github-dark',
+            'glass-dark',
+            'glass-light',
+            'neon-purple',
+            'emerald',
+            'cyber-amber'
+          ]
           const nextIdx = (themes.indexOf(prev) + 1) % themes.length
           return themes[nextIdx]
         })
@@ -42,12 +50,15 @@ const MainApp = () => {
   // Resolve backend port dynamically on mount
   useEffect(() => {
     if (window.api && typeof window.api.getApiPort === 'function') {
-      window.api.getApiPort().then(port => {
-        console.log('[App] Resolved backend API port:', port)
-        localStorage.setItem('api-port', port)
-      }).catch(err => {
-        console.error('[App] Failed to get API port:', err)
-      })
+      window.api
+        .getApiPort()
+        .then((port) => {
+          console.log('[App] Resolved backend API port:', port)
+          localStorage.setItem('api-port', port)
+        })
+        .catch((err) => {
+          console.error('[App] Failed to get API port:', err)
+        })
     }
 
     if (window.api && typeof window.api.onOpenFiles === 'function') {
@@ -56,9 +67,11 @@ const MainApp = () => {
           const file = files[0]
           const filename = file.name || file.path.split(/[\\/]/).pop()
           const fileCode = file.content
-          window.dispatchEvent(new CustomEvent('open-file', {
-            detail: { filename, code: fileCode, path: file.path }
-          }))
+          window.dispatchEvent(
+            new CustomEvent('open-file', {
+              detail: { filename, code: fileCode, path: file.path }
+            })
+          )
         }
       })
     }
@@ -66,9 +79,11 @@ const MainApp = () => {
     if (window.api && typeof window.api.onOpenDirectory === 'function') {
       window.api.onOpenDirectory((dirResult) => {
         if (dirResult) {
-          window.dispatchEvent(new CustomEvent('open-directory', {
-            detail: dirResult
-          }))
+          window.dispatchEvent(
+            new CustomEvent('open-directory', {
+              detail: dirResult
+            })
+          )
         }
       })
     }
@@ -98,35 +113,35 @@ const MainApp = () => {
         <Route path="/Account/login" element={<LoginPage />} />
         <Route path="/Account/signup" element={<SignupPage />} />
         <Route path="/preferences" element={<PreferencesPage />} />
-        <Route 
-          path="/Dashboard" 
+        <Route
+          path="/Dashboard"
           element={
-            <MainLayout 
-              theme={theme} 
-              setTheme={setTheme} 
-              sidebarCollapsed={sidebarCollapsed} 
+            <MainLayout
+              theme={theme}
+              setTheme={setTheme}
+              sidebarCollapsed={sidebarCollapsed}
               setSidebarCollapsed={setSidebarCollapsed}
               sidebarWidth={sidebarWidth}
               setSidebarWidth={setSidebarWidth}
             >
               <DashboardPage />
             </MainLayout>
-          } 
+          }
         />
-        <Route 
-          path="/*" 
+        <Route
+          path="/*"
           element={
-            <MainLayout 
-              theme={theme} 
-              setTheme={setTheme} 
-              sidebarCollapsed={sidebarCollapsed} 
+            <MainLayout
+              theme={theme}
+              setTheme={setTheme}
+              sidebarCollapsed={sidebarCollapsed}
               setSidebarCollapsed={setSidebarCollapsed}
               sidebarWidth={sidebarWidth}
               setSidebarWidth={setSidebarWidth}
             >
               <EditorPage theme={theme} setTheme={setTheme} />
             </MainLayout>
-          } 
+          }
         />
       </Routes>
     </Router>
@@ -134,14 +149,14 @@ const MainApp = () => {
 }
 
 // Main Layout Component - Wraps pages with Activity Bar, Sidebar, Workspace, and Status Bar
-const MainLayout = ({ 
-  children, 
-  theme, 
-  setTheme, 
-  sidebarCollapsed, 
+const MainLayout = ({
+  children,
+  theme,
+  setTheme,
+  sidebarCollapsed,
   setSidebarCollapsed,
   sidebarWidth,
-  setSidebarWidth 
+  setSidebarWidth
 }) => {
   const [filename, setFilename] = useState('index.html')
   const [isResizingSidebar, setIsResizingSidebar] = useState(false)
@@ -187,7 +202,9 @@ const MainLayout = ({
     const handleGlobalKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         ctrlKPressed = true
-        setTimeout(() => { ctrlKPressed = false }, 1200)
+        setTimeout(() => {
+          ctrlKPressed = false
+        }, 1200)
       } else if (ctrlKPressed && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault()
         ctrlKPressed = false
@@ -229,7 +246,7 @@ const MainLayout = ({
 
   const handleActivityClick = (activity) => {
     if (activeActivity === activity) {
-      setSidebarCollapsed(prev => !prev)
+      setSidebarCollapsed((prev) => !prev)
     } else {
       setActiveActivity(activity)
       setSidebarCollapsed(false)
@@ -248,23 +265,31 @@ const MainLayout = ({
       const file = e.dataTransfer.files[0]
       const reader = new FileReader()
       reader.onload = (event) => {
-        window.dispatchEvent(new CustomEvent('open-file', {
-          detail: { 
-            filename: file.name, 
-            code: event.target.result 
-          }
-        }))
+        window.dispatchEvent(
+          new CustomEvent('open-file', {
+            detail: {
+              filename: file.name,
+              code: event.target.result
+            }
+          })
+        )
       }
       reader.readAsText(file)
     }
   }
 
   return (
-    <div 
-      className="ide-container" 
+    <div
+      className="ide-container"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        width: '100vw',
+        overflow: 'hidden'
+      }}
     >
       {/* Animated Prism Blurs for Glassmorphism Depth */}
       <div className="prism-bg">
@@ -274,7 +299,7 @@ const MainLayout = ({
       </div>
 
       {/* TOP SLIM MENU BAR */}
-      <Topbar 
+      <Topbar
         onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         theme={theme}
         setTheme={setTheme}
@@ -288,57 +313,57 @@ const MainLayout = ({
       <div className="app" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* LEFT ACTIVITY BAR */}
         <div className="activity-bar">
-          <div 
+          <div
             className={`activity-icon ${activeActivity === 'explorer' ? 'active' : ''}`}
             onClick={() => handleActivityClick('explorer')}
             title="Explorer"
           >
             <i className="bx bx-folder" style={{ fontSize: '20px' }}></i>
           </div>
-          <div 
+          <div
             className={`activity-icon ${activeActivity === 'search' ? 'active' : ''}`}
             onClick={() => handleActivityClick('search')}
             title="Search"
           >
             <i className="bx bx-search" style={{ fontSize: '20px' }}></i>
           </div>
-          <div 
+          <div
             className={`activity-icon ${activeActivity === 'git' ? 'active' : ''}`}
             onClick={() => handleActivityClick('git')}
             title="Source Control"
           >
             <i className="bx bx-git-branch" style={{ fontSize: '20px' }}></i>
           </div>
-          <div 
+          <div
             className={`activity-icon ${activeActivity === 'debug' ? 'active' : ''}`}
             onClick={() => handleActivityClick('debug')}
             title="Run & Debug"
           >
             <i className="bx bx-bug" style={{ fontSize: '20px' }}></i>
           </div>
-          <div 
+          <div
             className={`activity-icon ${activeActivity === 'extensions' ? 'active' : ''}`}
             onClick={() => handleActivityClick('extensions')}
             title="Extensions Store"
           >
             <i className="bx bx-extension" style={{ fontSize: '20px' }}></i>
           </div>
-          <div 
+          <div
             className={`activity-icon ${activeActivity === 'docker' ? 'active' : ''}`}
             onClick={() => handleActivityClick('docker')}
             title="Docker Container Manager"
           >
-            <span style={{ fontSize: '18px' }}>🐳</span>
+            <i className="bx bxl-docker" style={{ fontSize: '20px' }}></i>
           </div>
-          <div 
+          <div
             className={`activity-icon ${activeActivity === 'firebase' ? 'active' : ''}`}
             onClick={() => handleActivityClick('firebase')}
             title="Firebase Explorer & Console"
           >
-            <i className="bx bxl-firebase" style={{ fontSize: '20px', color: '#ffca28' }}></i>
+            <i className="bx bxl-firebase" style={{ fontSize: '20px' }}></i>
           </div>
           <div style={{ flex: 1 }}></div>
-          <div 
+          <div
             className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}
             onClick={() => setIsSettingsOpen(true)}
             title="Settings Control"
@@ -348,18 +373,25 @@ const MainLayout = ({
         </div>
 
         {/* SIDEBAR PANEL */}
-        <Sidebar collapsed={sidebarCollapsed} sidebarWidth={sidebarWidth} activeActivity={activeActivity} />
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          sidebarWidth={sidebarWidth}
+          activeActivity={activeActivity}
+        />
 
         {/* DRAGGABLE DIVIDER (SIZING BAR) */}
         {!sidebarCollapsed && (
-          <div 
-            className={`resizer-v ${isResizingSidebar ? 'resizing' : ''}`} 
-            onMouseDown={handleSidebarMouseDown} 
+          <div
+            className={`resizer-v ${isResizingSidebar ? 'resizing' : ''}`}
+            onMouseDown={handleSidebarMouseDown}
           />
         )}
 
         {/* MAIN WORKSPACE */}
-        <div className="main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div
+          className="main"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+        >
           {children}
         </div>
       </div>
@@ -383,27 +415,21 @@ const MainLayout = ({
         </div>
       </div>
 
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
-        theme={theme} 
-        setTheme={setTheme} 
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        theme={theme}
+        setTheme={setTheme}
       />
 
-      <KeyboardShortcutsModal 
-        isOpen={isKeybindingsOpen} 
-        onClose={() => setIsKeybindingsOpen(false)} 
+      <KeyboardShortcutsModal
+        isOpen={isKeybindingsOpen}
+        onClose={() => setIsKeybindingsOpen(false)}
       />
 
-      <ShareGistModal 
-        isOpen={isShareGistOpen} 
-        onClose={() => setIsShareGistOpen(false)} 
-      />
+      <ShareGistModal isOpen={isShareGistOpen} onClose={() => setIsShareGistOpen(false)} />
 
-      <LiveShareModal 
-        isOpen={isLiveShareOpen} 
-        onClose={() => setIsLiveShareOpen(false)} 
-      />
+      <LiveShareModal isOpen={isLiveShareOpen} onClose={() => setIsLiveShareOpen(false)} />
     </div>
   )
 }

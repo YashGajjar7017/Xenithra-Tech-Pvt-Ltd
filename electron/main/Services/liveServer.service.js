@@ -11,8 +11,8 @@ let fileWatcher = null
 
 /**
  * Starts a live server serving the specified directory (or current working directory)
- * @param {string} rootPath 
- * @param {number} preferredPort 
+ * @param {string} rootPath
+ * @param {number} preferredPort
  * @returns {Promise<{success: boolean, port: number, url: string, message?: string}>}
  */
 export function startLiveServer(rootPath, preferredPort = 5500) {
@@ -31,12 +31,12 @@ export function startLiveServer(rootPath, preferredPort = 5500) {
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
+        Connection: 'keep-alive'
       })
       res.write('data: connected\n\n')
       sseClients.push(res)
       req.on('close', () => {
-        sseClients = sseClients.filter(client => client !== res)
+        sseClients = sseClients.filter((client) => client !== res)
       })
     })
 
@@ -87,7 +87,11 @@ export function startLiveServer(rootPath, preferredPort = 5500) {
       if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath)
       } else {
-        res.status(404).send(`<h3>Live Server Operational</h3><p>Directory: ${targetDir}</p><p>No <code>index.html</code> found in root.</p>`)
+        res
+          .status(404)
+          .send(
+            `<h3>Live Server Operational</h3><p>Directory: ${targetDir}</p><p>No <code>index.html</code> found in root.</p>`
+          )
       }
     })
 
@@ -128,17 +132,24 @@ export function startLiveServer(rootPath, preferredPort = 5500) {
  */
 export function stopLiveServer() {
   if (fileWatcher) {
-    try { fileWatcher.close() } catch (e) {}
+    try {
+      fileWatcher.close()
+    } catch (e) {}
     fileWatcher = null
   }
 
-  sseClients.forEach(res => {
-    try { res.write('data: close\n\n'); res.end() } catch (e) {}
+  sseClients.forEach((res) => {
+    try {
+      res.write('data: close\n\n')
+      res.end()
+    } catch (e) {}
   })
   sseClients = []
 
   if (serverInstance) {
-    try { serverInstance.close() } catch (e) {}
+    try {
+      serverInstance.close()
+    } catch (e) {}
     serverInstance = null
     console.log('[liveServer] Stopped live server')
   }
@@ -160,17 +171,27 @@ export function getLiveServerStatus() {
 
 function setupFileWatcher(targetDir) {
   if (fileWatcher) {
-    try { fileWatcher.close() } catch (e) {}
+    try {
+      fileWatcher.close()
+    } catch (e) {}
   }
   let debounceTimeout = null
   try {
     fileWatcher = fs.watch(targetDir, { recursive: true }, (eventType, filename) => {
-      if (filename && (filename.includes('node_modules') || filename.includes('.git') || filename.includes('dist'))) return
+      if (
+        filename &&
+        (filename.includes('node_modules') ||
+          filename.includes('.git') ||
+          filename.includes('dist'))
+      )
+        return
       clearTimeout(debounceTimeout)
       debounceTimeout = setTimeout(() => {
         console.log(`[liveServer] File change detected (${filename}), notifying clients...`)
-        sseClients.forEach(client => {
-          try { client.write('data: reload\n\n') } catch (e) {}
+        sseClients.forEach((client) => {
+          try {
+            client.write('data: reload\n\n')
+          } catch (e) {}
         })
       }, 300)
     })

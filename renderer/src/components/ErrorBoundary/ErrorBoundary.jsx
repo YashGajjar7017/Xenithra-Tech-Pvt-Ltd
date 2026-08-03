@@ -18,7 +18,7 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('Error caught by ErrorBoundary:', error, errorInfo)
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       error,
       errorInfo,
       errorCount: prevState.errorCount + 1
@@ -41,7 +41,7 @@ class ErrorBoundary extends React.Component {
             <div className="error-icon">⚠️</div>
             <h1>Something went wrong</h1>
             <p>We're sorry, but something unexpected happened. Please try again.</p>
-            
+
             {process.env.NODE_ENV === 'development' && (
               <details className="error-details">
                 <summary>Error Details (Development Only)</summary>
@@ -54,16 +54,10 @@ class ErrorBoundary extends React.Component {
             )}
 
             <div className="error-actions">
-              <button 
-                className="btn-reset" 
-                onClick={this.resetError}
-              >
+              <button className="btn-reset" onClick={this.resetError}>
                 Try Again
               </button>
-              <button 
-                className="btn-home" 
-                onClick={() => window.location.href = '/'}
-              >
+              <button className="btn-home" onClick={() => (window.location.href = '/')}>
                 Go Home
               </button>
             </div>

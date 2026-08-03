@@ -55,7 +55,7 @@ const SignupPage = () => {
       const data = await response.json()
       setSuccess('Access authorization registered successfully!')
       localStorage.setItem('user', JSON.stringify(data.user))
-      
+
       setTimeout(() => {
         window.location.href = '/#/'
       }, 1000)
@@ -108,28 +108,30 @@ const SignupPage = () => {
 
       {/* Cyber Grid Background layer */}
       <div className="cyber-grid" style={styles.gridLayer} />
-      
+
       {/* Animated Orbs */}
       <div className="prism-bg">
-        <div className="prism-orb prism-orb-1" style={{ opacity: 0.25, width: '600px', height: '600px' }}></div>
-        <div className="prism-orb prism-orb-3" style={{ opacity: 0.22, width: '480px', height: '480px' }}></div>
+        <div
+          className="prism-orb prism-orb-1"
+          style={{ opacity: 0.25, width: '600px', height: '600px' }}
+        ></div>
+        <div
+          className="prism-orb prism-orb-3"
+          style={{ opacity: 0.22, width: '480px', height: '480px' }}
+        ></div>
       </div>
 
       <div className="scan-overlay" style={styles.cardContainer}>
         {/* Glow Border panel */}
         <div style={styles.cardHeaderGlow} />
-        
+
         <div style={styles.card}>
           {/* Scanline beam animation */}
           <div style={styles.scannerBeam} />
 
           <div style={styles.header}>
             <div style={styles.logoWrapper}>
-              <img 
-                src="Images/compiler_logo.png" 
-                alt="Xenithra Logo" 
-                style={styles.logoImg}
-              />
+              <img src="Images/compiler_logo.png" alt="Xenithra Logo" style={styles.logoImg} />
             </div>
             <h1 style={styles.title}>REGISTER OPERATOR</h1>
             <p style={styles.subtitle}>Provision new terminal node configuration</p>
@@ -137,7 +139,7 @@ const SignupPage = () => {
 
           {error && <div style={styles.error}>{error}</div>}
           {success && <div style={styles.success}>{success}</div>}
-          
+
           <form onSubmit={handleSignup} style={styles.form}>
             <div style={styles.formRow}>
               <div style={{ ...styles.formGroup, flex: 1 }}>
@@ -220,13 +222,17 @@ const SignupPage = () => {
             <button
               type="submit"
               disabled={loading || success}
-              style={{ 
-                ...styles.button, 
+              style={{
+                ...styles.button,
                 ...(loading ? styles.buttonLoading : {}),
                 ...(success ? styles.buttonSuccess : {})
               }}
             >
-              {loading ? 'PROVISIONING SYSTEM ACCESS...' : success ? 'NODE ONLINE' : 'REGISTER ACCESS NODE'}
+              {loading
+                ? 'PROVISIONING SYSTEM ACCESS...'
+                : success
+                  ? 'NODE ONLINE'
+                  : 'REGISTER ACCESS NODE'}
             </button>
           </form>
           {/* Social Sign-in Options */}
@@ -237,28 +243,52 @@ const SignupPage = () => {
           </div>
 
           <div style={styles.socialGroup}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => {
-                const googleUser = { name: 'Google Developer', email: 'dev@gmail.com', token: 'google_oauth_token_' + Date.now() }
+                const googleUser = {
+                  name: 'Google Developer',
+                  email: 'dev@gmail.com',
+                  token: 'google_oauth_token_' + Date.now()
+                }
                 localStorage.setItem('user', JSON.stringify(googleUser))
                 setSuccess(true)
-                setTimeout(() => { window.location.href = '/#/' }, 600)
+                setTimeout(() => {
+                  window.location.href = '/#/'
+                }, 600)
               }}
-              style={{ ...styles.socialBtn, background: '#db4437', color: '#fff', border: '1px solid #c53c2f', cursor: 'pointer' }}
+              style={{
+                ...styles.socialBtn,
+                background: '#db4437',
+                color: '#fff',
+                border: '1px solid #c53c2f',
+                cursor: 'pointer'
+              }}
             >
               <i className="bx bxl-google" style={{ marginRight: '8px', fontSize: '15px' }}></i>
               Continue with Google
             </button>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => {
-                const githubUser = { name: 'GitHub Developer', email: 'dev@github.com', token: 'github_oauth_token_' + Date.now() }
+                const githubUser = {
+                  name: 'GitHub Developer',
+                  email: 'dev@github.com',
+                  token: 'github_oauth_token_' + Date.now()
+                }
                 localStorage.setItem('user', JSON.stringify(githubUser))
                 setSuccess(true)
-                setTimeout(() => { window.location.href = '/#/' }, 600)
+                setTimeout(() => {
+                  window.location.href = '/#/'
+                }, 600)
               }}
-              style={{ ...styles.socialBtn, background: '#24292e', color: '#fff', border: '1px solid #1c2125', cursor: 'pointer' }}
+              style={{
+                ...styles.socialBtn,
+                background: '#24292e',
+                color: '#fff',
+                border: '1px solid #1c2125',
+                cursor: 'pointer'
+              }}
             >
               <i className="bx bxl-github" style={{ marginRight: '8px', fontSize: '15px' }}></i>
               Continue with GitHub

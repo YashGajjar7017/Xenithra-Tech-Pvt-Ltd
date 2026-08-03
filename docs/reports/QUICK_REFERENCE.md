@@ -33,6 +33,7 @@ src/renderer/
 ## 🚀 Key Components
 
 ### 1. Layout Component
+
 **Use this to wrap your pages with sidebar and topbar**
 
 ```jsx
@@ -49,6 +50,7 @@ export default function Dashboard() {
 ```
 
 ### 2. Button Component
+
 **Reusable button with multiple variants**
 
 ```jsx
@@ -62,28 +64,30 @@ import Button from './components/ui/Button'
 ```
 
 ### 3. Input Component
+
 **Glassmorphism input with error handling**
 
 ```jsx
 import Input from './components/ui/Input'
 
-<Input
+;<Input
   id="username"
   type="text"
   placeholder="Username"
   value={username}
   onChange={(e) => setUsername(e.target.value)}
-  error={error && "Username is required"}
+  error={error && 'Username is required'}
 />
 ```
 
 ### 4. Card Component
+
 **Glassmorphism container**
 
 ```jsx
 import Card from './components/ui/Card'
 
-<Card>
+;<Card>
   <h2>Card Title</h2>
   <p>Card content goes here</p>
 </Card>
@@ -92,6 +96,7 @@ import Card from './components/ui/Card'
 ## 🎨 CSS-in-JS Styling
 
 ### Old Way (Before)
+
 ```jsx
 import './login.css'
 import '../css/glassy-login.css'
@@ -107,6 +112,7 @@ const Login = () => {
 ```
 
 ### New Way (After)
+
 ```jsx
 import Card from './components/ui/Card'
 import Input from './components/ui/Input'
@@ -134,6 +140,7 @@ const Login = () => {
 ## 📋 Style Variants & Options
 
 ### Button Variants
+
 ```jsx
 <Button variant="glass">Glassmorphism</Button>
 <Button variant="primary">Primary Style</Button>
@@ -142,6 +149,7 @@ const Login = () => {
 ```
 
 ### Button Sizes (via style prop)
+
 ```jsx
 <Button style={{ padding: '6px 12px', fontSize: '12px' }}>Small</Button>
 <Button style={{ padding: '10px 20px', fontSize: '14px' }}>Medium</Button>
@@ -149,6 +157,7 @@ const Login = () => {
 ```
 
 ### Input Types
+
 ```jsx
 <Input type="text" placeholder="Text input" />
 <Input type="email" placeholder="Email input" />
@@ -159,9 +168,10 @@ const Login = () => {
 ## 🔧 Customization Examples
 
 ### Custom Styled Button
+
 ```jsx
-<Button 
-  variant="glass" 
+<Button
+  variant="glass"
   style={{
     background: 'linear-gradient(135deg, #ff6b6b, #ffa726)',
     fontSize: '16px',
@@ -173,20 +183,21 @@ const Login = () => {
 ```
 
 ### Custom Styled Input
+
 ```jsx
-<Input 
-  placeholder="Email"
-  style={{ marginBottom: '30px' }}
-/>
+<Input placeholder="Email" style={{ marginBottom: '30px' }} />
 ```
 
 ### Custom Styled Card
+
 ```jsx
-<Card style={{
-  maxWidth: '600px',
-  padding: '60px 40px',
-  background: 'rgba(255, 255, 255, 0.2)'
-}}>
+<Card
+  style={{
+    maxWidth: '600px',
+    padding: '60px 40px',
+    background: 'rgba(255, 255, 255, 0.2)'
+  }}
+>
   Content
 </Card>
 ```
@@ -194,6 +205,7 @@ const Login = () => {
 ## 🎯 Converting Existing Components
 
 ### Step 1: Identify CSS Classes
+
 ```jsx
 // Old component
 <div className="glass-container">
@@ -203,18 +215,20 @@ const Login = () => {
 ```
 
 ### Step 2: Replace with Components
+
 ```jsx
 import Card from './components/ui/Card'
 import Input from './components/ui/Input'
 import Button from './components/ui/Button'
 
-<Card>
+;<Card>
   <Input placeholder="Text" />
   <Button variant="glass">Submit</Button>
 </Card>
 ```
 
 ### Step 3: Add Custom Styles if Needed
+
 ```jsx
 const styles = {
   inputWrapper: { marginBottom: '20px' },
@@ -232,6 +246,7 @@ const styles = {
 ## 📐 Layout System
 
 ### Using Layout for Pages
+
 ```jsx
 import Layout from './components/Layout/Layout'
 
@@ -251,6 +266,7 @@ export default Dashboard
 ```
 
 ### Layout Features
+
 - **Sidebar**: Collapsible left navigation
 - **Topbar**: Controls and language selector
 - **Content Area**: Flexible main content area
@@ -259,6 +275,7 @@ export default Dashboard
 ## 🎨 Color & Gradient Reference
 
 ### Primary Colors
+
 ```
 Glass Blue: #00e5ff
 Neon Pink: #ff00c8
@@ -268,6 +285,7 @@ Green: #00e676
 ```
 
 ### Gradients Used
+
 ```jsx
 // Glass background
 'linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4))'
@@ -282,6 +300,7 @@ Green: #00e676
 ## 🔄 State Management
 
 ### Button Loading State
+
 ```jsx
 const [loading, setLoading] = useState(false)
 
@@ -295,12 +314,13 @@ const handleSubmit = async (e) => {
   }
 }
 
-<Button loading={loading} loadingText="Saving...">
+;<Button loading={loading} loadingText="Saving...">
   Save
 </Button>
 ```
 
 ### Input Error State
+
 ```jsx
 const [email, setEmail] = useState('')
 const [error, setError] = useState('')
@@ -329,16 +349,19 @@ const [error, setError] = useState('')
 ## 🐛 Troubleshooting
 
 ### Styles not applying?
+
 - Check if style object is properly spread
 - Verify property names (camelCase)
 - Check component prop names
 
 ### Hover effects not working?
+
 - Ensure onMouseEnter/Leave handlers
 - Check useState for state management
 - Verify transition CSS applied
 
 ### Components not rendering?
+
 - Check import paths
 - Verify export statements
 - Check browser console for errors

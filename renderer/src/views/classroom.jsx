@@ -331,9 +331,7 @@ const ClassroomPage = () => {
               onChange={handleEditorChange}
               disabled={!isConnected}
             />
-            {!isConnected && (
-              <div className="connecting-message">Connecting to peers...</div>
-            )}
+            {!isConnected && <div className="connecting-message">Connecting to peers...</div>}
           </div>
         </div>
       </div>

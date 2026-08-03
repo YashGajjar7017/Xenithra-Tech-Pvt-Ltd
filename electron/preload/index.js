@@ -8,7 +8,7 @@ console.error = (...args) => {
   if (
     errorMessage.includes('Autofill.enable') ||
     errorMessage.includes('Autofill.setAddresses') ||
-    errorMessage.includes('Unexpected token \'H\'') ||
+    errorMessage.includes("Unexpected token 'H'") ||
     errorMessage.includes('is not valid JSON')
   ) {
     return // Suppress these errors
@@ -23,7 +23,8 @@ const api = {
   onToggleTheme: (cb) => ipcRenderer.on('toggle-theme', () => cb()),
   onDeepLinkToken: (cb) => ipcRenderer.on('deep-link-token', (_event, data) => cb(data)),
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
-  saveFileDialog: (content, defaultName) => ipcRenderer.invoke('dialog:saveFile', content, defaultName),
+  saveFileDialog: (content, defaultName) =>
+    ipcRenderer.invoke('dialog:saveFile', content, defaultName),
   saveFile: (filePath, content) => ipcRenderer.invoke('file:save', filePath, content),
   closeWindow: () => ipcRenderer.invoke('close-window'),
   openDirectoryDialog: () => ipcRenderer.invoke('dialog:openDirectory'),
@@ -32,6 +33,27 @@ const api = {
   getApiPort: () => ipcRenderer.invoke('get-api-port'),
   getExtensions: () => ipcRenderer.invoke('extensions:get'),
   saveExtensions: (extensions) => ipcRenderer.invoke('extensions:save', extensions),
+
+  // Firebase API
+  getFirebaseConfig: () => ipcRenderer.invoke('firebase:getConfig'),
+  saveFirebaseConfig: (projectId, apiKey) =>
+    ipcRenderer.invoke('firebase:saveConfig', projectId, apiKey),
+  disconnectFirebase: () => ipcRenderer.invoke('firebase:disconnect'),
+  getFirebaseUsers: () => ipcRenderer.invoke('firebase:getUsers'),
+  addFirebaseUser: (email, password) => ipcRenderer.invoke('firebase:addUser', email, password),
+  deleteFirebaseUser: (uid) => ipcRenderer.invoke('firebase:deleteUser', uid),
+  getFirestoreCollections: () => ipcRenderer.invoke('firebase:getCollections'),
+  addFirestoreDocument: (col, docId, data) =>
+    ipcRenderer.invoke('firebase:addDocument', col, docId, data),
+  deleteFirestoreDocument: (col, docId) =>
+    ipcRenderer.invoke('firebase:deleteDocument', col, docId),
+  deployFirebaseHosting: (projectId) => ipcRenderer.invoke('firebase:deploy', projectId),
+
+  // Store Extensions API
+  getStoreExtensions: () => ipcRenderer.invoke('extensions:getStore'),
+  uploadStoreExtension: (xmlPath) => ipcRenderer.invoke('extensions:uploadStore', xmlPath),
+  uploadStoreExtensionXmlContent: (xmlContent) =>
+    ipcRenderer.invoke('extensions:uploadStoreXmlContent', xmlContent),
 
   // Terminal API
   initTerminal: (cwd) => ipcRenderer.invoke('terminal:init', cwd),
@@ -48,18 +70,23 @@ const api = {
   // Git API
   getGitInfo: (workspacePath) => ipcRenderer.invoke('git:info', workspacePath),
   cloneGitRepo: (repoUrl, targetDir) => ipcRenderer.invoke('git:clone', repoUrl, targetDir),
-  commitGitChanges: (workspacePath, message) => ipcRenderer.invoke('git:commit', workspacePath, message),
+  commitGitChanges: (workspacePath, message) =>
+    ipcRenderer.invoke('git:commit', workspacePath, message),
   pushGitChanges: (workspacePath) => ipcRenderer.invoke('git:push', workspacePath),
   pullGitChanges: (workspacePath) => ipcRenderer.invoke('git:pull', workspacePath),
-  getGitFileDiff: (workspacePath, filePath) => ipcRenderer.invoke('git:diff', workspacePath, filePath),
+  getGitFileDiff: (workspacePath, filePath) =>
+    ipcRenderer.invoke('git:diff', workspacePath, filePath),
 
   // Search API
-  searchWorkspace: (workspacePath, query, options) => ipcRenderer.invoke('search:workspace', workspacePath, query, options),
+  searchWorkspace: (workspacePath, query, options) =>
+    ipcRenderer.invoke('search:workspace', workspacePath, query, options),
 
   // Local ML API
-  predictInlineCompletion: (fullCode, lineIndex, lineContent, lang) => ipcRenderer.invoke('ml:suggest', fullCode, lineIndex, lineContent, lang),
+  predictInlineCompletion: (fullCode, lineIndex, lineContent, lang) =>
+    ipcRenderer.invoke('ml:suggest', fullCode, lineIndex, lineContent, lang),
   trainML: (prefix, completion, lang) => ipcRenderer.invoke('ml:train', prefix, completion, lang),
-  generateLocalAIChat: (prompt, code, lang, filename) => ipcRenderer.invoke('ml:chat', prompt, code, lang, filename),
+  generateLocalAIChat: (prompt, code, lang, filename) =>
+    ipcRenderer.invoke('ml:chat', prompt, code, lang, filename),
 
   // Docker API
   getDockerContainers: () => ipcRenderer.invoke('docker:containers'),
@@ -74,7 +101,8 @@ const api = {
   loadWorkspaceXml: () => ipcRenderer.invoke('workspace:loadXml'),
 
   // Collaboration API
-  shareGitHubGist: (filename, content, desc, isPublic, token) => ipcRenderer.invoke('github:shareGist', filename, content, desc, isPublic, token),
+  shareGitHubGist: (filename, content, desc, isPublic, token) =>
+    ipcRenderer.invoke('github:shareGist', filename, content, desc, isPublic, token),
   createRtcRoom: (initialCode) => ipcRenderer.invoke('rtc:createRoom', initialCode),
   joinRtcRoom: (roomCode) => ipcRenderer.invoke('rtc:joinRoom', roomCode),
   syncRtcCode: (roomCode, text, pos) => ipcRenderer.invoke('rtc:sync', roomCode, text, pos),

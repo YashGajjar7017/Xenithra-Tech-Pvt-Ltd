@@ -7,6 +7,7 @@ npm install && npm run dev
 ```
 
 ## URLs
+
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
 - **Main App**: http://localhost:3000/
@@ -17,6 +18,7 @@ npm install && npm run dev
 ## Test Credentials (After Signup)
 
 ### Signup First
+
 1. Go to http://localhost:3000/signup
 2. Fill form:
    - Full Name: John Doe
@@ -27,6 +29,7 @@ npm install && npm run dev
 3. Click "Sign Up" → Redirects to dashboard
 
 ### Then Login
+
 1. Go to http://localhost:3000/login
 2. Use:
    - Username: johndoe
@@ -35,31 +38,34 @@ npm install && npm run dev
 
 ## Key Features
 
-| Feature | Status |
-|---------|--------|
-| Signup | ✅ Working |
-| Login | ✅ Working |
-| JWT Tokens | ✅ Working |
-| Password Hashing | ✅ Working |
-| MongoDB | ✅ Connected |
-| Beta_Index App | ✅ Running |
-| Routing | ✅ Configured |
-| API Service | ✅ Ready |
+| Feature          | Status        |
+| ---------------- | ------------- |
+| Signup           | ✅ Working    |
+| Login            | ✅ Working    |
+| JWT Tokens       | ✅ Working    |
+| Password Hashing | ✅ Working    |
+| MongoDB          | ✅ Connected  |
+| Beta_Index App   | ✅ Running    |
+| Routing          | ✅ Configured |
+| API Service      | ✅ Ready      |
 
 ## File Locations
 
 **Authentication**
+
 - Controller: `electron/main/controller/auth.controller.js`
 - Routes: `electron/main/Routes/auth.routes.js`
 - API Wrapper: `renderer/renderer/src/services/authAPI.js`
 
 **Pages**
+
 - Login: `renderer/renderer/src/Login.jsx`
 - Signup: `renderer/renderer/src/Signup.jsx`
 - Main App: `renderer/renderer/src/Beta_Index.jsx`
 - Dashboard: `renderer/renderer/src/Dashboard_User.jsx`
 
 **Config**
+
 - Backend: `electron/main/server.js`
 - Database: `electron/main/config/database.js`
 - Environment: `.env`
@@ -110,26 +116,29 @@ curl -X POST http://localhost:5000/api/login \
 ## Environment Setup
 
 ### MongoDB Local
+
 ```bash
 mongod
 ```
 
 ### MongoDB Atlas
+
 1. Create cluster at https://mongodb.com/cloud/atlas
 2. Update `.env`:
+
 ```env
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/db
 ```
 
 ## Troubleshoot
 
-| Error | Solution |
-|-------|----------|
-| Port 5000 in use | Change PORT in .env |
-| MongoDB failed | Run `mongod` or update MONGODB_URI |
-| Blank page | Hard refresh: Ctrl+Shift+R |
-| Network error | Check backend: http://localhost:5000/api/health |
-| CORS error | Clear browser cache and reload |
+| Error            | Solution                                        |
+| ---------------- | ----------------------------------------------- |
+| Port 5000 in use | Change PORT in .env                             |
+| MongoDB failed   | Run `mongod` or update MONGODB_URI              |
+| Blank page       | Hard refresh: Ctrl+Shift+R                      |
+| Network error    | Check backend: http://localhost:5000/api/health |
+| CORS error       | Clear browser cache and reload                  |
 
 ## Browser Console Check
 
@@ -156,18 +165,20 @@ console.log(user.token)
 ## API Response Examples
 
 ### Success (200)
+
 ```json
 {
   "success": true,
   "message": "Login successful",
   "data": {
-    "user": {"_id":"...","username":"..."},
+    "user": { "_id": "...", "username": "..." },
     "accessToken": "eyJ..."
   }
 }
 ```
 
 ### Error (400/401/500)
+
 ```json
 {
   "success": false,
@@ -188,6 +199,7 @@ console.log(user.token)
 **Status: 🟢 READY TO TEST**
 
 Questions? Check:
+
 - BACKEND_SETUP.md - Detailed backend guide
 - TESTING_GUIDE.md - Full testing procedures
 - IMPLEMENTATION_COMPLETE.md - Complete summary

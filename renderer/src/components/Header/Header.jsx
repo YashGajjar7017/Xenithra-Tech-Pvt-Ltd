@@ -8,7 +8,16 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
   const [langDropdownOpen, setLangDropdownOpen] = useState(false)
   const [selectedLang, setSelectedLang] = useState('Select')
 
-  const languages = ['C (GCC)', 'C++ (G++)', 'Python 3', 'Node.js', 'XML', 'Dot Net', 'Dart', 'Next.js']
+  const languages = [
+    'C (GCC)',
+    'C++ (G++)',
+    'Python 3',
+    'Node.js',
+    'XML',
+    'Dot Net',
+    'Dart',
+    'Next.js'
+  ]
 
   useEffect(() => {
     checkAuthStatus()
@@ -83,8 +92,8 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
       <div className="header-container">
         <div className="header-left">
           {showSidebarToggle && (
-            <button 
-              className="sidebar-toggle-btn" 
+            <button
+              className="sidebar-toggle-btn"
               title="Toggle Sidebar"
               onClick={onToggleSidebar}
               aria-label="Toggle Sidebar"
@@ -100,11 +109,21 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
 
         <div className="header-center">
           <nav className="header-nav">
-            <button className="nav-item" title="Dashboard" onClick={navigateToDashboard}>📊 Dashboard</button>
-            <button className="nav-item" title="Projects">📁 Projects</button>
-            <button className="nav-item" title="Snippets">📝 Snippets</button>
-            <button className="nav-item" title="Playground">🎮 Playground</button>
-            <button className="nav-item" title="Classroom" onClick={navigateToClassroom}>🏫 Classroom</button>
+            <button className="nav-item" title="Dashboard" onClick={navigateToDashboard}>
+              📊 Dashboard
+            </button>
+            <button className="nav-item" title="Projects">
+              📁 Projects
+            </button>
+            <button className="nav-item" title="Snippets">
+              📝 Snippets
+            </button>
+            <button className="nav-item" title="Playground">
+              🎮 Playground
+            </button>
+            <button className="nav-item" title="Classroom" onClick={navigateToClassroom}>
+              🏫 Classroom
+            </button>
           </nav>
         </div>
 
@@ -112,8 +131,8 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
           <div className="lang-selector">
             <span className="lang-label">Language:</span>
             <div className={`dropdown ${langDropdownOpen ? 'open' : ''}`}>
-              <button 
-                className="dropdown-toggle" 
+              <button
+                className="dropdown-toggle"
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
               >
                 <span>{selectedLang}</span>
@@ -122,7 +141,7 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
               {langDropdownOpen && (
                 <div className="dropdown-menu">
                   {languages.map((lang) => (
-                    <button 
+                    <button
                       key={lang}
                       className="dropdown-item"
                       onClick={() => handleLanguageSelect(lang)}
@@ -137,16 +156,17 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
 
           {!isLoggedIn ? (
             <div className="auth-buttons">
-              <button className="btn-login" onClick={handleLogin}>Login</button>
-              <button className="btn-signup" onClick={handleSignup}>Signup</button>
+              <button className="btn-login" onClick={handleLogin}>
+                Login
+              </button>
+              <button className="btn-signup" onClick={handleSignup}>
+                Signup
+              </button>
             </div>
           ) : (
             <div className="user-section">
               <div className="user-dropdown">
-                <button 
-                  className="user-button"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                >
+                <button className="user-button" onClick={() => setDropdownOpen(!dropdownOpen)}>
                   <span className="user-avatar">👤</span>
                   <span className="user-name">{username}</span>
                 </button>
@@ -156,7 +176,9 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
                     <button className="user-menu-item">Settings</button>
                     <button className="user-menu-item">Help</button>
                     <hr className="user-menu-divider" />
-                    <button className="user-menu-item logout" onClick={handleLogout}>Logout</button>
+                    <button className="user-menu-item logout" onClick={handleLogout}>
+                      Logout
+                    </button>
                   </div>
                 )}
               </div>

@@ -5,6 +5,27 @@ import InlineSuggestOverlay from '../components/ui/InlineSuggestOverlay'
 const EditorPage = () => {
   const [isSplit, setIsSplit] = useState(false)
   const [activePane, setActivePane] = useState('left')
+  const [isDraggingTab, setIsDraggingTab] = useState(false)
+  const [showMinimap, setShowMinimap] = useState(true)
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
+
+  const handleMergeEditors = () => {
+    setOpenTabs((prev) => {
+      const exists = prev.some((t) => t.filename === rightTab && t.path === rightFilePath)
+      if (exists) return prev
+      return [
+        ...prev,
+        {
+          id: `merged_${Date.now()}`,
+          filename: rightTab,
+          code: rightCode,
+          lang: rightLang,
+          path: rightFilePath
+        }
+      ]
+    })
+    setIsSplit(false)
+  }
 
   // Visual MySQL Portal States
   const [sqlQuery, setSqlQuery] = useState('SELECT * FROM users;')
@@ -22,7 +43,7 @@ const EditorPage = () => {
   const handleInstallMysql = async () => {
     setMysqlInstallProgress(10)
     setMysqlInstallMsg('Detecting local PHP & MySQL environment...')
-    
+
     setTimeout(() => {
       setMysqlInstallProgress(40)
       setMysqlInstallMsg('Starting portable PHP development server...')
@@ -39,7 +60,7 @@ const EditorPage = () => {
         setMysqlConnected(true)
         setMysqlInstallProgress(100)
         setMysqlInstallMsg(res.message || 'MySQL & phpMyAdmin started successfully!')
-        
+
         setTimeout(() => {
           setMysqlInstallProgress(0)
           setMysqlInstallMsg('')
@@ -59,9 +80,9 @@ const EditorPage = () => {
   const handleExecuteQuery = () => {
     const q = (sqlQuery || '').trim().toLowerCase()
     if (!q) return
-    
+
     setSqlStatusMsg('Executing query on server...')
-    
+
     setTimeout(() => {
       if (q.includes('select * from users')) {
         setDbResults([
@@ -99,17 +120,20 @@ const EditorPage = () => {
 
   // Right editor state (for split pane)
   const [rightTab, setRightTab] = useState('untitled.js')
-  const [rightCode, setRightCode] = useState(`// Sideways Split Editor\nfunction hello() {\n  console.log("Hello from sideways pane!");\n}\nhello();`)
+  const [rightCode, setRightCode] = useState(
+    `// Sideways Split Editor\nfunction hello() {\n  console.log("Hello from sideways pane!");\n}\nhello();`
+  )
   const [rightLang, setRightLang] = useState('Node.js')
   const [rightFilePath, setRightFilePath] = useState('')
 
-  const activeTabObj = openTabs.find(t => t.id === activeTabId) || openTabs[0] || {
-    id: 'empty',
-    filename: 'untitled.js',
-    code: '',
-    lang: 'Node.js',
-    path: ''
-  }
+  const activeTabObj = openTabs.find((t) => t.id === activeTabId) ||
+    openTabs[0] || {
+      id: 'empty',
+      filename: 'untitled.js',
+      code: '',
+      lang: 'Node.js',
+      path: ''
+    }
 
   const leftCode = activeTabObj ? activeTabObj.code : ''
   const leftTab = activeTabObj ? activeTabObj.filename : 'untitled.js'
@@ -117,37 +141,39 @@ const EditorPage = () => {
   const leftFilePath = activeTabObj ? activeTabObj.path : ''
 
   const setLeftCode = (val) => {
-    setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, code: val } : t))
+    setOpenTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, code: val } : t)))
   }
 
   const setLeftTab = (val) => {
-    setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, filename: val } : t))
+    setOpenTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, filename: val } : t)))
   }
 
   const setLeftLang = (val) => {
-    setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, lang: val } : t))
+    setOpenTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, lang: val } : t)))
   }
 
   const setLeftFilePath = (val) => {
-    setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, path: val } : t))
+    setOpenTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, path: val } : t)))
   }
 
   const handleCloseTab = (tabId, e) => {
     if (e) e.stopPropagation()
-    setOpenTabs(prev => {
+    setOpenTabs((prev) => {
       if (prev.length <= 1) {
         setActiveTabId('untitled_new')
-        return [{
-          id: 'untitled_new',
-          filename: 'untitled.js',
-          code: '',
-          lang: 'Node.js',
-          path: ''
-        }]
+        return [
+          {
+            id: 'untitled_new',
+            filename: 'untitled.js',
+            code: '',
+            lang: 'Node.js',
+            path: ''
+          }
+        ]
       }
-      const newTabs = prev.filter(t => t.id !== tabId)
+      const newTabs = prev.filter((t) => t.id !== tabId)
       if (activeTabId === tabId) {
-        const closedIdx = prev.findIndex(t => t.id === tabId)
+        const closedIdx = prev.findIndex((t) => t.id === tabId)
         const nextActive = newTabs[Math.max(0, closedIdx - 1)]
         if (nextActive) setActiveTabId(nextActive.id)
       }
@@ -164,7 +190,7 @@ const EditorPage = () => {
       lang: 'Node.js',
       path: ''
     }
-    setOpenTabs(prev => [...prev, newTab])
+    setOpenTabs((prev) => [...prev, newTab])
     setActiveTabId(newId)
   }
 
@@ -191,7 +217,7 @@ const EditorPage = () => {
   useEffect(() => {
     if (selectedLanguage === 'MySQL') {
       if (window.api && typeof window.api.getXamppStatus === 'function') {
-        window.api.getXamppStatus().then(status => {
+        window.api.getXamppStatus().then((status) => {
           setMysqlConnected(status.mysql === 'running')
         })
       }
@@ -210,7 +236,9 @@ const EditorPage = () => {
       if (e.detail && e.detail.language) {
         if (activePane === 'left') setLeftLang(e.detail.language)
         else setRightLang(e.detail.language)
-        setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, lang: e.detail.language } : t))
+        setOpenTabs((prev) =>
+          prev.map((t) => (t.id === activeTabId ? { ...t, lang: e.detail.language } : t))
+        )
       }
     }
     window.addEventListener('change-language', handleLangChange)
@@ -235,21 +263,36 @@ const EditorPage = () => {
   const [rightPanelTab, setRightPanelTab] = useState('chat')
   const [chatInput, setChatInput] = useState('')
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'ai', text: 'Hello! I am your Xenithra AI Assistant. Ask me to explain code, find bugs, or adjust formatting!' }
+    {
+      sender: 'ai',
+      text: 'Hello! I am your Xenithra AI Assistant. Ask me to explain code, find bugs, or adjust formatting!'
+    }
   ])
-  const [formatRules, setFormatRules] = useState('replace:foo->bar\nreplace:console.log->logger.info')
+  const [formatRules, setFormatRules] = useState(
+    'replace:foo->bar\nreplace:console.log->logger.info'
+  )
 
   // Ghost text, Breakpoint & Error states
   const [ghostText, setGhostText] = useState('')
   const [breakpoints, setBreakpoints] = useState([])
-  const [hoverInfo, setHoverInfo] = useState({ visible: false, symbol: '', type: '', value: '', line: 0, x: 0, y: 0 })
+  const [hoverInfo, setHoverInfo] = useState({
+    visible: false,
+    symbol: '',
+    type: '',
+    value: '',
+    line: 0,
+    x: 0,
+    y: 0
+  })
   const [activeError, setActiveError] = useState(null)
 
   const parseErrors = (output) => {
     if (!output) return
-    
+
     // Check C++ missing semicolon error
-    const cppMatch = output.match(/run_\d+_\d+\.cpp:(\d+):\d+:\s+error:\s+expected\s+'(.+?)'\s+before\s+'(.+?)'/i)
+    const cppMatch = output.match(
+      /run_\d+_\d+\.cpp:(\d+):\d+:\s+error:\s+expected\s+'(.+?)'\s+before\s+'(.+?)'/i
+    )
     if (cppMatch) {
       setActiveError({
         line: parseInt(cppMatch[1]),
@@ -263,8 +306,12 @@ const EditorPage = () => {
     }
 
     // Check simple missing semicolon in C/C++/C#
-    const semicolonMatch = output.match(/error:\s+expected\s+';'/i) || output.match(/expected\s+';'/i)
-    const lineMatch = output.match(/line\s+(\d+)/i) || output.match(/:(\d+):\d+:\s+error/i) || output.match(/:(\d+):\s+error/i)
+    const semicolonMatch =
+      output.match(/error:\s+expected\s+';'/i) || output.match(/expected\s+';'/i)
+    const lineMatch =
+      output.match(/line\s+(\d+)/i) ||
+      output.match(/:(\d+):\d+:\s+error/i) ||
+      output.match(/:(\d+):\s+error/i)
     if (semicolonMatch && lineMatch) {
       setActiveError({
         line: parseInt(lineMatch[1]),
@@ -275,9 +322,13 @@ const EditorPage = () => {
     }
 
     // Check Python missing colon
-    const pyMatch = output.match(/line\s+(\d+)[\s\S]*?(?:SyntaxError|expected\s+':')/i) || output.match(/(?:SyntaxError|expected\s+':')[\s\S]*?line\s+(\d+)/i)
+    const pyMatch =
+      output.match(/line\s+(\d+)[\s\S]*?(?:SyntaxError|expected\s+':')/i) ||
+      output.match(/(?:SyntaxError|expected\s+':')[\s\S]*?line\s+(\d+)/i)
     if (pyMatch || (output.includes('SyntaxError') && output.includes('line'))) {
-      const lineNum = pyMatch ? parseInt(pyMatch[1]) : parseInt((output.match(/line\s+(\d+)/i) || [])[1])
+      const lineNum = pyMatch
+        ? parseInt(pyMatch[1])
+        : parseInt((output.match(/line\s+(\d+)/i) || [])[1])
       if (lineNum) {
         setActiveError({
           line: lineNum,
@@ -296,7 +347,7 @@ const EditorPage = () => {
     if (errIdx < 0 || errIdx >= lines.length) return
 
     let targetLine = lines[errIdx]
-    
+
     if (activeError.fixType === 'semicolon') {
       if (!targetLine.trim().endsWith(';')) {
         lines[errIdx] = targetLine + ';'
@@ -316,13 +367,16 @@ const EditorPage = () => {
 
     const correctedCode = lines.join('\n')
     setCode(correctedCode)
-    
-    setTerminalLines(prev => [
+
+    setTerminalLines((prev) => [
       ...prev,
-      { text: `[AUTO-CORRECT] Fixed line ${activeError.line} successfully by pressing TAB!`, className: 'success' },
+      {
+        text: `[AUTO-CORRECT] Fixed line ${activeError.line} successfully by pressing TAB!`,
+        className: 'success'
+      },
       { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
-    
+
     setActiveError(null)
   }
 
@@ -334,7 +388,12 @@ const EditorPage = () => {
 
     if (window.api && typeof window.api.predictInlineCompletion === 'function') {
       try {
-        const pred = await window.api.predictInlineCompletion(newCode, currentLineIdx, currentLineContent, selectedLanguage)
+        const pred = await window.api.predictInlineCompletion(
+          newCode,
+          currentLineIdx,
+          currentLineContent,
+          selectedLanguage
+        )
         setGhostText(pred ? pred.suggestion : '')
       } catch (e) {
         setGhostText('')
@@ -356,28 +415,32 @@ const EditorPage = () => {
       const currentLineIdx = lines.length - 1
       const currentLine = lines[currentLineIdx] || ''
       const lastWordMatch = currentLine.match(/([a-zA-Z0-9_]+)$/)
-      
+
       if (lastWordMatch) {
         const lastWord = lastWordMatch[1]
-        
+
         // Fetch custom snippets
         const savedSnippets = localStorage.getItem('user_snippets')
         if (savedSnippets) {
           try {
             const parsed = JSON.parse(savedSnippets)
-            const langKey = selectedLanguage.toLowerCase().includes('php') ? 'php' : 
-                            selectedLanguage.toLowerCase().includes('python') ? 'python' :
-                            selectedLanguage.toLowerCase().includes('c++') ? 'cpp' : 'javascript'
+            const langKey = selectedLanguage.toLowerCase().includes('php')
+              ? 'php'
+              : selectedLanguage.toLowerCase().includes('python')
+                ? 'python'
+                : selectedLanguage.toLowerCase().includes('c++')
+                  ? 'cpp'
+                  : 'javascript'
             const langSnippets = parsed[langKey] || []
-            const matchingSnippet = langSnippets.find(s => s.prefix === lastWord)
-            
+            const matchingSnippet = langSnippets.find((s) => s.prefix === lastWord)
+
             if (matchingSnippet) {
               e.preventDefault()
-              
+
               // Remove trigger word and insert snippet body
               const lineWithoutPrefix = currentLine.slice(0, currentLine.length - lastWord.length)
               lines[currentLineIdx] = lineWithoutPrefix + matchingSnippet.body
-              
+
               setCode(lines.join('\n'))
               return
             }
@@ -423,26 +486,30 @@ const EditorPage = () => {
     if (!clickedWord || clickedWord.length < 2) return
 
     const lines = text.split('\n')
-    const defIndex = lines.findIndex(l => 
-      l.includes(`function ${clickedWord}`) ||
-      l.includes(`def ${clickedWord}`) ||
-      l.includes(`class ${clickedWord}`) ||
-      l.includes(`const ${clickedWord}`) ||
-      l.includes(`let ${clickedWord}`) ||
-      l.includes(`var ${clickedWord}`)
+    const defIndex = lines.findIndex(
+      (l) =>
+        l.includes(`function ${clickedWord}`) ||
+        l.includes(`def ${clickedWord}`) ||
+        l.includes(`class ${clickedWord}`) ||
+        l.includes(`const ${clickedWord}`) ||
+        l.includes(`let ${clickedWord}`) ||
+        l.includes(`var ${clickedWord}`)
     )
 
     if (defIndex !== -1) {
       const charPos = lines.slice(0, defIndex).join('\n').length + (defIndex > 0 ? 1 : 0)
       target.focus()
       target.setSelectionRange(charPos, charPos + lines[defIndex].length)
-      
+
       const lineHeight = 19.5
       target.scrollTop = defIndex * lineHeight - 50
 
-      setTerminalLines(prev => [
+      setTerminalLines((prev) => [
         ...prev,
-        { text: `[NAVIGATION] Ctrl+Click redirected to definition of '${clickedWord}' at line ${defIndex + 1}`, className: 'success' },
+        {
+          text: `[NAVIGATION] Ctrl+Click redirected to definition of '${clickedWord}' at line ${defIndex + 1}`,
+          className: 'success'
+        },
         { text: 'xenithra@studio:~$', className: 'prompt' }
       ])
     }
@@ -481,22 +548,40 @@ const EditorPage = () => {
     let symbolType = 'variable'
     let symbolValue = `(variable) ${word}`
 
-    const keywords = ['function', 'const', 'let', 'var', 'if', 'else', 'return', 'import', 'export', 'async', 'await', 'def', 'class', 'for', 'while']
+    const keywords = [
+      'function',
+      'const',
+      'let',
+      'var',
+      'if',
+      'else',
+      'return',
+      'import',
+      'export',
+      'async',
+      'await',
+      'def',
+      'class',
+      'for',
+      'while'
+    ]
     if (keywords.includes(word)) {
       symbolType = 'keyword'
       symbolValue = `(keyword) ${word}`
     } else {
-      const isFuncDef = target.value.includes(`function ${word}`) || target.value.includes(`def ${word}`)
+      const isFuncDef =
+        target.value.includes(`function ${word}`) || target.value.includes(`def ${word}`)
       const isFuncCall = lineText.includes(`${word}(`)
       if (isFuncDef) {
         symbolType = 'function declaration'
-        const defLine = lines.find(l => l.includes(`function ${word}`) || l.includes(`def ${word}`)) || ''
+        const defLine =
+          lines.find((l) => l.includes(`function ${word}`) || l.includes(`def ${word}`)) || ''
         symbolValue = `(function) ${defLine.trim()}`
       } else if (isFuncCall) {
         symbolType = 'function call'
         symbolValue = `(function call) ${word}(...)`
       } else {
-        const assignLine = lines.find(l => l.includes(`${word} =`))
+        const assignLine = lines.find((l) => l.includes(`${word} =`))
         if (assignLine) {
           symbolType = 'variable'
           symbolValue = `(variable) ${assignLine.trim()}`
@@ -542,7 +627,9 @@ const EditorPage = () => {
 
     const lineHeight = 19.5
     const visibleStart = isMinimap ? 0 : Math.max(0, Math.floor(scrollTop / lineHeight) - 25)
-    const visibleEnd = isMinimap ? total : Math.min(total, Math.ceil((scrollTop + (editorHeight || 600)) / lineHeight) + 25)
+    const visibleEnd = isMinimap
+      ? total
+      : Math.min(total, Math.ceil((scrollTop + (editorHeight || 600)) / lineHeight) + 25)
 
     return lines.map((line, lIdx) => {
       // Off-screen line spacer for 60fps performance on large files
@@ -551,38 +638,107 @@ const EditorPage = () => {
       }
 
       const tokens = line.split(/(\s+|[{}()[\];,.:=+\-*/%&|^<>!~"'`#])/g)
-      
+
       const lineElements = tokens.map((token, tIdx) => {
         if (!token) return null
-        
+
         if (token.startsWith('"') || token.startsWith("'") || token.startsWith('`')) {
-          return <span key={tIdx} style={{ color: '#ce9178' }}>{token}</span>
+          return (
+            <span key={tIdx} style={{ color: '#ce9178' }}>
+              {token}
+            </span>
+          )
         }
         if (token.startsWith('//') || token.startsWith('#')) {
-          return <span key={tIdx} style={{ color: '#6a9955', fontStyle: 'italic' }}>{token}</span>
+          return (
+            <span key={tIdx} style={{ color: '#6a9955', fontStyle: 'italic' }}>
+              {token}
+            </span>
+          )
         }
-        const keywords = ['function', 'const', 'let', 'var', 'if', 'else', 'return', 'import', 'export', 'from', 'default', 'async', 'await', 'def', 'class', 'for', 'while', 'try', 'catch', 'public', 'private', 'new', 'switch', 'case', 'typeof', 'void']
+        const keywords = [
+          'function',
+          'const',
+          'let',
+          'var',
+          'if',
+          'else',
+          'return',
+          'import',
+          'export',
+          'from',
+          'default',
+          'async',
+          'await',
+          'def',
+          'class',
+          'for',
+          'while',
+          'try',
+          'catch',
+          'public',
+          'private',
+          'new',
+          'switch',
+          'case',
+          'typeof',
+          'void'
+        ]
         if (keywords.includes(token)) {
-          return <span key={tIdx} style={{ color: '#c586c0', fontWeight: 'bold' }}>{token}</span>
+          return (
+            <span key={tIdx} style={{ color: '#c586c0', fontWeight: 'bold' }}>
+              {token}
+            </span>
+          )
         }
-        if (/^\d+$/.test(token) || token === 'true' || token === 'false' || token === 'null' || token === 'undefined') {
-          return <span key={tIdx} style={{ color: '#b5cea8' }}>{token}</span>
+        if (
+          /^\d+$/.test(token) ||
+          token === 'true' ||
+          token === 'false' ||
+          token === 'null' ||
+          token === 'undefined'
+        ) {
+          return (
+            <span key={tIdx} style={{ color: '#b5cea8' }}>
+              {token}
+            </span>
+          )
         }
         const nextToken = tokens[tIdx + 1] || ''
         const prevToken = tokens[tIdx - 1] || ''
         if (prevToken === 'function' || prevToken === 'def' || prevToken === 'class') {
-          return <span key={tIdx} style={{ color: '#ff79c6', fontWeight: 'bold' }}>{token}</span>
+          return (
+            <span key={tIdx} style={{ color: '#ff79c6', fontWeight: 'bold' }}>
+              {token}
+            </span>
+          )
         }
         if (nextToken.trim() === '(' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
-          return <span key={tIdx} style={{ color: '#ff79c6', fontWeight: '500' }}>{token}</span>
+          return (
+            <span key={tIdx} style={{ color: '#ff79c6', fontWeight: '500' }}>
+              {token}
+            </span>
+          )
         }
         if (nextToken.trim() === ':' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
-          return <span key={tIdx} style={{ color: '#58a6ff' }}>{token}</span>
+          return (
+            <span key={tIdx} style={{ color: '#58a6ff' }}>
+              {token}
+            </span>
+          )
         }
         if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
-          return <span key={tIdx} style={{ color: '#9cdcfe' }}>{token}</span>
+          return (
+            <span key={tIdx} style={{ color: '#9cdcfe' }}>
+              {token}
+            </span>
+          )
         }
-        return <span key={tIdx} style={{ color: 'var(--text-main)' }}>{token}</span>
+        return (
+          <span key={tIdx} style={{ color: 'var(--text-main)' }}>
+            {token}
+          </span>
+        )
       })
 
       return (
@@ -594,11 +750,14 @@ const EditorPage = () => {
   }
 
   const toggleBreakpoint = (lineNum) => {
-    setBreakpoints(prev => {
-      const current = Array.isArray(prev) ? prev : (prev[activeTabId] || [])
+    setBreakpoints((prev) => {
+      const current = Array.isArray(prev) ? prev : prev[activeTabId] || []
       const exists = current.includes(lineNum)
-      const updated = exists ? current.filter(l => l !== lineNum) : [...current, lineNum]
-      return { ...(typeof prev === 'object' && !Array.isArray(prev) ? prev : {}), [activeTabId]: updated }
+      const updated = exists ? current.filter((l) => l !== lineNum) : [...current, lineNum]
+      return {
+        ...(typeof prev === 'object' && !Array.isArray(prev) ? prev : {}),
+        [activeTabId]: updated
+      }
     })
   }
 
@@ -628,32 +787,35 @@ const EditorPage = () => {
 
   const formatChatMessage = (text) => {
     if (!text) return ''
-    let html = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      
+    let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
     // Code blocks: ```js ... ```
     html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, content) => {
       return `<pre style="background: rgba(0,0,0,0.45); padding: 8px 12px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; overflow-x: auto; margin: 6px 0; border: 1px solid var(--panel-border); color: #00ffaa; line-height: 1.5;"><code>${content}</code></pre>`
     })
-    
+
     // Inline code: `code`
-    html = html.replace(/`([^`\n]+)`/g, '<code style="background: rgba(255,255,255,0.06); padding: 2px 4px; border-radius: 3px; font-family: \'JetBrains Mono\', monospace; font-size: 11px; color: var(--accent-color);">$1</code>')
-    
+    html = html.replace(
+      /`([^`\n]+)`/g,
+      '<code style="background: rgba(255,255,255,0.06); padding: 2px 4px; border-radius: 3px; font-family: \'JetBrains Mono\', monospace; font-size: 11px; color: var(--accent-color);">$1</code>'
+    )
+
     // Bold: **text**
-    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong style="color: var(--accent-color); font-weight: 600;">$1</strong>')
-    
+    html = html.replace(
+      /\*\*([^*]+)\*\*/g,
+      '<strong style="color: var(--accent-color); font-weight: 600;">$1</strong>'
+    )
+
     // Convert newlines to breaks
     html = html.replace(/\n/g, '<br>')
-    
+
     return <div dangerouslySetInnerHTML={{ __html: html }} />
   }
 
   const handleSendChatMessage = async () => {
     if (!chatInput.trim()) return
     const userMsg = { sender: 'user', text: chatInput }
-    setChatMessages(prev => [...prev, userMsg])
+    setChatMessages((prev) => [...prev, userMsg])
     const prompt = chatInput
     setChatInput('')
 
@@ -675,13 +837,21 @@ const EditorPage = () => {
       }
 
       const json = await response.json()
-      setChatMessages(prev => [...prev, { sender: 'ai', text: json.output }])
+      setChatMessages((prev) => [...prev, { sender: 'ai', text: json.output }])
     } catch (err) {
       if (window.api && typeof window.api.generateLocalAIChat === 'function') {
-        const localReply = await window.api.generateLocalAIChat(prompt, code, selectedLanguage, activeTab)
-        setChatMessages(prev => [...prev, { sender: 'ai', text: localReply }])
+        const localReply = await window.api.generateLocalAIChat(
+          prompt,
+          code,
+          selectedLanguage,
+          activeTab
+        )
+        setChatMessages((prev) => [...prev, { sender: 'ai', text: localReply }])
       } else {
-        setChatMessages(prev => [...prev, { sender: 'ai', text: "Xenithra Local AI Model active. Ready for diagnostics!" }])
+        setChatMessages((prev) => [
+          ...prev,
+          { sender: 'ai', text: 'Xenithra Local AI Model active. Ready for diagnostics!' }
+        ])
       }
     }
   }
@@ -691,8 +861,8 @@ const EditorPage = () => {
     const rules = formatRules.split('\n')
     let currentCode = code
     let count = 0
-    
-    rules.forEach(rule => {
+
+    rules.forEach((rule) => {
       if (rule.trim().startsWith('replace:')) {
         const parts = rule.replace('replace:', '').split('->')
         if (parts.length === 2) {
@@ -706,9 +876,12 @@ const EditorPage = () => {
     })
 
     setCode(currentCode)
-    setTerminalLines(prev => [
+    setTerminalLines((prev) => [
       ...prev,
-      { text: `[FORMAT] Applied ${count} text adjustment replacement rules to ${activeTab}.`, className: 'success' },
+      {
+        text: `[FORMAT] Applied ${count} text adjustment replacement rules to ${activeTab}.`,
+        className: 'success'
+      },
       { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
   }
@@ -729,8 +902,10 @@ const EditorPage = () => {
           return 'Node.js'
         }
 
-        setOpenTabs(prev => {
-          const existingIdx = prev.findIndex(t => (filePath && t.path === filePath) || t.filename === filename)
+        setOpenTabs((prev) => {
+          const existingIdx = prev.findIndex(
+            (t) => (filePath && t.path === filePath) || t.filename === filename
+          )
           if (existingIdx !== -1) {
             const updated = [...prev]
             updated[existingIdx] = {
@@ -772,7 +947,9 @@ const EditorPage = () => {
   // Sync active language to Toolbar dropdown whenever active tab changes
   useEffect(() => {
     if (activeTabObj && activeTabObj.lang) {
-      window.dispatchEvent(new CustomEvent('change-language', { detail: { language: activeTabObj.lang } }))
+      window.dispatchEvent(
+        new CustomEvent('change-language', { detail: { language: activeTabObj.lang } })
+      )
     }
   }, [activeTabId, activeTabObj?.lang]) // Re-run when pane toggles or code is set // Re-run when pane toggles to ensure proper setter binds
 
@@ -784,9 +961,9 @@ const EditorPage = () => {
 
     const newLines = [
       ...terminalLines,
-      { 
-        text: `xenithra@studio:~$ run --lang='${selectedLanguage}' ${cliArgs ? '--args="' + cliArgs + '"' : ''}`, 
-        className: 'prompt' 
+      {
+        text: `xenithra@studio:~$ run --lang='${selectedLanguage}' ${cliArgs ? '--args="' + cliArgs + '"' : ''}`,
+        className: 'prompt'
       },
       { text: 'Compiling & executing source code...', className: 'muted' }
     ]
@@ -797,10 +974,10 @@ const EditorPage = () => {
       const res = await fetch(`http://localhost:${port}/api/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          lang: selectedLanguage, 
-          args: cliArgs, 
-          code: code 
+        body: JSON.stringify({
+          lang: selectedLanguage,
+          args: cliArgs,
+          code: code
         })
       })
 
@@ -810,11 +987,14 @@ const EditorPage = () => {
       }
 
       const json = await res.json()
-      
+
       setTerminalLines([
         ...newLines,
         { text: json.output, className: json.success ? 'success' : 'error' },
-        { text: `[SYSTEM] Run complete. Exit status: ${json.success ? '0' : '1'}`, className: 'muted' },
+        {
+          text: `[SYSTEM] Run complete. Exit status: ${json.success ? '0' : '1'}`,
+          className: 'muted'
+        },
         { text: `xenithra@studio:~$`, className: 'prompt' }
       ])
 
@@ -825,7 +1005,10 @@ const EditorPage = () => {
       setTerminalLines([
         ...newLines,
         { text: `[ERROR] Execution failed: ${err.message}`, className: 'error' },
-        { text: `[HINT] Ensure the Electron backend compiler server is running.`, className: 'warning' },
+        {
+          text: `[HINT] Ensure the Electron backend compiler server is running.`,
+          className: 'warning'
+        },
         { text: `xenithra@studio:~$`, className: 'prompt' }
       ])
     } finally {
@@ -840,9 +1023,9 @@ const EditorPage = () => {
 
     const newLines = [
       ...terminalLines,
-      { 
-        text: `xenithra@studio:~$ package --lang='${selectedLanguage}' --file='${activeTab}'`, 
-        className: 'prompt' 
+      {
+        text: `xenithra@studio:~$ package --lang='${selectedLanguage}' --file='${activeTab}'`,
+        className: 'prompt'
       },
       { text: 'Compiling & packaging standalone binary executable...', className: 'muted' }
     ]
@@ -853,10 +1036,10 @@ const EditorPage = () => {
       const res = await fetch(`http://localhost:${port}/api/package`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          lang: selectedLanguage, 
-          filename: activeTab, 
-          code: code 
+        body: JSON.stringify({
+          lang: selectedLanguage,
+          filename: activeTab,
+          code: code
         })
       })
 
@@ -875,7 +1058,10 @@ const EditorPage = () => {
 
       setTerminalLines([
         ...newLines,
-        { text: `[SUCCESS] Binary package generated and downloaded successfully.`, className: 'success' },
+        {
+          text: `[SUCCESS] Binary package generated and downloaded successfully.`,
+          className: 'success'
+        },
         { text: `xenithra@studio:~$`, className: 'prompt' }
       ])
     } catch (err) {
@@ -891,7 +1077,7 @@ const EditorPage = () => {
 
   const handleStop = () => {
     setIsRunning(false)
-    setTerminalLines(prev => [
+    setTerminalLines((prev) => [
       ...prev,
       { text: '[STOPPED] Execution forcefully terminated.', className: 'error' },
       { text: 'xenithra@studio:~$', className: 'prompt' }
@@ -901,12 +1087,15 @@ const EditorPage = () => {
   const handleFormat = () => {
     let formatted = code
     try {
-      if (activeTab.endsWith('.json') || (code.trim().startsWith('{') && code.trim().endsWith('}') && !code.includes('function'))) {
+      if (
+        activeTab.endsWith('.json') ||
+        (code.trim().startsWith('{') && code.trim().endsWith('}') && !code.includes('function'))
+      ) {
         formatted = JSON.stringify(JSON.parse(code), null, 2)
       } else {
         const lines = code.split('\n')
         let indentLevel = 0
-        const formattedLines = lines.map(line => {
+        const formattedLines = lines.map((line) => {
           let trimmed = line.trim()
           if (!trimmed) return ''
           if (trimmed.startsWith('}') || trimmed.startsWith(']') || trimmed.startsWith('</')) {
@@ -914,7 +1103,16 @@ const EditorPage = () => {
           }
           const indentStr = '  '.repeat(indentLevel)
           const result = indentStr + trimmed
-          if ((trimmed.endsWith('{') || trimmed.endsWith('[') || (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>') && trimmed.includes('>'))) && !trimmed.includes('}') && !trimmed.includes(']')) {
+          if (
+            (trimmed.endsWith('{') ||
+              trimmed.endsWith('[') ||
+              (trimmed.startsWith('<') &&
+                !trimmed.startsWith('</') &&
+                !trimmed.endsWith('/>') &&
+                trimmed.includes('>'))) &&
+            !trimmed.includes('}') &&
+            !trimmed.includes(']')
+          ) {
             indentLevel++
           }
           return result
@@ -922,22 +1120,31 @@ const EditorPage = () => {
         formatted = formattedLines.join('\n')
       }
     } catch (e) {
-      formatted = code.split('\n').map(l => l.trimEnd()).join('\n')
+      formatted = code
+        .split('\n')
+        .map((l) => l.trimEnd())
+        .join('\n')
     }
 
     setCode(formatted)
-    setTerminalLines(prev => [
+    setTerminalLines((prev) => [
       ...prev,
-      { text: `[FORMAT] Smart code formatter formatted ${activeTab} successfully.`, className: 'success' },
+      {
+        text: `[FORMAT] Smart code formatter formatted ${activeTab} successfully.`,
+        className: 'success'
+      },
       { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
   }
 
   const handleDebug = () => {
-    setTerminalLines(prev => [
+    setTerminalLines((prev) => [
       ...prev,
       { text: `xenithra@studio:~$ debug --lang='${selectedLanguage}'`, className: 'prompt' },
-      { text: '[DEBUG] Debugger v8 inspector attached. Listening on ports...', className: 'warning' },
+      {
+        text: '[DEBUG] Debugger v8 inspector attached. Listening on ports...',
+        className: 'warning'
+      },
       { text: 'xenithra@studio:~$', className: 'prompt' }
     ])
   }
@@ -951,22 +1158,28 @@ const EditorPage = () => {
       setActiveFilePath('')
     }
     const markTabSaved = () => {
-      setOpenTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, savedCode: code } : t))
+      setOpenTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, savedCode: code } : t)))
     }
     const onSave = async () => {
       if (activeFilePath && window.api && typeof window.api.saveFile === 'function') {
         const success = await window.api.saveFile(activeFilePath, code)
         if (success) {
           markTabSaved()
-          setTerminalLines(prev => [
+          setTerminalLines((prev) => [
             ...prev,
-            { text: `[SAVED] File saved directly to disk: ${activeFilePath}`, className: 'success' },
+            {
+              text: `[SAVED] File saved directly to disk: ${activeFilePath}`,
+              className: 'success'
+            },
             { text: 'xenithra@studio:~$', className: 'prompt' }
           ])
         } else {
-          setTerminalLines(prev => [
+          setTerminalLines((prev) => [
             ...prev,
-            { text: `[ERROR] Failed to save file directly to ${activeFilePath}`, className: 'error' },
+            {
+              text: `[ERROR] Failed to save file directly to ${activeFilePath}`,
+              className: 'error'
+            },
             { text: 'xenithra@studio:~$', className: 'prompt' }
           ])
         }
@@ -981,7 +1194,7 @@ const EditorPage = () => {
           setActiveTab(file.name)
           setActiveFilePath(file.path)
           markTabSaved()
-          setTerminalLines(prev => [
+          setTerminalLines((prev) => [
             ...prev,
             { text: `[SAVED] File saved as: ${file.path}`, className: 'success' },
             { text: 'xenithra@studio:~$', className: 'prompt' }
@@ -999,7 +1212,7 @@ const EditorPage = () => {
           a.download = newName
           a.click()
           URL.revokeObjectURL(url)
-          setTerminalLines(prev => [
+          setTerminalLines((prev) => [
             ...prev,
             { text: `[SAVED] File saved as: ${newName}`, className: 'success' },
             { text: 'xenithra@studio:~$', className: 'prompt' }
@@ -1049,7 +1262,7 @@ const EditorPage = () => {
       }
     }
     const onSplit = () => {
-      setIsSplit(prev => !prev)
+      setIsSplit((prev) => !prev)
     }
 
     window.addEventListener('menu-file-new', onNew)
@@ -1087,7 +1300,25 @@ const EditorPage = () => {
       window.removeEventListener('menu-package-code', handlePackage)
       window.removeEventListener('menu-split-editor', onSplit)
     }
-  }, [code, selectedLanguage, cliArgs, isRunning, terminalLines, activePane, isSplit, activeFilePath])
+  }, [
+    code,
+    selectedLanguage,
+    cliArgs,
+    isRunning,
+    terminalLines,
+    activePane,
+    isSplit,
+    activeFilePath
+  ])
+
+  // Context menu close hook
+  useEffect(() => {
+    const handleCloseMenu = () => {
+      setContextMenu((prev) => (prev.visible ? { ...prev, visible: false } : prev))
+    }
+    window.addEventListener('click', handleCloseMenu)
+    return () => window.removeEventListener('click', handleCloseMenu)
+  }, [])
 
   // Auto-scroll terminal
   useEffect(() => {
@@ -1120,62 +1351,145 @@ const EditorPage = () => {
     document.addEventListener('mouseup', handleMouseUp)
   }
 
-
   const getLineCount = (text) => Math.max(1, text.split('\n').length)
 
-    return (
-    <div className="editor-wrapper" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+  return (
+    <div
+      className="editor-wrapper"
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
+    >
       {/* Editor Main Section */}
-      <div style={{ height: `${editorHeight}px`, display: 'flex', flexDirection: 'row', overflow: 'hidden', borderBottom: '1px solid var(--panel-border)', position: 'relative' }}>
-        
+      <div
+        style={{
+          height: `${editorHeight}px`,
+          display: 'flex',
+          flexDirection: 'row',
+          overflow: 'hidden',
+          borderBottom: '1px solid var(--panel-border)',
+          position: 'relative'
+        }}
+      >
         {!isSplit ? (
           /* Single Pane Editor */
-          <div className="editor-pane active" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)', position: 'relative' }}>
-              
+          <div
+            className="editor-pane active"
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+              overflow: 'hidden'
+            }}
+          >
+            <div
+              className="editor-tabs"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+                background: 'rgba(0,0,0,0.15)',
+                borderBottom: '1px solid var(--panel-border)',
+                position: 'relative'
+              }}
+            >
               {/* Left Scroll Navigation Button */}
-              <button 
+              <button
                 onClick={scrollTabsLeft}
-                style={{ background: 'transparent', border: 'none', color: '#8b949e', padding: '0 6px', height: '30px', cursor: 'pointer', fontSize: '10px', zIndex: 5 }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#8b949e',
+                  padding: '0 6px',
+                  height: '30px',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  zIndex: 5
+                }}
                 title="Scroll Tabs Left"
               >
                 ◀
               </button>
 
-              <div ref={tabsContainerRef} style={{ display: 'flex', alignItems: 'center', flex: 1, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {openTabs.map(tab => {
-                  const isDirty = tab.code !== (tab.savedCode !== undefined ? tab.savedCode : tab.code)
+              <div
+                ref={tabsContainerRef}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flex: 1,
+                  overflowX: 'auto',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none'
+                }}
+              >
+                {openTabs.map((tab) => {
+                  const isDirty =
+                    tab.code !== (tab.savedCode !== undefined ? tab.savedCode : tab.code)
                   return (
-                    <div 
+                    <div
                       key={tab.id}
                       className={`editor-tab ${tab.id === activeTabId ? 'active' : ''}`}
                       onClick={() => setActiveTabId(tab.id)}
+                      draggable={true}
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('draggedTabId', tab.id)
+                        setIsDraggingTab(true)
+                      }}
+                      onDragEnd={() => setIsDraggingTab(false)}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
                         padding: '6px 12px',
                         fontSize: '12px',
-                        cursor: 'pointer',
+                        cursor: 'grab',
                         borderRight: '1px solid var(--panel-border)',
-                        background: tab.id === activeTabId ? 'var(--sidebar-active)' : 'transparent',
+                        background:
+                          tab.id === activeTabId ? 'var(--sidebar-active)' : 'transparent',
                         color: tab.id === activeTabId ? 'var(--accent-color)' : 'var(--text-muted)',
-                        borderTop: tab.id === activeTabId ? '2px solid var(--accent-color)' : '2px solid transparent',
+                        borderTop:
+                          tab.id === activeTabId
+                            ? '2px solid var(--accent-color)'
+                            : '2px solid transparent',
                         whiteSpace: 'nowrap',
                         minWidth: '110px',
                         maxWidth: '200px'
                       }}
                     >
                       <i className="bx bx-file" style={{ fontSize: '13px' }}></i>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{tab.filename}</span>
+                      <span
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          flex: 1
+                        }}
+                      >
+                        {tab.filename}
+                      </span>
                       {isDirty && (
-                        <span title="Unsaved changes" style={{ color: '#00ffaa', fontSize: '11px', marginLeft: '2px', fontWeight: 'bold' }}>●</span>
+                        <span
+                          title="Unsaved changes"
+                          style={{
+                            color: '#00ffaa',
+                            fontSize: '11px',
+                            marginLeft: '2px',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          ●
+                        </span>
                       )}
-                      <span 
-                        onClick={(e) => handleCloseTab(tab.id, e)} 
-                        style={{ cursor: 'pointer', opacity: 0.6, fontSize: '14px', marginLeft: '4px' }}
-                        onMouseEnter={(e) => e.target.style.opacity = 1}
-                        onMouseLeave={(e) => e.target.style.opacity = 0.6}
+                      <span
+                        onClick={(e) => handleCloseTab(tab.id, e)}
+                        style={{
+                          cursor: 'pointer',
+                          opacity: 0.6,
+                          fontSize: '14px',
+                          marginLeft: '4px'
+                        }}
+                        onMouseEnter={(e) => (e.target.style.opacity = 1)}
+                        onMouseLeave={(e) => (e.target.style.opacity = 0.6)}
                       >
                         ×
                       </span>
@@ -1185,136 +1499,407 @@ const EditorPage = () => {
               </div>
 
               {/* Right Scroll Navigation Button */}
-              <button 
+              <button
                 onClick={scrollTabsRight}
-                style={{ background: 'transparent', border: 'none', color: '#8b949e', padding: '0 6px', height: '30px', cursor: 'pointer', fontSize: '10px', zIndex: 5 }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#8b949e',
+                  padding: '0 6px',
+                  height: '30px',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  zIndex: 5
+                }}
                 title="Scroll Tabs Right"
               >
                 ▶
               </button>
 
-              <button 
-                onClick={handleNewTab} 
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '4px 10px', cursor: 'pointer', fontSize: '16px' }}
+              <button
+                onClick={handleNewTab}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  padding: '4px 10px',
+                  cursor: 'pointer',
+                  fontSize: '16px'
+                }}
                 title="New File Tab"
               >
                 +
               </button>
 
               <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
-                <button onClick={() => setIsSplit(true)} style={styles.tabActionBtn} title="Split Screen Side-by-Side">
+                <button
+                  onClick={() => setIsSplit(true)}
+                  style={styles.tabActionBtn}
+                  title="Split Screen Side-by-Side"
+                >
                   <i className="bx bx-columns"></i>
                 </button>
-                <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} style={{ ...styles.tabActionBtn, color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)' }} title="AI Assistant & Adjuster Panel">
+                <button
+                  onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+                  style={{
+                    ...styles.tabActionBtn,
+                    color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)'
+                  }}
+                  title="AI Assistant & Adjuster Panel"
+                >
                   <i className="bx bx-bot"></i>
                 </button>
               </div>
             </div>
-                  {selectedLanguage === 'MySQL' ? (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0d1117', color: '#c9d1d9', height: '100%', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 15px', background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid var(--panel-border)' }}>
+            {selectedLanguage === 'MySQL' ? (
+              <div
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  background: '#0d1117',
+                  color: '#c9d1d9',
+                  height: '100%',
+                  overflow: 'hidden'
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 15px',
+                    background: 'rgba(0,0,0,0.2)',
+                    borderBottom: '1px solid var(--panel-border)'
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <i className="bx bx-data" style={{ fontSize: '18px', color: '#ffca28' }}></i>
-                    <span style={{ fontWeight: 'bold', fontSize: '12px' }}>🐬 Inbuilt MySQL Portal Dashboard</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '12px' }}>
+                      🐬 Inbuilt MySQL Portal Dashboard
+                    </span>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
+                    <button
                       onClick={() => setPmaActive(!pmaActive)}
-                      style={{ background: pmaActive ? 'rgba(0, 255, 170, 0.15)' : 'rgba(255,255,255,0.05)', border: pmaActive ? '1px solid #00ffaa' : '1px solid rgba(255,255,255,0.1)', color: pmaActive ? '#00ffaa' : '#eee', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}
+                      style={{
+                        background: pmaActive
+                          ? 'rgba(0, 255, 170, 0.15)'
+                          : 'rgba(255,255,255,0.05)',
+                        border: pmaActive ? '1px solid #00ffaa' : '1px solid rgba(255,255,255,0.1)',
+                        color: pmaActive ? '#00ffaa' : '#eee',
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
                     >
                       {pmaActive ? '🖥️ Show Visual Client' : '🌐 Open phpMyAdmin Portal'}
                     </button>
                     {!mysqlConnected && (
-                      <button 
+                      <button
                         onClick={handleInstallMysql}
                         disabled={mysqlInstallProgress > 0}
-                        style={{ background: '#ffca28', border: 'none', color: '#000', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                        style={{
+                          background: '#ffca28',
+                          border: 'none',
+                          color: '#000',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
                       >
-                        {mysqlInstallProgress > 0 ? `Installing... (${mysqlInstallProgress}%)` : '⚡ Install MySQL Service'}
+                        {mysqlInstallProgress > 0
+                          ? `Installing... (${mysqlInstallProgress}%)`
+                          : '⚡ Install MySQL Service'}
                       </button>
                     )}
                   </div>
                 </div>
 
                 {mysqlInstallProgress > 0 && (
-                  <div style={{ padding: '15px', background: 'rgba(255,202,40,0.1)', borderBottom: '1px solid rgba(255,202,40,0.2)', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div
+                    style={{
+                      padding: '15px',
+                      background: 'rgba(255,202,40,0.1)',
+                      borderBottom: '1px solid rgba(255,202,40,0.2)',
+                      fontSize: '11px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px'
+                    }}
+                  >
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>{mysqlInstallMsg}</span>
                       <span>{mysqlInstallProgress}%</span>
                     </div>
-                    <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ width: `${mysqlInstallProgress}%`, height: '100%', background: '#ffca28', transition: 'width 0.2s' }}></div>
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '4px',
+                        background: 'rgba(255,255,255,0.1)',
+                        borderRadius: '2px',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${mysqlInstallProgress}%`,
+                          height: '100%',
+                          background: '#ffca28',
+                          transition: 'width 0.2s'
+                        }}
+                      ></div>
                     </div>
                   </div>
                 )}
 
                 {pmaActive ? (
-                  <iframe 
-                    src="http://localhost:8085" 
-                    style={{ flex: 1, border: 'none', background: '#fff' }} 
+                  <iframe
+                    src="http://localhost:8085"
+                    style={{ flex: 1, border: 'none', background: '#fff' }}
                     sandbox="allow-scripts allow-same-origin allow-forms"
-                    onError={() => setSqlStatusMsg('Failed to load phpMyAdmin. Make sure the MySQL service is running.')}
+                    onError={() =>
+                      setSqlStatusMsg(
+                        'Failed to load phpMyAdmin. Make sure the MySQL service is running.'
+                      )
+                    }
                   />
                 ) : (
                   <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                     {/* Visual Client Sidebar */}
-                    <div style={{ width: '180px', borderRight: '1px solid var(--panel-border)', background: 'rgba(0,0,0,0.1)', padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div
+                      style={{
+                        width: '180px',
+                        borderRight: '1px solid var(--panel-border)',
+                        background: 'rgba(0,0,0,0.1)',
+                        padding: '15px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '15px'
+                      }}
+                    >
                       <div>
-                        <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>DATABASES</div>
-                        <div style={{ padding: '4px 8px', background: 'var(--sidebar-active)', color: 'var(--accent-color)', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
+                        <div
+                          style={{
+                            fontWeight: 'bold',
+                            fontSize: '11px',
+                            color: 'var(--text-muted)',
+                            marginBottom: '8px'
+                          }}
+                        >
+                          DATABASES
+                        </div>
+                        <div
+                          style={{
+                            padding: '4px 8px',
+                            background: 'var(--sidebar-active)',
+                            color: 'var(--accent-color)',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '11px'
+                          }}
+                        >
                           🗄️ xenithra_db
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>TABLES</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
-                          <div onClick={() => { setSqlQuery('SELECT * FROM users;'); setSqlStatusMsg('SELECT * FROM users;'); }} style={{ padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }} onMouseEnter={e => e.target.style.background='rgba(255,255,255,0.03)'} onMouseLeave={e => e.target.style.background='transparent'}>📋 users</div>
-                          <div onClick={() => { setSqlQuery('SELECT * FROM projects;'); setSqlStatusMsg('SELECT * FROM projects;'); }} style={{ padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }} onMouseEnter={e => e.target.style.background='rgba(255,255,255,0.03)'} onMouseLeave={e => e.target.style.background='transparent'}>📋 projects</div>
+                        <div
+                          style={{
+                            fontWeight: 'bold',
+                            fontSize: '11px',
+                            color: 'var(--text-muted)',
+                            marginBottom: '8px'
+                          }}
+                        >
+                          TABLES
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '4px',
+                            fontSize: '11px'
+                          }}
+                        >
+                          <div
+                            onClick={() => {
+                              setSqlQuery('SELECT * FROM users;')
+                              setSqlStatusMsg('SELECT * FROM users;')
+                            }}
+                            style={{ padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                            onMouseEnter={(e) =>
+                              (e.target.style.background = 'rgba(255,255,255,0.03)')
+                            }
+                            onMouseLeave={(e) => (e.target.style.background = 'transparent')}
+                          >
+                            📋 users
+                          </div>
+                          <div
+                            onClick={() => {
+                              setSqlQuery('SELECT * FROM projects;')
+                              setSqlStatusMsg('SELECT * FROM projects;')
+                            }}
+                            style={{ padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                            onMouseEnter={(e) =>
+                              (e.target.style.background = 'rgba(255,255,255,0.03)')
+                            }
+                            onMouseLeave={(e) => (e.target.style.background = 'transparent')}
+                          >
+                            📋 projects
+                          </div>
                         </div>
                       </div>
                     </div>
 
                     {/* SQL Execution Workspace */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '15px', overflowY: 'auto' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>SQL QUERY INPUT</div>
-                      <textarea 
+                    <div
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        padding: '15px',
+                        overflowY: 'auto'
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight: 'bold',
+                          fontSize: '11px',
+                          color: 'var(--text-muted)',
+                          marginBottom: '8px'
+                        }}
+                      >
+                        SQL QUERY INPUT
+                      </div>
+                      <textarea
                         value={sqlQuery}
-                        onChange={e => setSqlQuery(e.target.value)}
-                        style={{ width: '100%', height: '90px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: '#00e5ff', fontFamily: 'monospace', fontSize: '12px', padding: '10px', borderRadius: '6px', resize: 'none', outline: 'none', marginBottom: '8px' }}
+                        onChange={(e) => setSqlQuery(e.target.value)}
+                        style={{
+                          width: '100%',
+                          height: '90px',
+                          background: 'var(--input-bg)',
+                          border: '1px solid var(--input-border)',
+                          color: '#00e5ff',
+                          fontFamily: 'monospace',
+                          fontSize: '12px',
+                          padding: '10px',
+                          borderRadius: '6px',
+                          resize: 'none',
+                          outline: 'none',
+                          marginBottom: '8px'
+                        }}
                       />
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '15px' }}>
-                        <button 
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '10px',
+                          alignItems: 'center',
+                          marginBottom: '15px'
+                        }}
+                      >
+                        <button
                           onClick={handleExecuteQuery}
-                          style={{ background: 'linear-gradient(135deg, #00ffaa 0%, #00bfff 100%)', border: 'none', color: '#000', fontWeight: 'bold', padding: '6px 16px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}
+                          style={{
+                            background: 'linear-gradient(135deg, #00ffaa 0%, #00bfff 100%)',
+                            border: 'none',
+                            color: '#000',
+                            fontWeight: 'bold',
+                            padding: '6px 16px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            cursor: 'pointer'
+                          }}
                         >
                           ⚡ Run SQL Query
                         </button>
-                        {sqlStatusMsg && <span style={{ fontSize: '11px', color: 'var(--accent-color)' }}>{sqlStatusMsg}</span>}
+                        {sqlStatusMsg && (
+                          <span style={{ fontSize: '11px', color: 'var(--accent-color)' }}>
+                            {sqlStatusMsg}
+                          </span>
+                        )}
                       </div>
 
-                      <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>RESULTS TABLE</div>
-                      <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--panel-border)', borderRadius: '6px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          fontWeight: 'bold',
+                          fontSize: '11px',
+                          color: 'var(--text-muted)',
+                          marginBottom: '8px'
+                        }}
+                      >
+                        RESULTS TABLE
+                      </div>
+                      <div
+                        style={{
+                          background: 'rgba(0,0,0,0.2)',
+                          border: '1px solid var(--panel-border)',
+                          borderRadius: '6px',
+                          overflow: 'hidden'
+                        }}
+                      >
                         {dbResults.length > 0 ? (
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
+                          <table
+                            style={{
+                              width: '100%',
+                              borderCollapse: 'collapse',
+                              fontSize: '11px',
+                              textAlign: 'left'
+                            }}
+                          >
                             <thead>
-                              <tr style={{ background: 'rgba(0,0,0,0.15)', height: '28px', borderBottom: '1px solid var(--panel-border)' }}>
-                                {Object.keys(dbResults[0]).map(key => (
-                                  <th key={key} style={{ padding: '0 10px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{key}</th>
+                              <tr
+                                style={{
+                                  background: 'rgba(0,0,0,0.15)',
+                                  height: '28px',
+                                  borderBottom: '1px solid var(--panel-border)'
+                                }}
+                              >
+                                {Object.keys(dbResults[0]).map((key) => (
+                                  <th
+                                    key={key}
+                                    style={{
+                                      padding: '0 10px',
+                                      fontWeight: 'bold',
+                                      color: 'var(--text-muted)'
+                                    }}
+                                  >
+                                    {key}
+                                  </th>
                                 ))}
                               </tr>
                             </thead>
                             <tbody>
                               {dbResults.map((row, idx) => (
-                                <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', height: '26px' }}>
+                                <tr
+                                  key={idx}
+                                  style={{
+                                    borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                    height: '26px'
+                                  }}
+                                >
                                   {Object.values(row).map((val, i) => (
-                                    <td key={i} style={{ padding: '0 10px', color: '#fff' }}>{String(val)}</td>
+                                    <td key={i} style={{ padding: '0 10px', color: '#fff' }}>
+                                      {String(val)}
+                                    </td>
                                   ))}
                                 </tr>
                               ))}
                             </tbody>
                           </table>
                         ) : (
-                          <div style={{ padding: '20px', textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)' }}>No active results dataset</div>
+                          <div
+                            style={{
+                              padding: '20px',
+                              textAlign: 'center',
+                              fontSize: '11px',
+                              color: 'var(--text-muted)'
+                            }}
+                          >
+                            No active results dataset
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1323,27 +1908,41 @@ const EditorPage = () => {
               </div>
             ) : (
               <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                <div ref={leftLineNumbersRef} className="line-numbers" style={{ userSelect: 'none', overflow: 'hidden' }}>
+                <div
+                  ref={leftLineNumbersRef}
+                  className="line-numbers"
+                  style={{ userSelect: 'none', overflow: 'hidden' }}
+                >
                   {Array.from({ length: getLineCount(leftCode) }).map((_, i) => {
                     const lineNum = i + 1
                     const isBreakpoint = (breakpoints[activeTabId] || []).includes(lineNum)
                     return (
-                      <div 
-                        key={i} 
+                      <div
+                        key={i}
                         onClick={() => toggleBreakpoint(lineNum)}
-                        style={{ 
-                          height: '19.5px', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'flex-end', 
+                        style={{
+                          height: '19.5px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
                           paddingRight: '6px',
                           cursor: 'pointer',
                           color: isBreakpoint ? '#ff4d4d' : 'inherit'
                         }}
-                        title={isBreakpoint ? `Breakpoint active on line ${lineNum}` : `Click to toggle breakpoint on line ${lineNum}`}
+                        title={
+                          isBreakpoint
+                            ? `Breakpoint active on line ${lineNum}`
+                            : `Click to toggle breakpoint on line ${lineNum}`
+                        }
                       >
                         {isBreakpoint && (
-                          <span style={{ fontSize: '10px', marginRight: '3px', filter: 'drop-shadow(0 0 3px #ff0055)' }}>
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              marginRight: '3px',
+                              filter: 'drop-shadow(0 0 3px #ff0055)'
+                            }}
+                          >
                             🔴
                           </span>
                         )}
@@ -1353,9 +1952,17 @@ const EditorPage = () => {
                   })}
                 </div>
 
-                <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    position: 'relative',
+                    flex: 1,
+                    height: '100%',
+                    display: 'flex',
+                    overflow: 'hidden'
+                  }}
+                >
                   {/* Syntax Color Highlighting Backdrop Layer */}
-                  <div 
+                  <div
                     ref={leftHighlightRef}
                     style={{
                       position: 'absolute',
@@ -1386,6 +1993,14 @@ const EditorPage = () => {
                     onMouseMove={handleEditorMouseMove}
                     onMouseLeave={handleEditorMouseLeave}
                     onFocus={() => setActivePane('left')}
+                    onContextMenu={(e) => {
+                      e.preventDefault()
+                      setContextMenu({
+                        visible: true,
+                        x: e.clientX,
+                        y: e.clientY
+                      })
+                    }}
                     style={{
                       padding: '10px',
                       fontSize: '13px',
@@ -1405,9 +2020,53 @@ const EditorPage = () => {
                     }}
                   />
 
+                  {isDraggingTab && openTabs.length >= 2 && (
+                    <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        const tabId = e.dataTransfer.getData('draggedTabId')
+                        const tabToSplit = openTabs.find((t) => t.id === tabId)
+                        if (tabToSplit) {
+                          setRightTab(tabToSplit.filename)
+                          setRightCode(tabToSplit.code)
+                          setRightLang(tabToSplit.lang)
+                          setRightFilePath(tabToSplit.path)
+                          setOpenTabs(openTabs.filter((t) => t.id !== tabId))
+                          setIsSplit(true)
+                        }
+                        setIsDraggingTab(false)
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '50%',
+                        height: '100%',
+                        background: 'rgba(0, 229, 255, 0.12)',
+                        borderLeft: '2px dashed var(--accent-color)',
+                        zIndex: 100,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                        color: 'var(--accent-color)',
+                        fontWeight: 'bold',
+                        backdropFilter: 'blur(5px)',
+                        pointerEvents: 'auto'
+                      }}
+                    >
+                      <i
+                        className="bx bx-columns"
+                        style={{ fontSize: '32px', marginBottom: '8px' }}
+                      ></i>
+                      <span>Drop here to Split Side-by-Side</span>
+                    </div>
+                  )}
+
                   {/* Floating Hover Tooltip Popup for Functions & Variables */}
                   {hoverInfo.visible && (
-                    <div 
+                    <div
                       style={{
                         position: 'fixed',
                         top: `${hoverInfo.y}px`,
@@ -1425,21 +2084,47 @@ const EditorPage = () => {
                         maxWidth: '350px'
                       }}
                     >
-                      <div style={{ color: '#00ffaa', fontWeight: 'bold', marginBottom: '2px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+                      <div
+                        style={{
+                          color: '#00ffaa',
+                          fontWeight: 'bold',
+                          marginBottom: '2px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: '8px'
+                        }}
+                      >
                         <span>{hoverInfo.symbol}</span>
-                        <span style={{ color: '#8b949e', fontSize: '10px' }}>Line {hoverInfo.line}</span>
+                        <span style={{ color: '#8b949e', fontSize: '10px' }}>
+                          Line {hoverInfo.line}
+                        </span>
                       </div>
-                      <div style={{ color: '#58a6ff', fontSize: '10px', fontStyle: 'italic', marginBottom: '4px' }}>
+                      <div
+                        style={{
+                          color: '#58a6ff',
+                          fontSize: '10px',
+                          fontStyle: 'italic',
+                          marginBottom: '4px'
+                        }}
+                      >
                         Type: {hoverInfo.type}
                       </div>
-                      <div style={{ background: 'rgba(0,0,0,0.4)', padding: '4px 6px', borderRadius: '4px', color: '#ff79c6', wordBreak: 'break-all' }}>
+                      <div
+                        style={{
+                          background: 'rgba(0,0,0,0.4)',
+                          padding: '4px 6px',
+                          borderRadius: '4px',
+                          color: '#ff79c6',
+                          wordBreak: 'break-all'
+                        }}
+                      >
                         {hoverInfo.value}
                       </div>
                     </div>
                   )}
 
                   {ghostText && (
-                    <div 
+                    <div
                       style={{
                         position: 'absolute',
                         bottom: '10px',
@@ -1455,33 +2140,47 @@ const EditorPage = () => {
                         zIndex: 10
                       }}
                     >
-                      💡 Auto-Suggest (Press Tab): <span style={{ opacity: 0.85, fontStyle: 'italic' }}>{ghostText}</span>
+                      💡 Auto-Suggest (Press Tab):{' '}
+                      <span style={{ opacity: 0.85, fontStyle: 'italic' }}>{ghostText}</span>
                     </div>
                   )}
 
                   {/* Active Error Warning Banner with TAB key autocommit trigger */}
                   {activeError && (
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '50px',
-                      left: '20px',
-                      right: '20px',
-                      background: 'rgba(255,107,107,0.15)',
-                      border: '1px solid #ff6b6b',
-                      color: '#fff',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      zIndex: 10,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      backdropFilter: 'blur(10px)'
-                    }}>
-                      <span>⚠️ <b>Error on Line {activeError.line}:</b> {activeError.msg}</span>
-                      <button 
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: '50px',
+                        left: '20px',
+                        right: '20px',
+                        background: 'rgba(255,107,107,0.15)',
+                        border: '1px solid #ff6b6b',
+                        color: '#fff',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        zIndex: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                    >
+                      <span>
+                        ⚠️ <b>Error on Line {activeError.line}:</b> {activeError.msg}
+                      </span>
+                      <button
                         onClick={autoCorrectError}
-                        style={{ background: '#ff6b6b', border: 'none', color: '#000', borderRadius: '4px', padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                        style={{
+                          background: '#ff6b6b',
+                          border: 'none',
+                          color: '#000',
+                          borderRadius: '4px',
+                          padding: '4px 10px',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
                       >
                         Press TAB to Auto-Correct
                       </button>
@@ -1490,44 +2189,92 @@ const EditorPage = () => {
                 </div>
 
                 {/* VS Code Style Code Minimap Column */}
-                <div 
-                  style={{
-                    width: '90px',
-                    background: 'rgba(0,0,0,0.3)',
-                    borderLeft: '1px solid var(--panel-border)',
-                    overflow: 'hidden',
-                    userSelect: 'none',
-                    padding: '4px 2px',
-                    fontSize: '2px',
-                    lineHeight: '3px',
-                    fontFamily: "'JetBrains Mono', Consolas, monospace",
-                    opacity: 0.75,
-                    pointerEvents: 'none'
-                  }}
-                >
-                  {renderHighlightedCode(leftCode)}
-                </div>
+                {showMinimap ? (
+                  <div
+                    onContextMenu={(e) => {
+                      e.preventDefault()
+                      setShowMinimap(false)
+                    }}
+                    style={{
+                      width: '90px',
+                      background: 'rgba(0,0,0,0.3)',
+                      borderLeft: '1px solid var(--panel-border)',
+                      overflow: 'hidden',
+                      userSelect: 'none',
+                      padding: '4px 2px',
+                      fontSize: '2px',
+                      lineHeight: '3px',
+                      fontFamily: "'JetBrains Mono', Consolas, monospace",
+                      opacity: 0.75,
+                      pointerEvents: 'auto',
+                      cursor: 'context-menu'
+                    }}
+                    title="Right-click to hide minimap"
+                  >
+                    {renderHighlightedCode(leftCode)}
+                  </div>
+                ) : (
+                  <div
+                    onContextMenu={(e) => {
+                      e.preventDefault()
+                      setShowMinimap(true)
+                    }}
+                    style={{
+                      width: '6px',
+                      background: 'rgba(255,255,255,0.02)',
+                      borderLeft: '1px solid var(--panel-border)',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s',
+                      pointerEvents: 'auto'
+                    }}
+                    onMouseEnter={(e) => (e.target.style.background = 'rgba(255,255,255,0.08)')}
+                    onMouseLeave={(e) => (e.target.style.background = 'rgba(255,255,255,0.02)')}
+                    title="Right-click to show minimap"
+                  />
+                )}
               </div>
             )}
           </div>
         ) : (
           /* Split Sideways Editors */
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', height: '100%', overflow: 'hidden' }}>
-            {/* Left Pane */}
-            <div className="editor-pane" style={{
+          <div
+            style={{
               flex: 1,
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: 'row',
               height: '100%',
-              overflow: 'hidden',
-              borderRight: '1px solid var(--panel-border)',
-              background: activePane === 'left' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
-              transition: 'background 0.2s'
-            }} onClick={() => setActivePane('left')}>
-              <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)' }}>
+              overflow: 'hidden'
+            }}
+          >
+            {/* Left Pane */}
+            <div
+              className="editor-pane"
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                overflow: 'hidden',
+                borderRight: '1px solid var(--panel-border)',
+                background: activePane === 'left' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
+                transition: 'background 0.2s'
+              }}
+              onClick={() => setActivePane('left')}
+            >
+              <div
+                className="editor-tabs"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                  background: 'rgba(0,0,0,0.15)',
+                  borderBottom: '1px solid var(--panel-border)'
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', flex: 1, overflowX: 'auto' }}>
-                  {openTabs.map(tab => (
-                    <div 
+                  {openTabs.map((tab) => (
+                    <div
                       key={tab.id}
                       className={`editor-tab ${tab.id === activeTabId ? 'active' : ''}`}
                       onClick={() => setActiveTabId(tab.id)}
@@ -1539,35 +2286,62 @@ const EditorPage = () => {
                         fontSize: '11px',
                         cursor: 'pointer',
                         borderRight: '1px solid var(--panel-border)',
-                        background: tab.id === activeTabId ? 'var(--sidebar-active)' : 'transparent',
+                        background:
+                          tab.id === activeTabId ? 'var(--sidebar-active)' : 'transparent',
                         color: tab.id === activeTabId ? 'var(--accent-color)' : 'var(--text-muted)',
-                        borderTop: tab.id === activeTabId ? '2px solid var(--accent-color)' : '2px solid transparent',
+                        borderTop:
+                          tab.id === activeTabId
+                            ? '2px solid var(--accent-color)'
+                            : '2px solid transparent',
                         whiteSpace: 'nowrap'
                       }}
                     >
                       <i className="bx bx-file" style={{ fontSize: '12px' }}></i>
                       <span>{tab.filename}</span>
-                      <span 
-                        onClick={(e) => handleCloseTab(tab.id, e)} 
-                        style={{ cursor: 'pointer', opacity: 0.6, fontSize: '13px', marginLeft: '4px' }}
+                      <span
+                        onClick={(e) => handleCloseTab(tab.id, e)}
+                        style={{
+                          cursor: 'pointer',
+                          opacity: 0.6,
+                          fontSize: '13px',
+                          marginLeft: '4px'
+                        }}
                       >
                         ×
                       </span>
                     </div>
                   ))}
-                  <button 
-                    onClick={handleNewTab} 
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', padding: '2px 8px', cursor: 'pointer', fontSize: '14px' }}
+                  <button
+                    onClick={handleNewTab}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      padding: '2px 8px',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
                     title="New File Tab"
                   >
                     +
                   </button>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
-                  <button onClick={() => setIsSplit(false)} style={styles.tabActionBtn} title="Merge Editors">
+                  <button
+                    onClick={handleMergeEditors}
+                    style={styles.tabActionBtn}
+                    title="Merge Editors"
+                  >
                     <i className="bx bx-window-close"></i>
                   </button>
-                  <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} style={{ ...styles.tabActionBtn, color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)' }} title="AI Assistant & Adjuster Panel">
+                  <button
+                    onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+                    style={{
+                      ...styles.tabActionBtn,
+                      color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)'
+                    }}
+                    title="AI Assistant & Adjuster Panel"
+                  >
                     <i className="bx bx-bot"></i>
                   </button>
                 </div>
@@ -1575,7 +2349,16 @@ const EditorPage = () => {
               <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                 <div className="line-numbers">
                   {Array.from({ length: getLineCount(leftCode) }).map((_, i) => (
-                    <div key={i} style={{ height: '19.5px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
+                    <div
+                      key={i}
+                      style={{
+                        height: '19.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        paddingRight: '4px'
+                      }}
+                    >
                       {i + 1}
                     </div>
                   ))}
@@ -1606,26 +2389,58 @@ const EditorPage = () => {
             </div>
 
             {/* Right Pane */}
-            <div className="editor-pane" style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%',
-              overflow: 'hidden',
-              background: activePane === 'right' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
-              transition: 'background 0.2s'
-            }} onClick={() => setActivePane('right')}>
-              <div className="editor-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <div
+              className="editor-pane"
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                overflow: 'hidden',
+                background: activePane === 'right' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
+                transition: 'background 0.2s'
+              }}
+              onClick={() => setActivePane('right')}
+            >
+              <div
+                className="editor-tabs"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%'
+                }}
+              >
                 <div className={`editor-tab ${activePane === 'right' ? 'active' : ''}`}>
                   <i className="bx bx-file" style={{ fontSize: '13px', marginRight: '5px' }}></i>
                   <span>{rightTab}</span>
-                  <span style={{ fontSize: '9px', marginLeft: '6px', color: '#ff6b6b', fontWeight: 'bold' }}>RIGHT</span>
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      marginLeft: '6px',
+                      color: '#ff6b6b',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    RIGHT
+                  </span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', paddingRight: '8px' }}>
-                  <button onClick={() => setIsSplit(false)} style={styles.tabActionBtn} title="Merge Editors">
+                  <button
+                    onClick={handleMergeEditors}
+                    style={styles.tabActionBtn}
+                    title="Merge Editors"
+                  >
                     <i className="bx bx-window-close"></i>
                   </button>
-                  <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} style={{ ...styles.tabActionBtn, color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)' }} title="AI Assistant & Adjuster Panel">
+                  <button
+                    onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+                    style={{
+                      ...styles.tabActionBtn,
+                      color: isRightPanelOpen ? 'var(--accent-color)' : 'var(--text-muted)'
+                    }}
+                    title="AI Assistant & Adjuster Panel"
+                  >
                     <i className="bx bx-bot"></i>
                   </button>
                 </div>
@@ -1633,7 +2448,16 @@ const EditorPage = () => {
               <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                 <div className="line-numbers">
                   {Array.from({ length: getLineCount(rightCode) }).map((_, i) => (
-                    <div key={i} style={{ height: '19.5px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '4px' }}>
+                    <div
+                      key={i}
+                      style={{
+                        height: '19.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        paddingRight: '4px'
+                      }}
+                    >
                       {i + 1}
                     </div>
                   ))}
@@ -1645,6 +2469,14 @@ const EditorPage = () => {
                   value={rightCode}
                   onChange={(e) => setRightCode(e.target.value)}
                   onFocus={() => setActivePane('right')}
+                  onContextMenu={(e) => {
+                    e.preventDefault()
+                    setContextMenu({
+                      visible: true,
+                      x: e.clientX,
+                      y: e.clientY
+                    })
+                  }}
                   style={{
                     padding: '10px',
                     fontSize: '13px',
@@ -1666,20 +2498,30 @@ const EditorPage = () => {
         )}
 
         {/* RIGHT SIDE AI CHAT & TEXT ADJUSTER DRAWER */}
-        <div style={{
-          width: isRightPanelOpen ? '320px' : '0px',
-          display: 'flex',
-          flexDirection: 'column',
-          borderLeft: isRightPanelOpen ? '1px solid var(--panel-border)' : 'none',
-          background: 'var(--sidebar-bg)',
-          overflow: 'hidden',
-          transition: 'width 0.2s ease, border 0.2s ease',
-          height: '100%',
-          zIndex: 5
-        }}>
+        <div
+          style={{
+            width: isRightPanelOpen ? '320px' : '0px',
+            display: 'flex',
+            flexDirection: 'column',
+            borderLeft: isRightPanelOpen ? '1px solid var(--panel-border)' : 'none',
+            background: 'var(--sidebar-bg)',
+            overflow: 'hidden',
+            transition: 'width 0.2s ease, border 0.2s ease',
+            height: '100%',
+            zIndex: 5
+          }}
+        >
           {/* Drawer Header Tabs */}
-          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.15)', borderBottom: '1px solid var(--panel-border)', height: '35px', alignItems: 'center' }}>
-            <div 
+          <div
+            style={{
+              display: 'flex',
+              background: 'rgba(0,0,0,0.15)',
+              borderBottom: '1px solid var(--panel-border)',
+              height: '35px',
+              alignItems: 'center'
+            }}
+          >
+            <div
               onClick={() => setRightPanelTab('chat')}
               style={{
                 flex: 1,
@@ -1697,7 +2539,7 @@ const EditorPage = () => {
             >
               AI CHAT
             </div>
-            <div 
+            <div
               onClick={() => setRightPanelTab('format')}
               style={{
                 flex: 1,
@@ -1715,9 +2557,14 @@ const EditorPage = () => {
             >
               ADJUSTER
             </div>
-            <div 
-              onClick={() => setIsRightPanelOpen(false)} 
-              style={{ padding: '0 10px', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '16px' }}
+            <div
+              onClick={() => setIsRightPanelOpen(false)}
+              style={{
+                padding: '0 10px',
+                cursor: 'pointer',
+                color: 'var(--text-muted)',
+                fontSize: '16px'
+              }}
             >
               ×
             </div>
@@ -1726,15 +2573,38 @@ const EditorPage = () => {
           {/* Drawer Body content */}
           {rightPanelTab === 'chat' ? (
             /* AI Chat Tab */
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '10px' }}>
-              <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                padding: '10px'
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  marginBottom: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
                 {chatMessages.map((msg, idx) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     style={{
                       alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                      background: msg.sender === 'user' ? 'rgba(0, 122, 204, 0.2)' : 'rgba(255, 255, 255, 0.04)',
-                      border: msg.sender === 'user' ? '1px solid rgba(0, 122, 204, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      background:
+                        msg.sender === 'user'
+                          ? 'rgba(0, 122, 204, 0.2)'
+                          : 'rgba(255, 255, 255, 0.04)',
+                      border:
+                        msg.sender === 'user'
+                          ? '1px solid rgba(0, 122, 204, 0.4)'
+                          : '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '8px',
                       padding: '8px 12px',
                       maxWidth: '85%',
@@ -1747,9 +2617,16 @@ const EditorPage = () => {
                   </div>
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: '6px', borderTop: '1px solid var(--panel-border)', paddingTop: '10px' }}>
-                <input 
-                  type="text" 
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  borderTop: '1px solid var(--panel-border)',
+                  paddingTop: '10px'
+                }}
+              >
+                <input
+                  type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
@@ -1765,7 +2642,7 @@ const EditorPage = () => {
                     outline: 'none'
                   }}
                 />
-                <button 
+                <button
                   onClick={handleSendChatMessage}
                   style={{
                     background: 'var(--accent-color)',
@@ -1783,12 +2660,21 @@ const EditorPage = () => {
             </div>
           ) : (
             /* Adjuster / Formatter Settings Tab */
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '10px', overflowY: 'auto', gap: '10px' }}>
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '10px',
+                overflowY: 'auto',
+                gap: '10px'
+              }}
+            >
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                Enter custom replacement rules to adjust the main editor code. 
-                Use format {"replace:search->replace"} (one per line).
+                Enter custom replacement rules to adjust the main editor code. Use format{' '}
+                {'replace:search->replace'} (one per line).
               </div>
-              <textarea 
+              <textarea
                 value={formatRules}
                 onChange={(e) => setFormatRules(e.target.value)}
                 style={{
@@ -1805,7 +2691,7 @@ const EditorPage = () => {
                   minHeight: '200px'
                 }}
               />
-              <button 
+              <button
                 onClick={handleApplyFormatRules}
                 style={{
                   background: 'linear-gradient(135deg, #0e639c, #1177bb)',
@@ -1823,20 +2709,163 @@ const EditorPage = () => {
             </div>
           )}
         </div>
-
       </div>
 
       {/* DRAGGABLE HORIZONTAL SPLIT RESIZER */}
-      <div 
-        className={`resizer-h ${isResizingTerminal ? 'resizing' : ''}`} 
+      <div
+        className={`resizer-h ${isResizingTerminal ? 'resizing' : ''}`}
         onMouseDown={handleTerminalMouseDown}
-        style={{ height: '3px', cursor: 'row-resize', background: 'var(--panel-border)', zIndex: 10 }}
+        style={{
+          height: '3px',
+          cursor: 'row-resize',
+          background: 'var(--panel-border)',
+          zIndex: 10
+        }}
       />
 
       {/* Terminal View panel */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Terminal isRunning={isRunning} />
       </div>
+
+      {/* Custom Right-click Context Menu */}
+      {contextMenu.visible && (
+        <div
+          style={{
+            position: 'fixed',
+            top: `${contextMenu.y}px`,
+            left: `${contextMenu.x}px`,
+            background: '#181a1f',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '6px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+            padding: '4px 0',
+            zIndex: 10000,
+            minWidth: '240px',
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+          }}
+        >
+          {[
+            { label: 'Go to Definition', shortcut: 'F12' },
+            { label: 'Go to Type Definition' },
+            { label: 'Go to Source Definition' },
+            { label: 'Go to Implementations', shortcut: 'Ctrl+F12' },
+            { label: 'Go to References', shortcut: 'Shift+F12' },
+            { label: 'Peek', hasSub: true },
+            { divider: true },
+            { label: 'Find All References', shortcut: 'Shift+Alt+F12' },
+            { label: 'Find All Implementations' },
+            { label: 'Show Call Hierarchy', shortcut: 'Shift+Alt+H' },
+            { divider: true },
+            { label: 'Rename Symbol', shortcut: 'F2' },
+            { label: 'Change All Occurrences', shortcut: 'Ctrl+F2' },
+            { label: 'Format Document', shortcut: 'Shift+Alt+F', action: () => handleFormat() },
+            { label: 'Refactor...', shortcut: 'Ctrl+Shift+R' },
+            { label: 'Source Action...' },
+            { divider: true },
+            { label: 'Cut', shortcut: 'Ctrl+X', action: () => document.execCommand('cut') },
+            { label: 'Copy', shortcut: 'Ctrl+C', action: () => document.execCommand('copy') },
+            {
+              label: 'Paste',
+              shortcut: 'Ctrl+V',
+              action: async () => {
+                try {
+                  const text = await navigator.clipboard.readText()
+                  setCode(code + text)
+                } catch (e) {}
+              }
+            },
+            { divider: true },
+            {
+              label: '🐳 Docker: Run File in Container',
+              action: () => {
+                setTerminalLines((prev) => [
+                  ...prev,
+                  {
+                    text: `[DOCKER] Running active file "${activeTab}" in node:18-alpine container...`,
+                    className: 'warning'
+                  },
+                  {
+                    text: `xenithra@studio:~$ docker run --rm -v $(pwd):/app -w /app node:18-alpine node ${activeTab}`,
+                    className: 'prompt'
+                  },
+                  { text: `Executing container entrypoint...`, className: 'muted' },
+                  { text: `Success! Execution exited with code 0`, className: 'success' },
+                  { text: `xenithra@studio:~$`, className: 'prompt' }
+                ])
+              }
+            },
+            {
+              label: '🔥 Firebase: Deploy Current Project',
+              action: () => {
+                setTerminalLines((prev) => [
+                  ...prev,
+                  { text: `[FIREBASE] Preparing deployment checklist...`, className: 'warning' },
+                  {
+                    text: `xenithra@studio:~$ firebase deploy --only hosting --project ${localStorage.getItem('firebase:projectId') || 'xenithra-app-1002'}`,
+                    className: 'prompt'
+                  },
+                  {
+                    text: `Hosting URL: https://${localStorage.getItem('firebase:projectId') || 'xenithra-app-1002'}.web.app`,
+                    className: 'success'
+                  },
+                  { text: `xenithra@studio:~$`, className: 'prompt' }
+                ])
+              }
+            },
+            { divider: true },
+            { label: 'Command Palette...', shortcut: 'Ctrl+Shift+P' }
+          ].map((item, idx) => {
+            if (item.divider) {
+              return (
+                <div
+                  key={idx}
+                  style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }}
+                />
+              )
+            }
+            return (
+              <div
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (item.action) item.action()
+                  setContextMenu({ visible: false, x: 0, y: 0 })
+                }}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '6px 14px',
+                  fontSize: '11px',
+                  color: '#c9d1d9',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                  e.currentTarget.style.color = 'var(--accent-color)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = '#c9d1d9'
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {item.label}
+                  {item.hasSub && <span style={{ fontSize: '9px', opacity: 0.5 }}>▶</span>}
+                </span>
+                {item.shortcut && (
+                  <span style={{ fontSize: '10px', color: '#8b949e', marginLeft: '24px' }}>
+                    {item.shortcut}
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

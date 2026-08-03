@@ -1,4 +1,3 @@
-
 /**
  * Reusable Input Component
  * @param {string} type - Input type (text, email, password, number, etc.)

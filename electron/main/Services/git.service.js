@@ -4,8 +4,8 @@ import path from 'path'
 
 /**
  * Runs a git command in target directory
- * @param {string} command 
- * @param {string} cwd 
+ * @param {string} command
+ * @param {string} cwd
  * @returns {Promise<string>}
  */
 function runGitCmd(command, cwd) {
@@ -21,7 +21,7 @@ function runGitCmd(command, cwd) {
 
 /**
  * Parses and returns all Git metadata for a given workspace path
- * @param {string} workspacePath 
+ * @param {string} workspacePath
  */
 export async function getGitInfo(workspacePath) {
   const targetDir = workspacePath && fs.existsSync(workspacePath) ? workspacePath : process.cwd()
@@ -51,7 +51,7 @@ export async function getGitInfo(workspacePath) {
     let branches = []
     try {
       const branchesRaw = await runGitCmd('git branch -a', targetDir)
-      branches = branchesRaw.split('\n').map(b => b.trim().replace('* ', ''))
+      branches = branchesRaw.split('\n').map((b) => b.trim().replace('* ', ''))
     } catch (e) {}
 
     // Git Status (changed/untracked files)
@@ -59,7 +59,7 @@ export async function getGitInfo(workspacePath) {
     try {
       const statusRaw = await runGitCmd('git status --porcelain', targetDir)
       if (statusRaw) {
-        statusFiles = statusRaw.split('\n').map(line => {
+        statusFiles = statusRaw.split('\n').map((line) => {
           const code = line.substring(0, 2).trim()
           const file = line.substring(3).trim()
           let statusText = 'Modified'
@@ -77,7 +77,7 @@ export async function getGitInfo(workspacePath) {
     try {
       const logsRaw = await runGitCmd('git log -n 15 --pretty=format:"%h|%an|%ar|%s"', targetDir)
       if (logsRaw) {
-        commitLogs = logsRaw.split('\n').map(line => {
+        commitLogs = logsRaw.split('\n').map((line) => {
           const [hash, author, date, message] = line.split('|')
           return { hash, author, date, message }
         })
@@ -111,8 +111,8 @@ export async function getGitInfo(workspacePath) {
 
 /**
  * Clones a Git repository into a destination path
- * @param {string} repoUrl 
- * @param {string} targetDirectory 
+ * @param {string} repoUrl
+ * @param {string} targetDirectory
  */
 export async function cloneGitRepo(repoUrl, targetDirectory) {
   if (!repoUrl) return { success: false, error: 'Repository URL is required.' }
@@ -128,8 +128,8 @@ export async function cloneGitRepo(repoUrl, targetDirectory) {
 
 /**
  * Stage all and commit changes
- * @param {string} workspacePath 
- * @param {string} message 
+ * @param {string} workspacePath
+ * @param {string} message
  */
 export async function commitGitChanges(workspacePath, message) {
   const targetDir = workspacePath || process.cwd()
@@ -146,7 +146,7 @@ export async function commitGitChanges(workspacePath, message) {
 
 /**
  * Push to remote
- * @param {string} workspacePath 
+ * @param {string} workspacePath
  */
 export async function pushGitChanges(workspacePath) {
   const targetDir = workspacePath || process.cwd()
@@ -160,9 +160,16 @@ export async function pushGitChanges(workspacePath) {
       const output = await runGitCmd('git push', targetDir)
       return { success: true, output: output || 'Pushed successfully.' }
     } catch (err) {
-      if (err.message.includes('no upstream branch') || err.message.includes('--set-upstream') || err.message.includes('has no upstream')) {
+      if (
+        err.message.includes('no upstream branch') ||
+        err.message.includes('--set-upstream') ||
+        err.message.includes('has no upstream')
+      ) {
         const output = await runGitCmd(`git push -u origin ${currentBranch}`, targetDir)
-        return { success: true, output: output || `Pushed and set upstream to origin/${currentBranch}` }
+        return {
+          success: true,
+          output: output || `Pushed and set upstream to origin/${currentBranch}`
+        }
       }
       throw err
     }
@@ -173,7 +180,7 @@ export async function pushGitChanges(workspacePath) {
 
 /**
  * Pull from remote
- * @param {string} workspacePath 
+ * @param {string} workspacePath
  */
 export async function pullGitChanges(workspacePath) {
   const targetDir = workspacePath || process.cwd()
@@ -197,8 +204,8 @@ export async function pullGitChanges(workspacePath) {
 
 /**
  * Get diff of a specific file
- * @param {string} workspacePath 
- * @param {string} filePath 
+ * @param {string} workspacePath
+ * @param {string} filePath
  */
 export async function getGitFileDiff(workspacePath, filePath) {
   const targetDir = workspacePath || process.cwd()

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 const Bottom = () => {
   return (
@@ -9,11 +9,15 @@ const Bottom = () => {
       </div>
       <div className="stdin-options">
         Standard Input:
-        <label><input type="radio" name="stdin" defaultChecked /> Interactive Console</label>
-        <label><input type="radio" name="stdin" /> Text</label>
+        <label>
+          <input type="radio" name="stdin" defaultChecked /> Interactive Console
+        </label>
+        <label>
+          <input type="radio" name="stdin" /> Text
+        </label>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Bottom;
+export default Bottom

@@ -1,0 +1,48 @@
+{
+  "containers": [
+    {
+      "id": "c101a20b",
+      "image": "node:18-alpine",
+      "command": "npm start",
+      "status": "Up 2 hours (healthy)",
+      "name": "xenithra_web_app",
+      "isRunning": true
+    },
+    {
+      "id": "d892f11c",
+      "image": "python:3.11-slim",
+      "command": "python main.py",
+      "status": "Exited (0) 15 mins ago",
+      "name": "xenithra_ml_service",
+      "isRunning": false
+    },
+    {
+      "id": "f94112e3",
+      "image": "redis:7.0-alpine",
+      "command": "redis-server",
+      "status": "Up 4 hours",
+      "name": "xenithra_cache_redis",
+      "isRunning": true
+    }
+  ],
+  "images": [
+    {
+      "repository": "node",
+      "tag": "18-alpine",
+      "id": "a91f82b7",
+      "size": "175MB"
+    },
+    {
+      "repository": "python",
+      "tag": "3.11-slim",
+      "id": "b82d41a9",
+      "size": "124MB"
+    },
+    {
+      "repository": "redis",
+      "tag": "7.0-alpine",
+      "id": "c73e109f",
+      "size": "32MB"
+    }
+  ]
+}

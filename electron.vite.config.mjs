@@ -12,7 +12,18 @@ export default defineConfig({
         entry: 'electron/main/index.js'
       },
       rollupOptions: {
-        external: ['express', 'path', 'cookie-parser', 'express-session', 'cors', 'dotenv', 'bcryptjs', 'jsonwebtoken', 'formidable', 'mongoose']
+        external: [
+          'express',
+          'path',
+          'cookie-parser',
+          'express-session',
+          'cors',
+          'dotenv',
+          'bcryptjs',
+          'jsonwebtoken',
+          'formidable',
+          'mongoose'
+        ]
       }
     }
   },

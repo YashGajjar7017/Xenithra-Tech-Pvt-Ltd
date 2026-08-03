@@ -4,18 +4,68 @@ import fs from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { createRequire } from 'module'
 import { start } from './api.js'
-import { initTerminalSession, writeToTerminal, killTerminalSession, executeTerminalCommand } from './Services/terminal.service.js'
-import { startLiveServer, stopLiveServer, getLiveServerStatus } from './Services/liveServer.service.js'
-import { getGitInfo, cloneGitRepo, commitGitChanges, pushGitChanges, pullGitChanges, getGitFileDiff } from './Services/git.service.js'
+import {
+  initTerminalSession,
+  writeToTerminal,
+  killTerminalSession,
+  executeTerminalCommand
+} from './Services/terminal.service.js'
+import {
+  startLiveServer,
+  stopLiveServer,
+  getLiveServerStatus
+} from './Services/liveServer.service.js'
+import {
+  getGitInfo,
+  cloneGitRepo,
+  commitGitChanges,
+  pushGitChanges,
+  pullGitChanges,
+  getGitFileDiff
+} from './Services/git.service.js'
 import { searchWorkspace } from './Services/search.service.js'
-import { predictInlineCompletion, generateLocalAIChatResponse, trainLocalMLModel } from './Services/localML.service.js'
-import { getDockerContainers, getDockerImages, startDockerContainer, stopDockerContainer, restartDockerContainer, getDockerLogs } from './Services/docker.service.js'
-import { createGitHubGist, createRtcRoom, joinRtcRoom, syncRtcCode } from './Services/collaboration.service.js'
-import { getXamppStatus, checkSystemInstalled, startPhpService, startMysqlService, stopXamppService } from './Services/xampp.service.js'
+import {
+  predictInlineCompletion,
+  generateLocalAIChatResponse,
+  trainLocalMLModel
+} from './Services/localML.service.js'
+import {
+  getDockerContainers,
+  getDockerImages,
+  startDockerContainer,
+  stopDockerContainer,
+  restartDockerContainer,
+  getDockerLogs
+} from './Services/docker.service.js'
+import {
+  createGitHubGist,
+  createRtcRoom,
+  joinRtcRoom,
+  syncRtcCode
+} from './Services/collaboration.service.js'
+import {
+  getXamppStatus,
+  checkSystemInstalled,
+  startPhpService,
+  startMysqlService,
+  stopXamppService
+} from './Services/xampp.service.js'
+import {
+  getFirebaseConfig,
+  saveFirebaseConfig,
+  disconnectFirebase,
+  getFirebaseUsers,
+  addFirebaseUser,
+  deleteFirebaseUser,
+  getFirestoreCollections,
+  addFirestoreDocument,
+  deleteFirestoreDocument
+} from './Services/firebase.service.js'
 
 const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
 
 const xmlFilePath = join(app.getPath('temp'), 'temp_extensions.xml')
+const storeXmlFilePath = join(app.getPath('temp'), 'store_extensions.xml')
 
 // Register custom deep link protocol: xenithra://
 if (process.defaultApp) {
@@ -50,7 +100,7 @@ if (!gotTheLock) {
   app.quit()
 } else {
   app.on('second-instance', (_event, commandLine) => {
-    const deepLinkUrl = commandLine.find(arg => arg.startsWith('xenithra://'))
+    const deepLinkUrl = commandLine.find((arg) => arg.startsWith('xenithra://'))
     if (deepLinkUrl) {
       handleDeepLinkUrl(deepLinkUrl)
     }
@@ -81,9 +131,68 @@ function parseExtensionsXml(xmlString) {
   return extensions
 }
 
+function parseStoreExtensionsXml(xmlString) {
+  const extensions = []
+
+  // 1. Check if it has tag-based format: <extension> ... </extension>
+  const extBlocks = xmlString.match(/<extension[\s\S]*?>[\s\S]*?<\/extension>/gi) || []
+  if (extBlocks.length > 0) {
+    for (const block of extBlocks) {
+      const idMatch = block.match(/<id>([\s\S]*?)<\/id>/i)
+      const nameMatch = block.match(/<name>([\s\S]*?)<\/name>/i)
+      const verMatch = block.match(/<version>([\s\S]*?)<\/version>/i)
+      const descMatch = block.match(/<description>([\s\S]*?)<\/description>/i)
+
+      const startTagMatch = block.match(/<extension\s+([^>]+)>/i)
+      let attrs = {}
+      if (startTagMatch) {
+        const attrRegex = /(\w+)="([^"]*)"/g
+        let attrMatch
+        while ((attrMatch = attrRegex.exec(startTagMatch[1])) !== null) {
+          attrs[attrMatch[1]] = attrMatch[2]
+        }
+      }
+
+      const id = idMatch ? idMatch[1].trim() : attrs.id
+      const name = nameMatch ? nameMatch[1].trim() : attrs.name
+      const version = verMatch ? verMatch[1].trim() : attrs.version || '1.0.0'
+      const description = descMatch ? descMatch[1].trim() : attrs.description || ''
+
+      if (id && name) {
+        extensions.push({ id, name, version, description })
+      }
+    }
+  }
+
+  // 2. Check if we missed any self-closing tags: <extension id="..." name="..." />
+  const selfClosingRegex = /<extension\s+([^>]+)\s*\/>/g
+  let match
+  while ((match = selfClosingRegex.exec(xmlString)) !== null) {
+    const attrsStr = match[1]
+    const attrs = {}
+    const attrRegex = /(\w+)="([^"]*)"/g
+    let attrMatch
+    while ((attrMatch = attrRegex.exec(attrsStr)) !== null) {
+      attrs[attrMatch[1]] = attrMatch[2]
+    }
+    if (attrs.id && attrs.name) {
+      if (!extensions.some((e) => e.id === attrs.id)) {
+        extensions.push({
+          id: attrs.id,
+          name: attrs.name,
+          version: attrs.version || '1.0.0',
+          description: attrs.description || ''
+        })
+      }
+    }
+  }
+
+  return extensions
+}
+
 function generateExtensionsXml(extensions) {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<extensions>\n'
-  extensions.forEach(ext => {
+  extensions.forEach((ext) => {
     xml += `  <extension id="${ext.id}" name="${ext.name}" version="${ext.version || '1.0.0'}" description="${ext.description || ''}" />\n`
   })
   xml += '</extensions>\n'
@@ -97,7 +206,7 @@ function createWindow() {
     height: 1170,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon: icon, // Global icon for Windows/Linux/macOS window decoration
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -125,14 +234,16 @@ function createWindow() {
                 properties: ['openFile', 'multiSelections']
               })
               if (!canceled && filePaths && filePaths.length) {
-                const filesData = await Promise.all(filePaths.map(async (filePath) => {
-                  try {
-                    const content = await fs.promises.readFile(filePath, 'utf-8')
-                    return { path: filePath, content, name: path.basename(filePath) }
-                  } catch (e) {
-                    return { path: filePath, content: '', name: path.basename(filePath) }
-                  }
-                }))
+                const filesData = await Promise.all(
+                  filePaths.map(async (filePath) => {
+                    try {
+                      const content = await fs.promises.readFile(filePath, 'utf-8')
+                      return { path: filePath, content, name: path.basename(filePath) }
+                    } catch (e) {
+                      return { path: filePath, content: '', name: path.basename(filePath) }
+                    }
+                  })
+                )
                 mainWindow.webContents.send('open-files', filesData)
               }
             }
@@ -182,7 +293,12 @@ function createWindow() {
           { role: 'toggledevtools' }
         ]
       },
-      { role: 'help', submenu: [{ label: 'Learn More', click: () => shell.openExternal('https://electronjs.org') }] }
+      {
+        role: 'help',
+        submenu: [
+          { label: 'Learn More', click: () => shell.openExternal('https://electronjs.org') }
+        ]
+      }
     ]
 
     Menu.setApplicationMenu(null)
@@ -198,14 +314,28 @@ function createWindow() {
 
   mainWindow.webContents.on('did-finish-load', () => {
     const args = process.argv
-    const deepLinkArg = args.find(arg => arg && arg.startsWith('xenithra://'))
+    const deepLinkArg = args.find((arg) => arg && arg.startsWith('xenithra://'))
     if (deepLinkArg) {
       handleDeepLinkUrl(deepLinkArg)
     }
 
-    const filePathArg = args.find(arg => {
-      return arg && !arg.startsWith('--') && !arg.includes('node_modules') && !arg.includes('electron') &&
-        (arg.endsWith('.js') || arg.endsWith('.html') || arg.endsWith('.css') || arg.endsWith('.py') || arg.endsWith('.c') || arg.endsWith('.cpp') || arg.endsWith('.cs') || arg.endsWith('.dart') || arg.endsWith('.json') || arg.endsWith('.md'))
+    const filePathArg = args.find((arg) => {
+      return (
+        arg &&
+        !arg.startsWith('--') &&
+        !arg.includes('node_modules') &&
+        !arg.includes('electron') &&
+        (arg.endsWith('.js') ||
+          arg.endsWith('.html') ||
+          arg.endsWith('.css') ||
+          arg.endsWith('.py') ||
+          arg.endsWith('.c') ||
+          arg.endsWith('.cpp') ||
+          arg.endsWith('.cs') ||
+          arg.endsWith('.dart') ||
+          arg.endsWith('.json') ||
+          arg.endsWith('.md'))
+      )
     })
 
     if (filePathArg) {
@@ -253,7 +383,7 @@ app.whenReady().then(() => {
   // Disable autofill to prevent DevTools errors
   app.commandLine.appendSwitch('disable-features', 'Autofill')
 
-// IPC test
+  // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
   // File open dialog IPC
@@ -262,13 +392,16 @@ app.whenReady().then(() => {
     const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile'],
       filters: [
-        { name: 'Code Files', extensions: ['js', 'jsx', 'ts', 'tsx', 'py', 'cpp', 'c', 'java', 'html', 'css', 'json'] },
+        {
+          name: 'Code Files',
+          extensions: ['js', 'jsx', 'ts', 'tsx', 'py', 'cpp', 'c', 'java', 'html', 'css', 'json']
+        },
         { name: 'All Files', extensions: ['*'] }
       ]
     })
-    
+
     if (canceled || !filePaths.length) return null
-    
+
     const filePath = filePaths[0]
     try {
       const content = await fs.promises.readFile(filePath, 'utf-8')
@@ -286,13 +419,16 @@ app.whenReady().then(() => {
       title: 'Save Code File',
       defaultPath: defaultName || 'untitled.js',
       filters: [
-        { name: 'Code Files', extensions: ['js', 'jsx', 'ts', 'tsx', 'py', 'cpp', 'c', 'java', 'html', 'css', 'json'] },
+        {
+          name: 'Code Files',
+          extensions: ['js', 'jsx', 'ts', 'tsx', 'py', 'cpp', 'c', 'java', 'html', 'css', 'json']
+        },
         { name: 'All Files', extensions: ['*'] }
       ]
     })
-    
+
     if (canceled || !filePath) return null
-    
+
     try {
       await fs.promises.writeFile(filePath, content, 'utf-8')
       return { path: filePath, name: path.basename(filePath) }
@@ -375,6 +511,135 @@ app.whenReady().then(() => {
     }
   })
 
+  // Store Extensions XML/DB Handlers
+  ipcMain.handle('extensions:getStore', async () => {
+    try {
+      if (!fs.existsSync(storeXmlFilePath)) {
+        const defaultStoreXml =
+          '<?xml version="1.0" encoding="UTF-8"?>\n' +
+          '<extensions>\n' +
+          '  <extension id="firebase-extension" name="Firebase Console Extension" version="1.0.0" description="Firebase hosting deployment, auth database viewer, and firestore client." />\n' +
+          '  <extension id="github-theme" name="GitHub Theme Pack" version="1.2.0" description="Clean GitHub dark and light themes." />\n' +
+          '  <extension id="python-diagnostics" name="Python Diagnostics" version="2.1.0" description="Real-time linting, formatting and troubleshooting." />\n' +
+          '  <extension id="cpp-toolchain" name="C++ Compiler Suite" version="1.0.5" description="Enables C++ execution environment and flags." />\n' +
+          '  <extension id="markdown-preview" name="Markdown Previewer" version="1.5.0" description="Renders Markdown documentation in side panel." />\n' +
+          '  <extension id="vim-keybindings" name="Vim Keybindings" version="0.9.0" description="Vim style inputs and movements in editor." />\n' +
+          '  <extension id="devtools-helper" name="DevTools Helper" version="1.1.0" description="Extra debugging utilities and log consoles." />\n' +
+          '</extensions>\n'
+        await fs.promises.writeFile(storeXmlFilePath, defaultStoreXml, 'utf-8')
+        return parseStoreExtensionsXml(defaultStoreXml)
+      }
+      const content = await fs.promises.readFile(storeXmlFilePath, 'utf-8')
+      return parseStoreExtensionsXml(content)
+    } catch (err) {
+      console.error('Error reading store extensions XML:', err)
+      return []
+    }
+  })
+
+  const saveStoreXml = async (extensions) => {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<extensions>\n'
+    extensions.forEach((ext) => {
+      xml += `  <extension id="${ext.id}" name="${ext.name}" version="${ext.version || '1.0.0'}" description="${ext.description || ''}" />\n`
+    })
+    xml += '</extensions>\n'
+    await fs.promises.writeFile(storeXmlFilePath, xml, 'utf-8')
+  }
+
+  ipcMain.handle('extensions:uploadStoreXmlContent', async (_event, xmlContent) => {
+    try {
+      const newExts = parseStoreExtensionsXml(xmlContent)
+      if (!newExts || newExts.length === 0)
+        return { success: false, message: 'Invalid XML format or no extensions found.' }
+
+      const currentContent = fs.existsSync(storeXmlFilePath)
+        ? await fs.promises.readFile(storeXmlFilePath, 'utf-8')
+        : '<extensions></extensions>'
+      const currentExts = parseStoreExtensionsXml(currentContent)
+
+      let addedCount = 0
+      newExts.forEach((newExt) => {
+        if (!currentExts.some((e) => e.id === newExt.id)) {
+          currentExts.push(newExt)
+          addedCount++
+        }
+      })
+
+      await saveStoreXml(currentExts)
+      return {
+        success: true,
+        message: `Successfully added ${addedCount} extension(s) to store database.`,
+        extensions: currentExts
+      }
+    } catch (err) {
+      console.error('Error uploading XML content:', err)
+      return { success: false, message: err.message }
+    }
+  })
+
+  ipcMain.handle('extensions:uploadStore', async (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    const { canceled, filePaths } = await dialog.showOpenDialog(window, {
+      title: 'Select Extension XML File',
+      filters: [{ name: 'XML Files', extensions: ['xml'] }],
+      properties: ['openFile']
+    })
+    if (canceled || !filePaths.length) return null
+    try {
+      const xmlContent = await fs.promises.readFile(filePaths[0], 'utf-8')
+      const newExts = parseStoreExtensionsXml(xmlContent)
+      if (!newExts || newExts.length === 0)
+        return { success: false, message: 'No valid extensions found in XML.' }
+
+      const currentContent = fs.existsSync(storeXmlFilePath)
+        ? await fs.promises.readFile(storeXmlFilePath, 'utf-8')
+        : '<extensions></extensions>'
+      const currentExts = parseStoreExtensionsXml(currentContent)
+
+      let addedCount = 0
+      newExts.forEach((newExt) => {
+        if (!currentExts.some((e) => e.id === newExt.id)) {
+          currentExts.push(newExt)
+          addedCount++
+        }
+      })
+
+      await saveStoreXml(currentExts)
+      return {
+        success: true,
+        message: `Added ${addedCount} extensions from ${path.basename(filePaths[0])}.`,
+        extensions: currentExts
+      }
+    } catch (err) {
+      return { success: false, message: err.message }
+    }
+  })
+
+  // Firebase IPC Handlers
+  ipcMain.handle('firebase:getConfig', () => getFirebaseConfig())
+  ipcMain.handle('firebase:saveConfig', (_event, projectId, apiKey) =>
+    saveFirebaseConfig(projectId, apiKey)
+  )
+  ipcMain.handle('firebase:disconnect', () => disconnectFirebase())
+  ipcMain.handle('firebase:getUsers', () => getFirebaseUsers())
+  ipcMain.handle('firebase:addUser', (_event, email, password) => addFirebaseUser(email, password))
+  ipcMain.handle('firebase:deleteUser', (_event, uid) => deleteFirebaseUser(uid))
+  ipcMain.handle('firebase:getCollections', () => getFirestoreCollections())
+  ipcMain.handle('firebase:addDocument', (_event, col, docId, data) =>
+    addFirestoreDocument(col, docId, data)
+  )
+  ipcMain.handle('firebase:deleteDocument', (_event, col, docId) =>
+    deleteFirestoreDocument(col, docId)
+  )
+  ipcMain.handle('firebase:deploy', async (_event, projectId) => {
+    // Simulate firebase hosting deploy
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true, url: `https://${projectId}.web.app` })
+      }, 5000)
+    })
+  })
+
   // Terminal Session IPC Handlers
   ipcMain.handle('terminal:init', async (event, cwd) => {
     const window = BrowserWindow.fromWebContents(event.sender)
@@ -397,18 +662,30 @@ app.whenReady().then(() => {
   // Git IPC Handlers
   ipcMain.handle('git:info', (_event, workspacePath) => getGitInfo(workspacePath))
   ipcMain.handle('git:clone', (_event, repoUrl, targetDir) => cloneGitRepo(repoUrl, targetDir))
-  ipcMain.handle('git:commit', (_event, workspacePath, message) => commitGitChanges(workspacePath, message))
+  ipcMain.handle('git:commit', (_event, workspacePath, message) =>
+    commitGitChanges(workspacePath, message)
+  )
   ipcMain.handle('git:push', (_event, workspacePath) => pushGitChanges(workspacePath))
   ipcMain.handle('git:pull', (_event, workspacePath) => pullGitChanges(workspacePath))
-  ipcMain.handle('git:diff', (_event, workspacePath, filePath) => getGitFileDiff(workspacePath, filePath))
+  ipcMain.handle('git:diff', (_event, workspacePath, filePath) =>
+    getGitFileDiff(workspacePath, filePath)
+  )
 
   // Search IPC Handlers
-  ipcMain.handle('search:workspace', (_event, workspacePath, query, options) => searchWorkspace(workspacePath, query, options))
+  ipcMain.handle('search:workspace', (_event, workspacePath, query, options) =>
+    searchWorkspace(workspacePath, query, options)
+  )
 
   // Local ML IPC Handlers
-  ipcMain.handle('ml:suggest', (_event, fullCode, lineIndex, lineContent, lang) => predictInlineCompletion(fullCode, lineIndex, lineContent, lang))
-  ipcMain.handle('ml:train', (_event, prefix, completion, lang) => trainLocalMLModel(prefix, completion, lang))
-  ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename) => generateLocalAIChatResponse(prompt, code, lang, filename))
+  ipcMain.handle('ml:suggest', (_event, fullCode, lineIndex, lineContent, lang) =>
+    predictInlineCompletion(fullCode, lineIndex, lineContent, lang)
+  )
+  ipcMain.handle('ml:train', (_event, prefix, completion, lang) =>
+    trainLocalMLModel(prefix, completion, lang)
+  )
+  ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename) =>
+    generateLocalAIChatResponse(prompt, code, lang, filename)
+  )
 
   // Docker IPC Handlers
   ipcMain.handle('docker:containers', () => getDockerContainers())
@@ -432,10 +709,14 @@ app.whenReady().then(() => {
   ipcMain.handle('workspace:saveXml', async (_event, data) => {
     try {
       const xmlPath = join(app.getPath('userData'), 'user_workspace_profile.xml')
-      const openTabsXml = (data.openTabs || []).map(t => `
+      const openTabsXml = (data.openTabs || [])
+        .map(
+          (t) => `
     <tab id="${t.id || ''}" filename="${t.filename || ''}" lang="${t.lang || ''}">
       <path>${t.path || ''}</path>
-    </tab>`).join('')
+    </tab>`
+        )
+        .join('')
 
       const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <userWorkspaceProfile version="1.0">
@@ -465,7 +746,9 @@ app.whenReady().then(() => {
   })
 
   // GitHub Gist & RTC IPC Handlers
-  ipcMain.handle('github:shareGist', (_event, filename, content, desc, isPublic, token) => createGitHubGist(filename, content, desc, isPublic, token))
+  ipcMain.handle('github:shareGist', (_event, filename, content, desc, isPublic, token) =>
+    createGitHubGist(filename, content, desc, isPublic, token)
+  )
   ipcMain.handle('rtc:createRoom', (_event, initialCode) => createRtcRoom('host_user', initialCode))
   ipcMain.handle('rtc:joinRoom', (_event, roomCode) => joinRtcRoom('peer_user', roomCode))
   ipcMain.handle('rtc:sync', (_event, roomCode, text, pos) => syncRtcCode(roomCode, text, pos))
@@ -506,7 +789,7 @@ async function readDirTree(dirPath) {
       return null
     }
     const key = currentPath
-    
+
     if (stat.isDirectory()) {
       if (name === 'node_modules' || name === 'dist' || name === 'out') {
         return null
@@ -531,7 +814,29 @@ async function readDirTree(dirPath) {
     } else {
       let content = ''
       const ext = path.extname(currentPath).toLowerCase()
-      const textExtensions = ['.js', '.jsx', '.ts', '.tsx', '.py', '.c', '.cpp', '.cs', '.dart', '.html', '.css', '.json', '.md', '.txt', '.env', '.gitignore', '.yaml', '.yml', '.xml', '.sh', '']
+      const textExtensions = [
+        '.js',
+        '.jsx',
+        '.ts',
+        '.tsx',
+        '.py',
+        '.c',
+        '.cpp',
+        '.cs',
+        '.dart',
+        '.html',
+        '.css',
+        '.json',
+        '.md',
+        '.txt',
+        '.env',
+        '.gitignore',
+        '.yaml',
+        '.yml',
+        '.xml',
+        '.sh',
+        ''
+      ]
       if (textExtensions.includes(ext) || currentPath.includes('.git') || stat.size < 500000) {
         try {
           content = await fs.promises.readFile(currentPath, 'utf-8')

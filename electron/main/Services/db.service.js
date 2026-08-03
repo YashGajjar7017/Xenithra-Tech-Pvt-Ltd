@@ -59,7 +59,7 @@ export const writeUsers = (users) => {
 export const findUser = (usernameOrEmail) => {
   const users = readUsers()
   const lookup = usernameOrEmail.toLowerCase()
-  return users.find(u => u.username.toLowerCase() === lookup || u.email.toLowerCase() === lookup)
+  return users.find((u) => u.username.toLowerCase() === lookup || u.email.toLowerCase() === lookup)
 }
 
 // Sign up / Create a new user
@@ -69,8 +69,9 @@ export const signUpUser = async (username, email, password) => {
   const cleanEmail = email.trim()
 
   const exists = users.find(
-    u => u.username.toLowerCase() === cleanUsername.toLowerCase() || 
-         u.email.toLowerCase() === cleanEmail.toLowerCase()
+    (u) =>
+      u.username.toLowerCase() === cleanUsername.toLowerCase() ||
+      u.email.toLowerCase() === cleanEmail.toLowerCase()
   )
   if (exists) {
     throw new Error('User with this username or email already exists')

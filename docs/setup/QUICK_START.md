@@ -8,13 +8,16 @@ All 5 major requirements have been implemented and tested. Here's how to use eac
 
 ## 1️⃣ Language Dropdown (FIXED)
 
-### The Problem: 
+### The Problem:
+
 Language change wasn't opening properly
 
 ### The Solution:
+
 ✅ Language dropdown now works perfectly with click detection
 
 ### How to Use:
+
 1. Look at the **top-right corner** of the navbar
 2. Find "Language:" section
 3. **Click the dropdown arrow** (▾)
@@ -28,14 +31,17 @@ Language change wasn't opening properly
 ## 2️⃣ Top Navbar Dropdowns (NEW)
 
 ### The Problem:
+
 File, Edit, Selection, View, Help menus weren't working
 
 ### The Solution:
+
 ✅ All menu dropdowns now fully functional with real handlers
 
 ### How to Use:
 
 #### **File Menu** (Click "File")
+
 ```
 ├─ New         → Create new file
 ├─ Open        → Open file dialog
@@ -44,6 +50,7 @@ File, Edit, Selection, View, Help menus weren't working
 ```
 
 #### **Edit Menu** (Click "Edit")
+
 ```
 ├─ Undo        → Undo (Ctrl+Z)
 ├─ Redo        → Redo (Ctrl+Y)
@@ -53,12 +60,14 @@ File, Edit, Selection, View, Help menus weren't working
 ```
 
 #### **Selection Menu** (Click "Selection")
+
 ```
 ├─ Select All   → Select all text (Ctrl+A)
 └─ Select None  → Deselect text
 ```
 
 #### **View Menu** (Click "View")
+
 ```
 ├─ Zoom In      → Increase zoom (Ctrl++)
 ├─ Zoom Out     → Decrease zoom (Ctrl+-)
@@ -67,6 +76,7 @@ File, Edit, Selection, View, Help menus weren't working
 ```
 
 #### **Help Menu** (Click "Help")
+
 ```
 ├─ About         → Show app info
 ├─ Keyboard Shortcuts → All shortcuts list (F1)
@@ -74,6 +84,7 @@ File, Edit, Selection, View, Help menus weren't working
 ```
 
 **Keyboard Shortcuts:**
+
 - Press **F1** anytime to see all shortcuts
 - Use **Ctrl+**key shortcuts in the menus
 
@@ -82,28 +93,28 @@ File, Edit, Selection, View, Help menus weren't working
 ## 3️⃣ Sidebar - Open Folder (NEW)
 
 ### The Problem:
+
 Sidebar was just static buttons, couldn't open folders
 
 ### The Solution:
+
 ✅ Sidebar now acts like a file browser with folder opening!
 
 ### How to Use:
 
 1. **Expand Sidebar** (if collapsed)
    - Click the ☰ (hamburger) button in top-left
-   
 2. **Click "📁 Open Folder"** button
    - Opens a folder selection dialog
-   
 3. **Select a folder**
    - Browse and choose any folder on your computer
    - Folder path appears in sidebar
-   
 4. **See folder path**
    - The opened folder path is shown in the sidebar
    - Shows format: `📂 /path/to/your/folder`
 
 ### Available Sidebar Options:
+
 ```
 🏠 Home           → Go to home page
 📁 Open Folder    → Browse and open folders
@@ -118,9 +129,11 @@ Sidebar was just static buttons, couldn't open folders
 ## 4️⃣ Textarea - Flexible & Resizable (NEW)
 
 ### The Problem:
+
 Textareas couldn't be resized, very limited
 
 ### The Solution:
+
 ✅ All textareas now fully resizable!
 
 ### How to Use:
@@ -148,9 +161,11 @@ Textareas couldn't be resized, very limited
 ## 5️⃣ Dashboard - User Settings (NEW)
 
 ### The Problem:
+
 Dashboard was just showing stats, no user settings
 
 ### The Solution:
+
 ✅ Full dashboard with changeable settings!
 
 ### How to Use:
@@ -158,7 +173,6 @@ Dashboard was just showing stats, no user settings
 1. **Open Dashboard**
    - Click "📊 Dashboard" in sidebar
    - Or use "📊 Dashboard" button
-   
 2. **See Statistics** (Top Section)
    - Users: 0
    - Projects: 0
@@ -168,18 +182,21 @@ Dashboard was just showing stats, no user settings
 3. **Change Your Settings** (Bottom Section)
 
 #### Account Settings:
+
 ```
 Username  → Type your username (e.g., "John Doe")
 Email     → Type your email (e.g., "user@example.com")
 ```
 
 #### Appearance:
+
 ```
 Theme     → Choose: Light, Dark, or Auto
 Font Size → Use slider to adjust (12px - 20px)
 ```
 
 #### Preferences:
+
 ```
 Language      → Choose: English, Spanish, French, German, Hindi
 Notifications → Toggle checkbox to enable/disable
@@ -191,6 +208,7 @@ Notifications → Toggle checkbox to enable/disable
    - Settings are saved in your browser
 
 ### Settings Persist:
+
 - ✅ Settings saved in browser localStorage
 - ✅ Settings load automatically on next visit
 - ✅ No need to enter again
@@ -199,22 +217,22 @@ Notifications → Toggle checkbox to enable/disable
 
 ## ⌨️ Keyboard Shortcuts Summary
 
-| Shortcut | Action |
-|----------|--------|
-| **Ctrl+N** | New File |
-| **Ctrl+O** | Open File |
-| **Ctrl+S** | Save |
-| **Ctrl+Q** | Exit |
-| **Ctrl+Z** | Undo |
-| **Ctrl+Y** | Redo |
-| **Ctrl+X** | Cut |
-| **Ctrl+C** | Copy |
-| **Ctrl+V** | Paste |
+| Shortcut   | Action     |
+| ---------- | ---------- |
+| **Ctrl+N** | New File   |
+| **Ctrl+O** | Open File  |
+| **Ctrl+S** | Save       |
+| **Ctrl+Q** | Exit       |
+| **Ctrl+Z** | Undo       |
+| **Ctrl+Y** | Redo       |
+| **Ctrl+X** | Cut        |
+| **Ctrl+C** | Copy       |
+| **Ctrl+V** | Paste      |
 | **Ctrl+A** | Select All |
-| **Ctrl+=** | Zoom In |
-| **Ctrl+-** | Zoom Out |
+| **Ctrl+=** | Zoom In    |
+| **Ctrl+-** | Zoom Out   |
 | **Ctrl+0** | Reset Zoom |
-| **F1** | Show Help |
+| **F1**     | Show Help  |
 
 ---
 
@@ -240,22 +258,27 @@ Notifications → Toggle checkbox to enable/disable
 ## 🐛 Troubleshooting
 
 ### Language Dropdown Won't Open?
+
 - ✅ **Solution**: Refresh the page (Ctrl+R)
 - Check console (F12) for errors
 
 ### Settings Not Saving?
+
 - ✅ **Solution**: Check browser localStorage (F12 → Application)
 - Clear cache if needed
 
 ### Textarea Won't Resize?
+
 - ✅ **Solution**: Make sure you grab the resize handle in bottom-right
 - Try double-clicking for auto-expand
 
 ### Sidebar Folder Dialog Not Opening?
+
 - ✅ **Solution**: Make sure Electron IPC bridge is available
 - Run app in Electron environment
 
 ### Menu Dropdowns Stay Open?
+
 - ✅ **Solution**: Click outside the menu to close
 - Click another menu to switch
 
@@ -264,6 +287,7 @@ Notifications → Toggle checkbox to enable/disable
 ## 📞 Need Help?
 
 Check these files for more info:
+
 - `CHANGES_IMPLEMENTATION.md` - Detailed change documentation
 - `renderer/src/JS/app-handlers.js` - All handler functions
 - `renderer/src/components/Topbar/Topbar.jsx` - Menu implementation
@@ -274,6 +298,7 @@ Check these files for more info:
 ## ✨ Summary
 
 **ALL 5 REQUIREMENTS COMPLETED:**
+
 1. ✅ Language change dropdown - FIXED
 2. ✅ Top navbar menus (File, Edit, Selection, View, Help) - ADDED
 3. ✅ Sidebar folder browser - CONVERTED

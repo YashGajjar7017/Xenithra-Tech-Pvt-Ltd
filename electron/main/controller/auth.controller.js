@@ -12,13 +12,13 @@ export const initDependencies = async () => {
     } else {
       User = userModule.default || userModule
     }
-    
+
     const jwtModule = await import('jsonwebtoken')
     jwt = jwtModule.default || jwtModule
-    
+
     const bcryptModule = await import('bcryptjs')
     bcryptjs = bcryptModule.default || bcryptModule
-    
+
     dependenciesAvailable = true
     console.log('✅ Auth dependencies loaded successfully')
   } catch (error) {
@@ -45,7 +45,8 @@ const generateTokens = (userId) => {
 const notAvailableError = (req, res) => {
   res.status(503).json({
     success: false,
-    message: 'Authentication service not available. Please install required dependencies: npm install mongoose bcryptjs jsonwebtoken'
+    message:
+      'Authentication service not available. Please install required dependencies: npm install mongoose bcryptjs jsonwebtoken'
   })
 }
 
@@ -221,8 +222,7 @@ export const refreshAccessToken = async (req, res) => {
     }
 
     // Generate new tokens
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-      generateTokens(user._id)
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokens(user._id)
 
     user.refreshToken = newRefreshToken
     await user.save()

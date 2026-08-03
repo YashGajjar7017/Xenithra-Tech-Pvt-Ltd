@@ -3,12 +3,14 @@
 ## Pre-Launch Checks
 
 ### 1. Installation
+
 - [ ] `npm install` completed successfully
 - [ ] No dependency errors
 - [ ] node_modules folder exists
 - [ ] package-lock.json generated
 
 ### 2. Environment Setup
+
 - [ ] `.env` file exists in root directory
 - [ ] `MONGODB_URI` configured
 - [ ] `JWT_SECRET` set
@@ -16,12 +18,14 @@
 - [ ] `RENDERER_PORT` set to 3000
 
 ### 3. Database Setup
+
 - [ ] MongoDB installed locally OR
 - [ ] MongoDB Atlas account created
 - [ ] Connection string tested and working
 - [ ] Database name matches `.env`
 
 ### 4. Backend Files
+
 - [ ] `electron/main/server.js` exists
 - [ ] `electron/main/config/database.js` exists
 - [ ] `electron/main/controller/auth.controller.js` exists
@@ -29,6 +33,7 @@
 - [ ] `electron/main/index.ts` updated with server import
 
 ### 5. Frontend Files
+
 - [ ] `renderer/renderer/src/Login.jsx` updated
 - [ ] `renderer/renderer/src/Signup.jsx` updated
 - [ ] `renderer/renderer/src/services/authAPI.js` exists
@@ -36,12 +41,14 @@
 - [ ] `renderer/index.html` exists
 
 ### 6. Configuration
+
 - [ ] `electron.vite.config.mjs` has proper entry points
 - [ ] Path aliases configured
 - [ ] React plugin added
 - [ ] package.json has mongoose dependency
 
 ### 7. Documentation
+
 - [ ] BACKEND_SETUP.md created
 - [ ] TESTING_GUIDE.md created
 - [ ] QUICK_START.md created
@@ -53,6 +60,7 @@
 ## Launch Verification
 
 ### 1. Start Development Server
+
 ```bash
 npm run dev
 ```
@@ -64,6 +72,7 @@ npm run dev
 - [ ] Electron window opens
 
 ### 2. Test Health Endpoint
+
 ```bash
 curl http://localhost:5000/api/health
 ```
@@ -72,6 +81,7 @@ curl http://localhost:5000/api/health
 - [ ] Status code: 200
 
 ### 3. Frontend Access
+
 - [ ] Navigate to http://localhost:3000
 - [ ] Beta_Index loads without errors
 - [ ] No blank pages
@@ -83,18 +93,21 @@ curl http://localhost:5000/api/health
 ## Signup Testing
 
 ### Form Access
+
 - [ ] Navigate to http://localhost:3000/signup
 - [ ] Signup page loads
 - [ ] All form fields visible
 - [ ] Submit button clickable
 
 ### Form Validation
+
 - [ ] Try submit with empty fields → Error shown
 - [ ] Password < 6 chars → Error shown
 - [ ] Passwords don't match → Error shown
 - [ ] Invalid email format → Error shown
 
 ### Successful Signup
+
 - [ ] Fill with valid data:
   - [ ] Full Name: John Doe
   - [ ] Username: johndoe
@@ -107,12 +120,14 @@ curl http://localhost:5000/api/health
 - [ ] No errors in console
 
 ### Database Verification
+
 - [ ] User appears in MongoDB
 - [ ] Password is hashed (not plaintext)
 - [ ] All fields populated correctly
 - [ ] Timestamp created
 
 ### localStorage Check
+
 ```javascript
 JSON.parse(localStorage.getItem('user'))
 ```
@@ -127,17 +142,20 @@ JSON.parse(localStorage.getItem('user'))
 ## Login Testing
 
 ### Form Access
+
 - [ ] Navigate to http://localhost:3000/login
 - [ ] Login page loads
 - [ ] All form fields visible
 - [ ] Submit button clickable
 
 ### Invalid Credentials
+
 - [ ] Try with wrong password → "Invalid credentials"
 - [ ] Try with non-existent user → "Invalid credentials"
 - [ ] Try without fields → "Required" message
 
 ### Successful Login
+
 - [ ] Enter credentials:
   - [ ] Username: johndoe
   - [ ] Password: Test123!@#
@@ -147,6 +165,7 @@ JSON.parse(localStorage.getItem('user'))
 - [ ] User info displayed
 
 ### localStorage Verification
+
 ```javascript
 JSON.parse(localStorage.getItem('user'))
 ```
@@ -163,6 +182,7 @@ JSON.parse(localStorage.getItem('user'))
 ### Using cURL or Postman
 
 #### Signup Endpoint
+
 ```bash
 curl -X POST http://localhost:5000/api/signup \
   -H "Content-Type: application/json" \
@@ -175,6 +195,7 @@ curl -X POST http://localhost:5000/api/signup \
 - [ ] User created in database
 
 #### Login Endpoint
+
 ```bash
 curl -X POST http://localhost:5000/api/login \
   -H "Content-Type: application/json" \
@@ -187,6 +208,7 @@ curl -X POST http://localhost:5000/api/login \
 - [ ] Different token than signup (unless same minute)
 
 #### Get Current User
+
 ```bash
 curl http://localhost:5000/api/me \
   -H "Authorization: Bearer <token_here>"
@@ -201,18 +223,21 @@ curl http://localhost:5000/api/me \
 ## Error Handling
 
 ### Network Errors
+
 - [ ] Backend down → Error message shown
 - [ ] Wrong port → Connection refused error
 - [ ] CORS error → Clear cache and retry
 - [ ] Timeout → Graceful error message
 
 ### Validation Errors
+
 - [ ] Empty fields → Highlighted/error shown
 - [ ] Invalid format → Error message
 - [ ] Server error → Caught and displayed
 - [ ] No sensitive data exposed
 
 ### Edge Cases
+
 - [ ] Duplicate username → "User already exists"
 - [ ] Duplicate email → "User already exists"
 - [ ] Very long password → Accepted
@@ -224,6 +249,7 @@ curl http://localhost:5000/api/me \
 ## UI/UX Checks
 
 ### Login Page
+
 - [ ] Glassmorphism styling visible
 - [ ] Form is centered
 - [ ] All inputs styled consistently
@@ -233,6 +259,7 @@ curl http://localhost:5000/api/me \
 - [ ] Responsive on different screen sizes
 
 ### Signup Page
+
 - [ ] Same styling as login
 - [ ] All 5 fields present
 - [ ] Form fields properly spaced
@@ -241,6 +268,7 @@ curl http://localhost:5000/api/me \
 - [ ] Link to login works
 
 ### Dashboard
+
 - [ ] Loads after login
 - [ ] Shows user info
 - [ ] Dashboard content visible
@@ -249,6 +277,7 @@ curl http://localhost:5000/api/me \
 - [ ] Can return to dashboard
 
 ### Menu/Navigation
+
 - [ ] Login button appears when logged out
 - [ ] Logout button appears when logged in
 - [ ] User name displayed when logged in
@@ -260,12 +289,14 @@ curl http://localhost:5000/api/me \
 ## Security Checks
 
 ### Passwords
+
 - [ ] Passwords hashed in database (not plaintext)
 - [ ] Password never logged
 - [ ] Bcrypt version 10+ rounds used
 - [ ] Old passwords not visible in updates
 
 ### Tokens
+
 - [ ] Token stored in localStorage (acceptable for web app)
 - [ ] Token sent in Authorization header
 - [ ] Token not logged in console
@@ -273,6 +304,7 @@ curl http://localhost:5000/api/me \
 - [ ] Refresh token mechanism working
 
 ### API
+
 - [ ] No sensitive data in API response
 - [ ] CORS properly configured
 - [ ] SQL injection prevented (using Mongoose)
@@ -280,6 +312,7 @@ curl http://localhost:5000/api/me \
 - [ ] CSRF tokens if needed
 
 ### Environment
+
 - [ ] JWT_SECRET not exposed
 - [ ] Database connection string not in code
 - [ ] API_URL configurable
@@ -290,18 +323,21 @@ curl http://localhost:5000/api/me \
 ## Performance Checks
 
 ### Load Time
+
 - [ ] Signup page: < 2 seconds
 - [ ] Login page: < 2 seconds
 - [ ] Dashboard: < 3 seconds
 - [ ] API response: < 500ms
 
 ### Resources
+
 - [ ] No memory leaks
 - [ ] Reasonable bundle size
 - [ ] Lazy loading where possible
 - [ ] CSS optimized
 
 ### Database
+
 - [ ] Queries optimized
 - [ ] Indexes created
 - [ ] No N+1 queries
@@ -312,18 +348,21 @@ curl http://localhost:5000/api/me \
 ## Cross-Platform Testing
 
 ### Windows
+
 - [ ] App builds successfully
 - [ ] All features work
 - [ ] No path issues
 - [ ] Installer works
 
 ### macOS
+
 - [ ] App builds successfully
 - [ ] All features work
 - [ ] Signing not required for dev
 - [ ] DMG installer works
 
 ### Linux
+
 - [ ] App builds successfully
 - [ ] All features work
 - [ ] AppImage works
@@ -334,6 +373,7 @@ curl http://localhost:5000/api/me \
 ## Browser Console
 
 When logged in, should see:
+
 - [ ] No red errors
 - [ ] No critical warnings
 - [ ] User data retrievable:
@@ -374,18 +414,21 @@ When logged in, should see:
 ## Notes for Testing
 
 **Test with Multiple Browsers:**
+
 - Chrome
 - Firefox
 - Safari
 - Edge
 
 **Test with Multiple Accounts:**
+
 - Create 3+ accounts
 - Test login/logout cycles
 - Test concurrent sessions
 - Test token refresh
 
 **Test Edge Cases:**
+
 - 30-char username
 - Email with +
 - Password with special chars

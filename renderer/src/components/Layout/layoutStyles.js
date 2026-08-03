@@ -64,7 +64,8 @@ export const layoutStyles = {
     display: 'flex',
     width: '100%',
     height: '100vh',
-    background: 'radial-gradient(circle at top left, #ff00c8 0, transparent 55%), radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%)',
+    background:
+      'radial-gradient(circle at top left, #ff00c8 0, transparent 55%), radial-gradient(circle at bottom right, #00e5ff 0, #02030a 60%)',
     color: '#e5f2ff'
   },
 
@@ -75,7 +76,8 @@ export const layoutStyles = {
     position: 'relative',
     background: 'radial-gradient(circle at top, rgba(14, 23, 48, 0.92), rgba(4, 7, 18, 0.98))',
     border: '1px solid rgba(255, 255, 255, 0.18)',
-    boxShadow: '0 0 40px rgba(0, 0, 0, 0.7), 0 0 80px rgba(255, 0, 200, 0.45), 0 0 120px rgba(0, 229, 255, 0.45)',
+    boxShadow:
+      '0 0 40px rgba(0, 0, 0, 0.7), 0 0 80px rgba(255, 0, 200, 0.45), 0 0 120px rgba(0, 229, 255, 0.45)',
     backdropFilter: 'blur(26px) saturate(180%)',
     overflow: 'hidden'
   },
@@ -85,7 +87,8 @@ export const layoutStyles = {
     inset: 0,
     borderRadius: 'inherit',
     padding: '2px',
-    background: 'conic-gradient(from 180deg, rgba(255, 0, 200, 0.9), rgba(0, 229, 255, 0.9), rgba(255, 234, 0, 0.8), rgba(255, 0, 200, 0.9))',
+    background:
+      'conic-gradient(from 180deg, rgba(255, 0, 200, 0.9), rgba(0, 229, 255, 0.9), rgba(255, 234, 0, 0.8), rgba(255, 0, 200, 0.9))',
     WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
     WebkitMaskComposite: 'xor',
     mask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
@@ -109,7 +112,8 @@ export const layoutStyles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    background: 'radial-gradient(circle at top left, rgba(255, 0, 200, 0.16), transparent 60%), radial-gradient(circle at bottom right, rgba(0, 229, 255, 0.18), rgba(1, 2, 8, 0.98))'
+    background:
+      'radial-gradient(circle at top left, rgba(255, 0, 200, 0.16), transparent 60%), radial-gradient(circle at bottom right, rgba(0, 229, 255, 0.18), rgba(1, 2, 8, 0.98))'
   },
 
   content: {
