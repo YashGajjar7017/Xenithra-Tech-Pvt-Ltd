@@ -107,6 +107,24 @@ const api = {
   joinRtcRoom: (roomCode) => ipcRenderer.invoke('rtc:joinRoom', roomCode),
   syncRtcCode: (roomCode, text, pos) => ipcRenderer.invoke('rtc:sync', roomCode, text, pos),
 
+  // TCP Pairing API
+  getTcpStatus: () => ipcRenderer.invoke('tcp:getStatus'),
+  getTcpClients: () => ipcRenderer.invoke('tcp:getClients'),
+  pairTcpClient: (clientId) => ipcRenderer.invoke('tcp:pairClient', clientId),
+  simulateTcpClient: (name) => ipcRenderer.invoke('tcp:simulateClient', name),
+  authSimulatedClient: (token) => ipcRenderer.invoke('tcp:authSimulatedClient', token),
+  sendSimulatedCode: (code) => ipcRenderer.invoke('tcp:sendSimulatedCode', code),
+  disconnectSimulated: () => ipcRenderer.invoke('tcp:disconnectSimulated'),
+  sendTcpCodeChange: (code) => ipcRenderer.invoke('tcp:sendCodeChange', code),
+  onTcpClientsUpdate: (cb) => ipcRenderer.on('tcp:clients-update', (_event, clients) => cb(clients)),
+  onTcpCodeSync: (cb) => ipcRenderer.on('tcp:code-sync', (_event, code) => cb(code)),
+  onSimulatedClientCode: (cb) => ipcRenderer.on('tcp:simulated-client-code', (_event, code) => cb(code)),
+  onSimulatedClientAuth: (cb) => ipcRenderer.on('tcp:simulated-client-auth', (_event, success) => cb(success)),
+
+  // ML Training API
+  startModelTraining: (datasetName) => ipcRenderer.invoke('ml:startTraining', datasetName),
+  onTrainingProgress: (cb) => ipcRenderer.on('ml:training-progress', (_event, progress) => cb(progress)),
+
   // XAMPP Service API
   getXamppStatus: () => ipcRenderer.invoke('xampp:status'),
   checkXamppInstalled: () => ipcRenderer.invoke('xampp:check-installed'),

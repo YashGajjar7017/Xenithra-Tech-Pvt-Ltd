@@ -4,6 +4,7 @@ import SearchPanel from './SearchPanel'
 import DebugPanel from '../ui/DebugPanel'
 import DockerPanel from '../ui/DockerPanel'
 import FirebasePanel from './FirebasePanel'
+import ClientsPanel from './ClientsPanel'
 
 const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
   const [loadedFolder, setLoadedFolder] = useState(null) // { name: '', path: '', tree: {} }
@@ -407,6 +408,8 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
         <DockerPanel />
       ) : activeActivity === 'firebase' ? (
         <FirebasePanel />
+      ) : activeActivity === 'clients' ? (
+        <ClientsPanel />
       ) : activeActivity === 'settings' ? (
         <div
           style={{
@@ -547,7 +550,7 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
                   {
                     name: 'Express API Server',
                     lang: 'js',
-                    code: "const express = require('express');\nconst app = express();\napp.use(express.json());\n\napp.get('/api/health', (req, res) => res.json({ status: 'ok' }));\napp.listen(3001, () => console.log('Server running on 3001'));"
+                    code: "const express = require('express');\nconst app = express();\napp.use(express.json());\n\napp.get('/api/health', (req, res) => res.json({ status: 'ok' }));\napp.listen(6000, () => console.log('Server running on 6000'));"
                   },
                   {
                     name: 'Python Async Main',

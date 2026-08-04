@@ -27,8 +27,19 @@ import { searchWorkspace } from './Services/search.service.js'
 import {
   predictInlineCompletion,
   generateLocalAIChatResponse,
-  trainLocalMLModel
+  trainLocalMLModel,
+  startModelTraining
 } from './Services/localML.service.js'
+import {
+  startTcpServer,
+  getTcpClients,
+  pairTcpClient,
+  broadcastCodeToClients,
+  simulateLocalClient,
+  authSimulatedClient,
+  sendSimulatedClientCode,
+  disconnectSimulatedClient
+} from './Services/tcpServer.service.js'
 import {
   getDockerContainers,
   getDockerImages,
@@ -686,6 +697,49 @@ app.whenReady().then(() => {
   ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename) =>
     generateLocalAIChatResponse(prompt, code, lang, filename)
   )
+  ipcMain.handle('ml:startTraining', async (event, datasetName) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    return new Promise((resolve) => {
+      startModelTraining(datasetName, (progressData) => {
+        if (window && !window.isDestroyed()) {
+          window.webContents.send('ml:training-progress', progressData)
+        }
+      }).then((reportContent) => {
+        resolve({ success: true, report: reportContent })
+      })
+    })
+  })
+
+  // TCP Pairing IPC Handlers
+  ipcMain.handle('tcp:getStatus', () => {
+    return { listening: true, port: 27789 }
+  })
+  ipcMain.handle('tcp:getClients', () => {
+    return getTcpClients()
+  })
+  ipcMain.handle('tcp:pairClient', (_event, clientId) => {
+    return pairTcpClient(clientId)
+  })
+  ipcMain.handle('tcp:simulateClient', (_event, name) => {
+    simulateLocalClient(name)
+    return true
+  })
+  ipcMain.handle('tcp:authSimulatedClient', (_event, token) => {
+    authSimulatedClient(token)
+    return true
+  })
+  ipcMain.handle('tcp:sendSimulatedCode', (_event, code) => {
+    sendSimulatedClientCode(code)
+    return true
+  })
+  ipcMain.handle('tcp:disconnectSimulated', () => {
+    disconnectSimulatedClient()
+    return true
+  })
+  ipcMain.handle('tcp:sendCodeChange', (_event, code) => {
+    broadcastCodeToClients(code)
+    return true
+  })
 
   // Docker IPC Handlers
   ipcMain.handle('docker:containers', () => getDockerContainers())
@@ -754,6 +808,26 @@ app.whenReady().then(() => {
   ipcMain.handle('rtc:sync', (_event, roomCode, text, pos) => syncRtcCode(roomCode, text, pos))
 
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
+
+  // Start local TCP pairing server on port 27789
+  try {
+    startTcpServer(
+      () => {
+        const windows = BrowserWindow.getAllWindows()
+        if (windows.length > 0) {
+          windows[0].webContents.send('tcp:clients-update', getTcpClients())
+        }
+      },
+      (code) => {
+        const windows = BrowserWindow.getAllWindows()
+        if (windows.length > 0) {
+          windows[0].webContents.send('tcp:code-sync', code)
+        }
+      }
+    )
+  } catch (err) {
+    console.warn('Could not start local TCP pairing server:', err.message)
+  }
 
   // Start local API server and await binding to prevent race conditions
   try {

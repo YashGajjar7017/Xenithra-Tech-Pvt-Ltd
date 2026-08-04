@@ -362,6 +362,13 @@ const MainLayout = ({
           >
             <i className="bx bxl-firebase" style={{ fontSize: '20px' }}></i>
           </div>
+          <div
+            className={`activity-icon ${activeActivity === 'clients' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('clients')}
+            title="TCP Clients Pairing"
+          >
+            <i className="bx bx-devices" style={{ fontSize: '20px' }}></i>
+          </div>
           <div style={{ flex: 1 }}></div>
           <div
             className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}

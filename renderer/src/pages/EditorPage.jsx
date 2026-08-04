@@ -272,6 +272,19 @@ const EditorPage = () => {
     'replace:foo->bar\nreplace:console.log->logger.info'
   )
 
+  // TCP Sync, Auto Copilot, and Model Training states
+  const [autoCopilotEnabled, setAutoCopilotEnabled] = useState(false)
+  const [isCopilotTyping, setIsCopilotTyping] = useState(false)
+  const copilotTimerRef = useRef(null)
+  
+  const [trainingActive, setTrainingActive] = useState(false)
+  const [trainingProgress, setTrainingProgress] = useState(0)
+  const [trainingLogs, setTrainingLogs] = useState([])
+  const [trainingCompleted, setTrainingCompleted] = useState(false)
+  const [selectedDataset, setSelectedDataset] = useState('gemini-code-instructions-50k')
+  const [reportText, setReportText] = useState('')
+  const [showReportModal, setShowReportModal] = useState(false)
+
   // Ghost text, Breakpoint & Error states
   const [ghostText, setGhostText] = useState('')
   const [breakpoints, setBreakpoints] = useState([])
@@ -380,11 +393,154 @@ const EditorPage = () => {
     setActiveError(null)
   }
 
+  // Model training handler
+  const handleStartTraining = async () => {
+    if (trainingActive) return
+    setTrainingActive(true)
+    setTrainingProgress(0)
+    setTrainingLogs(['[SYSTEM] Initializing Local training engine...'])
+    setTrainingCompleted(false)
+    setReportText('')
+
+    try {
+      if (window.api && typeof window.api.startModelTraining === 'function') {
+        const result = await window.api.startModelTraining(selectedDataset)
+        if (result && result.success) {
+          setReportText(result.report)
+          setTrainingCompleted(true)
+        }
+      } else {
+        // Fallback simulation logs if Electron API is missing
+        await new Promise(r => setTimeout(r, 600))
+        setTrainingLogs((prev) => [...prev, '[DOWNLOAD] Connecting to Gemini registry...', '[DOWNLOAD] Caching dataset...'])
+        await new Promise(r => setTimeout(r, 1000))
+        setTrainingLogs((prev) => [...prev, '[TRAIN] Epoch 1/2 - loss: 0.812 - accuracy: 89.2%', '[TRAIN] Epoch 2/2 - loss: 0.198 - accuracy: 95.1%'])
+        await new Promise(r => setTimeout(r, 600))
+        setTrainingLogs((prev) => [...prev, '[SUCCESS] Model training complete! Report generated.'])
+        setReportText('# Gemini Model Training & Evaluation Report\n\n- Simulated local training report.\n- Final accuracy: 95.1%')
+        setTrainingCompleted(true)
+      }
+    } catch (err) {
+      setTrainingLogs((prev) => [...prev, `[ERROR] Training failed: ${err.message}`])
+    } finally {
+      setTrainingActive(false)
+    }
+  }
+
+  // TCP Sync code listener
+  useEffect(() => {
+    if (window.api && typeof window.api.onTcpCodeSync === 'function') {
+      window.api.onTcpCodeSync((syncedCode) => {
+        setOpenTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, code: syncedCode } : t)))
+      })
+    }
+  }, [activeTabId])
+
+  // Listen to training logs from the backend process
+  useEffect(() => {
+    if (window.api && typeof window.api.onTrainingProgress === 'function') {
+      window.api.onTrainingProgress((data) => {
+        setTrainingProgress(data.progress)
+        setTrainingLogs((prev) => [...prev, data.log])
+      })
+    }
+  }, [])
+
+  // Auto Copilot animated code writer
+  const triggerCopilot = (comment, currentCode) => {
+    if (isCopilotTyping) return
+    if (copilotTimerRef.current) clearTimeout(copilotTimerRef.current)
+    
+    copilotTimerRef.current = setTimeout(async () => {
+      setIsCopilotTyping(true)
+      const prompt = comment.replace(/^\/\/|^#/, '').trim()
+      
+      setTerminalLines((prev) => [
+        ...prev,
+        { text: `[COPILOT] Generating code for: "${prompt}"...`, className: 'warning' }
+      ])
+      
+      try {
+        let responseText = ''
+        if (window.api && typeof window.api.generateLocalAIChat === 'function') {
+          responseText = await window.api.generateLocalAIChat(
+            `Generate only the clean code snippet (no comments, no markdown fences) for: ${prompt}`,
+            currentCode,
+            selectedLanguage,
+            activeTab
+          )
+        } else {
+          responseText = `\n// Simulated code generation\nfunction greetUser() {\n  console.log("Hello, ${prompt}!");\n}`
+        }
+        
+        // Clean markdown structures from response
+        const cleanCode = responseText
+          .replace(/```\w*\n?/g, '')
+          .replace(/```/g, '')
+          .trim()
+        
+        let typedText = '\n'
+        let index = 0
+        
+        const typingInterval = setInterval(() => {
+          if (index < cleanCode.length) {
+            typedText += cleanCode.charAt(index)
+            setOpenTabs((prev) =>
+              prev.map((t) => (t.id === activeTabId ? { ...t, code: currentCode + typedText } : t))
+            )
+            index++
+          } else {
+            clearInterval(typingInterval)
+            setIsCopilotTyping(false)
+            
+            // Sync generated code changes to any paired TCP client
+            if (window.api && typeof window.api.sendTcpCodeChange === 'function') {
+              window.api.sendTcpCodeChange(currentCode + typedText)
+            }
+            
+            setTerminalLines((prev) => [
+              ...prev,
+              { text: `[COPILOT] Code generated and typed successfully!`, className: 'success' },
+              { text: 'xenithra@studio:~$', className: 'prompt' }
+            ])
+          }
+        }, 15)
+      } catch (err) {
+        console.error('Copilot error:', err)
+        setIsCopilotTyping(false)
+      }
+    }, 1200)
+  }
+
   const updateCodeWithML = async (newCode) => {
     setCode(newCode)
     const lines = newCode.split('\n')
     const currentLineIdx = lines.length - 1
     const currentLineContent = lines[currentLineIdx] || ''
+
+    // Broadcast code updates to TCP local network clients
+    if (window.api && typeof window.api.sendTcpCodeChange === 'function') {
+      window.api.sendTcpCodeChange(newCode)
+    }
+
+    // Auto Copilot prompt detection
+    if (autoCopilotEnabled && !isCopilotTyping) {
+      const lastLine = lines[lines.length - 1] || ''
+      const secondLastLine = lines[lines.length - 2] || ''
+      const lastLineTrimmed = lastLine.trim()
+      const secondLastLineTrimmed = secondLastLine.trim()
+      
+      let comment = ''
+      if (lastLineTrimmed.startsWith('//') || lastLineTrimmed.startsWith('#')) {
+        comment = lastLineTrimmed
+      } else if (secondLastLineTrimmed.startsWith('//') || secondLastLineTrimmed.startsWith('#')) {
+        comment = secondLastLineTrimmed
+      }
+      
+      if (comment) {
+        triggerCopilot(comment, newCode)
+      }
+    }
 
     if (window.api && typeof window.api.predictInlineCompletion === 'function') {
       try {
@@ -2558,6 +2714,24 @@ const EditorPage = () => {
               ADJUSTER
             </div>
             <div
+              onClick={() => setRightPanelTab('copilot')}
+              style={{
+                flex: 1.2,
+                textAlign: 'center',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                color: rightPanelTab === 'copilot' ? 'var(--accent-color)' : 'var(--text-muted)',
+                borderBottom: rightPanelTab === 'copilot' ? '2px solid var(--accent-color)' : 'none',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              COPILOT & ML
+            </div>
+            <div
               onClick={() => setIsRightPanelOpen(false)}
               style={{
                 padding: '0 10px',
@@ -2658,7 +2832,7 @@ const EditorPage = () => {
                 </button>
               </div>
             </div>
-          ) : (
+          ) : rightPanelTab === 'format' ? (
             /* Adjuster / Formatter Settings Tab */
             <div
               style={{
@@ -2706,6 +2880,179 @@ const EditorPage = () => {
               >
                 Apply Rules to Editor
               </button>
+            </div>
+          ) : (
+            /* Copilot & ML Training Tab */
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '12px',
+                overflowY: 'auto',
+                gap: '14px',
+                color: 'var(--text-main)',
+                fontSize: '12px'
+              }}
+            >
+              {/* Section 1: Auto Copilot */}
+              <div>
+                <div style={{ fontWeight: 'bold', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                  AUTO COPILOT MODE
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', color: '#fff' }}>Enable Auto Copilot</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      Auto-types code when typing comments
+                    </div>
+                  </div>
+                  <label style={{ position: 'relative', display: 'inline-block', width: '36px', height: '20px' }}>
+                    <input
+                      type="checkbox"
+                      checked={autoCopilotEnabled}
+                      onChange={(e) => setAutoCopilotEnabled(e.target.checked)}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
+                      position: 'absolute',
+                      cursor: 'pointer',
+                      top: 0, left: 0, right: 0, bottom: 0,
+                      backgroundColor: autoCopilotEnabled ? '#00ffaa' : '#333',
+                      transition: '0.3s',
+                      borderRadius: '20px',
+                      boxShadow: autoCopilotEnabled ? '0 0 8px #00ffaa' : 'none'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        height: '14px', width: '14px',
+                        left: autoCopilotEnabled ? '18px' : '3px',
+                        bottom: '3px',
+                        backgroundColor: '#fff',
+                        transition: '0.3s',
+                        borderRadius: '50%'
+                      }} />
+                    </span>
+                  </label>
+                </div>
+                {isCopilotTyping && (
+                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#ffb86c', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#ffb86c', animation: 'pulse 1s infinite' }} />
+                    🤖 Copilot is typing code...
+                  </div>
+                )}
+              </div>
+
+              {/* Section 2: Model Training */}
+              <div>
+                <div style={{ fontWeight: 'bold', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                  LOCAL ML MODEL TRAINING
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>Dataset Select (Gemini Model Set)</label>
+                    <select
+                      value={selectedDataset}
+                      onChange={(e) => setSelectedDataset(e.target.value)}
+                      disabled={trainingActive}
+                      style={{
+                        width: '100%',
+                        background: '#0d1117',
+                        color: '#fff',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        padding: '6px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value="gemini-code-instructions-50k">gemini-code-instructions-50k</option>
+                      <option value="gemini-agent-trajectories-25k">gemini-agent-trajectories-25k</option>
+                      <option value="gemini-clean-refactoring-10k">gemini-clean-refactoring-10k</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleStartTraining}
+                    disabled={trainingActive}
+                    style={{
+                      width: '100%',
+                      background: trainingActive ? '#333' : 'linear-gradient(135deg, #00ffaa 0%, #00bfff 100%)',
+                      border: 'none',
+                      color: '#000',
+                      fontWeight: 'bold',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      cursor: trainingActive ? 'default' : 'pointer',
+                      marginTop: '6px'
+                    }}
+                  >
+                    {trainingActive ? '⚡ Training Model...' : '🚀 Start Local Training'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress & Console Logs */}
+              {(trainingActive || trainingLogs.length > 0) && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {trainingActive && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-muted)' }}>
+                        <span>Training Progress</span>
+                        <span>{trainingProgress}%</span>
+                      </div>
+                      <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ width: `${trainingProgress}%`, height: '100%', background: '#00ffaa', transition: 'width 0.1s' }} />
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ fontWeight: 'bold', fontSize: '10px', color: 'var(--text-muted)' }}>
+                    TRAINING CONSOLE
+                  </div>
+                  <div style={{
+                    height: '140px',
+                    background: '#0d1117',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '4px',
+                    padding: '8px',
+                    fontFamily: 'monospace',
+                    fontSize: '10px',
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    color: '#888'
+                  }}>
+                    {trainingLogs.map((log, idx) => (
+                      <div key={idx} style={{
+                        color: log.includes('[SUCCESS]') ? '#00ffaa' : log.includes('[ERROR]') ? '#ff6b6b' : log.includes('[TRAIN]') ? '#eee' : '#888'
+                      }}>{log}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* View Report */}
+              {trainingCompleted && (
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  style={{
+                    background: 'rgba(0, 255, 170, 0.1)',
+                    border: '1px solid rgba(0, 255, 170, 0.3)',
+                    color: '#00ffaa',
+                    borderRadius: '4px',
+                    padding: '8px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📂 View Long Run Training Report
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -2864,6 +3211,78 @@ const EditorPage = () => {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setShowReportModal(false)}>
+          <div style={{
+            width: '560px',
+            maxHeight: '80vh',
+            background: '#161b22',
+            border: '1px solid var(--panel-border)',
+            borderRadius: '10px',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.6)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            color: 'var(--text-main)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '14px 20px',
+              borderBottom: '1px solid var(--panel-border)',
+              background: 'rgba(255,255,255,0.02)'
+            }}>
+              <span style={{ fontWeight: '700', fontSize: '13px', color: '#00ffaa' }}>
+                GEMINI TRAINING LONG RUN REPORT
+              </span>
+              <button onClick={() => setShowReportModal(false)} style={{ background: 'transparent', border: 'none', color: '#8b949e', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{
+              padding: '20px',
+              overflowY: 'auto',
+              fontSize: '12px',
+              lineHeight: '1.6',
+              fontFamily: 'Consolas, monospace',
+              whiteSpace: 'pre-wrap',
+              background: '#0d1117',
+              color: '#e6edf3'
+            }}>
+              {reportText}
+            </div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              padding: '12px 20px',
+              borderTop: '1px solid var(--panel-border)',
+              background: 'rgba(0,0,0,0.2)'
+            }}>
+              <button onClick={() => setShowReportModal(false)} style={{
+                background: '#58a6ff',
+                color: '#fff',
+                border: 'none',
+                padding: '6px 16px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}>Close</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
