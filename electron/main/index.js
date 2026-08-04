@@ -38,7 +38,11 @@ import {
   simulateLocalClient,
   authSimulatedClient,
   sendSimulatedClientCode,
-  disconnectSimulatedClient
+  disconnectSimulatedClient,
+  connectToRemoteHost,
+  authOutboundClient,
+  disconnectOutboundClient,
+  broadcastCursorToClients
 } from './Services/tcpServer.service.js'
 import {
   getDockerContainers,
@@ -72,6 +76,14 @@ import {
   addFirestoreDocument,
   deleteFirestoreDocument
 } from './Services/firebase.service.js'
+
+import {
+  saveToCloudDrive,
+  loadFromCloudDrive,
+  listCloudFiles,
+  saveCloudSettings,
+  loadCloudSettings
+} from './Services/cloudStorage.service.js'
 
 const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
 
@@ -626,6 +638,17 @@ app.whenReady().then(() => {
     }
   })
 
+  // Cloud Storage IPC Handlers
+  ipcMain.handle('cloud:save', (_event, email, provider, filename, content, filepath) =>
+    saveToCloudDrive(email, provider, filename, content, filepath)
+  )
+  ipcMain.handle('cloud:load', (_event, email, filename) => loadFromCloudDrive(email, filename))
+  ipcMain.handle('cloud:list', (_event, email) => listCloudFiles(email))
+  ipcMain.handle('cloud:saveSettings', (_event, email, provider, settings) =>
+    saveCloudSettings(email, provider, settings)
+  )
+  ipcMain.handle('cloud:loadSettings', (_event, email) => loadCloudSettings(email))
+
   // Firebase IPC Handlers
   ipcMain.handle('firebase:getConfig', () => getFirebaseConfig())
   ipcMain.handle('firebase:saveConfig', (_event, projectId, apiKey) =>
@@ -738,6 +761,51 @@ app.whenReady().then(() => {
   })
   ipcMain.handle('tcp:sendCodeChange', (_event, code) => {
     broadcastCodeToClients(code)
+    return true
+  })
+  ipcMain.handle('tcp:connectToHost', (_event, ip, port) => {
+    connectToRemoteHost(
+      ip,
+      port,
+      (code) => {
+        const windows = BrowserWindow.getAllWindows()
+        if (windows.length > 0) {
+          windows[0].webContents.send('tcp:code-sync', code)
+        }
+      },
+      (success) => {
+        const windows = BrowserWindow.getAllWindows()
+        if (windows.length > 0) {
+          windows[0].webContents.send('tcp:outbound-auth', success)
+        }
+      },
+      (cursorSyncMsg) => {
+        const windows = BrowserWindow.getAllWindows()
+        if (windows.length > 0) {
+          windows[0].webContents.send('tcp:cursor-sync', {
+            cursorIndex: cursorSyncMsg.cursorIndex,
+            username: cursorSyncMsg.username,
+            filename: cursorSyncMsg.filename
+          })
+        }
+      },
+      () => {
+        const windows = BrowserWindow.getAllWindows()
+        if (windows.length > 0) {
+          windows[0].webContents.send('tcp:outbound-disconnect')
+        }
+      }
+    )
+    return true
+  })
+  ipcMain.handle('tcp:authOutbound', (_event, token) => {
+    return authOutboundClient(token)
+  })
+  ipcMain.handle('tcp:disconnectOutbound', () => {
+    return disconnectOutboundClient()
+  })
+  ipcMain.handle('tcp:sendCursor', (_event, cursorIndex, username, filename) => {
+    broadcastCursorToClients(cursorIndex, username, filename)
     return true
   })
 

@@ -36,6 +36,15 @@ const api = {
 
   // Firebase API
   getFirebaseConfig: () => ipcRenderer.invoke('firebase:getConfig'),
+
+  // Cloud Storage API
+  saveToCloudDrive: (email, provider, filename, content, filepath) =>
+    ipcRenderer.invoke('cloud:save', email, provider, filename, content, filepath),
+  loadFromCloudDrive: (email, filename) => ipcRenderer.invoke('cloud:load', email, filename),
+  listCloudFiles: (email) => ipcRenderer.invoke('cloud:list', email),
+  saveCloudSettings: (email, provider, settings) =>
+    ipcRenderer.invoke('cloud:saveSettings', email, provider, settings),
+  loadCloudSettings: (email) => ipcRenderer.invoke('cloud:loadSettings', email),
   saveFirebaseConfig: (projectId, apiKey) =>
     ipcRenderer.invoke('firebase:saveConfig', projectId, apiKey),
   disconnectFirebase: () => ipcRenderer.invoke('firebase:disconnect'),
@@ -120,6 +129,14 @@ const api = {
   onTcpCodeSync: (cb) => ipcRenderer.on('tcp:code-sync', (_event, code) => cb(code)),
   onSimulatedClientCode: (cb) => ipcRenderer.on('tcp:simulated-client-code', (_event, code) => cb(code)),
   onSimulatedClientAuth: (cb) => ipcRenderer.on('tcp:simulated-client-auth', (_event, success) => cb(success)),
+  connectToHost: (ip, port) => ipcRenderer.invoke('tcp:connectToHost', ip, port),
+  authOutbound: (token) => ipcRenderer.invoke('tcp:authOutbound', token),
+  disconnectOutbound: () => ipcRenderer.invoke('tcp:disconnectOutbound'),
+  sendTcpCursor: (cursorIndex, username, filename) =>
+    ipcRenderer.invoke('tcp:sendCursor', cursorIndex, username, filename),
+  onTcpCursorSync: (cb) => ipcRenderer.on('tcp:cursor-sync', (_event, data) => cb(data)),
+  onOutboundAuth: (cb) => ipcRenderer.on('tcp:outbound-auth', (_event, success) => cb(success)),
+  onOutboundDisconnect: (cb) => ipcRenderer.on('tcp:outbound-disconnect', () => cb()),
 
   // ML Training API
   startModelTraining: (datasetName) => ipcRenderer.invoke('ml:startTraining', datasetName),

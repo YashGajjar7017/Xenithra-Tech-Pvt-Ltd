@@ -16,7 +16,7 @@ import EditorPage from './pages/EditorPage'
 import PreferencesPage from './pages/PreferencesPage'
 
 const MainApp = () => {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'vscode-dark')
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'github-dark')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(230)
 

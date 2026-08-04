@@ -6,6 +6,11 @@ const ClientsPanel = () => {
   const [selectedClient, setSelectedClient] = useState(null) // for showing token popup
   const [pairedCode, setPairedCode] = useState('')
 
+  // Outbound Client Connection States
+  const [outboundHostIp, setOutboundHostIp] = useState('')
+  const [outboundStatus, setOutboundStatus] = useState('Disconnected') // Disconnected, Connecting, Connected, Authenticated, Failed Auth
+  const [outboundToken, setOutboundToken] = useState('')
+
   // Fetch client list initially and listen for updates
   useEffect(() => {
     if (window.api && typeof window.api.getTcpClients === 'function') {
@@ -36,6 +41,25 @@ const ClientsPanel = () => {
           setSimulatedClient((prev) => prev ? { ...prev, status: 'Failed Auth' } : null)
           alert('Incorrect Pairing Token entered on simulated client.')
         }
+      })
+    }
+
+    // Listen to outbound client auth result
+    if (window.api && typeof window.api.onOutboundAuth === 'function') {
+      window.api.onOutboundAuth((success) => {
+        if (success) {
+          setOutboundStatus('Authenticated')
+        } else {
+          setOutboundStatus('Failed Auth')
+          alert('Incorrect pairing token for remote host.')
+        }
+      })
+    }
+
+    // Listen to outbound client disconnection
+    if (window.api && typeof window.api.onOutboundDisconnect === 'function') {
+      window.api.onOutboundDisconnect(() => {
+        setOutboundStatus('Disconnected')
       })
     }
   }, [])
@@ -73,6 +97,30 @@ const ClientsPanel = () => {
     setPairedCode('')
     if (window.api && typeof window.api.disconnectSimulated === 'function') {
       await window.api.disconnectSimulated()
+    }
+  }
+
+  const handleConnectToHost = async () => {
+    if (!outboundHostIp.trim()) return
+    setOutboundStatus('Connecting')
+    if (window.api && typeof window.api.connectToHost === 'function') {
+      await window.api.connectToHost(outboundHostIp, 27789)
+      setOutboundStatus('Connected')
+    }
+  }
+
+  const handleAuthOutbound = async () => {
+    if (!outboundToken.trim()) return
+    if (window.api && typeof window.api.authOutbound === 'function') {
+      await window.api.authOutbound(outboundToken)
+    }
+  }
+
+  const handleDisconnectOutbound = async () => {
+    if (window.api && typeof window.api.disconnectOutbound === 'function') {
+      await window.api.disconnectOutbound()
+      setOutboundStatus('Disconnected')
+      setOutboundToken('')
     }
   }
 
@@ -133,6 +181,52 @@ const ClientsPanel = () => {
           ))
         )}
       </div>
+
+      {/* Connect to Remote Host */}
+      <div style={styles.sectionHeader}>CONNECT TO REMOTE HOST</div>
+      
+      {outboundStatus === 'Disconnected' ? (
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
+          <input
+            type="text"
+            placeholder="Host IP (e.g. 192.168.1.50)..."
+            value={outboundHostIp}
+            onChange={(e) => setOutboundHostIp(e.target.value)}
+            style={styles.tokenInput}
+          />
+          <button onClick={handleConnectToHost} style={styles.authBtn}>
+            Connect
+          </button>
+        </div>
+      ) : (
+        <div style={{ ...styles.simContainer, marginBottom: '16px' }}>
+          <div style={styles.simHeader}>
+            <span>🖥️ Host: <strong>{outboundHostIp}</strong></span>
+            <button onClick={handleDisconnectOutbound} style={styles.disconnectBtn}>Disconnect</button>
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+            Status: <span style={{ color: outboundStatus === 'Authenticated' ? '#00ffaa' : '#ffb86c' }}>{outboundStatus}</span>
+          </div>
+          {outboundStatus === 'Connected' || outboundStatus === 'Failed Auth' ? (
+            <div style={styles.authBox}>
+              <input
+                type="text"
+                placeholder="Enter pairing token..."
+                value={outboundToken}
+                onChange={(e) => setOutboundToken(e.target.value)}
+                style={styles.tokenInput}
+              />
+              <button onClick={handleAuthOutbound} style={styles.authBtn}>
+                Pair
+              </button>
+            </div>
+          ) : (
+            <div style={{ fontSize: '11px', color: '#00ffaa' }}>
+              ✓ Connected & Synced with Remote Editor.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Simulator Actions */}
       <div style={styles.sectionHeader}>CLIENT SIMULATOR</div>

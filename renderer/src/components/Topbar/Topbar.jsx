@@ -962,7 +962,26 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
             </button>
           </div>
         ) : (
-          <div className="user-display">
+          <div className="user-display" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {localStorage.getItem('cloud-sync-enabled') === 'true' && (
+              <span
+                style={{
+                  color: '#00ffaa',
+                  fontSize: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'rgba(0, 255, 170, 0.1)',
+                  padding: '2px 6px',
+                  borderRadius: '10px',
+                  marginRight: '6px',
+                  border: '1px solid rgba(0, 255, 170, 0.2)'
+                }}
+                title={`Cloud storage synced via ${localStorage.getItem('cloud-provider') || 'drive'}`}
+              >
+                <i className="bx bx-cloud-upload"></i> Synced
+              </span>
+            )}
             <img className="user-logo-img" src="Images/session_logo.png" alt="Session Logo" />
             <span
               className="user-name"

@@ -9,6 +9,10 @@ let onCodeSyncCallback = null
 // Simulated local client state
 let simulatedSocket = null
 
+// Outbound client connection state
+let outboundSocket = null
+let currentWorkspaceCode = ''
+
 /**
  * Starts the TCP server on port 27789
  * @param {Function} onClientsUpdate - Callback when client list changes
@@ -98,6 +102,11 @@ function handleClientMessage(client, message) {
         client.socket.write(JSON.stringify({ type: 'auth_response', success: true }) + '\n')
         console.log(`[TCP Server] Client paired & authenticated successfully: ${client.name}`)
         if (onClientsChangeCallback) onClientsChangeCallback()
+        
+        // Immediately sync current workspace code upon pairing
+        if (currentWorkspaceCode) {
+          client.socket.write(JSON.stringify({ type: 'code_change', code: currentWorkspaceCode }) + '\n')
+        }
       } else {
         client.socket.write(JSON.stringify({ type: 'auth_response', success: false, error: 'Invalid token' }) + '\n')
         console.warn(`[TCP Server] Authentication failed for ${client.name}. Invalid token.`)
@@ -111,6 +120,30 @@ function handleClientMessage(client, message) {
         }
       } else {
         client.socket.write(JSON.stringify({ type: 'error', message: 'Unauthorized. Pair first.' }) + '\n')
+      }
+      break
+
+    case 'cursor_activity':
+      if (client.authenticated) {
+        // Forward cursor activity to the host window
+        const { BrowserWindow } = require('electron')
+        const windows = BrowserWindow.getAllWindows()
+        if (windows.length > 0) {
+          windows[0].webContents.send('tcp:cursor-sync', {
+            cursorIndex: message.cursorIndex,
+            username: message.username || client.name,
+            filename: message.filename
+          })
+        }
+        
+        // Broadcast it to other connected clients
+        connectedClients.forEach((c) => {
+          if (c.id !== client.id && c.authenticated && c.socket && !c.socket.destroyed) {
+            try {
+              c.socket.write(JSON.stringify(message) + '\n')
+            } catch (err) {}
+          }
+        })
       }
       break
 
@@ -144,6 +177,8 @@ export function pairTcpClient(clientId) {
  * Broadcast active IDE code contents to all authenticated TCP clients
  */
 export function broadcastCodeToClients(code) {
+  currentWorkspaceCode = code // Cache locally
+  
   connectedClients.forEach((client) => {
     if (client.authenticated && client.socket && !client.socket.destroyed) {
       try {
@@ -153,6 +188,105 @@ export function broadcastCodeToClients(code) {
       }
     }
   })
+
+  // Also send to outbound host connection
+  if (outboundSocket && !outboundSocket.destroyed) {
+    try {
+      outboundSocket.write(JSON.stringify({ type: 'code_change', code }) + '\n')
+    } catch (err) {
+      console.error(`[TCP Outbound Client] Failed to send code to host:`, err.message)
+    }
+  }
+}
+
+/**
+ * Broadcast local cursor events to all clients and outbound connections
+ */
+export function broadcastCursorToClients(cursorIndex, username, filename) {
+  const payload = JSON.stringify({ type: 'cursor_activity', cursorIndex, username, filename }) + '\n'
+
+  connectedClients.forEach((client) => {
+    if (client.authenticated && client.socket && !client.socket.destroyed) {
+      try {
+        client.socket.write(payload)
+      } catch (err) {}
+    }
+  })
+
+  if (outboundSocket && !outboundSocket.destroyed) {
+    try {
+      outboundSocket.write(payload)
+    } catch (err) {}
+  }
+}
+
+/**
+ * Outbound Client Connections: Connects to a remote TCP Server
+ */
+export function connectToRemoteHost(ip, port = 27789, onSync, onAuthResult, onCursorSync, onDisconnect) {
+  if (outboundSocket) {
+    outboundSocket.destroy()
+    outboundSocket = null
+  }
+
+  console.log(`[TCP Outbound Client] Connecting to remote server at ${ip}:${port}...`)
+  outboundSocket = net.connect(port, ip, () => {
+    console.log(`[TCP Outbound Client] Connected. Sending handshake.`)
+    outboundSocket.write(JSON.stringify({ type: 'handshake', deviceName: 'Developer Remote App' }) + '\n')
+  })
+
+  let dataBuffer = ''
+  outboundSocket.on('data', (data) => {
+    dataBuffer += data.toString()
+    const lines = dataBuffer.split('\n')
+    dataBuffer = lines.pop()
+
+    for (const line of lines) {
+      if (!line.trim()) continue
+      try {
+        const msg = JSON.parse(line)
+        console.log('[TCP Outbound Client] Received:', msg)
+
+        if (msg.type === 'code_change') {
+          if (onSync) onSync(msg.code)
+        } else if (msg.type === 'auth_response') {
+          if (onAuthResult) onAuthResult(msg.success)
+        } else if (msg.type === 'cursor_activity') {
+          if (onCursorSync) onCursorSync(msg)
+        }
+      } catch (e) {
+        console.error('[TCP Outbound Client] Parse error:', e.message)
+      }
+    }
+  })
+
+  outboundSocket.on('close', () => {
+    console.log('[TCP Outbound Client] Connection closed.')
+    outboundSocket = null
+    if (onDisconnect) onDisconnect()
+  })
+
+  outboundSocket.on('error', (err) => {
+    console.error('[TCP Outbound Client] Socket error:', err.message)
+    if (onDisconnect) onDisconnect()
+  })
+}
+
+export function authOutboundClient(token) {
+  if (outboundSocket && !outboundSocket.destroyed) {
+    outboundSocket.write(JSON.stringify({ type: 'auth', token }) + '\n')
+    return true
+  }
+  return false
+}
+
+export function disconnectOutboundClient() {
+  if (outboundSocket) {
+    outboundSocket.destroy()
+    outboundSocket = null
+    return true
+  }
+  return false
 }
 
 /**

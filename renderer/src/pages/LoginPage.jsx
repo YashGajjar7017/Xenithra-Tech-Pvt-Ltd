@@ -8,6 +8,10 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
+  // OAuth Simulated States
+  const [oauthProvider, setOauthProvider] = useState(null) // 'google' | 'github'
+  const [oauthEmail, setOauthEmail] = useState('')
+
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
@@ -183,16 +187,8 @@ const LoginPage = () => {
             <button
               type="button"
               onClick={() => {
-                const googleUser = {
-                  name: 'Google Developer',
-                  email: 'dev@gmail.com',
-                  token: 'google_oauth_token_' + Date.now()
-                }
-                localStorage.setItem('user', JSON.stringify(googleUser))
-                setSuccess(true)
-                setTimeout(() => {
-                  window.location.href = '/#/'
-                }, 600)
+                setOauthProvider('google')
+                setOauthEmail('dev@gmail.com')
               }}
               style={{
                 ...styles.socialBtn,
@@ -208,16 +204,8 @@ const LoginPage = () => {
             <button
               type="button"
               onClick={() => {
-                const githubUser = {
-                  name: 'GitHub Developer',
-                  email: 'dev@github.com',
-                  token: 'github_oauth_token_' + Date.now()
-                }
-                localStorage.setItem('user', JSON.stringify(githubUser))
-                setSuccess(true)
-                setTimeout(() => {
-                  window.location.href = '/#/'
-                }, 600)
+                setOauthProvider('github')
+                setOauthEmail('dev@github.com')
               }}
               style={{
                 ...styles.socialBtn,
@@ -243,6 +231,100 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Simulated OAuth Modal Overlay */}
+      {oauthProvider && (
+        <div style={styles.oauthOverlay}>
+          <div style={styles.oauthModal}>
+            <div style={styles.oauthHeader}>
+              <i className={oauthProvider === 'google' ? 'bx bxl-google' : 'bx bxl-github'} style={{
+                fontSize: '24px',
+                color: oauthProvider === 'google' ? '#db4437' : '#58a6ff',
+                marginRight: '10px'
+              }}></i>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
+                Sign in with {oauthProvider === 'google' ? 'Google' : 'GitHub'}
+              </h3>
+            </div>
+            <div style={styles.oauthBody}>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', marginBottom: '14px', lineHeight: '1.4' }}>
+                Xenithra IDE requesting access to store user workspace files in your Cloud Drive.
+              </p>
+              
+              <div style={styles.oauthScopes}>
+                <div style={styles.scopeItem}>
+                  <i className='bx bx-check-shield' style={{ color: '#00e5ff' }}></i>
+                  <span>Read and write application settings</span>
+                </div>
+                <div style={styles.scopeItem}>
+                  <i className='bx bx-check-shield' style={{ color: '#00e5ff' }}></i>
+                  <span>Create/update files on Cloud Drive</span>
+                </div>
+                <div style={styles.scopeItem}>
+                  <i className='bx bx-check-shield' style={{ color: '#00e5ff' }}></i>
+                  <span>Access basic profile & email address</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '16px', textAlign: 'left' }}>
+                <label style={{ fontSize: '10px', color: '#00e5ff', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>
+                  SELECT ACCOUNT TO AUTHORIZE
+                </label>
+                <select 
+                  value={oauthEmail} 
+                  onChange={(e) => setOauthEmail(e.target.value)} 
+                  style={styles.oauthSelect}
+                >
+                  {oauthProvider === 'google' ? (
+                    <>
+                      <option value="dev@gmail.com">dev@gmail.com (Google Developer)</option>
+                      <option value="yash@xenithra.tech">yash@xenithra.tech (Lead dev)</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="dev@github.com">dev@github.com (GitHub Developer)</option>
+                      <option value="yash_gajjar">yash_gajjar (yash@xenithra.tech)</option>
+                    </>
+                  )}
+                </select>
+              </div>
+            </div>
+            <div style={styles.oauthFooter}>
+              <button onClick={() => setOauthProvider(null)} style={styles.oauthCancelBtn}>
+                Cancel
+              </button>
+              <button onClick={async () => {
+                const user = {
+                  username: oauthEmail.split('@')[0],
+                  name: oauthProvider === 'google' ? 'Google Developer' : 'GitHub Developer',
+                  email: oauthEmail,
+                  token: `${oauthProvider}_oauth_token_${Date.now()}`
+                }
+                localStorage.setItem('user', JSON.stringify(user))
+                localStorage.setItem('cloud-sync-enabled', 'true')
+                localStorage.setItem('cloud-provider', oauthProvider)
+                
+                // Sync settings to simulated cloud drive
+                if (window.api && typeof window.api.saveCloudSettings === 'function') {
+                  await window.api.saveCloudSettings(user.email, oauthProvider, {
+                    theme: 'github-dark',
+                    fontSize: 14,
+                    selectedLanguage: 'Node.js'
+                  })
+                }
+
+                setSuccess(true)
+                setOauthProvider(null)
+                setTimeout(() => {
+                  window.location.href = '/#/'
+                }, 1000)
+              }} style={styles.oauthAuthBtn}>
+                Authorize & Connect
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -502,6 +584,93 @@ const styles = {
     outline: 'none',
     transition: 'all 0.2s ease',
     textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+  },
+  oauthOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    background: 'rgba(2, 3, 8, 0.85)',
+    zIndex: 99999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backdropFilter: 'blur(10px)'
+  },
+  oauthModal: {
+    width: '380px',
+    background: 'rgba(10, 16, 38, 0.95)',
+    border: '1px solid rgba(0, 229, 255, 0.3)',
+    borderRadius: '16px',
+    padding: '24px',
+    color: '#fff',
+    boxShadow: '0 10px 40px rgba(0,229,255,0.15)'
+  },
+  oauthHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '16px',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+    paddingBottom: '12px'
+  },
+  oauthBody: {
+    marginBottom: '20px'
+  },
+  oauthScopes: {
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '8px',
+    padding: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    textAlign: 'left'
+  },
+  scopeItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '11px',
+    color: 'rgba(255,255,255,0.85)'
+  },
+  oauthSelect: {
+    width: '100%',
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    color: '#fff',
+    borderRadius: '6px',
+    padding: '8px',
+    fontSize: '12px',
+    outline: 'none',
+    cursor: 'pointer'
+  },
+  oauthFooter: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '12px'
+  },
+  oauthCancelBtn: {
+    background: 'transparent',
+    border: '1px solid rgba(255,255,255,0.15)',
+    color: 'rgba(255,255,255,0.7)',
+    borderRadius: '6px',
+    padding: '8px 16px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  },
+  oauthAuthBtn: {
+    background: '#00e5ff',
+    color: '#020308',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '8px 18px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    boxShadow: '0 0 10px rgba(0, 229, 255, 0.3)',
+    transition: 'all 0.2s'
   }
 }
 

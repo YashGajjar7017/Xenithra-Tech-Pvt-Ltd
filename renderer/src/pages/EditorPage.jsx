@@ -9,6 +9,10 @@ const EditorPage = () => {
   const [showMinimap, setShowMinimap] = useState(true)
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
 
+  // Collaborative Remote Cursors
+  const [remoteCursors, setRemoteCursors] = useState({})
+  const [cursorCoordinates, setCursorCoordinates] = useState({})
+
   const handleMergeEditors = () => {
     setOpenTabs((prev) => {
       const exists = prev.some((t) => t.filename === rightTab && t.path === rightFilePath)
@@ -435,6 +439,77 @@ const EditorPage = () => {
       })
     }
   }, [activeTabId])
+
+  const handleEditorCursorActivity = (e) => {
+    const cursorIndex = e.target.selectionStart
+    const userStr = localStorage.getItem('user')
+    let currentUsername = 'Local Developer'
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr)
+        currentUsername = u.username || u.name || 'Local Developer'
+      } catch (e) {}
+    }
+    
+    if (window.api && typeof window.api.sendTcpCursor === 'function') {
+      window.api.sendTcpCursor(cursorIndex, currentUsername, activeTab)
+    }
+  }
+
+  const updateCursorCoords = () => {
+    const activeTextarea = activePane === 'left' ? leftCodeAreaRef.current : rightCodeAreaRef.current
+    if (!activeTextarea) return
+
+    const coords = {}
+    Object.keys(remoteCursors).forEach((user) => {
+      const cursor = remoteCursors[user]
+      if (cursor.filename === activeTab) {
+        const pos = getTextareaCaretCoordinates(activeTextarea, cursor.cursorIndex)
+        coords[user] = pos
+      }
+    })
+    setCursorCoordinates(coords)
+  }
+
+  // Listen to remote cursors from other TCP clients
+  useEffect(() => {
+    if (window.api && typeof window.api.onTcpCursorSync === 'function') {
+      window.api.onTcpCursorSync((data) => {
+        setRemoteCursors((prev) => ({
+          ...prev,
+          [data.username]: {
+            cursorIndex: data.cursorIndex,
+            filename: data.filename,
+            timestamp: Date.now()
+          }
+        }))
+      })
+    }
+  }, [])
+
+  // Update cursor coordinates when positions or focus changes
+  useEffect(() => {
+    updateCursorCoords()
+  }, [remoteCursors, activeTab, activePane, leftCode, rightCode])
+
+  // Periodic cleanup of stale remote cursors (after 10s inactivity)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now()
+      setRemoteCursors((prev) => {
+        let updated = { ...prev }
+        let changed = false
+        for (const user in updated) {
+          if (now - updated[user].timestamp > 10000) {
+            delete updated[user]
+            changed = true
+          }
+        }
+        return changed ? updated : prev
+      })
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Listen to training logs from the backend process
   useEffect(() => {
@@ -934,6 +1009,11 @@ const EditorPage = () => {
     if (leftLineNumbersRef.current) {
       leftLineNumbersRef.current.scrollTop = scrollTop
     }
+    updateCursorCoords()
+  }
+
+  const handleRightScroll = () => {
+    updateCursorCoords()
   }
 
   // Listen to window size and set initial 55% height
@@ -2145,10 +2225,17 @@ const EditorPage = () => {
                     onChange={(e) => updateCodeWithML(e.target.value)}
                     onKeyDown={handleEditorKeyDown}
                     onScroll={handleLeftScroll}
-                    onClick={handleEditorClick}
+                    onClick={(e) => {
+                      handleEditorClick(e)
+                      handleEditorCursorActivity(e)
+                    }}
+                    onKeyUp={handleEditorCursorActivity}
                     onMouseMove={handleEditorMouseMove}
                     onMouseLeave={handleEditorMouseLeave}
-                    onFocus={() => setActivePane('left')}
+                    onFocus={(e) => {
+                      setActivePane('left')
+                      handleEditorCursorActivity(e)
+                    }}
                     onContextMenu={(e) => {
                       e.preventDefault()
                       setContextMenu({
@@ -2175,6 +2262,50 @@ const EditorPage = () => {
                       zIndex: 2
                     }}
                   />
+
+                  {/* Render remote cursors in left pane */}
+                  {Object.keys(cursorCoordinates).map((user, idx) => {
+                    const pos = cursorCoordinates[user]
+                    const colors = ['#00ffaa', '#ff00c8', '#ff9f00', '#58a6ff', '#df73ff']
+                    const color = colors[idx % colors.length]
+                    if (pos.top < 0 || pos.left < 0) return null
+
+                    return (
+                      <div
+                        key={user}
+                        style={{
+                          position: 'absolute',
+                          top: `${pos.top}px`,
+                          left: `${pos.left}px`,
+                          width: '2px',
+                          height: '18px',
+                          background: color,
+                          zIndex: 99,
+                          pointerEvents: 'none',
+                          transition: 'all 0.1s ease'
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '100%',
+                            left: '0',
+                            background: color,
+                            color: '#000',
+                            padding: '1px 6px',
+                            borderRadius: '3px',
+                            fontSize: '9px',
+                            fontWeight: 'bold',
+                            whiteSpace: 'nowrap',
+                            pointerEvents: 'none',
+                            transform: 'translateY(-2px)'
+                          }}
+                        >
+                          {user} ✎
+                        </div>
+                      </div>
+                    )
+                  })}
 
                   {isDraggingTab && openTabs.length >= 2 && (
                     <div
@@ -2618,36 +2749,92 @@ const EditorPage = () => {
                     </div>
                   ))}
                 </div>
+                <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex', overflow: 'hidden' }}>
+                  <textarea
+                    ref={rightCodeAreaRef}
+                    className="code-area"
+                    value={rightCode}
+                    onChange={(e) => {
+                      setRightCode(e.target.value)
+                      if (window.api && typeof window.api.sendTcpCodeChange === 'function') {
+                        window.api.sendTcpCodeChange(e.target.value)
+                      }
+                    }}
+                    onFocus={(e) => {
+                      setActivePane('right')
+                      handleEditorCursorActivity(e)
+                    }}
+                    onKeyUp={handleEditorCursorActivity}
+                    onClick={handleEditorCursorActivity}
+                    onScroll={handleRightScroll}
+                    onContextMenu={(e) => {
+                      e.preventDefault()
+                      setContextMenu({
+                        visible: true,
+                        x: e.clientX,
+                        y: e.clientY
+                      })
+                    }}
+                    style={{
+                      padding: '10px',
+                      fontSize: '13px',
+                      lineHeight: '19.5px',
+                      fontFamily: "'JetBrains Mono', Consolas, monospace",
+                      background: 'transparent',
+                      color: 'var(--text-main)',
+                      border: 'none',
+                      resize: 'none',
+                      outline: 'none',
+                      flex: 1,
+                      height: '100%',
+                      overflowY: 'auto'
+                    }}
+                  />
 
-                <textarea
-                  ref={rightCodeAreaRef}
-                  className="code-area"
-                  value={rightCode}
-                  onChange={(e) => setRightCode(e.target.value)}
-                  onFocus={() => setActivePane('right')}
-                  onContextMenu={(e) => {
-                    e.preventDefault()
-                    setContextMenu({
-                      visible: true,
-                      x: e.clientX,
-                      y: e.clientY
-                    })
-                  }}
-                  style={{
-                    padding: '10px',
-                    fontSize: '13px',
-                    lineHeight: '19.5px',
-                    fontFamily: "'JetBrains Mono', Consolas, monospace",
-                    background: 'transparent',
-                    color: 'var(--text-main)',
-                    border: 'none',
-                    resize: 'none',
-                    outline: 'none',
-                    flex: 1,
-                    height: '100%',
-                    overflowY: 'auto'
-                  }}
-                />
+                  {/* Render remote cursors in right pane */}
+                  {Object.keys(cursorCoordinates).map((user, idx) => {
+                    const pos = cursorCoordinates[user]
+                    const colors = ['#00ffaa', '#ff00c8', '#ff9f00', '#58a6ff', '#df73ff']
+                    const color = colors[idx % colors.length]
+                    if (pos.top < 0 || pos.left < 0) return null
+
+                    return (
+                      <div
+                        key={user}
+                        style={{
+                          position: 'absolute',
+                          top: `${pos.top}px`,
+                          left: `${pos.left}px`,
+                          width: '2px',
+                          height: '18px',
+                          background: color,
+                          zIndex: 99,
+                          pointerEvents: 'none',
+                          transition: 'all 0.1s ease'
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '100%',
+                            left: '0',
+                            background: color,
+                            color: '#000',
+                            padding: '1px 6px',
+                            borderRadius: '3px',
+                            fontSize: '9px',
+                            fontWeight: 'bold',
+                            whiteSpace: 'nowrap',
+                            pointerEvents: 'none',
+                            transform: 'translateY(-2px)'
+                          }}
+                        >
+                          {user} ✎
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </div>
@@ -3303,6 +3490,54 @@ const styles = {
     justifyContent: 'center',
     transition: 'all 0.2s'
   }
+}
+
+/**
+ * Utility to calculate coordinates of the caret (cursor) inside a textarea
+ */
+const getTextareaCaretCoordinates = (textarea, position) => {
+  if (!textarea) return { top: 0, left: 0 }
+
+  const computed = window.getComputedStyle(textarea)
+  const clone = document.createElement('div')
+  document.body.appendChild(clone)
+
+  clone.style.position = 'absolute'
+  clone.style.visibility = 'hidden'
+  clone.style.whiteSpace = 'pre-wrap'
+  clone.style.wordWrap = 'break-word'
+  clone.style.overflow = 'hidden'
+  clone.style.width = textarea.clientWidth + 'px'
+  clone.style.height = textarea.clientHeight + 'px'
+
+  const properties = [
+    'direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY',
+    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+    'borderStyle', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+    'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize',
+    'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign',
+    'textTransform', 'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing',
+    'tabSize', 'MozTabSize'
+  ]
+
+  properties.forEach(prop => {
+    clone.style[prop] = computed[prop]
+  })
+
+  const text = textarea.value.substring(0, position)
+  clone.textContent = text
+
+  const span = document.createElement('span')
+  span.textContent = textarea.value.substring(position, position + 1) || '.'
+  clone.appendChild(span)
+
+  const coordinates = {
+    top: span.offsetTop + parseInt(computed.borderTopWidth || '0') - textarea.scrollTop,
+    left: span.offsetLeft + parseInt(computed.borderLeftWidth || '0') - textarea.scrollLeft
+  }
+
+  document.body.removeChild(clone)
+  return coordinates
 }
 
 export default EditorPage

@@ -490,7 +490,25 @@ app.get('/collaborate', (req, res) => {
     </head>
     <body>
       <header>
-        <h1>🌐 Xenithra Browser Handover Session</h1>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <h1>🌐 Xenithra Browser Handover Session</h1>
+          <button id="open-local-btn" style="
+            background: linear-gradient(135deg, #58a6ff 0%, #1f242c 100%);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 5px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+          ">
+            <span>🚀 Open in Local IDE</span>
+          </button>
+        </div>
         <div class="file-info">Editing: <b id="filename-label">${collaborationSession.filename}</b> (<span id="lang-label">${collaborationSession.lang}</span>)</div>
       </header>
 
@@ -514,6 +532,10 @@ app.get('/collaborate', (req, res) => {
         const filenameLabel = document.getElementById("filename-label");
         const langLabel = document.getElementById("lang-label");
         let remoteUpdating = false;
+
+        document.getElementById("open-local-btn").addEventListener("click", () => {
+          window.location.href = "xenithra://token=" + token;
+        });
 
         // Poll for updates from the host
         async function poll() {
