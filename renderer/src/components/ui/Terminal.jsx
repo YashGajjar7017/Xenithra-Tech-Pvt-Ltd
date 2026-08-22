@@ -204,11 +204,11 @@ const Terminal = ({ isRunning, onClose }) => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      color: '#00ffaa',
+                      color: '#ffffff',
                       marginTop: '4px'
                     }}
                   >
-                    <span style={{ color: '#58a6ff', fontWeight: 'bold' }}>xenithra@studio:~$</span>
+                    <span style={{ color: '#8b949e', fontWeight: 'bold' }}>xenithra@studio:~$</span>
                     <span>{item.text}</span>
                   </div>
                 )
@@ -236,7 +236,7 @@ const Terminal = ({ isRunning, onClose }) => {
 
             {/* Input Line */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
-              <span style={{ color: '#58a6ff', fontWeight: 'bold' }}>xenithra@studio:~$</span>
+              <span style={{ color: '#8b949e', fontWeight: 'bold' }}>xenithra@studio:~$</span>
               <input
                 ref={inputRef}
                 type="text"
@@ -248,7 +248,7 @@ const Terminal = ({ isRunning, onClose }) => {
                   background: 'transparent',
                   border: 'none',
                   outline: 'none',
-                  color: '#00ffaa',
+                  color: '#ffffff',
                   fontFamily: 'inherit',
                   fontSize: 'inherit'
                 }}
@@ -258,7 +258,7 @@ const Terminal = ({ isRunning, onClose }) => {
           </React.Fragment>
         ) : activeTab === 'Problems' ? (
           <div style={{ color: '#8b949e' }}>
-            <div style={{ color: '#00ffaa', fontWeight: 'bold', marginBottom: '8px' }}>
+            <div style={{ color: '#ffffff', fontWeight: 'bold', marginBottom: '8px' }}>
               ✓ Diagnostics Summary
             </div>
             <div>0 Errors | 0 Warnings | 0 Information Messages</div>

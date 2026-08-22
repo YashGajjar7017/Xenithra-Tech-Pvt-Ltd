@@ -64,7 +64,7 @@
   --sidebar-active: rgba(0, 229, 255, 0.12);
   --terminal-bg: rgba(3, 5, 12, 0.88);
   --terminal-border: rgba(0, 229, 255, 0.25);
-  --terminal-text: #00ffaa;
+  --terminal-text: #ffffff;
   --input-bg: rgba(3, 5, 12, 0.65);
   --input-border: rgba(255, 255, 255, 0.12);
   --button-run-bg: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(0, 230, 118, 0.2));
@@ -96,7 +96,7 @@
   --sidebar-active: rgba(0, 150, 136, 0.1);
   --terminal-bg: rgba(24, 26, 32, 0.96);
   --terminal-border: rgba(0, 150, 136, 0.2);
-  --terminal-text: #00ffaa;
+  --terminal-text: #ffffff;
   --input-bg: rgba(255, 255, 255, 0.75);
   --input-border: rgba(0, 0, 0, 0.1);
   --button-run-bg: linear-gradient(135deg, rgba(0, 150, 136, 0.15), rgba(0, 188, 212, 0.15));
@@ -148,7 +148,7 @@
   --sidebar-active: rgba(0, 255, 135, 0.12);
   --terminal-bg: rgba(1, 8, 5, 0.92);
   --terminal-border: rgba(0, 255, 135, 0.25);
-  --terminal-text: #00ffaa;
+  --terminal-text: #ffffff;
   --input-bg: rgba(0, 6, 4, 0.7);
   --input-border: rgba(0, 255, 135, 0.15);
   --button-run-bg: linear-gradient(135deg, rgba(0, 255, 135, 0.2), rgba(0, 188, 212, 0.2));

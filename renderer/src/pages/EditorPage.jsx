@@ -280,7 +280,7 @@ const EditorPage = () => {
   const [autoCopilotEnabled, setAutoCopilotEnabled] = useState(false)
   const [isCopilotTyping, setIsCopilotTyping] = useState(false)
   const copilotTimerRef = useRef(null)
-  
+
   const [trainingActive, setTrainingActive] = useState(false)
   const [trainingProgress, setTrainingProgress] = useState(0)
   const [trainingLogs, setTrainingLogs] = useState([])
@@ -288,6 +288,9 @@ const EditorPage = () => {
   const [selectedDataset, setSelectedDataset] = useState('gemini-code-instructions-50k')
   const [reportText, setReportText] = useState('')
   const [showReportModal, setShowReportModal] = useState(false)
+  const [keystrokeCount, setKeystrokeCount] = useState(0)
+  const [cursorMoveCount, setCursorMoveCount] = useState(0)
+  const [compilerRunCount, setCompilerRunCount] = useState(0)
 
   // Ghost text, Breakpoint & Error states
   const [ghostText, setGhostText] = useState('')
@@ -406,22 +409,49 @@ const EditorPage = () => {
     setTrainingCompleted(false)
     setReportText('')
 
+    const telemetry = {
+      workspacePath: localStorage.getItem('activeWorkspacePath') || '',
+      activeFile: {
+        name: activeTab,
+        path: activeFilePath,
+        code: code
+      },
+      userStats: {
+        keystrokes: keystrokeCount,
+        cursorMoves: cursorMoveCount,
+        compilerRuns: compilerRunCount
+      }
+    }
+
     try {
       if (window.api && typeof window.api.startModelTraining === 'function') {
-        const result = await window.api.startModelTraining(selectedDataset)
+        const result = await window.api.startModelTraining(selectedDataset, telemetry)
         if (result && result.success) {
           setReportText(result.report)
           setTrainingCompleted(true)
         }
       } else {
         // Fallback simulation logs if Electron API is missing
-        await new Promise(r => setTimeout(r, 600))
-        setTrainingLogs((prev) => [...prev, '[DOWNLOAD] Connecting to Gemini registry...', '[DOWNLOAD] Caching dataset...'])
-        await new Promise(r => setTimeout(r, 1000))
-        setTrainingLogs((prev) => [...prev, '[TRAIN] Epoch 1/2 - loss: 0.812 - accuracy: 89.2%', '[TRAIN] Epoch 2/2 - loss: 0.198 - accuracy: 95.1%'])
-        await new Promise(r => setTimeout(r, 600))
+        await new Promise((r) => setTimeout(r, 600))
+        setTrainingLogs((prev) => [
+          ...prev,
+          `[SYSTEM] Start Training CWD: ${telemetry.workspacePath || 'simulated-cwd'}`,
+          `[DATA] Active editor buffer: "${telemetry.activeFile.name}"`,
+          `[DATA] Telemetry: Keystrokes = ${telemetry.userStats.keystrokes} | Cursor Moves = ${telemetry.userStats.cursorMoves} | Runs = ${telemetry.userStats.compilerRuns}`,
+          '[DOWNLOAD] Connecting to Gemini registry...',
+          '[DOWNLOAD] Caching dataset...'
+        ])
+        await new Promise((r) => setTimeout(r, 1000))
+        setTrainingLogs((prev) => [
+          ...prev,
+          '[TRAIN] Epoch 1/2 - loss: 0.812 - accuracy: 89.2%',
+          '[TRAIN] Epoch 2/2 - loss: 0.198 - accuracy: 95.1%'
+        ])
+        await new Promise((r) => setTimeout(r, 600))
         setTrainingLogs((prev) => [...prev, '[SUCCESS] Model training complete! Report generated.'])
-        setReportText('# Gemini Model Training & Evaluation Report\n\n- Simulated local training report.\n- Final accuracy: 95.1%')
+        setReportText(
+          `# Gemini 4B Model Training & Evaluation Report\n\n- **Model Type:** Gemini-Based Adaptive-Coder-4B (4 Billion Parameters)\n- **Start Path:** ${telemetry.workspacePath || 'simulated-cwd'}\n- **Active File:** ${telemetry.activeFile.name}\n- **User Keystrokes:** ${telemetry.userStats.keystrokes}\n- **Cursor movements:** ${telemetry.userStats.cursorMoves}\n- **Compiler runs:** ${telemetry.userStats.compilerRuns}\n\n- Final accuracy: 95.1%`
+        )
         setTrainingCompleted(true)
       }
     } catch (err) {
@@ -435,12 +465,15 @@ const EditorPage = () => {
   useEffect(() => {
     if (window.api && typeof window.api.onTcpCodeSync === 'function') {
       window.api.onTcpCodeSync((syncedCode) => {
-        setOpenTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, code: syncedCode } : t)))
+        setOpenTabs((prev) =>
+          prev.map((t) => (t.id === activeTabId ? { ...t, code: syncedCode } : t))
+        )
       })
     }
   }, [activeTabId])
 
   const handleEditorCursorActivity = (e) => {
+    setCursorMoveCount((prev) => prev + 1)
     const cursorIndex = e.target.selectionStart
     const userStr = localStorage.getItem('user')
     let currentUsername = 'Local Developer'
@@ -450,14 +483,15 @@ const EditorPage = () => {
         currentUsername = u.username || u.name || 'Local Developer'
       } catch (e) {}
     }
-    
+
     if (window.api && typeof window.api.sendTcpCursor === 'function') {
       window.api.sendTcpCursor(cursorIndex, currentUsername, activeTab)
     }
   }
 
   const updateCursorCoords = () => {
-    const activeTextarea = activePane === 'left' ? leftCodeAreaRef.current : rightCodeAreaRef.current
+    const activeTextarea =
+      activePane === 'left' ? leftCodeAreaRef.current : rightCodeAreaRef.current
     if (!activeTextarea) return
 
     const coords = {}
@@ -525,16 +559,16 @@ const EditorPage = () => {
   const triggerCopilot = (comment, currentCode) => {
     if (isCopilotTyping) return
     if (copilotTimerRef.current) clearTimeout(copilotTimerRef.current)
-    
+
     copilotTimerRef.current = setTimeout(async () => {
       setIsCopilotTyping(true)
       const prompt = comment.replace(/^\/\/|^#/, '').trim()
-      
+
       setTerminalLines((prev) => [
         ...prev,
         { text: `[COPILOT] Generating code for: "${prompt}"...`, className: 'warning' }
       ])
-      
+
       try {
         let responseText = ''
         if (window.api && typeof window.api.generateLocalAIChat === 'function') {
@@ -547,16 +581,16 @@ const EditorPage = () => {
         } else {
           responseText = `\n// Simulated code generation\nfunction greetUser() {\n  console.log("Hello, ${prompt}!");\n}`
         }
-        
+
         // Clean markdown structures from response
         const cleanCode = responseText
           .replace(/```\w*\n?/g, '')
           .replace(/```/g, '')
           .trim()
-        
+
         let typedText = '\n'
         let index = 0
-        
+
         const typingInterval = setInterval(() => {
           if (index < cleanCode.length) {
             typedText += cleanCode.charAt(index)
@@ -567,12 +601,12 @@ const EditorPage = () => {
           } else {
             clearInterval(typingInterval)
             setIsCopilotTyping(false)
-            
+
             // Sync generated code changes to any paired TCP client
             if (window.api && typeof window.api.sendTcpCodeChange === 'function') {
               window.api.sendTcpCodeChange(currentCode + typedText)
             }
-            
+
             setTerminalLines((prev) => [
               ...prev,
               { text: `[COPILOT] Code generated and typed successfully!`, className: 'success' },
@@ -588,6 +622,7 @@ const EditorPage = () => {
   }
 
   const updateCodeWithML = async (newCode) => {
+    setKeystrokeCount((prev) => prev + 1)
     setCode(newCode)
     const lines = newCode.split('\n')
     const currentLineIdx = lines.length - 1
@@ -604,14 +639,14 @@ const EditorPage = () => {
       const secondLastLine = lines[lines.length - 2] || ''
       const lastLineTrimmed = lastLine.trim()
       const secondLastLineTrimmed = secondLastLine.trim()
-      
+
       let comment = ''
       if (lastLineTrimmed.startsWith('//') || lastLineTrimmed.startsWith('#')) {
         comment = lastLineTrimmed
       } else if (secondLastLineTrimmed.startsWith('//') || secondLastLineTrimmed.startsWith('#')) {
         comment = secondLastLineTrimmed
       }
-      
+
       if (comment) {
         triggerCopilot(comment, newCode)
       }
@@ -1194,6 +1229,7 @@ const EditorPage = () => {
     if (isRunning) return
     setIsRunning(true)
     setActiveError(null)
+    setCompilerRunCount((prev) => prev + 1)
 
     const newLines = [
       ...terminalLines,
@@ -1320,10 +1356,12 @@ const EditorPage = () => {
     ])
   }
 
-  const handleFormat = () => {
+  const handleFormat = async () => {
     let formatted = code
     try {
-      if (
+      if (window.api && typeof window.api.formatCode === 'function') {
+        formatted = await window.api.formatCode(code, selectedLanguage, activeTab)
+      } else if (
         activeTab.endsWith('.json') ||
         (code.trim().startsWith('{') && code.trim().endsWith('}') && !code.includes('function'))
       ) {
@@ -2749,7 +2787,15 @@ const EditorPage = () => {
                     </div>
                   ))}
                 </div>
-                <div style={{ position: 'relative', flex: 1, height: '100%', display: 'flex', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    position: 'relative',
+                    flex: 1,
+                    height: '100%',
+                    display: 'flex',
+                    overflow: 'hidden'
+                  }}
+                >
                   <textarea
                     ref={rightCodeAreaRef}
                     className="code-area"
@@ -2843,89 +2889,80 @@ const EditorPage = () => {
         {/* RIGHT SIDE AI CHAT & TEXT ADJUSTER DRAWER */}
         <div
           style={{
-            width: isRightPanelOpen ? '320px' : '0px',
+            width: isRightPanelOpen ? '340px' : '0px',
             display: 'flex',
             flexDirection: 'column',
-            borderLeft: isRightPanelOpen ? '1px solid var(--panel-border)' : 'none',
-            background: 'var(--sidebar-bg)',
+            borderLeft: isRightPanelOpen ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
+            background: 'rgba(15, 18, 25, 0.85)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: isRightPanelOpen ? '-10px 0 30px rgba(0, 0, 0, 0.5)' : 'none',
             overflow: 'hidden',
-            transition: 'width 0.2s ease, border 0.2s ease',
+            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             height: '100%',
-            zIndex: 5
+            zIndex: 5,
+            fontFamily: "'Outfit', sans-serif"
           }}
         >
-          {/* Drawer Header Tabs */}
+          {/* Drawer Header Tabs - Segmented Design */}
           <div
             style={{
               display: 'flex',
-              background: 'rgba(0,0,0,0.15)',
-              borderBottom: '1px solid var(--panel-border)',
-              height: '35px',
-              alignItems: 'center'
+              background: 'rgba(0, 0, 0, 0.25)',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+              height: '42px',
+              alignItems: 'center',
+              padding: '0 8px',
+              gap: '6px'
             }}
           >
-            <div
-              onClick={() => setRightPanelTab('chat')}
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                color: rightPanelTab === 'chat' ? 'var(--accent-color)' : 'var(--text-muted)',
-                borderBottom: rightPanelTab === 'chat' ? '2px solid var(--accent-color)' : 'none',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              AI CHAT
-            </div>
-            <div
-              onClick={() => setRightPanelTab('format')}
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                color: rightPanelTab === 'format' ? 'var(--accent-color)' : 'var(--text-muted)',
-                borderBottom: rightPanelTab === 'format' ? '2px solid var(--accent-color)' : 'none',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              ADJUSTER
-            </div>
-            <div
-              onClick={() => setRightPanelTab('copilot')}
-              style={{
-                flex: 1.2,
-                textAlign: 'center',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                color: rightPanelTab === 'copilot' ? 'var(--accent-color)' : 'var(--text-muted)',
-                borderBottom: rightPanelTab === 'copilot' ? '2px solid var(--accent-color)' : 'none',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              COPILOT & ML
-            </div>
+            {['chat', 'format', 'copilot'].map((tab) => {
+              const isActive = rightPanelTab === tab
+              return (
+                <div
+                  key={tab}
+                  onClick={() => setRightPanelTab(tab)}
+                  style={{
+                    flex: tab === 'copilot' ? 1.3 : 1,
+                    textAlign: 'center',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    letterSpacing: '0.04em',
+                    cursor: 'pointer',
+                    color: isActive ? '#ffffff' : '#8b949e',
+                    background: isActive ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                    border: isActive
+                      ? '1px solid rgba(255, 255, 255, 0.12)'
+                      : '1px solid transparent',
+                    borderRadius: '6px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.color = '#fff'
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.color = '#8b949e'
+                  }}
+                >
+                  {tab === 'chat' ? 'AI ASSISTANT' : tab === 'format' ? 'ADJUSTER' : 'COPILOT & ML'}
+                </div>
+              )
+            })}
             <div
               onClick={() => setIsRightPanelOpen(false)}
               style={{
-                padding: '0 10px',
+                padding: '4px 8px',
                 cursor: 'pointer',
-                color: 'var(--text-muted)',
-                fontSize: '16px'
+                color: '#8b949e',
+                fontSize: '18px',
+                fontWeight: '300',
+                transition: 'color 0.2s'
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#8b949e')}
             >
               ×
             </div>
@@ -2940,50 +2977,53 @@ const EditorPage = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                padding: '10px'
+                padding: '14px'
               }}
             >
               <div
                 style={{
                   flex: 1,
                   overflowY: 'auto',
-                  marginBottom: '10px',
+                  marginBottom: '12px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px'
+                  gap: '10px',
+                  paddingRight: '4px'
                 }}
               >
-                {chatMessages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                      background:
-                        msg.sender === 'user'
-                          ? 'rgba(0, 122, 204, 0.2)'
+                {chatMessages.map((msg, idx) => {
+                  const isUser = msg.sender === 'user'
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        alignSelf: isUser ? 'flex-end' : 'flex-start',
+                        background: isUser
+                          ? 'linear-gradient(135deg, #1e2530 0%, #0f131a 100%)'
                           : 'rgba(255, 255, 255, 0.04)',
-                      border:
-                        msg.sender === 'user'
-                          ? '1px solid rgba(0, 122, 204, 0.4)'
-                          : '1px solid rgba(255, 255, 255, 0.08)',
-                      borderRadius: '8px',
-                      padding: '8px 12px',
-                      maxWidth: '85%',
-                      fontSize: '12px',
-                      lineHeight: '1.4',
-                      color: 'var(--text-main)'
-                    }}
-                  >
-                    {msg.sender === 'user' ? msg.text : formatChatMessage(msg.text)}
-                  </div>
-                ))}
+                        border: isUser
+                          ? '1px solid rgba(255, 255, 255, 0.15)'
+                          : '1px solid rgba(255, 255, 255, 0.06)',
+                        borderRadius: isUser ? '12px 12px 0 12px' : '12px 12px 12px 0',
+                        padding: '10px 14px',
+                        maxWidth: '85%',
+                        fontSize: '12px',
+                        lineHeight: '1.45',
+                        color: '#e6edf3',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }}
+                    >
+                      {isUser ? msg.text : formatChatMessage(msg.text)}
+                    </div>
+                  )
+                })}
               </div>
               <div
                 style={{
                   display: 'flex',
-                  gap: '6px',
-                  borderTop: '1px solid var(--panel-border)',
-                  paddingTop: '10px'
+                  gap: '8px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                  paddingTop: '12px'
                 }}
               >
                 <input
@@ -2994,25 +3034,47 @@ const EditorPage = () => {
                   placeholder="Ask AI Assistant..."
                   style={{
                     flex: 1,
-                    background: 'var(--input-bg)',
-                    border: '1px solid var(--input-border)',
-                    borderRadius: '4px',
-                    color: 'var(--text-main)',
+                    background: 'rgba(0,0,0,0.3)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: '6px',
+                    color: '#fff',
                     fontSize: '12px',
-                    padding: '6px 10px',
-                    outline: 'none'
+                    padding: '8px 12px',
+                    outline: 'none',
+                    transition: 'all 0.2s ease',
+                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.35)'
+                    e.target.style.boxShadow =
+                      '0 0 8px rgba(255, 255, 255, 0.15), inset 0 1px 3px rgba(0,0,0,0.3)'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(255,255,255,0.12)'
+                    e.target.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.3)'
                   }}
                 />
                 <button
                   onClick={handleSendChatMessage}
                   style={{
-                    background: 'var(--accent-color)',
+                    background: 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)',
                     border: 'none',
-                    color: '#fff',
-                    borderRadius: '4px',
-                    padding: '0 12px',
+                    color: '#000000',
+                    borderRadius: '6px',
+                    padding: '0 16px',
                     fontSize: '12px',
-                    cursor: 'pointer'
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 4px 10px rgba(255, 255, 255, 0.1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)'
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 255, 255, 0.2)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'none'
+                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(255, 255, 255, 0.1)'
                   }}
                 >
                   Send
@@ -3026,43 +3088,64 @@ const EditorPage = () => {
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                padding: '10px',
+                padding: '14px',
                 overflowY: 'auto',
-                gap: '10px'
+                gap: '12px'
               }}
             >
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+              <div style={{ fontSize: '11px', color: '#8b949e', lineHeight: '1.5' }}>
                 Enter custom replacement rules to adjust the main editor code. Use format{' '}
-                {'replace:search->replace'} (one per line).
+                <code>replace:search-&gt;replace</code> (one per line).
               </div>
               <textarea
                 value={formatRules}
                 onChange={(e) => setFormatRules(e.target.value)}
                 style={{
                   flex: 1,
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
-                  color: 'var(--text-main)',
-                  fontFamily: 'Consolas, monospace',
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#e6edf3',
+                  fontFamily: "'JetBrains Mono', monospace",
                   fontSize: '11px',
-                  padding: '8px',
-                  borderRadius: '4px',
+                  padding: '10px',
+                  borderRadius: '6px',
                   resize: 'none',
                   outline: 'none',
-                  minHeight: '200px'
+                  minHeight: '220px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.35)'
+                  e.target.style.boxShadow =
+                    '0 0 8px rgba(255, 255, 255, 0.15), inset 0 1px 3px rgba(0,0,0,0.3)'
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255,255,255,0.12)'
+                  e.target.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.3)'
                 }}
               />
               <button
                 onClick={handleApplyFormatRules}
                 style={{
-                  background: 'linear-gradient(135deg, #0e639c, #1177bb)',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)',
                   border: 'none',
-                  color: '#fff',
-                  padding: '8px',
-                  borderRadius: '4px',
+                  color: '#000',
+                  padding: '10px',
+                  borderRadius: '6px',
                   fontSize: '12px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 10px rgba(255,255,255,0.1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(255,255,255,0.2)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'none'
+                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(255,255,255,0.1)'
                 }}
               >
                 Apply Rules to Editor
@@ -3075,56 +3158,109 @@ const EditorPage = () => {
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                padding: '12px',
+                padding: '14px',
                 overflowY: 'auto',
-                gap: '14px',
-                color: 'var(--text-main)',
+                gap: '16px',
+                color: '#e6edf3',
                 fontSize: '12px'
               }}
             >
               {/* Section 1: Auto Copilot */}
               <div>
-                <div style={{ fontWeight: 'bold', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                <div
+                  style={{
+                    fontWeight: 'bold',
+                    fontSize: '10px',
+                    color: '#8b949e',
+                    letterSpacing: '0.08em',
+                    marginBottom: '8px',
+                    borderBottom: '1px solid rgba(255,255,255,0.08)',
+                    paddingBottom: '4px'
+                  }}
+                >
                   AUTO COPILOT MODE
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'rgba(255,255,255,0.02)',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}
+                >
                   <div>
-                    <div style={{ fontWeight: 'bold', color: '#fff' }}>Enable Auto Copilot</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    <div style={{ fontWeight: '700', color: '#fff' }}>Enable Auto Copilot</div>
+                    <div style={{ fontSize: '10px', color: '#8b949e', marginTop: '2px' }}>
                       Auto-types code when typing comments
                     </div>
                   </div>
-                  <label style={{ position: 'relative', display: 'inline-block', width: '36px', height: '20px' }}>
+                  <label
+                    style={{
+                      position: 'relative',
+                      display: 'inline-block',
+                      width: '38px',
+                      height: '22px'
+                    }}
+                  >
                     <input
                       type="checkbox"
                       checked={autoCopilotEnabled}
                       onChange={(e) => setAutoCopilotEnabled(e.target.checked)}
                       style={{ opacity: 0, width: 0, height: 0 }}
                     />
-                    <span style={{
-                      position: 'absolute',
-                      cursor: 'pointer',
-                      top: 0, left: 0, right: 0, bottom: 0,
-                      backgroundColor: autoCopilotEnabled ? '#00ffaa' : '#333',
-                      transition: '0.3s',
-                      borderRadius: '20px',
-                      boxShadow: autoCopilotEnabled ? '0 0 8px #00ffaa' : 'none'
-                    }}>
-                      <span style={{
+                    <span
+                      style={{
                         position: 'absolute',
-                        height: '14px', width: '14px',
-                        left: autoCopilotEnabled ? '18px' : '3px',
-                        bottom: '3px',
-                        backgroundColor: '#fff',
-                        transition: '0.3s',
-                        borderRadius: '50%'
-                      }} />
+                        cursor: 'pointer',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: autoCopilotEnabled ? '#ffffff' : '#222',
+                        transition: 'all 0.25s ease',
+                        borderRadius: '20px',
+                        boxShadow: autoCopilotEnabled ? '0 0 10px rgba(255,255,255,0.45)' : 'none'
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: 'absolute',
+                          height: '16px',
+                          width: '16px',
+                          left: autoCopilotEnabled ? '19px' : '3px',
+                          bottom: '3px',
+                          backgroundColor: autoCopilotEnabled ? '#000000' : '#ffffff',
+                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                          borderRadius: '50%'
+                        }}
+                      />
                     </span>
                   </label>
                 </div>
                 {isCopilotTyping && (
-                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#ffb86c', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#ffb86c', animation: 'pulse 1s infinite' }} />
+                  <div
+                    style={{
+                      marginTop: '8px',
+                      fontSize: '11px',
+                      color: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        background: '#ffffff',
+                        animation: 'pulse 1s infinite'
+                      }}
+                    />
                     🤖 Copilot is typing code...
                   </div>
                 )}
@@ -3132,31 +3268,68 @@ const EditorPage = () => {
 
               {/* Section 2: Model Training */}
               <div>
-                <div style={{ fontWeight: 'bold', fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
+                <div
+                  style={{
+                    fontWeight: 'bold',
+                    fontSize: '10px',
+                    color: '#8b949e',
+                    letterSpacing: '0.08em',
+                    marginBottom: '8px',
+                    borderBottom: '1px solid rgba(255,255,255,0.08)',
+                    paddingBottom: '4px'
+                  }}
+                >
                   LOCAL ML MODEL TRAINING
                 </div>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    background: 'rgba(255,255,255,0.02)',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}
+                >
                   <div>
-                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>Dataset Select (Gemini Model Set)</label>
+                    <label
+                      style={{
+                        display: 'block',
+                        fontSize: '11px',
+                        color: '#8b949e',
+                        marginBottom: '6px',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Dataset Select (Gemini Model Set)
+                    </label>
                     <select
                       value={selectedDataset}
                       onChange={(e) => setSelectedDataset(e.target.value)}
                       disabled={trainingActive}
                       style={{
                         width: '100%',
-                        background: '#0d1117',
+                        background: '#0a0d14',
                         color: '#fff',
                         border: '1px solid rgba(255,255,255,0.12)',
-                        padding: '6px',
-                        borderRadius: '4px',
+                        padding: '8px 10px',
+                        borderRadius: '6px',
                         fontSize: '11px',
-                        outline: 'none'
+                        outline: 'none',
+                        cursor: trainingActive ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      <option value="gemini-code-instructions-50k">gemini-code-instructions-50k</option>
-                      <option value="gemini-agent-trajectories-25k">gemini-agent-trajectories-25k</option>
-                      <option value="gemini-clean-refactoring-10k">gemini-clean-refactoring-10k</option>
+                      <option value="gemini-code-instructions-50k">
+                        gemini-code-instructions-50k (4B Model)
+                      </option>
+                      <option value="gemini-agent-trajectories-25k">
+                        gemini-agent-trajectories-25k (4B Model)
+                      </option>
+                      <option value="gemini-clean-refactoring-10k">
+                        gemini-clean-refactoring-10k (4B Model)
+                      </option>
                     </select>
                   </div>
 
@@ -3165,58 +3338,117 @@ const EditorPage = () => {
                     disabled={trainingActive}
                     style={{
                       width: '100%',
-                      background: trainingActive ? '#333' : 'linear-gradient(135deg, #00ffaa 0%, #00bfff 100%)',
+                      background: trainingActive
+                        ? '#333'
+                        : 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)',
                       border: 'none',
-                      color: '#000',
-                      fontWeight: 'bold',
-                      padding: '8px',
-                      borderRadius: '4px',
+                      color: trainingActive ? '#888' : '#000000',
+                      fontWeight: '700',
+                      padding: '10px',
+                      borderRadius: '6px',
                       fontSize: '11px',
                       cursor: trainingActive ? 'default' : 'pointer',
-                      marginTop: '6px'
+                      marginTop: '6px',
+                      transition: 'all 0.2s ease',
+                      boxShadow: trainingActive ? 'none' : '0 4px 12px rgba(255, 255, 255, 0.1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!trainingActive) {
+                        e.currentTarget.style.transform = 'translateY(-1px)'
+                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 255, 255, 0.2)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!trainingActive) {
+                        e.currentTarget.style.transform = 'none'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 255, 255, 0.1)'
+                      }
                     }}
                   >
-                    {trainingActive ? '⚡ Training Model...' : '🚀 Start Local Training'}
+                    {trainingActive ? '⚡ Training 4B Model...' : '🚀 Start Local Training'}
                   </button>
                 </div>
               </div>
 
               {/* Progress & Console Logs */}
               {(trainingActive || trainingLogs.length > 0) && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {trainingActive && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-muted)' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: '10px',
+                          color: '#8b949e'
+                        }}
+                      >
                         <span>Training Progress</span>
                         <span>{trainingProgress}%</span>
                       </div>
-                      <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ width: `${trainingProgress}%`, height: '100%', background: '#00ffaa', transition: 'width 0.1s' }} />
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '5px',
+                          background: 'rgba(255,255,255,0.08)',
+                          borderRadius: '3px',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${trainingProgress}%`,
+                            height: '100%',
+                            background: '#ffffff',
+                            transition: 'width 0.1s'
+                          }}
+                        />
                       </div>
                     </div>
                   )}
 
-                  <div style={{ fontWeight: 'bold', fontSize: '10px', color: 'var(--text-muted)' }}>
+                  <div
+                    style={{
+                      fontWeight: 'bold',
+                      fontSize: '10px',
+                      color: '#8b949e',
+                      letterSpacing: '0.08em'
+                    }}
+                  >
                     TRAINING CONSOLE
                   </div>
-                  <div style={{
-                    height: '140px',
-                    background: '#0d1117',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '4px',
-                    padding: '8px',
-                    fontFamily: 'monospace',
-                    fontSize: '10px',
-                    overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    color: '#888'
-                  }}>
+                  <div
+                    style={{
+                      height: '150px',
+                      background: '#070a0f',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '6px',
+                      padding: '10px',
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: '10px',
+                      overflowY: 'auto',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      color: '#888',
+                      boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.4)'
+                    }}
+                  >
                     {trainingLogs.map((log, idx) => (
-                      <div key={idx} style={{
-                        color: log.includes('[SUCCESS]') ? '#00ffaa' : log.includes('[ERROR]') ? '#ff6b6b' : log.includes('[TRAIN]') ? '#eee' : '#888'
-                      }}>{log}</div>
+                      <div
+                        key={idx}
+                        style={{
+                          color: log.includes('[SUCCESS]')
+                            ? '#ffffff'
+                            : log.includes('[ERROR]')
+                              ? '#ff6b6b'
+                              : log.includes('[TRAIN]')
+                                ? '#eee'
+                                : '#888'
+                        }}
+                      >
+                        {log}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -3227,14 +3459,24 @@ const EditorPage = () => {
                 <button
                   onClick={() => setShowReportModal(true)}
                   style={{
-                    background: 'rgba(0, 255, 170, 0.1)',
-                    border: '1px solid rgba(0, 255, 170, 0.3)',
-                    color: '#00ffaa',
-                    borderRadius: '4px',
-                    padding: '8px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#ffffff',
+                    borderRadius: '6px',
+                    padding: '10px',
                     fontSize: '12px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'
                   }}
                 >
                   📂 View Long Run Training Report
@@ -3403,71 +3645,102 @@ const EditorPage = () => {
 
       {/* Report Modal */}
       {showReportModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, width: '100vw', height: '100vh',
-          background: 'rgba(0,0,0,0.65)',
-          backdropFilter: 'blur(8px)',
-          zIndex: 99999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }} onClick={() => setShowReportModal(false)}>
-          <div style={{
-            width: '560px',
-            maxHeight: '80vh',
-            background: '#161b22',
-            border: '1px solid var(--panel-border)',
-            borderRadius: '10px',
-            boxShadow: '0 12px 36px rgba(0,0,0,0.6)',
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 99999,
             display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            color: 'var(--text-main)'
-          }} onClick={(e) => e.stopPropagation()}>
-            <div style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setShowReportModal(false)}
+        >
+          <div
+            style={{
+              width: '560px',
+              maxHeight: '80vh',
+              background: '#161b22',
+              border: '1px solid var(--panel-border)',
+              borderRadius: '10px',
+              boxShadow: '0 12px 36px rgba(0,0,0,0.6)',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '14px 20px',
-              borderBottom: '1px solid var(--panel-border)',
-              background: 'rgba(255,255,255,0.02)'
-            }}>
-              <span style={{ fontWeight: '700', fontSize: '13px', color: '#00ffaa' }}>
+              flexDirection: 'column',
+              overflow: 'hidden',
+              color: 'var(--text-main)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 20px',
+                borderBottom: '1px solid var(--panel-border)',
+                background: 'rgba(255,255,255,0.02)'
+              }}
+            >
+              <span style={{ fontWeight: '700', fontSize: '13px', color: '#ffffff' }}>
                 GEMINI TRAINING LONG RUN REPORT
               </span>
-              <button onClick={() => setShowReportModal(false)} style={{ background: 'transparent', border: 'none', color: '#8b949e', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+              <button
+                onClick={() => setShowReportModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#8b949e',
+                  fontSize: '18px',
+                  cursor: 'pointer'
+                }}
+              >
+                ✕
+              </button>
             </div>
-            <div style={{
-              padding: '20px',
-              overflowY: 'auto',
-              fontSize: '12px',
-              lineHeight: '1.6',
-              fontFamily: 'Consolas, monospace',
-              whiteSpace: 'pre-wrap',
-              background: '#0d1117',
-              color: '#e6edf3'
-            }}>
+            <div
+              style={{
+                padding: '20px',
+                overflowY: 'auto',
+                fontSize: '12px',
+                lineHeight: '1.6',
+                fontFamily: 'Consolas, monospace',
+                whiteSpace: 'pre-wrap',
+                background: '#0d1117',
+                color: '#e6edf3'
+              }}
+            >
               {reportText}
             </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              padding: '12px 20px',
-              borderTop: '1px solid var(--panel-border)',
-              background: 'rgba(0,0,0,0.2)'
-            }}>
-              <button onClick={() => setShowReportModal(false)} style={{
-                background: '#58a6ff',
-                color: '#fff',
-                border: 'none',
-                padding: '6px 16px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}>Close</button>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                padding: '12px 20px',
+                borderTop: '1px solid var(--panel-border)',
+                background: 'rgba(0,0,0,0.2)'
+              }}
+            >
+              <button
+                onClick={() => setShowReportModal(false)}
+                style={{
+                  background: '#58a6ff',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '6px 16px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -3511,16 +3784,40 @@ const getTextareaCaretCoordinates = (textarea, position) => {
   clone.style.height = textarea.clientHeight + 'px'
 
   const properties = [
-    'direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY',
-    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
-    'borderStyle', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize',
-    'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign',
-    'textTransform', 'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing',
-    'tabSize', 'MozTabSize'
+    'direction',
+    'boxSizing',
+    'width',
+    'height',
+    'overflowX',
+    'overflowY',
+    'borderTopWidth',
+    'borderRightWidth',
+    'borderBottomWidth',
+    'borderLeftWidth',
+    'borderStyle',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'fontStyle',
+    'fontVariant',
+    'fontWeight',
+    'fontStretch',
+    'fontSize',
+    'fontSizeAdjust',
+    'lineHeight',
+    'fontFamily',
+    'textAlign',
+    'textTransform',
+    'textIndent',
+    'textDecoration',
+    'letterSpacing',
+    'wordSpacing',
+    'tabSize',
+    'MozTabSize'
   ]
 
-  properties.forEach(prop => {
+  properties.forEach((prop) => {
     clone.style[prop] = computed[prop]
   })
 

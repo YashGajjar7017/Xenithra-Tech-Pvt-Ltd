@@ -221,48 +221,103 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
     }
   }
 
-  // Get flat monochrome Boxicons
+  // Get vibrant colored Boxicons based on language extension
   const getFileIcon = (filename) => {
     const ext = filename.split('.').pop().toLowerCase()
-    const iconStyle = { fontSize: '15px', color: 'var(--text-main)', opacity: 0.75 }
+    let iconClass = 'bx bx-file'
+    let color = '#a6b2c0' // default grey
 
     switch (ext) {
       case 'html':
+        iconClass = 'bx bxl-html5'
+        color = '#e34f26' // HTML orange
+        break
       case 'xml':
-        return <i className="bx bx-code" style={iconStyle}></i>
+        iconClass = 'bx bx-code'
+        color = '#ff8c00' // XML orange-red
+        break
       case 'js':
       case 'jsx':
-        return <i className="bx bxl-javascript" style={iconStyle}></i>
+        iconClass = 'bx bxl-javascript'
+        color = '#f7df1e' // JS yellow
+        break
       case 'ts':
       case 'tsx':
-        return <i className="bx bx-code-block" style={iconStyle}></i>
+        iconClass = 'bx bxl-typescript'
+        color = '#3178c6' // TS blue
+        break
       case 'css':
-        return <i className="bx bx-palette" style={iconStyle}></i>
+        iconClass = 'bx bxl-css3'
+        color = '#1572b6' // CSS blue
+        break
       case 'py':
-        return <i className="bx bxl-python" style={iconStyle}></i>
-      case 'cpp':
-      case 'hpp':
+        iconClass = 'bx bxl-python'
+        color = '#3776ab' // Python blue/yellow
+        break
       case 'c':
       case 'h':
+        iconClass = 'bx bx-chip' // chip for C
+        color = '#a8b9cc'
+        break
+      case 'cpp':
+      case 'hpp':
+        iconClass = 'bx bx-terminal'
+        color = '#00599c' // C++ blue
+        break
       case 'cs':
+        iconClass = 'bx bx-hash'
+        color = '#178600' // C# green
+        break
       case 'dart':
-        return <i className="bx bx-terminal" style={iconStyle}></i>
+        iconClass = 'bx bx-play-circle'
+        color = '#00b4ab' // Dart cyan
+        break
       case 'json':
+        iconClass = 'bx bxs-cog'
+        color = '#f5b041' // JSON gold
+        break
       case 'yml':
       case 'yaml':
-        return <i className="bx bx-cog" style={iconStyle}></i>
+        iconClass = 'bx bx-slider-alt'
+        color = '#cb4335' // YAML red
+        break
       case 'md':
-        return <i className="bx bx-detail" style={iconStyle}></i>
+        iconClass = 'bx bxs-file-md'
+        color = '#00bfff' // MD blue
+        break
       case 'png':
       case 'jpg':
       case 'jpeg':
       case 'ico':
-      case 'icns':
       case 'svg':
-        return <i className="bx bx-image" style={iconStyle}></i>
+        iconClass = 'bx bx-image'
+        color = '#ab47bc' // Image violet
+        break
+      case 'pdf':
+        iconClass = 'bx bxs-file-pdf'
+        color = '#e74c3c' // PDF red
+        break
+      case 'txt':
+        iconClass = 'bx bx-file-blank'
+        color = '#bdc3c7'
+        break
       default:
-        return <i className="bx bx-file" style={iconStyle}></i>
+        iconClass = 'bx bx-file'
+        color = '#95a5a6'
     }
+
+    return (
+      <i
+        className={iconClass}
+        style={{
+          fontSize: '15px',
+          color,
+          marginRight: '6px',
+          display: 'inline-block',
+          verticalAlign: 'middle'
+        }}
+      ></i>
+    )
   }
 
   // Generate VS Code Git badges like M (Modified) and U (Untracked)
@@ -320,8 +375,8 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
               ▶
             </span>
             <i
-              className="bx bx-folder"
-              style={{ fontSize: '15px', color: 'var(--text-main)', opacity: 0.75 }}
+              className={isExpanded ? 'bx bxs-folder-open' : 'bx bxs-folder'}
+              style={{ fontSize: '15px', color: '#ffd54f', marginRight: '4px', opacity: 0.95 }}
             ></i>
             <span
               style={{

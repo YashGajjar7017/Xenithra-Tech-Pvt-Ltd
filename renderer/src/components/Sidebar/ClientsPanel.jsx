@@ -36,9 +36,11 @@ const ClientsPanel = () => {
     if (window.api && typeof window.api.onSimulatedClientAuth === 'function') {
       window.api.onSimulatedClientAuth((success) => {
         if (success) {
-          setSimulatedClient((prev) => prev ? { ...prev, paired: true, status: 'Authenticated' } : null)
+          setSimulatedClient((prev) =>
+            prev ? { ...prev, paired: true, status: 'Authenticated' } : null
+          )
         } else {
-          setSimulatedClient((prev) => prev ? { ...prev, status: 'Failed Auth' } : null)
+          setSimulatedClient((prev) => (prev ? { ...prev, status: 'Failed Auth' } : null))
           alert('Incorrect Pairing Token entered on simulated client.')
         }
       })
@@ -151,7 +153,8 @@ const ClientsPanel = () => {
       <div style={styles.clientList}>
         {clients.length === 0 ? (
           <div style={styles.emptyText}>
-            No client devices detected. Connect another client to port 27789 or start the simulator below.
+            No client devices detected. Connect another client to port 27789 or start the simulator
+            below.
           </div>
         ) : (
           clients.map((client) => (
@@ -184,7 +187,7 @@ const ClientsPanel = () => {
 
       {/* Connect to Remote Host */}
       <div style={styles.sectionHeader}>CONNECT TO REMOTE HOST</div>
-      
+
       {outboundStatus === 'Disconnected' ? (
         <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
           <input
@@ -201,11 +204,18 @@ const ClientsPanel = () => {
       ) : (
         <div style={{ ...styles.simContainer, marginBottom: '16px' }}>
           <div style={styles.simHeader}>
-            <span>🖥️ Host: <strong>{outboundHostIp}</strong></span>
-            <button onClick={handleDisconnectOutbound} style={styles.disconnectBtn}>Disconnect</button>
+            <span>
+              🖥️ Host: <strong>{outboundHostIp}</strong>
+            </span>
+            <button onClick={handleDisconnectOutbound} style={styles.disconnectBtn}>
+              Disconnect
+            </button>
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-            Status: <span style={{ color: outboundStatus === 'Authenticated' ? '#00ffaa' : '#ffb86c' }}>{outboundStatus}</span>
+            Status:{' '}
+            <span style={{ color: outboundStatus === 'Authenticated' ? '#00ffaa' : '#ffb86c' }}>
+              {outboundStatus}
+            </span>
           </div>
           {outboundStatus === 'Connected' || outboundStatus === 'Failed Auth' ? (
             <div style={styles.authBox}>
@@ -230,7 +240,7 @@ const ClientsPanel = () => {
 
       {/* Simulator Actions */}
       <div style={styles.sectionHeader}>CLIENT SIMULATOR</div>
-      
+
       {!simulatedClient ? (
         <button onClick={handleSimulateClient} style={styles.simulateBtn}>
           <i className="bx bx-devices" style={{ marginRight: '6px' }}></i>
@@ -239,12 +249,19 @@ const ClientsPanel = () => {
       ) : (
         <div style={styles.simContainer}>
           <div style={styles.simHeader}>
-            <span>📱 simulated-client: <strong>{simulatedClient.name}</strong></span>
-            <button onClick={handleDisconnectSimulated} style={styles.disconnectBtn}>Disconnect</button>
+            <span>
+              📱 simulated-client: <strong>{simulatedClient.name}</strong>
+            </span>
+            <button onClick={handleDisconnectSimulated} style={styles.disconnectBtn}>
+              Disconnect
+            </button>
           </div>
-          
+
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-            Status: <span style={{ color: simulatedClient.paired ? '#00ffaa' : '#ffb86c' }}>{simulatedClient.status}</span>
+            Status:{' '}
+            <span style={{ color: simulatedClient.paired ? '#00ffaa' : '#ffb86c' }}>
+              {simulatedClient.status}
+            </span>
           </div>
 
           {!simulatedClient.paired ? (
@@ -253,7 +270,9 @@ const ClientsPanel = () => {
                 type="text"
                 placeholder="Enter Pairing Token..."
                 value={simulatedClient.tokenInput}
-                onChange={(e) => setSimulatedClient({ ...simulatedClient, tokenInput: e.target.value })}
+                onChange={(e) =>
+                  setSimulatedClient({ ...simulatedClient, tokenInput: e.target.value })
+                }
                 style={styles.tokenInput}
               />
               <button onClick={handleAuthSimulated} style={styles.authBtn}>
@@ -282,16 +301,21 @@ const ClientsPanel = () => {
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h5 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>DEVICE PAIRING</h5>
-              <button onClick={() => setSelectedClient(null)} style={styles.closeBtn}>✕</button>
+              <button onClick={() => setSelectedClient(null)} style={styles.closeBtn}>
+                ✕
+              </button>
             </div>
             <div style={styles.modalBody}>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
-                Enter this authentication token on your client device (<strong>{selectedClient.name}</strong>) to authorize:
+                Enter this authentication token on your client device (
+                <strong>{selectedClient.name}</strong>) to authorize:
               </p>
               <div style={styles.tokenCode}>{selectedClient.token}</div>
             </div>
             <div style={styles.modalFooter}>
-              <button onClick={() => setSelectedClient(null)} style={styles.okBtn}>OK</button>
+              <button onClick={() => setSelectedClient(null)} style={styles.okBtn}>
+                OK
+              </button>
             </div>
           </div>
         </div>
@@ -408,7 +432,8 @@ const styles = {
     borderRadius: '4px'
   },
   simulateBtn: {
-    background: 'linear-gradient(135deg, rgba(88, 166, 255, 0.15) 0%, rgba(88, 166, 255, 0.05) 100%)',
+    background:
+      'linear-gradient(135deg, rgba(88, 166, 255, 0.15) 0%, rgba(88, 166, 255, 0.05) 100%)',
     border: '1px solid rgba(88, 166, 255, 0.25)',
     color: '#58a6ff',
     borderRadius: '6px',

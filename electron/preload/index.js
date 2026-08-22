@@ -125,10 +125,13 @@ const api = {
   sendSimulatedCode: (code) => ipcRenderer.invoke('tcp:sendSimulatedCode', code),
   disconnectSimulated: () => ipcRenderer.invoke('tcp:disconnectSimulated'),
   sendTcpCodeChange: (code) => ipcRenderer.invoke('tcp:sendCodeChange', code),
-  onTcpClientsUpdate: (cb) => ipcRenderer.on('tcp:clients-update', (_event, clients) => cb(clients)),
+  onTcpClientsUpdate: (cb) =>
+    ipcRenderer.on('tcp:clients-update', (_event, clients) => cb(clients)),
   onTcpCodeSync: (cb) => ipcRenderer.on('tcp:code-sync', (_event, code) => cb(code)),
-  onSimulatedClientCode: (cb) => ipcRenderer.on('tcp:simulated-client-code', (_event, code) => cb(code)),
-  onSimulatedClientAuth: (cb) => ipcRenderer.on('tcp:simulated-client-auth', (_event, success) => cb(success)),
+  onSimulatedClientCode: (cb) =>
+    ipcRenderer.on('tcp:simulated-client-code', (_event, code) => cb(code)),
+  onSimulatedClientAuth: (cb) =>
+    ipcRenderer.on('tcp:simulated-client-auth', (_event, success) => cb(success)),
   connectToHost: (ip, port) => ipcRenderer.invoke('tcp:connectToHost', ip, port),
   authOutbound: (token) => ipcRenderer.invoke('tcp:authOutbound', token),
   disconnectOutbound: () => ipcRenderer.invoke('tcp:disconnectOutbound'),
@@ -139,8 +142,11 @@ const api = {
   onOutboundDisconnect: (cb) => ipcRenderer.on('tcp:outbound-disconnect', () => cb()),
 
   // ML Training API
-  startModelTraining: (datasetName) => ipcRenderer.invoke('ml:startTraining', datasetName),
-  onTrainingProgress: (cb) => ipcRenderer.on('ml:training-progress', (_event, progress) => cb(progress)),
+  startModelTraining: (datasetName, extraData) =>
+    ipcRenderer.invoke('ml:startTraining', datasetName, extraData),
+  onTrainingProgress: (cb) =>
+    ipcRenderer.on('ml:training-progress', (_event, progress) => cb(progress)),
+  formatCode: (code, lang, filename) => ipcRenderer.invoke('format:code', code, lang, filename),
 
   // XAMPP Service API
   getXamppStatus: () => ipcRenderer.invoke('xampp:status'),

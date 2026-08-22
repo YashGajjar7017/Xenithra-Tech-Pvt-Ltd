@@ -118,7 +118,6 @@ Header component added to all non-authentication pages:
 
 ```jsx
 import Header from './components/Header/Header'
-
 ;<Header onToggleSidebar={handleToggleSidebar} title="My Page Title" showSidebarToggle={true} />
 ```
 
@@ -139,7 +138,6 @@ import Header from './components/Header/Header'
 
 ```jsx
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
-
 ;<ErrorBoundary>
   <YourApp />
 </ErrorBoundary>

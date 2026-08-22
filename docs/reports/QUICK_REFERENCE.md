@@ -69,7 +69,6 @@ import Button from './components/ui/Button'
 
 ```jsx
 import Input from './components/ui/Input'
-
 ;<Input
   id="username"
   type="text"
@@ -86,7 +85,6 @@ import Input from './components/ui/Input'
 
 ```jsx
 import Card from './components/ui/Card'
-
 ;<Card>
   <h2>Card Title</h2>
   <p>Card content goes here</p>
@@ -220,7 +218,6 @@ const Login = () => {
 import Card from './components/ui/Card'
 import Input from './components/ui/Input'
 import Button from './components/ui/Button'
-
 ;<Card>
   <Input placeholder="Text" />
   <Button variant="glass">Submit</Button>

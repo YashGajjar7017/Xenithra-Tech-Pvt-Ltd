@@ -237,42 +237,60 @@ const LoginPage = () => {
         <div style={styles.oauthOverlay}>
           <div style={styles.oauthModal}>
             <div style={styles.oauthHeader}>
-              <i className={oauthProvider === 'google' ? 'bx bxl-google' : 'bx bxl-github'} style={{
-                fontSize: '24px',
-                color: oauthProvider === 'google' ? '#db4437' : '#58a6ff',
-                marginRight: '10px'
-              }}></i>
+              <i
+                className={oauthProvider === 'google' ? 'bx bxl-google' : 'bx bxl-github'}
+                style={{
+                  fontSize: '24px',
+                  color: oauthProvider === 'google' ? '#db4437' : '#58a6ff',
+                  marginRight: '10px'
+                }}
+              ></i>
               <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
                 Sign in with {oauthProvider === 'google' ? 'Google' : 'GitHub'}
               </h3>
             </div>
             <div style={styles.oauthBody}>
-              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', marginBottom: '14px', lineHeight: '1.4' }}>
+              <p
+                style={{
+                  fontSize: '11px',
+                  color: 'rgba(255,255,255,0.7)',
+                  marginBottom: '14px',
+                  lineHeight: '1.4'
+                }}
+              >
                 Xenithra IDE requesting access to store user workspace files in your Cloud Drive.
               </p>
-              
+
               <div style={styles.oauthScopes}>
                 <div style={styles.scopeItem}>
-                  <i className='bx bx-check-shield' style={{ color: '#00e5ff' }}></i>
+                  <i className="bx bx-check-shield" style={{ color: '#00e5ff' }}></i>
                   <span>Read and write application settings</span>
                 </div>
                 <div style={styles.scopeItem}>
-                  <i className='bx bx-check-shield' style={{ color: '#00e5ff' }}></i>
+                  <i className="bx bx-check-shield" style={{ color: '#00e5ff' }}></i>
                   <span>Create/update files on Cloud Drive</span>
                 </div>
                 <div style={styles.scopeItem}>
-                  <i className='bx bx-check-shield' style={{ color: '#00e5ff' }}></i>
+                  <i className="bx bx-check-shield" style={{ color: '#00e5ff' }}></i>
                   <span>Access basic profile & email address</span>
                 </div>
               </div>
 
               <div style={{ marginTop: '16px', textAlign: 'left' }}>
-                <label style={{ fontSize: '10px', color: '#00e5ff', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>
+                <label
+                  style={{
+                    fontSize: '10px',
+                    color: '#00e5ff',
+                    fontWeight: 'bold',
+                    display: 'block',
+                    marginBottom: '6px'
+                  }}
+                >
                   SELECT ACCOUNT TO AUTHORIZE
                 </label>
-                <select 
-                  value={oauthEmail} 
-                  onChange={(e) => setOauthEmail(e.target.value)} 
+                <select
+                  value={oauthEmail}
+                  onChange={(e) => setOauthEmail(e.target.value)}
                   style={styles.oauthSelect}
                 >
                   {oauthProvider === 'google' ? (
@@ -293,32 +311,35 @@ const LoginPage = () => {
               <button onClick={() => setOauthProvider(null)} style={styles.oauthCancelBtn}>
                 Cancel
               </button>
-              <button onClick={async () => {
-                const user = {
-                  username: oauthEmail.split('@')[0],
-                  name: oauthProvider === 'google' ? 'Google Developer' : 'GitHub Developer',
-                  email: oauthEmail,
-                  token: `${oauthProvider}_oauth_token_${Date.now()}`
-                }
-                localStorage.setItem('user', JSON.stringify(user))
-                localStorage.setItem('cloud-sync-enabled', 'true')
-                localStorage.setItem('cloud-provider', oauthProvider)
-                
-                // Sync settings to simulated cloud drive
-                if (window.api && typeof window.api.saveCloudSettings === 'function') {
-                  await window.api.saveCloudSettings(user.email, oauthProvider, {
-                    theme: 'github-dark',
-                    fontSize: 14,
-                    selectedLanguage: 'Node.js'
-                  })
-                }
+              <button
+                onClick={async () => {
+                  const user = {
+                    username: oauthEmail.split('@')[0],
+                    name: oauthProvider === 'google' ? 'Google Developer' : 'GitHub Developer',
+                    email: oauthEmail,
+                    token: `${oauthProvider}_oauth_token_${Date.now()}`
+                  }
+                  localStorage.setItem('user', JSON.stringify(user))
+                  localStorage.setItem('cloud-sync-enabled', 'true')
+                  localStorage.setItem('cloud-provider', oauthProvider)
 
-                setSuccess(true)
-                setOauthProvider(null)
-                setTimeout(() => {
-                  window.location.href = '/#/'
-                }, 1000)
-              }} style={styles.oauthAuthBtn}>
+                  // Sync settings to simulated cloud drive
+                  if (window.api && typeof window.api.saveCloudSettings === 'function') {
+                    await window.api.saveCloudSettings(user.email, oauthProvider, {
+                      theme: 'github-dark',
+                      fontSize: 14,
+                      selectedLanguage: 'Node.js'
+                    })
+                  }
+
+                  setSuccess(true)
+                  setOauthProvider(null)
+                  setTimeout(() => {
+                    window.location.href = '/#/'
+                  }, 1000)
+                }}
+                style={styles.oauthAuthBtn}
+              >
                 Authorize & Connect
               </button>
             </div>

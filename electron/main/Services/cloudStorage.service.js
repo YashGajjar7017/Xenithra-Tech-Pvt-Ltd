@@ -19,7 +19,12 @@ const ensureCloudDb = () => {
         'dev@gmail.com': {
           provider: 'google',
           files: [
-            { name: 'hello_google_cloud.py', content: "print('Hello from Google Drive Cloud storage!')", path: 'cloud/hello_google_cloud.py', time: new Date().toISOString() }
+            {
+              name: 'hello_google_cloud.py',
+              content: "print('Hello from Google Drive Cloud storage!')",
+              path: 'cloud/hello_google_cloud.py',
+              time: new Date().toISOString()
+            }
           ],
           settings: {
             theme: 'github-dark',
@@ -30,7 +35,12 @@ const ensureCloudDb = () => {
         'dev@github.com': {
           provider: 'github',
           files: [
-            { name: 'gist_example.js', content: "console.log('Synchronized via GitHub Gist Cloud');", path: 'cloud/gist_example.js', time: new Date().toISOString() }
+            {
+              name: 'gist_example.js',
+              content: "console.log('Synchronized via GitHub Gist Cloud');",
+              path: 'cloud/gist_example.js',
+              time: new Date().toISOString()
+            }
           ],
           settings: {
             theme: 'github-dark',
@@ -74,10 +84,10 @@ export async function saveToCloudDrive(email, provider, filename, content, filep
   if (!db.users[email]) {
     db.users[email] = { provider, files: [], settings: {} }
   }
-  
+
   const userFiles = db.users[email].files || []
-  const existingIdx = userFiles.findIndex(f => f.name === filename)
-  
+  const existingIdx = userFiles.findIndex((f) => f.name === filename)
+
   const newFile = {
     name: filename,
     content: content,
@@ -104,7 +114,7 @@ export async function loadFromCloudDrive(email, filename) {
   const db = readCloudDb()
   const user = db.users[email]
   if (!user || !user.files) return null
-  const file = user.files.find(f => f.name === filename)
+  const file = user.files.find((f) => f.name === filename)
   return file || null
 }
 

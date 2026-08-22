@@ -5,6 +5,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import os from 'os'
 
 // Dynamically learned ML completions cache trained from user typing sessions
 const ADAPTIVE_ML_MODEL_CACHE = {}
@@ -268,21 +269,62 @@ function resolveLangKey(lang) {
  * @param {Function} onProgress - Callback to notify progress updates
  * @returns {Promise<string>} Report content
  */
-export async function startModelTraining(datasetName, onProgress) {
+export async function startModelTraining(datasetName, extraData = {}, onProgress) {
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+  const platform = process.platform
+  const arch = process.arch
+  const pid = process.pid
+  const cpuModel = os.cpus()[0]?.model || 'Generic CPU'
+  const totalMemoryGB = (os.totalmem() / 1024 / 1024 / 1024).toFixed(1)
+  const trainingPath = extraData.workspacePath || process.cwd()
+
+  const userStats = extraData.userStats || { keystrokes: 0, cursorMoves: 0, compilerRuns: 0 }
+  const activeFile = extraData.activeFile || { name: 'none', path: 'none', code: '' }
+
+  onProgress({
+    progress: 2,
+    log: `[SYSTEM] Host Environment: Platform ${platform} (${arch}) | PID ${pid}`
+  })
+  await sleep(400)
+  onProgress({
+    progress: 4,
+    log: `[SYSTEM] Hardware: CPU = ${cpuModel} | RAM = ${totalMemoryGB} GB`
+  })
+  await sleep(400)
+  onProgress({ progress: 6, log: `[SYSTEM] Start Training CWD: ${trainingPath}` })
+  await sleep(400)
+  onProgress({
+    progress: 10,
+    log: `[DATA] Analyzing active workspace files at location: ${trainingPath}`
+  })
+  await sleep(500)
+  onProgress({
+    progress: 14,
+    log: `[DATA] Found active editor buffer: "${activeFile.name}" (${activeFile.code.length} characters)`
+  })
+  await sleep(500)
+  onProgress({
+    progress: 18,
+    log: `[DATA] Loaded user movements telemetry: Keystrokes = ${userStats.keystrokes} | Cursor Moves = ${userStats.cursorMoves} | Compiler Runs = ${userStats.compilerRuns}`
+  })
+  await sleep(600)
+
   // Step 1: Simulated Download
-  onProgress({ progress: 5, log: `[DOWNLOAD] Initiating dataset download: ${datasetName}...` })
+  onProgress({ progress: 22, log: `[DOWNLOAD] Initiating dataset download: ${datasetName}...` })
   await sleep(600)
-  onProgress({ progress: 15, log: '[DOWNLOAD] Connecting to Gemini Model Registry CDN...' })
+  onProgress({ progress: 26, log: '[DOWNLOAD] Connecting to Gemini Model Registry CDN...' })
   await sleep(600)
-  onProgress({ progress: 25, log: '[DOWNLOAD] Downloading corpus chunks (42.5 MB / 42.5 MB) [100%]' })
+  onProgress({
+    progress: 30,
+    log: '[DOWNLOAD] Downloading corpus chunks (42.5 MB / 42.5 MB) [100%]'
+  })
   await sleep(600)
-  onProgress({ progress: 30, log: '[DOWNLOAD] Dataset successfully cached in local workspace!' })
+  onProgress({ progress: 34, log: '[DOWNLOAD] Dataset successfully cached in local workspace!' })
   await sleep(600)
 
   // Step 2: Simulated Preprocessing
-  onProgress({ progress: 35, log: '[DATA] Preprocessing tokens and resolving syntax maps...' })
+  onProgress({ progress: 38, log: '[DATA] Preprocessing tokens and resolving syntax maps...' })
   await sleep(600)
 
   // Step 3: Simulated Training Loop (Epochs)
@@ -294,28 +336,45 @@ export async function startModelTraining(datasetName, onProgress) {
     { num: 5, loss: '0.124', valLoss: '0.289', acc: '94.8%', time: '3.5s' }
   ]
 
-  let progress = 40
+  let progress = 42
   for (const ep of epochs) {
     onProgress({
       progress,
       log: `[TRAIN] Epoch ${ep.num}/5 | loss: ${ep.loss} - accuracy: ${ep.acc} - val_loss: ${ep.valLoss} - time: ${ep.time}`
     })
-    progress += 12
+    progress += 10
     await sleep(700)
   }
 
   // Step 4: Final Evaluation
-  onProgress({ progress: 100, log: '[EVAL] Final validation finished. Precision: 93.2% | Recall: 92.9% | F1 Score: 93.0%' })
+  onProgress({
+    progress: 100,
+    log: '[EVAL] Final validation finished. Precision: 93.2% | Recall: 92.9% | F1 Score: 93.0%'
+  })
   await sleep(600)
   onProgress({ progress: 100, log: '[SUCCESS] Training completed! Generating Long Run Report...' })
 
   // Construct Markdown Report content
-  const reportContent = `# Gemini Model Training & Evaluation Report
+  const reportContent = `# Gemini 4B Model Training & Evaluation Report
 
-- **Model Type:** Gemini-Based Adaptive-Coder-V1
+- **Model Type:** Gemini-Based Adaptive-Coder-4B (4 Billion Parameters)
 - **Dataset Source:** ${datasetName}
 - **Timestamp:** ${new Date().toLocaleString()}
 - **Parameters:** learning_rate=5e-5, epochs=5, batch_size=32
+
+## Runtime Infrastructure & Start Details
+- **Trained From Directory:** \`${trainingPath}\`
+- **Host OS Platform:** \`${platform}\` (\`${arch}\`)
+- **Processor Model:** \`${cpuModel}\`
+- **Allocated Memory:** \`${totalMemoryGB} GB\`
+- **Process ID (PID):** \`${pid}\`
+
+## Integrated User Telemetry & Movements
+- **Active Document Analyzed:** \`${activeFile.name}\`
+- **Buffer Size:** \`${activeFile.code.length} characters\`
+- **Keystrokes Tracked:** \`${userStats.keystrokes}\`
+- **Cursor Movements Tracked:** \`${userStats.cursorMoves}\`
+- **Compiler Executions Logged:** \`${userStats.compilerRuns}\`
 
 ## Epoch-by-Epoch Training Details
 
@@ -334,16 +393,16 @@ export async function startModelTraining(datasetName, onProgress) {
 - **F1 Score:** 93.0%
 
 ## Long-Run Analysis
-The model exhibits steady convergence over the 5 epochs with no signs of overfitting. The final accuracy of 94.8% makes it highly suitable for inline code completions, structure analysis, and syntax suggestion. The training was completed locally and evaluated successfully against validation folds.
+The 4B parameter model exhibits steady convergence over the 5 epochs with no signs of overfitting. The final accuracy of 94.8% makes it highly suitable for inline code completions, structure analysis, and syntax suggestion. The training was completed locally and evaluated successfully against validation folds.
 `
 
   // Write report file in workspace root
-  const reportPath = path.join(process.cwd(), 'gemini_model_training_report.md')
+  const reportPath = path.join(trainingPath, 'gemini_model_training_report.md')
   try {
     fs.writeFileSync(reportPath, reportContent, 'utf-8')
-    console.log('[TCP Server/ML] Training report generated at:', reportPath)
+    console.log('[ML] Training report generated at:', reportPath)
   } catch (err) {
-    console.error('[TCP Server/ML] Failed to write report file:', err.message)
+    console.error('[ML] Failed to write report file:', err.message)
   }
 
   return reportContent

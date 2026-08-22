@@ -30,6 +30,7 @@ import {
   trainLocalMLModel,
   startModelTraining
 } from './Services/localML.service.js'
+import { formatCode } from './Services/format.service.js'
 import {
   startTcpServer,
   getTcpClients,
@@ -720,10 +721,10 @@ app.whenReady().then(() => {
   ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename) =>
     generateLocalAIChatResponse(prompt, code, lang, filename)
   )
-  ipcMain.handle('ml:startTraining', async (event, datasetName) => {
+  ipcMain.handle('ml:startTraining', async (event, datasetName, extraData) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     return new Promise((resolve) => {
-      startModelTraining(datasetName, (progressData) => {
+      startModelTraining(datasetName, extraData, (progressData) => {
         if (window && !window.isDestroyed()) {
           window.webContents.send('ml:training-progress', progressData)
         }
@@ -731,6 +732,10 @@ app.whenReady().then(() => {
         resolve({ success: true, report: reportContent })
       })
     })
+  })
+
+  ipcMain.handle('format:code', async (_event, code, lang, filename) => {
+    return await formatCode(code, lang, filename)
   })
 
   // TCP Pairing IPC Handlers

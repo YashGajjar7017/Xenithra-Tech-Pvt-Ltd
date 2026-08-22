@@ -962,7 +962,10 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
             </button>
           </div>
         ) : (
-          <div className="user-display" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div
+            className="user-display"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
             {localStorage.getItem('cloud-sync-enabled') === 'true' && (
               <span
                 style={{
