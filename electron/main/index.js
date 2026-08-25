@@ -60,6 +60,12 @@ import {
   syncRtcCode
 } from './Services/collaboration.service.js'
 import {
+  decodeOcrDocument,
+  saveOcrDocument,
+  getOcrHistory,
+  deleteOcrDocument
+} from './Services/ocr.service.js'
+import {
   getXamppStatus,
   checkSystemInstalled,
   startPhpService,
@@ -879,6 +885,14 @@ app.whenReady().then(() => {
   ipcMain.handle('rtc:createRoom', (_event, initialCode) => createRtcRoom('host_user', initialCode))
   ipcMain.handle('rtc:joinRoom', (_event, roomCode) => joinRtcRoom('peer_user', roomCode))
   ipcMain.handle('rtc:sync', (_event, roomCode, text, pos) => syncRtcCode(roomCode, text, pos))
+
+  // OCR IPC Handlers
+  ipcMain.handle('ocr:decode', (_event, filename, fileSize) =>
+    decodeOcrDocument(filename, fileSize)
+  )
+  ipcMain.handle('ocr:save', (_event, docData) => saveOcrDocument(docData))
+  ipcMain.handle('ocr:history', () => getOcrHistory())
+  ipcMain.handle('ocr:delete', (_event, docId) => deleteOcrDocument(docId))
 
   ipcMain.handle('get-api-port', () => process.env.API_PORT || 8000)
 

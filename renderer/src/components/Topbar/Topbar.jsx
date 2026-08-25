@@ -724,6 +724,34 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
                 <span>Toggle Sidebar</span>
                 <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+B</span>
               </button>
+              <hr />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveMenu(null)
+                  window.location.hash = '#/'
+                }}
+              >
+                <span>Code Editor IDE</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveMenu(null)
+                  window.location.hash = '#/ocr'
+                }}
+              >
+                <span>Document OCR Portal</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveMenu(null)
+                  window.location.hash = '#/Dashboard'
+                }}
+              >
+                <span>System Control Center</span>
+              </button>
             </div>
           )}
         </div>

@@ -290,6 +290,51 @@ app.post('/api/package', async (req, res) => {
   }
 })
 
+// WebRTC Signaling Session Map
+const webrtcSessions = new Map() // roomCode -> { signals: [] }
+
+app.post('/api/webrtc/create-room', (req, res) => {
+  const roomCode = `RTC-${Math.floor(100000 + Math.random() * 900000)}`
+  webrtcSessions.set(roomCode, { signals: [] })
+
+  // Get host IP addresses
+  const os = require('os')
+  const interfaces = os.networkInterfaces()
+  const ips = []
+  for (const k in interfaces) {
+    for (const k2 in interfaces[k]) {
+      const address = interfaces[k][k2]
+      if (address.family === 'IPv4' && !address.internal) {
+        ips.push(address.address)
+      }
+    }
+  }
+
+  res.json({ success: true, roomCode, ips })
+})
+
+app.post('/api/webrtc/post-signal', (req, res) => {
+  const { roomCode, signal } = req.body
+  const session = webrtcSessions.get(roomCode)
+  if (!session) return res.status(404).json({ success: false, error: 'Room not found' })
+  session.signals.push(signal)
+  res.json({ success: true })
+})
+
+app.get('/api/webrtc/get-signals', (req, res) => {
+  const { roomCode } = req.query
+  const session = webrtcSessions.get(roomCode)
+  if (!session) return res.status(404).json({ success: false, error: 'Room not found' })
+  res.json({ success: true, signals: session.signals })
+})
+
+app.post('/api/webrtc/clear-signals', (req, res) => {
+  const { roomCode } = req.body
+  const session = webrtcSessions.get(roomCode)
+  if (session) session.signals = []
+  res.json({ success: true })
+})
+
 // In-Memory Handover Token Collaboration Session
 let collaborationSession = {
   token: '',

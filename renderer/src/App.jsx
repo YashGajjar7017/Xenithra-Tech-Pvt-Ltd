@@ -14,6 +14,7 @@ import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
 import EditorPage from './pages/EditorPage'
 import PreferencesPage from './pages/PreferencesPage'
+import OcrPage from './pages/OcrPage'
 
 const MainApp = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'github-dark')
@@ -113,6 +114,21 @@ const MainApp = () => {
         <Route path="/Account/login" element={<LoginPage />} />
         <Route path="/Account/signup" element={<SignupPage />} />
         <Route path="/preferences" element={<PreferencesPage />} />
+        <Route
+          path="/ocr"
+          element={
+            <MainLayout
+              theme={theme}
+              setTheme={setTheme}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
+              sidebarWidth={sidebarWidth}
+              setSidebarWidth={setSidebarWidth}
+            >
+              <OcrPage />
+            </MainLayout>
+          }
+        />
         <Route
           path="/Dashboard"
           element={
@@ -368,6 +384,13 @@ const MainLayout = ({
             title="TCP Clients Pairing"
           >
             <i className="bx bx-devices" style={{ fontSize: '20px' }}></i>
+          </div>
+          <div
+            className={`activity-icon ${activeActivity === 'webrtc' ? 'active' : ''}`}
+            onClick={() => handleActivityClick('webrtc')}
+            title="WebRTC Collaboration"
+          >
+            <i className="bx bx-share-alt" style={{ fontSize: '20px' }}></i>
           </div>
           <div style={{ flex: 1 }}></div>
           <div

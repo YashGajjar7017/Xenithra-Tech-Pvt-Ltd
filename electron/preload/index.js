@@ -116,6 +116,12 @@ const api = {
   joinRtcRoom: (roomCode) => ipcRenderer.invoke('rtc:joinRoom', roomCode),
   syncRtcCode: (roomCode, text, pos) => ipcRenderer.invoke('rtc:sync', roomCode, text, pos),
 
+  // OCR API
+  ocrDecode: (filename, fileSize) => ipcRenderer.invoke('ocr:decode', filename, fileSize),
+  ocrSave: (docData) => ipcRenderer.invoke('ocr:save', docData),
+  ocrHistory: () => ipcRenderer.invoke('ocr:history'),
+  ocrDelete: (docId) => ipcRenderer.invoke('ocr:delete', docId),
+
   // TCP Pairing API
   getTcpStatus: () => ipcRenderer.invoke('tcp:getStatus'),
   getTcpClients: () => ipcRenderer.invoke('tcp:getClients'),

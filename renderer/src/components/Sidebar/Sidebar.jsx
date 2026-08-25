@@ -5,6 +5,7 @@ import DebugPanel from '../ui/DebugPanel'
 import DockerPanel from '../ui/DockerPanel'
 import FirebasePanel from './FirebasePanel'
 import ClientsPanel from './ClientsPanel'
+import WebRtcPanel from './WebRtcPanel'
 
 const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
   const [loadedFolder, setLoadedFolder] = useState(null) // { name: '', path: '', tree: {} }
@@ -465,6 +466,8 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
         <FirebasePanel />
       ) : activeActivity === 'clients' ? (
         <ClientsPanel />
+      ) : activeActivity === 'webrtc' ? (
+        <WebRtcPanel />
       ) : activeActivity === 'settings' ? (
         <div
           style={{

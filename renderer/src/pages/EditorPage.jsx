@@ -472,6 +472,48 @@ const EditorPage = () => {
     }
   }, [activeTabId])
 
+  // WebRTC Code & Cursor Sync listeners
+  useEffect(() => {
+    const handleWebRtcCodeSync = (e) => {
+      if (e.detail && e.detail.code !== undefined && e.detail.filename === activeTab) {
+        setOpenTabs((prev) =>
+          prev.map((t) => (t.id === activeTabId ? { ...t, code: e.detail.code } : t))
+        )
+      }
+    }
+
+    const handleWebRtcCursorSync = (e) => {
+      if (e.detail && e.detail.filename === activeTab) {
+        setRemoteCursors((prev) => ({
+          ...prev,
+          [e.detail.username]: {
+            cursorIndex: e.detail.cursorIndex,
+            filename: e.detail.filename,
+            timestamp: Date.now()
+          }
+        }))
+      }
+    }
+
+    const handleRequestCodePush = () => {
+      window.dispatchEvent(
+        new CustomEvent('local-code-changed', {
+          detail: { code, filename: activeTab }
+        })
+      )
+    }
+
+    window.addEventListener('webrtc-code-sync', handleWebRtcCodeSync)
+    window.addEventListener('webrtc-cursor-sync', handleWebRtcCursorSync)
+    window.addEventListener('webrtc-request-code-push', handleRequestCodePush)
+
+    return () => {
+      window.removeEventListener('webrtc-code-sync', handleWebRtcCodeSync)
+      window.removeEventListener('webrtc-cursor-sync', handleWebRtcCursorSync)
+      window.removeEventListener('webrtc-request-code-push', handleRequestCodePush)
+    }
+  }, [activeTabId, activeTab, code])
+
   const handleEditorCursorActivity = (e) => {
     setCursorMoveCount((prev) => prev + 1)
     const cursorIndex = e.target.selectionStart
@@ -487,6 +529,13 @@ const EditorPage = () => {
     if (window.api && typeof window.api.sendTcpCursor === 'function') {
       window.api.sendTcpCursor(cursorIndex, currentUsername, activeTab)
     }
+
+    // Broadcast to WebRTC data channel via custom event
+    window.dispatchEvent(
+      new CustomEvent('local-cursor-moved', {
+        detail: { cursorIndex, username: currentUsername, filename: activeTab }
+      })
+    )
   }
 
   const updateCursorCoords = () => {
@@ -632,6 +681,13 @@ const EditorPage = () => {
     if (window.api && typeof window.api.sendTcpCodeChange === 'function') {
       window.api.sendTcpCodeChange(newCode)
     }
+
+    // Broadcast to WebRTC data channel via custom event
+    window.dispatchEvent(
+      new CustomEvent('local-code-changed', {
+        detail: { code: newCode, filename: activeTab }
+      })
+    )
 
     // Auto Copilot prompt detection
     if (autoCopilotEnabled && !isCopilotTyping) {
