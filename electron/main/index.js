@@ -498,6 +498,26 @@ app.whenReady().then(() => {
     }
   })
 
+  // Minimize window IPC
+  ipcMain.handle('minimize-window', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    if (focusedWindow) {
+      focusedWindow.minimize()
+    }
+  })
+
+  // Maximize / restore window IPC
+  ipcMain.handle('maximize-window', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    if (focusedWindow) {
+      if (focusedWindow.isMaximized()) {
+        focusedWindow.unmaximize()
+      } else {
+        focusedWindow.maximize()
+      }
+    }
+  })
+
   // Open directory dialog IPC
   ipcMain.handle('dialog:openDirectory', async (event) => {
     const mainWindow = BrowserWindow.fromWebContents(event.sender)

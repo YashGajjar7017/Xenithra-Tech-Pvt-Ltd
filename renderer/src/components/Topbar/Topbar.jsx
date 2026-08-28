@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import GenZLogo from '../ui/GenZLogo'
 
 const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => {
   const [activeMenu, setActiveMenu] = useState(null) // 'file', 'edit', 'selection', 'view', 'run', 'help', 'theme', or null
@@ -8,6 +9,22 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
   const [username, setUsername] = useState('')
   const [showPalette, setShowPalette] = useState(false)
   const [paletteQuery, setPaletteQuery] = useState('')
+
+  const handleMinimizeWindow = () => {
+    if (window.api && typeof window.api.minimizeWindow === 'function') {
+      window.api.minimizeWindow()
+    }
+  }
+
+  const handleMaximizeWindow = () => {
+    if (window.api && typeof window.api.maximizeWindow === 'function') {
+      window.api.maximizeWindow()
+    }
+  }
+
+  const openAiColabStudio = () => {
+    window.location.hash = '#/ai-colab'
+  }
 
   const fileMenuRef = useRef(null)
   const editMenuRef = useRef(null)
@@ -495,8 +512,25 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
 
   return (
     <div className="menu-bar">
-      {/* Menus Group */}
-      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', zIndex: 10 }}>
+      {/* Menus Group with Gen-Z Logo Emblem */}
+      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', zIndex: 10, flexShrink: 0 }}>
+        {/* Gen-Z Logo - Only Logo, No Company Text */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 4px 0 2px',
+            marginRight: '2px'
+          }}
+        >
+          <GenZLogo
+            size={22}
+            onClick={() => {
+              window.location.hash = '#/'
+            }}
+          />
+        </div>
+
         {/* FILE MENU */}
         <div
           ref={fileMenuRef}
@@ -1023,7 +1057,41 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
           </div>
         )}
 
-        {/* User Accounts Popover Dropdown matching Image 3 */}
+        {/* AI Colab Studio Quick Launcher */}
+        <button
+          onClick={openAiColabStudio}
+          title="Open AI Colab & Real-time DSA Studio"
+          style={{
+            background: 'linear-gradient(135deg, rgba(0, 243, 255, 0.15) 0%, rgba(168, 85, 247, 0.2) 100%)',
+            border: '1px solid rgba(0, 243, 255, 0.35)',
+            borderRadius: '5px',
+            color: '#00f3ff',
+            fontSize: '11px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            padding: '3px 9px',
+            height: '25px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            boxShadow: '0 0 10px rgba(0, 243, 255, 0.15)',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 243, 255, 0.45)'
+            e.currentTarget.style.borderColor = '#00f3ff'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 243, 255, 0.15)'
+            e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.35)'
+          }}
+        >
+          <span style={{ fontSize: '11px' }}>⚡</span>
+          <span>AI Colab</span>
+        </button>
+
+        {/* User Accounts Popover Dropdown */}
         <div style={{ position: 'relative' }}>
           <div
             className="account-circle"
@@ -1137,6 +1205,94 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
               </div>
             </div>
           )}
+        </div>
+
+        {/* Native Windows Controls (Minimize, Maximize/Restore, Close) */}
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '4px', gap: '2px' }}>
+          <button
+            onClick={handleMinimizeWindow}
+            title="Minimize"
+            style={{
+              width: '28px',
+              height: '24px',
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '4px',
+              fontSize: '12px',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+              e.currentTarget.style.color = '#fff'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = '#8b949e'
+            }}
+          >
+            ─
+          </button>
+          <button
+            onClick={handleMaximizeWindow}
+            title="Maximize / Restore"
+            style={{
+              width: '28px',
+              height: '24px',
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '4px',
+              fontSize: '11px',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+              e.currentTarget.style.color = '#fff'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = '#8b949e'
+            }}
+          >
+            □
+          </button>
+          <button
+            onClick={handleFileExit}
+            title="Close Window"
+            style={{
+              width: '30px',
+              height: '24px',
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '4px',
+              fontSize: '13px',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#e81123'
+              e.currentTarget.style.color = '#fff'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = '#8b949e'
+            }}
+          >
+            ✕
+          </button>
         </div>
       </div>
     </div>

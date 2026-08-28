@@ -15,6 +15,8 @@ import DashboardPage from './pages/DashboardPage'
 import EditorPage from './pages/EditorPage'
 import PreferencesPage from './pages/PreferencesPage'
 import OcrPage from './pages/OcrPage'
+import AiColabStudioPage from './pages/AiColabStudioPage'
+import FooterEnvSelector from './components/ui/FooterEnvSelector'
 
 const MainApp = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'github-dark')
@@ -141,6 +143,21 @@ const MainApp = () => {
               setSidebarWidth={setSidebarWidth}
             >
               <DashboardPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/ai-colab"
+          element={
+            <MainLayout
+              theme={theme}
+              setTheme={setTheme}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
+              sidebarWidth={sidebarWidth}
+              setSidebarWidth={setSidebarWidth}
+            >
+              <AiColabStudioPage />
             </MainLayout>
           }
         />
@@ -358,6 +375,29 @@ const MainLayout = ({
             <i className="bx bx-bug" style={{ fontSize: '20px' }}></i>
           </div>
           <div
+            className={`activity-icon ${activeActivity === 'aicolab' ? 'active' : ''}`}
+            onClick={() => {
+              window.location.hash = '#/ai-colab'
+              setActiveActivity('aicolab')
+            }}
+            title="AI Colab & Real-time DSA Studio"
+            style={{ position: 'relative' }}
+          >
+            <span style={{ fontSize: '18px', color: '#00f3ff' }}>⚡</span>
+            <span
+              style={{
+                position: 'absolute',
+                top: '6px',
+                right: '6px',
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: '#00f3ff',
+                boxShadow: '0 0 6px #00f3ff'
+              }}
+            />
+          </div>
+          <div
             className={`activity-icon ${activeActivity === 'extensions' ? 'active' : ''}`}
             onClick={() => handleActivityClick('extensions')}
             title="Extensions Store"
@@ -434,14 +474,14 @@ const MainLayout = ({
           <span>✗ 0</span>
           <span>⚠ 0</span>
         </div>
-        <div className="status-item">
-          <span>{activeLanguage}</span>
+        <div className="status-item" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <FooterEnvSelector />
           <span style={{ opacity: 0.4 }}>|</span>
           <span>Spaces: 2</span>
           <span style={{ opacity: 0.4 }}>|</span>
           <span style={{ textTransform: 'capitalize' }}>Theme: {theme.replace('-', ' ')}</span>
           <span style={{ opacity: 0.4 }}>|</span>
-          <span style={{ color: 'var(--accent-color)' }}>GLM-4 Connection: Active</span>
+          <span style={{ color: 'var(--accent-color)' }}>GLM-4 Core: Online</span>
         </div>
       </div>
 

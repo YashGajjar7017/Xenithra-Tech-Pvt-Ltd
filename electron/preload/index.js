@@ -27,6 +27,8 @@ const api = {
     ipcRenderer.invoke('dialog:saveFile', content, defaultName),
   saveFile: (filePath, content) => ipcRenderer.invoke('file:save', filePath, content),
   closeWindow: () => ipcRenderer.invoke('close-window'),
+  minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
+  maximizeWindow: () => ipcRenderer.invoke('maximize-window'),
   openDirectoryDialog: () => ipcRenderer.invoke('dialog:openDirectory'),
   readDirectory: (dirPath) => ipcRenderer.invoke('file:readDirectory', dirPath),
   readFile: (filePath) => ipcRenderer.invoke('file:read', filePath),

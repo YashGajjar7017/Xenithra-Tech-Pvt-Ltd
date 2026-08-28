@@ -261,6 +261,7 @@ const EditorPage = () => {
   // Layout resize states
   const [editorHeight, setEditorHeight] = useState(window.innerHeight * 0.55) // set editor height to 55% of screen
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
+  const [terminalLayout, setTerminalLayout] = useState('bottom') // 'bottom' | 'center'
 
   // AI Chat & Code Adjuster states
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(true)
@@ -3007,6 +3008,30 @@ const EditorPage = () => {
                 </div>
               )
             })}
+            {/* Center Terminal Toggle Quick Action */}
+            <button
+              onClick={() => setTerminalLayout(terminalLayout === 'center' ? 'bottom' : 'center')}
+              title={terminalLayout === 'center' ? 'Dock Terminal to Bottom' : 'Open Cyber Terminal in Center Container'}
+              style={{
+                background: terminalLayout === 'center' ? 'rgba(0, 243, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                border: terminalLayout === 'center' ? '1px solid #00f3ff' : '1px solid rgba(255, 255, 255, 0.1)',
+                color: terminalLayout === 'center' ? '#00f3ff' : '#8b949e',
+                borderRadius: '6px',
+                padding: '4px 8px',
+                fontSize: '10px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                height: '28px',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <span>{terminalLayout === 'center' ? '⬇ Dock' : '⛶ Center Term'}</span>
+            </button>
+
             <div
               onClick={() => setIsRightPanelOpen(false)}
               style={{
@@ -3543,22 +3568,57 @@ const EditorPage = () => {
         </div>
       </div>
 
-      {/* DRAGGABLE HORIZONTAL SPLIT RESIZER */}
-      <div
-        className={`resizer-h ${isResizingTerminal ? 'resizing' : ''}`}
-        onMouseDown={handleTerminalMouseDown}
-        style={{
-          height: '3px',
-          cursor: 'row-resize',
-          background: 'var(--panel-border)',
-          zIndex: 10
-        }}
-      />
+      {/* Cool Center-Stage AI Terminal Floating Container */}
+      {terminalLayout === 'center' && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 'min(880px, 85vw)',
+            height: 'min(500px, 72vh)',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 24px 72px rgba(0,0,0,0.85), 0 0 35px rgba(0, 243, 255, 0.3)',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }}
+        >
+          <Terminal
+            isRunning={isRunning}
+            layoutMode="center"
+            onToggleCenter={() => setTerminalLayout('bottom')}
+            onClose={() => setTerminalLayout('bottom')}
+          />
+        </div>
+      )}
 
-      {/* Terminal View panel */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Terminal isRunning={isRunning} />
-      </div>
+      {/* DRAGGABLE HORIZONTAL SPLIT RESIZER */}
+      {terminalLayout === 'bottom' && (
+        <div
+          className={`resizer-h ${isResizingTerminal ? 'resizing' : ''}`}
+          onMouseDown={handleTerminalMouseDown}
+          style={{
+            height: '3px',
+            cursor: 'row-resize',
+            background: 'var(--panel-border)',
+            zIndex: 10
+          }}
+        />
+      )}
+
+      {/* Terminal View panel (Bottom Docked) */}
+      {terminalLayout === 'bottom' && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <Terminal
+            isRunning={isRunning}
+            layoutMode="bottom"
+            onToggleCenter={() => setTerminalLayout('center')}
+          />
+        </div>
+      )}
 
       {/* Custom Right-click Context Menu */}
       {contextMenu.visible && (

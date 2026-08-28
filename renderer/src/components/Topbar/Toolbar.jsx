@@ -1,36 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import CompilerLogo from '../ui/CompilerLogo'
 
 const Toolbar = ({ theme, setTheme }) => {
-  const [selectedLang, setSelectedLang] = useState('Node.js')
-  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [isLiveServerRunning, setIsLiveServerRunning] = useState(false)
   const [liveServerPort, setLiveServerPort] = useState(5500)
-  const langDropdownRef = useRef(null)
-
-  const languages = [
-    'C (GCC)',
-    'C++ (G++)',
-    'Python 3',
-    'Node.js',
-    'XML',
-    'Dot Net',
-    'Dart',
-    'Next.js',
-    'PHP',
-    'MySQL'
-  ]
-
-  // Sync language selection when changed elsewhere
-  useEffect(() => {
-    const handleLangSync = (e) => {
-      if (e.detail && e.detail.language) {
-        setSelectedLang(e.detail.language)
-      }
-    }
-    window.addEventListener('change-language', handleLangSync)
-    return () => window.removeEventListener('change-language', handleLangSync)
-  }, [])
 
   // Check initial Live Server status
   useEffect(() => {
@@ -43,34 +16,9 @@ const Toolbar = ({ theme, setTheme }) => {
             if (status.port) setLiveServerPort(status.port)
           }
         })
-        .catch((e) => {})
+        .catch(() => {})
     }
   }, [])
-
-  // Close dropdown on click outside
-  useEffect(() => {
-    const clickOutside = (e) => {
-      if (langDropdownRef.current && !langDropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', clickOutside)
-    return () => document.removeEventListener('mousedown', clickOutside)
-  }, [])
-
-  const handleLanguageSelect = (lang) => {
-    setSelectedLang(lang)
-    setDropdownOpen(false)
-    window.dispatchEvent(new CustomEvent('change-language', { detail: { language: lang } }))
-
-    if (lang === 'PHP' || lang === 'MySQL') {
-      if (window.api && typeof window.api.startXamppService === 'function') {
-        window.api.startXamppService('php').then(() => {
-          window.api.startXamppService('mysql')
-        })
-      }
-    }
-  }
 
   const toggleLiveServer = async () => {
     if (!window.api || typeof window.api.startLiveServer !== 'function') return
@@ -104,147 +52,67 @@ const Toolbar = ({ theme, setTheme }) => {
   const liveShare = () => window.dispatchEvent(new CustomEvent('menu-live-share'))
 
   return (
-    <div
-      className="toolbar"
-      style={{
-        height: '36px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 12px',
-        background: 'rgba(10, 16, 32, 0.65)',
-        borderBottom: '1px solid var(--panel-border)',
-        zIndex: 5,
-        backdropFilter: 'blur(12px)'
-      }}
-    >
-      {/* Left: Compiler Brand Logo & Runner label */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <div className="responsive-toolbar">
+      {/* Left: Compiler Brand Logo & Runner Label */}
+      <div className="toolbar-left-group">
         <CompilerLogo
-          size={22}
+          size={20}
           showText={true}
           textStyle={{ transform: 'scale(0.85)', transformOrigin: 'left center' }}
         />
-        <span style={{ opacity: 0.3, color: '#fff' }}>|</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <span className="toolbar-separator">|</span>
+        <div className="toolbar-runner-badge">
           <i
             className="bx bx-play-circle"
             style={{ color: 'var(--accent-color)', fontSize: '13px' }}
           ></i>
-          <span
-            style={{
-              fontSize: '10px',
-              fontWeight: '600',
-              color: 'var(--text-muted)',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase'
-            }}
-          >
-            Runner Engine
-          </span>
+          <span className="toolbar-runner-text">Runner Engine</span>
         </div>
       </div>
 
-      {/* Center: Primary Execution Control Actions */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          position: 'absolute',
-          left: '50%',
-          transform: 'translateX(-50%)'
-        }}
-      >
+      {/* Center: Responsive Execution & Debugging Control Actions */}
+      <div className="toolbar-center-actions">
+        {/* Run Button */}
         <button
           onClick={runCode}
-          style={{
-            background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
-            border: 'none',
-            borderRadius: '4px',
-            color: '#fff',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            padding: '3px 10px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            boxShadow: '0 2px 8px rgba(0, 230, 118, 0.25)',
-            transition: 'transform 0.15s ease'
-          }}
-          onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.95)')}
-          onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+          title="Run Active Code (Ctrl+F5 / ▶)"
+          className="toolbar-btn btn-run-glow"
         >
-          <span>▶</span> Run
+          <span className="btn-icon">▶</span>
+          <span className="btn-label">Run</span>
         </button>
 
+        {/* Debug Button */}
         <button
           onClick={debugCode}
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '4px',
-            color: '#00e5ff',
-            fontSize: '11px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            padding: '3px 8px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
+          title="Debug Active Code with Breakpoints (F5)"
+          className="toolbar-btn btn-debug-glow"
         >
-          🐞 Debug
+          <span className="btn-icon">🐞</span>
+          <span className="btn-label">Debug</span>
         </button>
 
+        {/* Stop Button */}
         <button
           onClick={stopCode}
-          style={{
-            background: 'rgba(255,107,107,0.15)',
-            border: '1px solid rgba(255,107,107,0.3)',
-            borderRadius: '4px',
-            color: '#ff6b6b',
-            fontSize: '11px',
-            cursor: 'pointer',
-            padding: '3px 8px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
+          title="Stop Running Process / Terminate (Shift+F5)"
+          className="toolbar-btn btn-stop-glow"
         >
-          ■ Stop
+          <span className="btn-icon">■</span>
+          <span className="btn-label">Stop</span>
         </button>
 
-        <span style={{ opacity: 0.3, color: '#fff', margin: '0 2px' }}>|</span>
+        <span className="toolbar-separator">|</span>
 
-        {/* Live Server Toggle Button */}
+        {/* Live Server Toggle */}
         <button
           onClick={toggleLiveServer}
           title={
             isLiveServerRunning
               ? `Live Server running on http://localhost:${liveServerPort}. Click to stop.`
-              : 'Start Live Server for root index.html'
+              : 'Start Live Server for workspace root index.html'
           }
-          style={{
-            background: isLiveServerRunning ? 'rgba(0, 255, 170, 0.15)' : 'rgba(255,255,255,0.06)',
-            border: isLiveServerRunning ? '1px solid #00ffaa' : '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '4px',
-            color: isLiveServerRunning ? '#00ffaa' : 'var(--text-main)',
-            fontSize: '11px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            padding: '3px 9px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            transition: 'all 0.2s ease',
-            boxShadow: isLiveServerRunning ? '0 0 10px rgba(0, 255, 170, 0.3)' : 'none'
-          }}
+          className={`toolbar-btn ${isLiveServerRunning ? 'btn-liveserver-active' : 'btn-liveserver'}`}
         >
           <span
             style={{
@@ -254,198 +122,253 @@ const Toolbar = ({ theme, setTheme }) => {
               background: isLiveServerRunning ? '#00ffaa' : '#888',
               boxShadow: isLiveServerRunning ? '0 0 6px #00ffaa' : 'none'
             }}
-          ></span>
-          <span>⚡ Live Server{isLiveServerRunning ? `: :${liveServerPort}` : ''}</span>
+          />
+          <span className="btn-icon">⚡</span>
+          <span className="btn-label">
+            Live Server{isLiveServerRunning ? `: :${liveServerPort}` : ''}
+          </span>
         </button>
 
-        <span style={{ opacity: 0.3, color: '#fff', margin: '0 2px' }}>|</span>
+        <span className="toolbar-separator">|</span>
 
-        {/* Formatting & Utilities */}
-        <button
-          onClick={formatCode}
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '4px',
-            color: 'var(--text-main)',
-            fontSize: '11px',
-            cursor: 'pointer',
-            padding: '3px 8px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center'
-          }}
-        >
-          {`{ }`} Format
+        {/* Format */}
+        <button onClick={formatCode} title="Format Document (Shift+Alt+F)" className="toolbar-btn">
+          <span className="btn-icon">{`{ }`}</span>
+          <span className="btn-label">Format</span>
         </button>
 
+        {/* Package Binary */}
         <button
           onClick={packageCode}
-          title="Compile and download standalone binary file"
-          style={{
-            background: 'rgba(0, 229, 255, 0.1)',
-            border: '1px solid rgba(0, 229, 255, 0.25)',
-            borderRadius: '4px',
-            color: '#00e5ff',
-            fontSize: '11px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            padding: '3px 8px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
+          title="Compile and package standalone executable"
+          className="toolbar-btn btn-package"
         >
-          📦 Package
+          <span className="btn-icon">📦</span>
+          <span className="btn-label">Package</span>
         </button>
 
+        {/* Split Editor */}
         <button
           onClick={splitEditor}
           title="Toggle Sideways Split Screen Editors"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '4px',
-            color: 'var(--text-main)',
-            fontSize: '11px',
-            cursor: 'pointer',
-            padding: '3px 8px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
+          className="toolbar-btn"
         >
-          || Split
+          <span className="btn-icon">||</span>
+          <span className="btn-label">Split</span>
         </button>
 
-        <button
-          onClick={shareGist}
-          title="Share code via GitHub Gist"
-          style={{
-            background: 'rgba(216, 180, 254, 0.15)',
-            border: '1px solid #d8b4fe',
-            borderRadius: '4px',
-            color: '#d8b4fe',
-            fontSize: '11px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            padding: '3px 8px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          🐙 Gist
+        {/* Gist Share */}
+        <button onClick={shareGist} title="Share code via GitHub Gist" className="toolbar-btn btn-gist">
+          <span className="btn-icon">🐙</span>
+          <span className="btn-label">Gist</span>
         </button>
 
+        {/* Live Share RTC */}
         <button
           onClick={liveShare}
-          title="Start or Join 2-Player Realtime RTC Live Coding Session"
-          style={{
-            background: 'rgba(0, 255, 170, 0.15)',
-            border: '1px solid #00ffaa',
-            borderRadius: '4px',
-            color: '#00ffaa',
-            fontSize: '11px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            padding: '3px 8px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
+          title="Start or Join Realtime Peer Collaboration Session"
+          className="toolbar-btn btn-rtc"
         >
-          🌐 Live Share
+          <span className="btn-icon">🌐</span>
+          <span className="btn-label">Live Share</span>
         </button>
       </div>
 
-      {/* Right: Language Selector Dropdown on the Toolbar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      {/* Right: Quick Engine Status Pill */}
+      <div className="toolbar-right-group">
         <div
-          ref={langDropdownRef}
-          className="lang-select"
           style={{
-            fontSize: '11px',
-            gap: '6px',
+            fontSize: '10px',
             color: 'var(--text-muted)',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            gap: '4px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.06)'
           }}
         >
-          <span>Env:</span>
-          <div
-            className={`dropdown ${dropdownOpen ? 'open' : ''}`}
-            style={{ position: 'relative' }}
-          >
-            <button
-              className="dropdown-toggle"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              style={{
-                padding: '2px 8px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                height: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: 'var(--text-main)',
-                cursor: 'pointer'
-              }}
-            >
-              <span>{selectedLang}</span>
-              <span className="arrow" style={{ marginLeft: '4px' }}>
-                ▾
-              </span>
-            </button>
-            {dropdownOpen && (
-              <div
-                className="dropdown-menu"
-                style={{
-                  position: 'absolute',
-                  top: '28px',
-                  right: 0,
-                  background: 'rgba(10, 16, 32, 0.95)',
-                  border: '1px solid var(--panel-border)',
-                  borderRadius: '6px',
-                  minWidth: '120px',
-                  padding: '4px 0',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                  zIndex: 20
-                }}
-              >
-                {languages.map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => handleLanguageSelect(lang)}
-                    style={{
-                      width: '100%',
-                      border: 'none',
-                      background: 'transparent',
-                      color: 'var(--text-main)',
-                      textAlign: 'left',
-                      fontSize: '11px',
-                      padding: '6px 12px',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s'
-                    }}
-                    onMouseEnter={(e) => (e.target.style.background = 'rgba(0, 229, 255, 0.15)')}
-                    onMouseLeave={(e) => (e.target.style.background = 'transparent')}
-                  >
-                    {lang}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <span
+            style={{
+              width: '5px',
+              height: '5px',
+              borderRadius: '50%',
+              background: '#00ffaa'
+            }}
+          />
+          <span style={{ fontWeight: '600' }}>GLM-4 Core</span>
         </div>
       </div>
     </div>
   )
+}
+
+// Active styling tags injection
+if (typeof document !== 'undefined' && !document.getElementById('responsive-toolbar-styles')) {
+  const css = `
+    .responsive-toolbar {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      background: rgba(10, 16, 32, 0.75);
+      border-bottom: 1px solid var(--panel-border);
+      z-index: 5;
+      backdrop-filter: blur(14px);
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .responsive-toolbar::-webkit-scrollbar {
+      display: none;
+    }
+    .toolbar-left-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .toolbar-separator {
+      opacity: 0.25;
+      color: #fff;
+      font-size: 11px;
+    }
+    .toolbar-runner-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .toolbar-runner-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .toolbar-center-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 0 4px;
+    }
+    .toolbar-center-actions::-webkit-scrollbar {
+      display: none;
+    }
+    .toolbar-right-group {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+      color: var(--text-main);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 3px 8px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .toolbar-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .toolbar-btn:active {
+      transform: scale(0.96);
+    }
+    .btn-run-glow {
+      background: linear-gradient(135deg, #00e676 0%, #00b0ff 100%) !important;
+      border: none !important;
+      color: #fff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 2px 8px rgba(0, 230, 118, 0.3);
+    }
+    .btn-run-glow:hover {
+      box-shadow: 0 2px 14px rgba(0, 230, 118, 0.55) !important;
+    }
+    .btn-debug-glow {
+      background: rgba(0, 229, 255, 0.1) !important;
+      border-color: rgba(0, 229, 255, 0.3) !important;
+      color: #00e5ff !important;
+    }
+    .btn-stop-glow {
+      background: rgba(255, 107, 107, 0.12) !important;
+      border-color: rgba(255, 107, 107, 0.3) !important;
+      color: #ff6b6b !important;
+    }
+    .btn-liveserver {
+      color: var(--text-main);
+    }
+    .btn-liveserver-active {
+      background: rgba(0, 255, 170, 0.15) !important;
+      border-color: #00ffaa !important;
+      color: #00ffaa !important;
+      box-shadow: 0 0 8px rgba(0, 255, 170, 0.35);
+    }
+    .btn-package {
+      background: rgba(0, 229, 255, 0.08) !important;
+      border-color: rgba(0, 229, 255, 0.25) !important;
+      color: #00e5ff !important;
+    }
+    .btn-gist {
+      background: rgba(216, 180, 254, 0.12) !important;
+      border-color: #d8b4fe !important;
+      color: #d8b4fe !important;
+    }
+    .btn-rtc {
+      background: rgba(0, 255, 170, 0.12) !important;
+      border-color: #00ffaa !important;
+      color: #00ffaa !important;
+    }
+
+    /* Small Screen Responsive Rules */
+    @media (max-width: 950px) {
+      .toolbar-runner-text {
+        display: none;
+      }
+      .toolbar-btn .btn-label {
+        display: none;
+      }
+      .toolbar-btn {
+        padding: 3px 6px;
+      }
+      .btn-run-glow .btn-label,
+      .btn-debug-glow .btn-label,
+      .btn-stop-glow .btn-label {
+        display: inline !important;
+      }
+    }
+    @media (max-width: 720px) {
+      .btn-run-glow .btn-label,
+      .btn-debug-glow .btn-label,
+      .btn-stop-glow .btn-label {
+        display: none !important;
+      }
+      .toolbar-right-group {
+        display: none;
+      }
+    }
+  `
+  const head = document.head || document.getElementsByTagName('head')[0]
+  const style = document.createElement('style')
+  style.id = 'responsive-toolbar-styles'
+  style.type = 'text/css'
+  style.appendChild(document.createTextNode(css))
+  head.appendChild(style)
 }
 
 export default Toolbar

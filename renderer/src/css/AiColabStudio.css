@@ -1,0 +1,323 @@
+/* Google Colab & AI DSA Studio Styles */
+.colab-studio-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Colab Top Header */
+.colab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #161b22;
+  border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.colab-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.colab-badge {
+  background: linear-gradient(135deg, #ff9800 0%, #f44336 100%);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.colab-notebook-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.colab-nav-menus {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #8b949e;
+  margin-top: 4px;
+}
+
+.colab-nav-menus span {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.colab-nav-menus span:hover {
+  color: #58a6ff;
+}
+
+/* Colab Resource Meter in Header */
+.colab-resource-metrics {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+}
+
+.metric-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.metric-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00ffaa;
+  box-shadow: 0 0 6px #00ffaa;
+}
+
+/* Colab Action Bar */
+.colab-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(22, 27, 34, 0.85);
+  border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.08));
+  gap: 12px;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+}
+
+.colab-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #8b949e;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.colab-tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.colab-tab-btn.active {
+  color: #00f3ff;
+  background: rgba(0, 243, 255, 0.1);
+  border-color: rgba(0, 243, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.15);
+}
+
+/* Main Content Workspace */
+.colab-workspace {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Colab Cell Container */
+.colab-cell {
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease;
+}
+
+.colab-cell:hover {
+  border-color: rgba(0, 243, 255, 0.3);
+}
+
+.colab-cell.focused {
+  border-color: #58a6ff;
+  box-shadow: 0 0 12px rgba(88, 166, 255, 0.25);
+}
+
+.colab-cell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: #8b949e;
+}
+
+.colab-cell-body {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+.colab-cell-run-btn {
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 10px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.colab-cell-run-btn:hover {
+  background: #00e676;
+  color: #000;
+  border-color: #00e676;
+  transform: scale(1.08);
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.5);
+}
+
+.colab-cell-code {
+  flex: 1;
+  padding: 12px 14px 12px 0;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #e6edf3;
+  white-space: pre-wrap;
+}
+
+.colab-cell-output {
+  background: #090d13;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #c9d1d9;
+  line-height: 1.5;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* Visual DSA Arena */
+.dsa-arena-card {
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.dsa-node {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.dsa-node.active {
+  background: linear-gradient(135deg, #00f3ff 0%, #0088ff 100%);
+  border-color: #00f3ff;
+  color: #000;
+  box-shadow: 0 0 16px rgba(0, 243, 255, 0.6);
+  transform: scale(1.15);
+}
+
+.dsa-node.visited {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.dsa-node.comparing {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #f59e0b;
+  color: #f59e0b;
+  animation: pulse 0.5s infinite alternate;
+}
+
+/* Layman Card */
+.layman-card {
+  background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(168, 85, 247, 0.08) 100%);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.layman-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 243, 255, 0.15);
+  color: #00f3ff;
+  font-weight: 700;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Visual Neural Architecture Layers */
+.neural-layer-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 140px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.neural-layer-box:hover {
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.05);
+}
+
+.neural-arrow {
+  color: #8b949e;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
