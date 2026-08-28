@@ -196,11 +196,11 @@
 }
 
 .colab-cell-run-btn:hover {
-  background: #00e676;
-  color: #000;
-  border-color: #00e676;
+  background: #a855f7;
+  color: #fff;
+  border-color: #a855f7;
   transform: scale(1.08);
-  box-shadow: 0 0 12px rgba(0, 230, 118, 0.5);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
 }
 
 .colab-cell-code {
@@ -251,17 +251,17 @@
 }
 
 .dsa-node.active {
-  background: linear-gradient(135deg, #00f3ff 0%, #0088ff 100%);
-  border-color: #00f3ff;
-  color: #000;
-  box-shadow: 0 0 16px rgba(0, 243, 255, 0.6);
+  background: linear-gradient(135deg, #a855f7 0%, #b8a2db 100%);
+  border-color: #d8b4fe;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.65);
   transform: scale(1.15);
 }
 
 .dsa-node.visited {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: #10b981;
-  color: #10b981;
+  background: rgba(168, 85, 247, 0.15);
+  border-color: #a855f7;
+  color: #d8b4fe;
 }
 
 .dsa-node.comparing {
@@ -273,8 +273,8 @@
 
 /* Layman Card */
 .layman-card {
-  background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(168, 85, 247, 0.08) 100%);
-  border: 1px solid rgba(88, 166, 255, 0.25);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(88, 166, 255, 0.06) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.25);
   border-radius: 10px;
   padding: 16px;
   font-size: 13px;
@@ -285,8 +285,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0, 243, 255, 0.15);
-  color: #00f3ff;
+  background: rgba(168, 85, 247, 0.15);
+  color: #d8b4fe;
   font-weight: 700;
   font-size: 10px;
   padding: 2px 8px;
@@ -311,8 +311,8 @@
 }
 
 .neural-layer-box:hover {
-  border-color: #00f3ff;
-  background: rgba(0, 243, 255, 0.05);
+  border-color: #d8b4fe;
+  background: rgba(168, 85, 247, 0.05);
 }
 
 .neural-arrow {

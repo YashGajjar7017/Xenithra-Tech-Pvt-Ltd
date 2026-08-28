@@ -348,7 +348,7 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
           </React.Fragment>
         ) : activeTab === 'AI Assistant Trace' ? (
           <div style={{ color: '#8b949e', lineHeight: '1.6' }}>
-            <div style={{ color: '#00ffaa', fontWeight: 'bold' }}>[GLM-4 & LOCAL ML COPILOT ENGINE]</div>
+            <div style={{ color: '#d8b4fe', fontWeight: 'bold' }}>[GLM-4 & LOCAL ML COPILOT ENGINE]</div>
             <div>• Real-time AST Parser: Online</div>
             <div>• Context Window: 32,768 Tokens</div>
             <div>• Real-time Completion Ingestion: Active on port 49152</div>

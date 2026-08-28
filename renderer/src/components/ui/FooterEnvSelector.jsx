@@ -112,8 +112,8 @@ const FooterEnvSelector = () => {
             width: '6px',
             height: '6px',
             borderRadius: '50%',
-            background: isAuto ? '#00ffaa' : '#00b0ff',
-            boxShadow: isAuto ? '0 0 6px #00ffaa' : '0 0 6px #00b0ff'
+            background: isAuto ? '#d8b4fe' : '#00b0ff',
+            boxShadow: isAuto ? '0 0 6px #d8b4fe' : '0 0 6px #00b0ff'
           }}
         />
         <span style={{ fontWeight: '600' }}>{activeObj.label || activeObj.id}</span>
@@ -121,8 +121,8 @@ const FooterEnvSelector = () => {
           <span
             style={{
               fontSize: '9px',
-              color: '#00ffaa',
-              background: 'rgba(0, 255, 170, 0.12)',
+              color: '#d8b4fe',
+              background: 'rgba(168, 85, 247, 0.15)',
               padding: '1px 4px',
               borderRadius: '3px',
               fontWeight: '700',
@@ -171,9 +171,9 @@ const FooterEnvSelector = () => {
             <button
               onClick={() => setIsAuto(!isAuto)}
               style={{
-                background: isAuto ? 'rgba(0, 255, 170, 0.2)' : 'rgba(255, 255, 255, 0.08)',
-                border: isAuto ? '1px solid #00ffaa' : '1px solid rgba(255,255,255,0.15)',
-                color: isAuto ? '#00ffaa' : '#888',
+                background: isAuto ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+                border: isAuto ? '1px solid #d8b4fe' : '1px solid rgba(255,255,255,0.15)',
+                color: isAuto ? '#d8b4fe' : '#888',
                 borderRadius: '3px',
                 fontSize: '9px',
                 padding: '1px 5px',

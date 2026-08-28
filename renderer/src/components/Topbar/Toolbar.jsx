@@ -194,7 +194,8 @@ const Toolbar = ({ theme, setTheme }) => {
               width: '5px',
               height: '5px',
               borderRadius: '50%',
-              background: '#00ffaa'
+              background: '#d8b4fe',
+              boxShadow: '0 0 4px #d8b4fe'
             }}
           />
           <span style={{ fontWeight: '600' }}>GLM-4 Core</span>
@@ -291,19 +292,19 @@ if (typeof document !== 'undefined' && !document.getElementById('responsive-tool
       transform: scale(0.96);
     }
     .btn-run-glow {
-      background: linear-gradient(135deg, #00e676 0%, #00b0ff 100%) !important;
+      background: linear-gradient(135deg, #a855f7 0%, #00b0ff 100%) !important;
       border: none !important;
       color: #fff !important;
       font-weight: 700 !important;
-      box-shadow: 0 2px 8px rgba(0, 230, 118, 0.3);
+      box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35);
     }
     .btn-run-glow:hover {
-      box-shadow: 0 2px 14px rgba(0, 230, 118, 0.55) !important;
+      box-shadow: 0 2px 14px rgba(168, 85, 247, 0.6) !important;
     }
     .btn-debug-glow {
-      background: rgba(0, 229, 255, 0.1) !important;
-      border-color: rgba(0, 229, 255, 0.3) !important;
-      color: #00e5ff !important;
+      background: rgba(168, 85, 247, 0.1) !important;
+      border-color: rgba(168, 85, 247, 0.35) !important;
+      color: #d8b4fe !important;
     }
     .btn-stop-glow {
       background: rgba(255, 107, 107, 0.12) !important;
@@ -314,15 +315,15 @@ if (typeof document !== 'undefined' && !document.getElementById('responsive-tool
       color: var(--text-main);
     }
     .btn-liveserver-active {
-      background: rgba(0, 255, 170, 0.15) !important;
-      border-color: #00ffaa !important;
-      color: #00ffaa !important;
-      box-shadow: 0 0 8px rgba(0, 255, 170, 0.35);
+      background: rgba(168, 85, 247, 0.15) !important;
+      border-color: #d8b4fe !important;
+      color: #d8b4fe !important;
+      box-shadow: 0 0 8px rgba(168, 85, 247, 0.35);
     }
     .btn-package {
-      background: rgba(0, 229, 255, 0.08) !important;
-      border-color: rgba(0, 229, 255, 0.25) !important;
-      color: #00e5ff !important;
+      background: rgba(168, 85, 247, 0.08) !important;
+      border-color: rgba(168, 85, 247, 0.25) !important;
+      color: #d8b4fe !important;
     }
     .btn-gist {
       background: rgba(216, 180, 254, 0.12) !important;
@@ -330,9 +331,9 @@ if (typeof document !== 'undefined' && !document.getElementById('responsive-tool
       color: #d8b4fe !important;
     }
     .btn-rtc {
-      background: rgba(0, 255, 170, 0.12) !important;
-      border-color: #00ffaa !important;
-      color: #00ffaa !important;
+      background: rgba(168, 85, 247, 0.12) !important;
+      border-color: #d8b4fe !important;
+      color: #d8b4fe !important;
     }
 
     /* Small Screen Responsive Rules */

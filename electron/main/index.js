@@ -235,6 +235,7 @@ function createWindow() {
     width: 1200,
     height: 1170,
     show: false,
+    frame: false,
     autoHideMenuBar: true,
     icon: icon, // Global icon for Windows/Linux/macOS window decoration
     webPreferences: {
