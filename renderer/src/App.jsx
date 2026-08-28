@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { HashRouter as Router, Routes, Route } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import './css/index.css'
 import 'boxicons/css/boxicons.min.css'
 import Topbar from './components/Topbar/Topbar'
@@ -191,6 +191,57 @@ const MainLayout = ({
   sidebarWidth,
   setSidebarWidth
 }) => {
+  const location = useLocation()
+  const isAiColab = location.pathname === '/ai-colab'
+
+  const defaultOrder = [
+    'explorer',
+    'search',
+    'git',
+    'debug',
+    'aicolab',
+    'extensions',
+    'docker',
+    'firebase',
+    'clients',
+    'webrtc'
+  ]
+
+  const [activityOrder, setActivityOrder] = useState(() => {
+    const saved = localStorage.getItem('activity-order')
+    return saved ? JSON.parse(saved) : defaultOrder
+  })
+
+  const [colabTransitionActive, setColabTransitionActive] = useState(false)
+
+  const triggerColabTransition = () => {
+    if (location.pathname === '/ai-colab') return
+    setColabTransitionActive(true)
+    setTimeout(() => {
+      window.location.hash = '#/ai-colab'
+      setActiveActivity('aicolab')
+    }, 600)
+    setTimeout(() => {
+      setColabTransitionActive(false)
+    }, 1200)
+  }
+
+  const handleMoveActivity = (index, direction, e) => {
+    e.stopPropagation()
+    const newOrder = [...activityOrder]
+    if (direction === 'up' && index > 0) {
+      const temp = newOrder[index]
+      newOrder[index] = newOrder[index - 1]
+      newOrder[index - 1] = temp
+    } else if (direction === 'down' && index < newOrder.length - 1) {
+      const temp = newOrder[index]
+      newOrder[index] = newOrder[index + 1]
+      newOrder[index + 1] = temp
+    }
+    setActivityOrder(newOrder)
+    localStorage.setItem('activity-order', JSON.stringify(newOrder))
+  }
+
   const [filename, setFilename] = useState('index.html')
   const [isResizingSidebar, setIsResizingSidebar] = useState(false)
   const [activeActivity, setActiveActivity] = useState('explorer')
@@ -331,126 +382,179 @@ const MainLayout = ({
         <div className="prism-orb prism-orb-3"></div>
       </div>
 
+      {colabTransitionActive && (
+        <div className="colab-sexy-transition">
+          <div className="portal-ring"></div>
+          <div className="scanline"></div>
+          <div className="transition-text">INITIALIZING AI COLLAB STUDIO</div>
+          <div className="grid-overlay"></div>
+        </div>
+      )}
+
       {/* TOP SLIM MENU BAR */}
-      <Topbar
-        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-        theme={theme}
-        setTheme={setTheme}
-        filename={filename}
-        setFilename={setFilename}
-      />
+      {!isAiColab && (
+        <Topbar
+          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          theme={theme}
+          setTheme={setTheme}
+          filename={filename}
+          setFilename={setFilename}
+        />
+      )}
 
       {/* SECONDARY TOOLBAR */}
-      <Toolbar theme={theme} setTheme={setTheme} />
+      {!isAiColab && <Toolbar theme={theme} setTheme={setTheme} />}
 
       <div className="app" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* LEFT ACTIVITY BAR */}
-        <div className="activity-bar">
-          <div
-            className={`activity-icon ${activeActivity === 'explorer' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('explorer')}
-            title="Explorer"
-          >
-            <i className="bx bx-folder" style={{ fontSize: '20px' }}></i>
+        {!isAiColab && (
+          <div className="activity-bar">
+            {activityOrder.map((activity, index) => {
+              const isFirst = index === 0
+              const isLast = index === activityOrder.length - 1
+
+              const getIconDetails = () => {
+                switch (activity) {
+                  case 'explorer':
+                    return {
+                      title: 'Explorer',
+                      element: <i className="bx bx-folder" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('explorer')
+                    }
+                  case 'search':
+                    return {
+                      title: 'Search',
+                      element: <i className="bx bx-search" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('search')
+                    }
+                  case 'git':
+                    return {
+                      title: 'Source Control',
+                      element: <i className="bx bx-git-branch" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('git')
+                    }
+                  case 'debug':
+                    return {
+                      title: 'Run & Debug',
+                      element: <i className="bx bx-bug" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('debug')
+                    }
+                  case 'aicolab':
+                    return {
+                      title: 'AI Colab & Real-time DSA Studio',
+                      element: (
+                        <>
+                          <span style={{ fontSize: '18px', color: '#00f3ff' }}>⚡</span>
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '6px',
+                              right: '6px',
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: '#00f3ff',
+                              boxShadow: '0 0 6px #00f3ff'
+                            }}
+                          />
+                        </>
+                      ),
+                      onClick: () => triggerColabTransition()
+                    }
+                  case 'extensions':
+                    return {
+                      title: 'Extensions Store',
+                      element: <i className="bx bx-extension" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('extensions')
+                    }
+                  case 'docker':
+                    return {
+                      title: 'Docker Container Manager',
+                      element: <i className="bx bxl-docker" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('docker')
+                    }
+                  case 'firebase':
+                    return {
+                      title: 'Firebase Explorer & Console',
+                      element: <i className="bx bxl-firebase" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('firebase')
+                    }
+                  case 'clients':
+                    return {
+                      title: 'TCP Clients Pairing',
+                      element: <i className="bx bx-devices" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('clients')
+                    }
+                  case 'webrtc':
+                    return {
+                      title: 'WebRTC Collaboration',
+                      element: <i className="bx bx-share-alt" style={{ fontSize: '20px' }}></i>,
+                      onClick: () => handleActivityClick('webrtc')
+                    }
+                  default:
+                    return null
+                }
+              }
+
+              const details = getIconDetails()
+              if (!details) return null
+
+              return (
+                <div
+                  key={activity}
+                  className={`activity-icon ${activeActivity === activity ? 'active' : ''}`}
+                  onClick={details.onClick}
+                  title={details.title}
+                  style={{ position: 'relative' }}
+                >
+                  {details.element}
+                  
+                  {/* Reordering Controls Overlay on Hover */}
+                  <div className="reorder-buttons">
+                    {!isFirst && (
+                      <button
+                        className="reorder-btn"
+                        onClick={(e) => handleMoveActivity(index, 'up', e)}
+                        title="Move Up"
+                      >
+                        ▲
+                      </button>
+                    )}
+                    {!isLast && (
+                      <button
+                        className="reorder-btn"
+                        onClick={(e) => handleMoveActivity(index, 'down', e)}
+                        title="Move Down"
+                      >
+                        ▼
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+            <div style={{ flex: 1 }}></div>
+            <div
+              className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}
+              onClick={() => setIsSettingsOpen(true)}
+              title="Settings Control"
+            >
+              <i className="bx bx-cog" style={{ fontSize: '20px' }}></i>
+            </div>
           </div>
-          <div
-            className={`activity-icon ${activeActivity === 'search' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('search')}
-            title="Search"
-          >
-            <i className="bx bx-search" style={{ fontSize: '20px' }}></i>
-          </div>
-          <div
-            className={`activity-icon ${activeActivity === 'git' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('git')}
-            title="Source Control"
-          >
-            <i className="bx bx-git-branch" style={{ fontSize: '20px' }}></i>
-          </div>
-          <div
-            className={`activity-icon ${activeActivity === 'debug' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('debug')}
-            title="Run & Debug"
-          >
-            <i className="bx bx-bug" style={{ fontSize: '20px' }}></i>
-          </div>
-          <div
-            className={`activity-icon ${activeActivity === 'aicolab' ? 'active' : ''}`}
-            onClick={() => {
-              window.location.hash = '#/ai-colab'
-              setActiveActivity('aicolab')
-            }}
-            title="AI Colab & Real-time DSA Studio"
-            style={{ position: 'relative' }}
-          >
-            <span style={{ fontSize: '18px', color: '#00f3ff' }}>⚡</span>
-            <span
-              style={{
-                position: 'absolute',
-                top: '6px',
-                right: '6px',
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: '#00f3ff',
-                boxShadow: '0 0 6px #00f3ff'
-              }}
-            />
-          </div>
-          <div
-            className={`activity-icon ${activeActivity === 'extensions' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('extensions')}
-            title="Extensions Store"
-          >
-            <i className="bx bx-extension" style={{ fontSize: '20px' }}></i>
-          </div>
-          <div
-            className={`activity-icon ${activeActivity === 'docker' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('docker')}
-            title="Docker Container Manager"
-          >
-            <i className="bx bxl-docker" style={{ fontSize: '20px' }}></i>
-          </div>
-          <div
-            className={`activity-icon ${activeActivity === 'firebase' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('firebase')}
-            title="Firebase Explorer & Console"
-          >
-            <i className="bx bxl-firebase" style={{ fontSize: '20px' }}></i>
-          </div>
-          <div
-            className={`activity-icon ${activeActivity === 'clients' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('clients')}
-            title="TCP Clients Pairing"
-          >
-            <i className="bx bx-devices" style={{ fontSize: '20px' }}></i>
-          </div>
-          <div
-            className={`activity-icon ${activeActivity === 'webrtc' ? 'active' : ''}`}
-            onClick={() => handleActivityClick('webrtc')}
-            title="WebRTC Collaboration"
-          >
-            <i className="bx bx-share-alt" style={{ fontSize: '20px' }}></i>
-          </div>
-          <div style={{ flex: 1 }}></div>
-          <div
-            className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}
-            onClick={() => setIsSettingsOpen(true)}
-            title="Settings Control"
-          >
-            <i className="bx bx-cog" style={{ fontSize: '20px' }}></i>
-          </div>
-        </div>
+        )}
 
         {/* SIDEBAR PANEL */}
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          sidebarWidth={sidebarWidth}
-          activeActivity={activeActivity}
-        />
+        {!isAiColab && (
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            sidebarWidth={sidebarWidth}
+            activeActivity={activeActivity}
+          />
+        )}
 
         {/* DRAGGABLE DIVIDER (SIZING BAR) */}
-        {!sidebarCollapsed && (
+        {!isAiColab && !sidebarCollapsed && (
           <div
             className={`resizer-v ${isResizingSidebar ? 'resizing' : ''}`}
             onMouseDown={handleSidebarMouseDown}

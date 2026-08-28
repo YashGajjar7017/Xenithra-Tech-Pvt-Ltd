@@ -60,14 +60,6 @@ const Toolbar = ({ theme, setTheme }) => {
           showText={true}
           textStyle={{ transform: 'scale(0.85)', transformOrigin: 'left center' }}
         />
-        <span className="toolbar-separator">|</span>
-        <div className="toolbar-runner-badge">
-          <i
-            className="bx bx-play-circle"
-            style={{ color: 'var(--accent-color)', fontSize: '13px' }}
-          ></i>
-          <span className="toolbar-runner-text">Runner Engine</span>
-        </div>
       </div>
 
       {/* Center: Responsive Execution & Debugging Control Actions */}

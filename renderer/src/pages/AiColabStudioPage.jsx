@@ -78,6 +78,170 @@ const AiColabStudioPage = () => {
   const [sortArray, setSortArray] = useState([45, 12, 85, 32, 89, 39, 69, 21])
   const [sortIndices, setSortIndices] = useState({ i: 0, j: 1, comparing: false, swapping: false })
 
+  const [selectedLang, setSelectedLang] = useState('python')
+  const [userCode, setUserCode] = useState('')
+
+  const codeTemplates = {
+    'binary-search': {
+      python: `def binary_search(arr, target):
+    low = 0
+    high = len(arr) - 1
+    while low <= high:
+        mid = (low + high) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            low = mid + 1
+        else:
+            high = mid - 1
+    return -1`,
+      javascript: `function binarySearch(arr, target) {
+    let low = 0;
+    let high = arr.length - 1;
+    while (low <= high) {
+        let mid = Math.floor((low + high) / 2);
+        if (arr[mid] === target) {
+            return mid;
+        } else if (arr[mid] < target) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    return -1;
+}`,
+      cpp: `int binarySearch(int arr[], int size, int target) {
+    int low = 0;
+    int high = size - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (arr[mid] == target)
+            return mid;
+        if (arr[mid] < target)
+            low = mid + 1;
+        else
+            high = mid - 1;
+    }
+    return -1;
+}`
+    },
+    'linked-list': {
+      python: `class Node:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+
+def insert_node(head, val):
+    new_node = Node(val)
+    if not head:
+        return new_node
+    curr = head
+    while curr.next and curr.next.val < val:
+        curr = curr.next
+    new_node.next = curr.next
+    curr.next = new_node
+    return head`,
+      javascript: `class Node {
+    constructor(val) {
+        this.val = val;
+        this.next = null;
+    }
+}
+
+function insertNode(head, val) {
+    let newNode = new Node(val);
+    if (!head) return newNode;
+    let curr = head;
+    while (curr.next && curr.next.val < val) {
+        curr = curr.next;
+    }
+    newNode.next = curr.next;
+    curr.next = newNode;
+    return head;
+}`,
+      cpp: `struct Node {
+    int val;
+    Node* next;
+    Node(int x) : val(x), next(nullptr) {}
+};
+
+Node* insertNode(Node* head, int val) {
+    Node* newNode = new Node(val);
+    if (!head) return newNode;
+    Node* curr = head;
+    while (curr->next && curr->next->val < val) {
+        curr = curr->next;
+    }
+    newNode->next = curr->next;
+    curr->next = newNode;
+    return head;
+}`
+    },
+    'bubble-sort': {
+      python: `def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if arr[j] > arr[j+1]:
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+    return arr`,
+      javascript: `function bubbleSort(arr) {
+    let n = arr.length;
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                let temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+    return arr;
+}`,
+      cpp: `void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}`
+    },
+    'gradient-descent': {
+      python: `def gradient_descent(init_w, lr, epochs):
+    w = init_w
+    for epoch in range(epochs):
+        grad = 2 * w # derivative of w^2
+        w = w - lr * grad
+    return w`,
+      javascript: `function gradientDescent(initW, lr, epochs) {
+    let w = initW;
+    for (let epoch = 0; epoch < epochs; epoch++) {
+        let grad = 2 * w; // derivative of w^2
+        w = w - lr * grad;
+    }
+    return w;
+}`,
+      cpp: `double gradientDescent(double initW, double lr, int epochs) {
+    double w = initW;
+    for (int epoch = 0; epoch < epochs; epoch++) {
+        double grad = 2 * w; // derivative of w^2
+        w = w - lr * grad;
+    }
+    return w;
+}`
+    }
+  }
+
+  useEffect(() => {
+    if (codeTemplates[selectedAlgo]) {
+      setUserCode(codeTemplates[selectedAlgo][selectedLang] || '')
+    }
+  }, [selectedAlgo, selectedLang])
+
   // Presets
   const presets = [
     {
@@ -407,10 +571,10 @@ const AiColabStudioPage = () => {
             }}
             disabled={trainingActive}
             style={{
-              background: 'linear-gradient(135deg, #a855f7 0%, #00b0ff 100%)',
+              background: '#ffffff',
               border: 'none',
               borderRadius: '6px',
-              color: '#fff',
+              color: '#000000',
               fontWeight: '700',
               fontSize: '11px',
               padding: '6px 14px',
@@ -418,11 +582,42 @@ const AiColabStudioPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 0 12px rgba(168, 85, 247, 0.3)'
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(255, 255, 255, 0.15)'
             }}
           >
             <span>▶</span>
             <span>{trainingActive ? 'Executing Local Model...' : 'Run All Notebook Cells'}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              window.location.hash = '#/'
+            }}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '6px',
+              color: '#ffffff',
+              fontWeight: '700',
+              fontSize: '11px',
+              padding: '6px 14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+              e.currentTarget.style.borderColor = '#ffffff'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            <span>← Exit Studio</span>
           </button>
         </div>
       </div>
@@ -916,167 +1111,200 @@ const AiColabStudioPage = () => {
         {/* TAB 2: LAYMAN REAL-TIME DSA VISUALIZER WITH LINE-BY-LINE STEPS */}
         {/* ========================================================================= */}
         {activeTab === 'dsa-visualizer' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Algorithm Picker Header */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: '#161b22',
-                padding: '14px 20px',
-                borderRadius: '10px',
-                border: '1px solid rgba(255,255,255,0.08)'
-              }}
-            >
-              <div>
-                <h3 style={{ margin: 0, fontSize: '15px', color: '#d8b4fe' }}>
-                  🧩 DSA Step-by-Step Trainer (Layman Explanations)
-                </h3>
-                <div style={{ fontSize: '11px', color: '#8b949e', marginTop: '3px' }}>
-                  Watch execution traces live, sync variables with node changes, and trace pseudocode.
+          <div className="dsa-split-studio">
+            {/* Left Column: Interactive Code Practice Editor */}
+            <div className="dsa-code-editor-box">
+              <div className="dsa-editor-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '14px' }}>💻</span>
+                  <span style={{ fontWeight: 'bold', color: '#fff' }}>DSA Practice Editor</span>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {/* Language Selector */}
+                  <select
+                    value={selectedLang}
+                    onChange={(e) => setSelectedLang(e.target.value)}
+                    style={{
+                      background: '#0d0d0d',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: '4px',
+                      color: '#fff',
+                      fontSize: '11px',
+                      padding: '2px 6px',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="cpp">C++</option>
+                  </select>
+
+                  {/* Reset Button */}
+                  <button
+                    onClick={() => {
+                      if (codeTemplates[selectedAlgo]) {
+                        setUserCode(codeTemplates[selectedAlgo][selectedLang] || '')
+                      }
+                    }}
+                    style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#ccc',
+                      borderRadius: '4px',
+                      padding: '2px 8px',
+                      fontSize: '11px',
+                      cursor: 'pointer'
+                    }}
+                    title="Reset Template Code"
+                  >
+                    Reset
+                  </button>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {[
-                  { id: 'binary-search', label: '🔍 Binary Search' },
-                  { id: 'linked-list', label: '🔗 Linked List' },
-                  { id: 'bubble-sort', label: '📊 Bubble Sort' },
-                  { id: 'gradient-descent', label: '📉 Gradient Descent (AI)' }
-                ].map((algo) => (
-                  <button
-                    key={algo.id}
-                    onClick={() => {
-                      setSelectedAlgo(algo.id)
-                      handleDsaReset()
-                    }}
-                    style={{
-                      background: selectedAlgo === algo.id ? 'rgba(168, 85, 247, 0.15)' : 'rgba(255,255,255,0.04)',
-                      border: selectedAlgo === algo.id ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.08)',
-                      color: selectedAlgo === algo.id ? '#d8b4fe' : '#c9d1d9',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {algo.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Playback Controls */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: 'rgba(255,255,255,0.03)',
-                padding: '10px 18px',
-                borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.06)'
-              }}
-            >
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleDsaReset}
+              {/* Code Playground Input */}
+              <div style={{ display: 'flex', flex: 1, position: 'relative', background: '#030303' }}>
+                <div style={{
+                  width: '32px',
+                  background: '#080808',
+                  color: '#444',
+                  fontFamily: 'monospace',
+                  fontSize: '11px',
+                  lineHeight: '1.6',
+                  textAlign: 'right',
+                  padding: '12px 6px 12px 0',
+                  userSelect: 'none',
+                  borderRight: '1px solid rgba(255,255,255,0.06)'
+                }}>
+                  {Array.from({ length: 22 }).map((_, i) => (
+                    <div key={i}>{i + 1}</div>
+                  ))}
+                </div>
+                <textarea
+                  value={userCode}
+                  onChange={(e) => setUserCode(e.target.value)}
+                  className="dsa-editor-textarea"
+                  spellCheck="false"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
+                    flex: 1,
+                    background: '#030303',
+                    color: '#e5e5e5',
                     border: 'none',
-                    color: '#fff',
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '11px'
-                  }}
-                >
-                  ⏮ Reset
-                </button>
-                <button
-                  onClick={() => setDsaPlaying(!dsaPlaying)}
-                  style={{
-                    background: dsaPlaying ? '#ff4d4f' : '#a855f7',
-                    border: 'none',
-                    color: '#fff',
-                    fontWeight: '700',
-                    padding: '6px 16px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '11px'
-                  }}
-                >
-                  {dsaPlaying ? '⏸ Pause' : '▶ Play Steps'}
-                </button>
-                <button
-                  onClick={handleDsaNext}
-                  style={{
-                    background: 'rgba(168, 85, 247, 0.15)',
-                    border: '1px solid #a855f7',
-                    color: '#d8b4fe',
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
+                    fontFamily: 'monospace',
                     fontSize: '11px',
-                    fontWeight: 'bold'
+                    lineHeight: '1.6',
+                    padding: '12px',
+                    resize: 'none',
+                    outline: 'none',
+                    height: '380px'
                   }}
-                >
-                  ▶▶ Step Next
-                </button>
+                />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: '#8b949e' }}>
-                <span>Traversal Speed:</span>
-                {[
-                  { label: '0.5x', speed: 1800 },
-                  { label: '1x', speed: 1200 },
-                  { label: '2x', speed: 600 }
-                ].map((s) => (
-                  <button
-                    key={s.label}
-                    onClick={() => setDsaSpeed(s.speed)}
-                    style={{
-                      background: dsaSpeed === s.speed ? '#a855f7' : 'rgba(255,255,255,0.06)',
-                      border: 'none',
-                      color: '#fff',
-                      padding: '2px 8px',
-                      borderRadius: '3px',
-                      fontSize: '10px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {s.label}
-                  </button>
-                ))}
+              {/* Code Sync Status */}
+              <div style={{ padding: '6px 12px', background: '#080808', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: '10px', color: '#888', display: 'flex', justifyContent: 'space-between' }}>
+                <span>Type code to practice writing the DSA logic</span>
+                <span style={{ color: '#fff' }}>✓ Code Sync Active</span>
               </div>
             </div>
 
-            {/* Visual Arena Card */}
-            <div className="dsa-arena-card" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px' }}>
-              
-              {/* Left Column: Algorithm Simulation */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'center' }}>
+            {/* Right Column: Visual Arena & Complexity Dashboard */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Algorithm Picker & Playback Controls Header */}
+              <div style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff' }}>Select Algorithm:</span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {[
+                      { id: 'binary-search', label: '🔍 Binary Search' },
+                      { id: 'linked-list', label: '🔗 Linked List' },
+                      { id: 'bubble-sort', label: '📊 Bubble Sort' },
+                      { id: 'gradient-descent', label: '📉 Gradient Descent (AI)' }
+                    ].map((algo) => (
+                      <button
+                        key={algo.id}
+                        onClick={() => {
+                          setSelectedAlgo(algo.id)
+                          handleDsaReset()
+                        }}
+                        style={{
+                          background: selectedAlgo === algo.id ? '#ffffff' : 'rgba(255,255,255,0.04)',
+                          border: selectedAlgo === algo.id ? '1px solid #ffffff' : '1px solid rgba(255,255,255,0.08)',
+                          color: selectedAlgo === algo.id ? '#000000' : '#e5e5e5',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {algo.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Steps controls */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '6px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={handleDsaReset}
+                      style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: '#fff', padding: '4px 10px', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}
+                    >
+                      ⏮ Reset
+                    </button>
+                    <button
+                      onClick={() => setDsaPlaying(!dsaPlaying)}
+                      style={{ background: '#ffffff', border: 'none', color: '#000', fontWeight: 'bold', padding: '4px 12px', borderRadius: '3px', cursor: 'pointer', fontSize: '10px' }}
+                    >
+                      {dsaPlaying ? '⏸ Pause' : '▶ Play Steps'}
+                    </button>
+                    <button
+                      onClick={handleDsaNext}
+                      style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '4px 10px', borderRadius: '3px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}
+                    >
+                      ▶▶ Step Next
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px', fontSize: '10px', color: '#888' }}>
+                    {[
+                      { label: '0.5x', speed: 1800 },
+                      { label: '1x', speed: 1200 },
+                      { label: '2x', speed: 600 }
+                    ].map((s) => (
+                      <button
+                        key={s.label}
+                        onClick={() => setDsaSpeed(s.speed)}
+                        style={{
+                          background: dsaSpeed === s.speed ? '#ffffff' : 'rgba(255,255,255,0.06)',
+                          border: 'none',
+                          color: dsaSpeed === s.speed ? '#000' : '#fff',
+                          padding: '1px 6px',
+                          borderRadius: '2px',
+                          fontSize: '9px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* GUI Visualization Panel */}
+              <div style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', minHeight: '140px', justifyContent: 'center' }}>
                 {/* 1. BINARY SEARCH */}
                 {selectedAlgo === 'binary-search' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '700', fontSize: '13px', color: '#fff' }}>
-                        Target to Find: <span style={{ color: '#d8b4fe' }}>{targetBinarySearch}</span>
-                      </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ fontSize: '11px', color: '#888', textAlign: 'center' }}>
+                      Target: <span style={{ color: '#fff', fontWeight: 'bold' }}>{targetBinarySearch}</span>
                     </div>
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        padding: '30px 10px',
-                        overflowX: 'auto'
-                      }}
-                    >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', overflowX: 'auto', padding: '16px 0' }}>
                       {binarySearchArray.map((num, idx) => {
                         const isLow = idx === bsPointers.low
                         const isHigh = idx === bsPointers.high
@@ -1089,26 +1317,13 @@ const AiColabStudioPage = () => {
                             key={idx}
                             className={`dsa-node ${isFound ? 'active' : isMid ? 'comparing' : inRange ? 'visited' : ''}`}
                             style={{
-                              opacity: inRange ? 1 : 0.25,
-                              borderWidth: isMid || isFound ? '2px' : '1px'
+                              opacity: inRange ? 1 : 0.2
                             }}
                           >
                             <span>{num}</span>
-                            {isLow && (
-                              <span style={{ position: 'absolute', top: '-22px', fontSize: '9px', color: '#58a6ff', fontWeight: 'bold' }}>
-                                LOW
-                              </span>
-                            )}
-                            {isMid && (
-                              <span style={{ position: 'absolute', bottom: '-22px', fontSize: '9px', color: '#a855f7', fontWeight: 'bold' }}>
-                                MID
-                              </span>
-                            )}
-                            {isHigh && (
-                              <span style={{ position: 'absolute', top: '-22px', fontSize: '9px', color: '#ff79c6', fontWeight: 'bold' }}>
-                                HIGH
-                              </span>
-                            )}
+                            {isLow && <span style={{ position: 'absolute', top: '-18px', fontSize: '8px', color: '#fff', fontWeight: 'bold' }}>L</span>}
+                            {isMid && <span style={{ position: 'absolute', bottom: '-18px', fontSize: '8px', color: '#fff', fontWeight: 'bold' }}>M</span>}
+                            {isHigh && <span style={{ position: 'absolute', top: '-18px', fontSize: '8px', color: '#fff', fontWeight: 'bold' }}>H</span>}
                           </div>
                         )
                       })}
@@ -1118,258 +1333,162 @@ const AiColabStudioPage = () => {
 
                 {/* 2. LINKED LIST */}
                 {selectedAlgo === 'linked-list' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '30px 10px', overflowX: 'auto' }}>
-                      {linkedList.map((node, idx) => {
-                        // Highlight insert state
-                        const isNewNode = node.id === 5
-                        const isTraversing = dsaStep === 1 && node.val === 25
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', overflowX: 'auto', padding: '16px 0' }}>
+                    {linkedList.map((node, idx) => {
+                      const isNewNode = node.id === 5
+                      const isTraversing = dsaStep === 1 && node.val === 25
 
-                        return (
-                          <React.Fragment key={node.id}>
-                            <div className={`dsa-node ${isNewNode ? 'active' : isTraversing ? 'comparing' : 'visited'}`} style={{ width: '60px', height: '60px' }}>
-                              <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '15px', fontWeight: '800' }}>{node.val}</div>
-                                <div style={{ fontSize: '8px', opacity: 0.6 }}>Node #{node.id}</div>
-                              </div>
+                      return (
+                        <React.Fragment key={node.id}>
+                          <div className={`dsa-node ${isNewNode ? 'active' : isTraversing ? 'comparing' : 'visited'}`}>
+                            <div style={{ textAlign: 'center' }}>
+                              <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{node.val}</div>
+                              <div style={{ fontSize: '7px', opacity: 0.5 }}>#{node.id}</div>
                             </div>
-                            {node.next && (
-                              <div style={{ display: 'flex', alignItems: 'center', color: '#d8b4fe', fontSize: '20px', fontWeight: 'bold' }}>
-                                ──▶
-                              </div>
-                            )}
-                            {!node.next && (
-                              <div style={{ color: '#ff4d4f', fontSize: '11px', fontWeight: 'bold' }}>NULL</div>
-                            )}
-                          </React.Fragment>
-                        )
-                      })}
-                    </div>
+                          </div>
+                          {node.next ? (
+                            <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>──▶</span>
+                          ) : (
+                            <span style={{ color: '#888', fontSize: '9px', fontWeight: 'bold' }}>NUL</span>
+                          )}
+                        </React.Fragment>
+                      )
+                    })}
                   </div>
                 )}
 
                 {/* 3. BUBBLE SORT */}
                 {selectedAlgo === 'bubble-sort' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-end',
-                        justifyContent: 'center',
-                        gap: '12px',
-                        height: '180px',
-                        padding: '20px 0'
-                      }}
-                    >
-                      {sortArray.map((val, idx) => {
-                        const isComparing = idx === sortIndices.i || idx === sortIndices.j
-                        return (
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '8px', height: '110px', padding: '10px 0' }}>
+                    {sortArray.map((val, idx) => {
+                      const isComparing = idx === sortIndices.i || idx === sortIndices.j
+                      return (
+                        <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontSize: '10px', color: isComparing ? '#fff' : '#888' }}>{val}</span>
                           <div
-                            key={idx}
                             style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: '6px'
+                              width: '24px',
+                              height: `${val * 0.9}px`,
+                              background: isComparing ? '#ffffff' : '#444444',
+                              borderRadius: '3px 3px 0 0',
+                              transition: 'all 0.3s ease'
                             }}
-                          >
-                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: isComparing ? '#d8b4fe' : '#fff' }}>
-                              {val}
-                            </span>
-                            <div
-                              style={{
-                                width: '30px',
-                                height: `${val * 1.6}px`,
-                                background: isComparing
-                                  ? 'linear-gradient(to top, #ff9800, #a855f7)'
-                                  : 'linear-gradient(to top, #a855f7, #58a6ff)',
-                                borderRadius: '6px 6px 0 0',
-                                transition: 'all 0.4s ease'
-                              }}
-                            />
-                            <span style={{ fontSize: '9px', color: '#8b949e' }}>[{idx}]</span>
-                          </div>
-                        )
-                      })}
-                    </div>
+                          />
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
 
                 {/* 4. GRADIENT DESCENT */}
                 {selectedAlgo === 'gradient-descent' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div
-                      style={{
-                        height: '180px',
-                        background: '#090d13',
-                        borderRadius: '10px',
-                        position: 'relative',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <svg viewBox="0 0 400 150" style={{ width: '80%', height: '100%' }}>
-                        <path d="M 20,20 Q 200,160 380,20" fill="none" stroke="rgba(168, 85, 247, 0.4)" strokeWidth="3" />
-                        {/* Rolling Optimizer Ball */}
-                        <circle
-                          cx={200 - (4 - dsaStep) * 45}
-                          cy={140 - Math.pow(4 - dsaStep, 2) * 11}
-                          r="10"
-                          fill="#d8b4fe"
-                          style={{ filter: 'drop-shadow(0 0 8px #d8b4fe)', transition: 'all 0.5s ease' }}
-                        />
-                      </svg>
-                    </div>
+                  <div style={{ height: '110px', background: '#030303', borderRadius: '6px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg viewBox="0 0 400 150" style={{ width: '80%', height: '100%' }}>
+                      <path d="M 20,20 Q 200,160 380,20" fill="none" stroke="rgba(255, 255, 255, 0.2)" strokeWidth="2" />
+                      <circle
+                        cx={200 - (4 - dsaStep) * 45}
+                        cy={140 - Math.pow(4 - dsaStep, 2) * 11}
+                        r="8"
+                        fill="#ffffff"
+                        style={{ filter: 'drop-shadow(0 0 6px #ffffff)', transition: 'all 0.5s ease' }}
+                      />
+                    </svg>
                   </div>
                 )}
 
-                {/* Plain English Analogy Card */}
+                {/* Metaphor explainer */}
                 <div className="layman-card">
                   <span className="layman-badge">💡 Metaphor Explainer</span>
-                  <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
+                  <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
                     {selectedAlgo === 'binary-search' && (
                       <>
-                        {dsaStep === 0 && "Setup: Pointers low and high bracket the entire array. Think of this like opening the dictionary at the middle."}
-                        {dsaStep === 1 && "Step 1: Check mid value (35). Target 56 > 35, so we throw away the left half of the pages and look right."}
-                        {dsaStep === 2 && "Step 2: Check mid of the right page segment (67). Since 56 < 67, we throw away the right portion of remaining pages."}
-                        {dsaStep === 3 && "Step 3: Check remaining narrow index range. Mid points directly to 56. Found in only 3 steps!"}
+                        {dsaStep === 0 && "Pointers low and high bracket the entire array. Think of this like opening the dictionary at the middle."}
+                        {dsaStep === 1 && "Check mid value (35). Target 56 > 35, so we throw away the left half of pages and search right."}
+                        {dsaStep === 2 && "Check mid of the right page segment (67). Since 56 < 67, we throw away the right portion of pages."}
+                        {dsaStep === 3 && "Check remaining narrow index range. Mid points directly to 56. Found in only 3 steps!"}
                       </>
                     )}
                     {selectedAlgo === 'linked-list' && (
                       <>
-                        {dsaStep === 0 && "Initial List: List has nodes pointing to the next element sequentially. We want to insert value 30."}
-                        {dsaStep === 1 && "Traversing: Move temporary pointer step-by-step from head node until we find the node smaller than 30 (Node 25)."}
-                        {dsaStep === 2 && "Preparation: Create a new detached Node(30) in memory. Link its pointer forward to Node(40)."}
-                        {dsaStep === 3 && "Linking: Change Node(25)'s pointer to target Node(30). Node(30) is now successfully inserted!"}
+                        {dsaStep === 0 && "Initial List: Sequential elements. We want to insert value 30."}
+                        {dsaStep === 1 && "Traversing: Scan head-downwards to find the node smaller than 30 (Node 25)."}
+                        {dsaStep === 2 && "Preparation: Create Node(30) in memory. Link its pointer forward to Node(40)."}
+                        {dsaStep === 3 && "Linking: Change Node(25)'s pointer to Node(30). Successful insert!"}
                       </>
                     )}
                     {selectedAlgo === 'bubble-sort' && (
                       <>
-                        {dsaStep === 0 && "Start state: Array elements are unsorted. Larger bubbles sink/swap to the right."}
-                        {dsaStep === 1 && "Comparison 1: Index 0 (45) > Index 1 (12). Swap them! 45 floats to the right."}
-                        {dsaStep === 2 && "Comparison 2: Index 2 (85) > Index 3 (32). Swap them! 85 floats to the right."}
-                        {dsaStep === 3 && "Comparison 3: Index 4 (89) > Index 5 (39). Swap them!"}
-                        {dsaStep === 4 && "Comparison 4: Index 5 (89) > Index 6 (69). Swap them!"}
-                        {dsaStep === 5 && "Comparison 5: Index 6 (89) > Index 7 (21). Swap them! Largest value 89 successfully bubbled to the end."}
+                        {dsaStep === 0 && "Start state: Unsorted heights. Larger values bubble/swap to the right."}
+                        {dsaStep === 1 && "Index 0 (45) > Index 1 (12). Swap them! 45 floats right."}
+                        {dsaStep === 2 && "Index 2 (85) > Index 3 (32). Swap them! 85 floats right."}
+                        {dsaStep === 3 && "Index 4 (89) > Index 5 (39). Swap them!"}
+                        {dsaStep === 4 && "Index 5 (89) > Index 6 (69). Swap them!"}
+                        {dsaStep === 5 && "Index 6 (89) > Index 7 (21). Swap them! 89 bubbled to the end."}
                       </>
                     )}
                     {selectedAlgo === 'gradient-descent' && (
                       <>
-                        {dsaStep === 0 && "Initial State: Ball is randomized at high point of the loss function (huge error weight)."}
-                        {dsaStep === 1 && "Calculation: Compute local gradient slope (steepness index). We feel which way is downhill."}
-                        {dsaStep === 2 && "Step 1: Take a small step downhill. Weight updates, and the error loss shrinks."}
-                        {dsaStep === 3 && "Step 2: Recalculate slope and take another step. Ball rolls closer to valley bottom."}
-                        {dsaStep === 4 && "Convergence: Reach local valley minimum. Loss is minimal. AI model has finished training!"}
+                        {dsaStep === 0 && "Initial State: Weight is randomized at high point of loss function (huge error)."}
+                        {dsaStep === 1 && "Compute slope. We feel which way is downhill (gradient)."}
+                        {dsaStep === 2 && "Step 1: Take a small step downhill. Error loss shrinks."}
+                        {dsaStep === 3 && "Step 2: Recalculate slope and step. Ball rolls closer to valley bottom."}
+                        {dsaStep === 4 && "Convergence: Reach valley minimum (loss is minimal). Done!"}
                       </>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Code Sync & Variable Inspector */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', background: 'rgba(0,0,0,0.25)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#8b949e', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px' }}>
-                  CODE SYNC & LOCAL VARIABLES
+              {/* Big-O Complexity Dashboard */}
+              <div className="dsa-complexity-panel">
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#888', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '4px', textTransform: 'uppercase' }}>
+                  Complexity & Analysis Telemetry
+                </div>
+                
+                <div className="complexity-grid">
+                  <div className="complexity-card">
+                    <div className="complexity-label">Time Complexity (Best)</div>
+                    <div className="complexity-value">
+                      {selectedAlgo === 'binary-search' && 'O(1)'}
+                      {selectedAlgo === 'linked-list' && 'O(1)'}
+                      {selectedAlgo === 'bubble-sort' && 'O(n)'}
+                      {selectedAlgo === 'gradient-descent' && 'O(E)'}
+                    </div>
+                  </div>
+                  <div className="complexity-card">
+                    <div className="complexity-label">Time Complexity (Average)</div>
+                    <div className="complexity-value">
+                      {selectedAlgo === 'binary-search' && 'O(log n)'}
+                      {selectedAlgo === 'linked-list' && 'O(n)'}
+                      {selectedAlgo === 'bubble-sort' && 'O(n²)'}
+                      {selectedAlgo === 'gradient-descent' && 'O(E)'}
+                    </div>
+                  </div>
+                  <div className="complexity-card">
+                    <div className="complexity-label">Time Complexity (Worst)</div>
+                    <div className="complexity-value">
+                      {selectedAlgo === 'binary-search' && 'O(log n)'}
+                      {selectedAlgo === 'linked-list' && 'O(n)'}
+                      {selectedAlgo === 'bubble-sort' && 'O(n²)'}
+                      {selectedAlgo === 'gradient-descent' && 'O(E)'}
+                    </div>
+                  </div>
+                  <div className="complexity-card">
+                    <div className="complexity-label">Space Complexity (Worst)</div>
+                    <div className="complexity-value">
+                      {selectedAlgo === 'binary-search' && 'O(1)'}
+                      {selectedAlgo === 'linked-list' && 'O(1)'}
+                      {selectedAlgo === 'bubble-sort' && 'O(1)'}
+                      {selectedAlgo === 'gradient-descent' && 'O(1)'}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Line Code Display */}
-                <div style={{ fontFamily: 'monospace', fontSize: '11px', lineHeight: '1.6', color: '#c9d1d9', flex: 1 }}>
-                  {selectedAlgo === 'binary-search' && (
-                    <>
-                      <div style={{ background: dsaStep === 0 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 0 ? '#d8b4fe' : '#c9d1d9' }}>
-                        low, high = 0, len(arr) - 1
-                      </div>
-                      <div style={{ background: dsaStep > 0 && dsaStep < 3 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep > 0 && dsaStep < 3 ? '#d8b4fe' : '#c9d1d9' }}>
-                        mid = (low + high) // 2
-                      </div>
-                      <div style={{ background: dsaStep === 1 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 1 ? '#d8b4fe' : '#c9d1d9' }}>
-                        if arr[mid] &lt; target: low = mid + 1
-                      </div>
-                      <div style={{ background: dsaStep === 2 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 2 ? '#d8b4fe' : '#c9d1d9' }}>
-                        elif arr[mid] &gt; target: high = mid - 1
-                      </div>
-                      <div style={{ background: dsaStep === 3 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 3 ? '#d8b4fe' : '#c9d1d9' }}>
-                        else: return mid
-                      </div>
-                    </>
-                  )}
-                  {selectedAlgo === 'linked-list' && (
-                    <>
-                      <div style={{ background: dsaStep === 0 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 0 ? '#d8b4fe' : '#c9d1d9' }}>
-                        curr = head
-                      </div>
-                      <div style={{ background: dsaStep === 1 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 1 ? '#d8b4fe' : '#c9d1d9' }}>
-                        while curr.next and curr.next.val &lt; new_val:
-                      </div>
-                      <div style={{ background: dsaStep === 2 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 2 ? '#d8b4fe' : '#c9d1d9' }}>
-                        new_node.next = curr.next
-                      </div>
-                      <div style={{ background: dsaStep === 3 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 3 ? '#d8b4fe' : '#c9d1d9' }}>
-                        curr.next = new_node
-                      </div>
-                    </>
-                  )}
-                  {selectedAlgo === 'bubble-sort' && (
-                    <>
-                      <div style={{ background: dsaStep === 0 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 0 ? '#d8b4fe' : '#c9d1d9' }}>
-                        for i in range(len(arr)):
-                      </div>
-                      <div style={{ background: dsaStep > 0 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep > 0 ? '#d8b4fe' : '#c9d1d9' }}>
-                        if arr[j] &gt; arr[j+1]:
-                      </div>
-                      <div style={{ background: dsaStep > 0 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep > 0 ? '#d8b4fe' : '#c9d1d9' }}>
-                        swap(arr[j], arr[j+1])
-                      </div>
-                    </>
-                  )}
-                  {selectedAlgo === 'gradient-descent' && (
-                    <>
-                      <div style={{ background: dsaStep === 0 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 0 ? '#d8b4fe' : '#c9d1d9' }}>
-                        w = init_weight()
-                      </div>
-                      <div style={{ background: dsaStep === 1 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep === 1 ? '#d8b4fe' : '#c9d1d9' }}>
-                        gradient = dw_loss(w)
-                      </div>
-                      <div style={{ background: dsaStep > 1 ? 'rgba(168, 85, 247, 0.2)' : 'transparent', padding: '2px 6px', color: dsaStep > 1 ? '#d8b4fe' : '#c9d1d9' }}>
-                        w = w - learning_rate * gradient
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Variable inspector */}
-                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.04)', fontSize: '11px' }}>
-                  <div style={{ fontWeight: 'bold', color: '#8b949e', marginBottom: '4px' }}>Inspector:</div>
-                  {selectedAlgo === 'binary-search' && (
-                    <>
-                      <div>low_ptr: {bsPointers.low} (Val: {binarySearchArray[bsPointers.low]})</div>
-                      <div>mid_ptr: {bsPointers.mid} (Val: {binarySearchArray[bsPointers.mid]})</div>
-                      <div>high_ptr: {bsPointers.high} (Val: {binarySearchArray[bsPointers.high]})</div>
-                      <div>target: {targetBinarySearch}</div>
-                    </>
-                  )}
-                  {selectedAlgo === 'linked-list' && (
-                    <>
-                      <div>head_val: 10</div>
-                      <div>target_insert: 30</div>
-                      <div>curr_traversal_id: {dsaStep === 1 ? 'Node 25' : 'None'}</div>
-                    </>
-                  )}
-                  {selectedAlgo === 'bubble-sort' && (
-                    <>
-                      <div>arr: [{sortArray.join(', ')}]</div>
-                      <div>i: {sortIndices.i} (Val: {sortArray[sortIndices.i]})</div>
-                      <div>j: {sortIndices.j} (Val: {sortArray[sortIndices.j]})</div>
-                    </>
-                  )}
-                  {selectedAlgo === 'gradient-descent' && (
-                    <>
-                      <div>w_weight: {(0.85 - dsaStep * 0.18).toFixed(3)}</div>
-                      <div>learning_rate: 0.1</div>
-                      <div>loss: {Math.max(0.015, +(0.95 - dsaStep * 0.22).toFixed(3))}</div>
-                    </>
-                  )}
+                <div style={{ fontSize: '10px', color: '#888', lineHeight: '1.4', marginTop: '4px' }}>
+                  {selectedAlgo === 'binary-search' && 'Requires a sorted array. Space complexity is O(1) auxiliary memory because low/mid/high pointers are stored in constant registers.'}
+                  {selectedAlgo === 'linked-list' && 'Average insertion scans linear elements O(n). Constant O(1) auxiliary space used since links are updated in-place.'}
+                  {selectedAlgo === 'bubble-sort' && 'Iterates adjacent comparisons. Runs in O(n²) average time. In-place sort, meaning no extra memory allocations O(1).'}
+                  {selectedAlgo === 'gradient-descent' && 'Computes iterative loss slope. Memory complexity is O(1) since weight parameter adjustments occur in-place.'}
                 </div>
               </div>
             </div>

@@ -106,89 +106,65 @@ const DebugPanel = ({
     'Add Configuration...'
   ]
 
+  const [focusedSection, setFocusedSection] = useState('variables')
+
   return (
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        background: '#0d1117',
+        background: '#040712',
         color: '#c9d1d9',
-        fontSize: '12px',
+        fontSize: '11px',
         borderLeft: '1px solid var(--panel-border)',
         overflowY: 'auto',
         userSelect: 'none'
       }}
     >
-      {/* Top Header & Launch Config Selector Dropdown */}
-      <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div
+      {/* Top Header Row matching VS Code exactly */}
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }}>
+        {/* Play Button */}
+        <button
+          onClick={handleStartDebugSession}
           style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#3fb950',
+            cursor: 'pointer',
+            fontSize: '16px',
+            padding: '2px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '8px'
+            transition: 'color 0.2s'
           }}
+          title="Start Debugging (F5)"
         >
-          <span
-            style={{
-              fontWeight: '700',
-              fontSize: '11px',
-              letterSpacing: '0.05em',
-              color: '#c9d1d9'
-            }}
-          >
-            RUN AND DEBUG
-          </span>
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            <button
-              onClick={() => setShowConfigDropdown(!showConfigDropdown)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#8b949e',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-              title="Configure Settings"
-            >
-              ⚙
-            </button>
-            <button
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#8b949e',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-              title="More Actions"
-            >
-              ...
-            </button>
-          </div>
-        </div>
+          <span style={{ fontSize: '16px', fontWeight: 'bold' }}>▷</span>
+        </button>
 
-        {/* Debug Launcher Select Button */}
-        <div style={{ position: 'relative' }}>
+        {/* Configuration Dropdown Selector */}
+        <div style={{ flex: 1, position: 'relative' }}>
           <div
             onClick={() => setShowConfigDropdown(!showConfigDropdown)}
             style={{
               display: 'flex',
               alignItems: 'center',
-              justify: 'space-between',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: '4px',
-              padding: '5px 8px',
-              cursor: 'pointer'
+              justifyContent: 'space-between',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '3px',
+              padding: '3px 6px',
+              cursor: 'pointer',
+              color: '#c9d1d9',
+              fontSize: '11px',
+              fontFamily: 'inherit'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#00e676', fontWeight: 'bold', fontSize: '14px' }}>▷</span>
-              <span style={{ fontSize: '12px', fontWeight: '500' }}>{selectedConfig}</span>
-            </div>
-            <span style={{ fontSize: '10px', color: '#8b949e' }}>▼</span>
+            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              {selectedConfig}...
+            </span>
+            <span style={{ fontSize: '7px', color: '#8b949e', marginLeft: '4px' }}>▼</span>
           </div>
 
           {/* Configuration Dropdown Items */}
@@ -201,10 +177,10 @@ const DebugPanel = ({
                 right: 0,
                 marginTop: '4px',
                 background: '#161b22',
-                border: '1px solid var(--panel-border)',
-                borderRadius: '6px',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '4px',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                zIndex: 99,
+                zIndex: 999,
                 overflow: 'hidden'
               }}
             >
@@ -219,16 +195,15 @@ const DebugPanel = ({
                     padding: '6px 10px',
                     fontSize: '11px',
                     cursor: 'pointer',
-                    color: cfg === selectedConfig ? '#00ffaa' : '#c9d1d9',
-                    background: cfg === selectedConfig ? 'rgba(0, 255, 170, 0.1)' : 'transparent',
-                    borderTop: idx === 2 ? '1px solid rgba(255,255,255,0.08)' : 'none'
+                    color: cfg === selectedConfig ? '#58a6ff' : '#c9d1d9',
+                    background: cfg === selectedConfig ? 'rgba(88, 166, 255, 0.1)' : 'transparent'
                   }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.background =
-                      cfg === selectedConfig ? 'rgba(0, 255, 170, 0.1)' : 'transparent')
+                      cfg === selectedConfig ? 'rgba(88, 166, 255, 0.1)' : 'transparent')
                   }
                 >
                   {cfg}
@@ -238,104 +213,88 @@ const DebugPanel = ({
           )}
         </div>
 
-        {/* Debug Execution Toolbar Controls */}
-        <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
-          {!isDebugging ? (
-            <button
-              onClick={handleStartDebugSession}
-              style={{
-                flex: 1,
-                background: '#00e676',
-                border: 'none',
-                color: '#000',
-                borderRadius: '4px',
-                padding: '5px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                fontSize: '11px'
-              }}
-            >
-              ▶ Start Debugging (F5)
-            </button>
-          ) : (
-            <React.Fragment>
-              <button
-                onClick={handleStepOverAction}
-                title="Step Over (F10)"
-                style={{
-                  flex: 1,
-                  background: '#58a6ff',
-                  border: 'none',
-                  color: '#fff',
-                  borderRadius: '3px',
-                  padding: '4px',
-                  cursor: 'pointer',
-                  fontSize: '10px'
-                }}
-              >
-                ↷ Step
-              </button>
-              <button
-                onClick={handleStartDebugSession}
-                title="Restart (Ctrl+Shift+F5)"
-                style={{
-                  background: '#d8b4fe',
-                  border: 'none',
-                  color: '#000',
-                  borderRadius: '3px',
-                  padding: '4px 8px',
-                  cursor: 'pointer',
-                  fontSize: '10px'
-                }}
-              >
-                ↻
-              </button>
-              <button
-                onClick={handleStopDebugSession}
-                title="Stop (Shift+F5)"
-                style={{
-                  background: '#ff4d4d',
-                  border: 'none',
-                  color: '#fff',
-                  borderRadius: '3px',
-                  padding: '4px 8px',
-                  cursor: 'pointer',
-                  fontSize: '10px'
-                }}
-              >
-                ■
-              </button>
-            </React.Fragment>
-          )}
-        </div>
+        {/* Gear Icon */}
+        <button
+          onClick={() => {}}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#8b949e',
+            cursor: 'pointer',
+            fontSize: '13px',
+            padding: '2px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+          title="Open Settings"
+        >
+          ⚙
+        </button>
+
+        {/* Three Dots Icon */}
+        <button
+          onClick={() => {}}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#8b949e',
+            cursor: 'pointer',
+            fontSize: '13px',
+            padding: '2px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+          title="More Actions..."
+        >
+          ...
+        </button>
       </div>
 
       {/* Accordion 1: VARIABLES */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div 
+        onClick={() => setFocusedSection('variables')}
+        style={{ 
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          border: focusedSection === 'variables' ? '1px solid #007fd4' : '1px solid transparent',
+          margin: '2px 0',
+          transition: 'border-color 0.2s'
+        }}
+      >
         <div
           onClick={() => toggleSection('variables')}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            justifyContent: 'space-between',
             padding: '6px 12px',
             cursor: 'pointer',
             fontWeight: 'bold',
-            fontSize: '11px',
             color: '#8b949e',
             background: 'rgba(255,255,255,0.02)'
           }}
         >
-          <span>{openSections.variables ? '▾' : '▸'}</span>
-          <span>Variables</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '9px' }}>{openSections.variables ? '▼' : '▶'}</span>
+            <span style={{ color: '#fff', textTransform: 'capitalize' }}>Variables</span>
+          </div>
+          <i
+            className="bx bx-copy"
+            style={{ color: '#8b949e', cursor: 'pointer', fontSize: '12px' }}
+            onClick={(e) => {
+              e.stopPropagation()
+              navigator.clipboard.writeText(JSON.stringify(variables, null, 2))
+            }}
+            title="Copy Variables"
+          />
         </div>
         {openSections.variables && (
           <div
             style={{
-              padding: '4px 12px 8px 20px',
+              padding: '6px 12px 10px 20px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '4px'
+              gap: '4px',
+              background: '#040712'
             }}
           >
             <div style={{ fontWeight: '600', color: '#58a6ff', fontSize: '10px' }}>Local</div>
@@ -364,7 +323,7 @@ const DebugPanel = ({
               </div>
             ))}
             <div
-              style={{ fontWeight: '600', color: '#58a6ff', fontSize: '10px', marginTop: '4px' }}
+              style={{ fontWeight: '600', color: '#58a6ff', fontSize: '10px', marginTop: '6px' }}
             >
               Global
             </div>
@@ -387,7 +346,15 @@ const DebugPanel = ({
       </div>
 
       {/* Accordion 2: WATCH */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div 
+        onClick={() => setFocusedSection('watch')}
+        style={{ 
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          border: focusedSection === 'watch' ? '1px solid #007fd4' : '1px solid transparent',
+          margin: '2px 0',
+          transition: 'border-color 0.2s'
+        }}
+      >
         <div
           onClick={() => toggleSection('watch')}
           style={{
@@ -397,14 +364,13 @@ const DebugPanel = ({
             padding: '6px 12px',
             cursor: 'pointer',
             fontWeight: 'bold',
-            fontSize: '11px',
             color: '#8b949e',
             background: 'rgba(255,255,255,0.02)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>{openSections.watch ? '▾' : '▸'}</span>
-            <span>Watch</span>
+            <span style={{ fontSize: '9px' }}>{openSections.watch ? '▼' : '▶'}</span>
+            <span style={{ color: '#fff', textTransform: 'capitalize' }}>Watch</span>
           </div>
           <span
             onClick={(e) => {
@@ -419,10 +385,11 @@ const DebugPanel = ({
         {openSections.watch && (
           <div
             style={{
-              padding: '4px 12px 8px 20px',
+              padding: '6px 12px 10px 20px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '4px'
+              gap: '4px',
+              background: '#040712'
             }}
           >
             <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
@@ -439,14 +406,15 @@ const DebugPanel = ({
                   color: '#fff',
                   padding: '3px 6px',
                   borderRadius: '3px',
-                  fontSize: '10px'
+                  fontSize: '10px',
+                  outline: 'none'
                 }}
               />
             </div>
             {watchList.map((w, idx) => (
               <div
                 key={idx}
-                style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}
+                style={{ display: 'flex', justify: 'space-between', fontSize: '11px' }}
               >
                 <span style={{ color: '#d8b4fe' }}>{w.expression}</span>
                 <span style={{ color: '#00ffaa' }}>{w.value}</span>
@@ -457,7 +425,15 @@ const DebugPanel = ({
       </div>
 
       {/* Accordion 3: CALL STACK */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div 
+        onClick={() => setFocusedSection('callStack')}
+        style={{ 
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          border: focusedSection === 'callStack' ? '1px solid #007fd4' : '1px solid transparent',
+          margin: '2px 0',
+          transition: 'border-color 0.2s'
+        }}
+      >
         <div
           onClick={() => toggleSection('callStack')}
           style={{
@@ -467,21 +443,21 @@ const DebugPanel = ({
             padding: '6px 12px',
             cursor: 'pointer',
             fontWeight: 'bold',
-            fontSize: '11px',
             color: '#8b949e',
             background: 'rgba(255,255,255,0.02)'
           }}
         >
-          <span>{openSections.callStack ? '▾' : '▸'}</span>
-          <span>Call Stack</span>
+          <span style={{ fontSize: '9px' }}>{openSections.callStack ? '▼' : '▶'}</span>
+          <span style={{ color: '#fff', textTransform: 'capitalize' }}>Call Stack</span>
         </div>
         {openSections.callStack && (
           <div
             style={{
-              padding: '4px 12px 8px 20px',
+              padding: '6px 12px 10px 20px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '4px'
+              gap: '4px',
+              background: '#040712'
             }}
           >
             {callStack.map((cs, idx) => (
@@ -505,7 +481,14 @@ const DebugPanel = ({
       </div>
 
       {/* Accordion 4: BREAKPOINTS */}
-      <div>
+      <div
+        onClick={() => setFocusedSection('breakpoints')}
+        style={{ 
+          border: focusedSection === 'breakpoints' ? '1px solid #007fd4' : '1px solid transparent',
+          margin: '2px 0',
+          transition: 'border-color 0.2s'
+        }}
+      >
         <div
           onClick={() => toggleSection('breakpoints')}
           style={{
@@ -515,21 +498,21 @@ const DebugPanel = ({
             padding: '6px 12px',
             cursor: 'pointer',
             fontWeight: 'bold',
-            fontSize: '11px',
             color: '#8b949e',
             background: 'rgba(255,255,255,0.02)'
           }}
         >
-          <span>{openSections.breakpoints ? '▾' : '▸'}</span>
-          <span>Breakpoints</span>
+          <span style={{ fontSize: '9px' }}>{openSections.breakpoints ? '▼' : '▶'}</span>
+          <span style={{ color: '#fff', textTransform: 'capitalize' }}>Breakpoints</span>
         </div>
         {openSections.breakpoints && (
           <div
             style={{
-              padding: '4px 12px 8px 20px',
+              padding: '6px 12px 10px 20px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '4px'
+              gap: '4px',
+              background: '#040712'
             }}
           >
             {breakpoints.length === 0 ? (

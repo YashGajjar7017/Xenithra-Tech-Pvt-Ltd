@@ -666,138 +666,146 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
         </div>
       ) : activeActivity === 'extensions' ? (
         /* Extensions Panel View */
-        <div className="extensions-panel">
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '10px'
-            }}
-          >
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 'bold',
-                letterSpacing: '0.05em',
-                color: 'var(--text-main)'
-              }}
-            >
-              EXTENSION STORE
-            </span>
-            <span
-              style={{
-                fontSize: '9px',
-                background: 'rgba(255,255,255,0.06)',
-                padding: '2px 6px',
-                borderRadius: '10px',
-                color: 'var(--accent-color)'
-              }}
-            >
-              {installedExtensions.length} Installed
-            </span>
-          </div>
-
+        <div className="extensions-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#040712', padding: '12px', color: '#c9d1d9', overflowY: 'auto', userSelect: 'none' }}>
           <input
             type="text"
-            className="extensions-search"
-            placeholder="Search extensions..."
+            placeholder="Search Extensions in Marketplace"
             value={extSearchQuery}
             onChange={(e) => setExtSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              background: 'rgba(0,0,0,0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '3px',
+              color: '#fff',
+              padding: '5px 8px',
+              fontSize: '11px',
+              outline: 'none',
+              marginBottom: '12px',
+              fontFamily: 'inherit'
+            }}
           />
 
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div className="extensions-list-header">Installed</div>
-            {installedExtensions
-              .filter((ext) => ext.name.toLowerCase().includes(extSearchQuery.toLowerCase()))
-              .map((ext) => (
-                <div key={ext.id} className="extensions-item">
-                  <div className="extensions-item-icon">
-                    <i className="bx bx-plug"></i>
-                  </div>
-                  <div className="extensions-item-info">
-                    <div className="extensions-item-name">{ext.name}</div>
-                    <div className="extensions-item-desc">{ext.description}</div>
-                    <div className="extensions-item-footer">
-                      <span className="extensions-item-version">v{ext.version || '1.0.0'}</span>
-                      <button
-                        className="extensions-btn-uninstall"
-                        onClick={() => handleUninstallExtension(ext.id)}
-                      >
-                        Uninstall
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            {installedExtensions.length === 0 && (
-              <div
-                style={{
-                  fontSize: '11px',
-                  color: 'var(--text-muted)',
-                  textAlign: 'center',
-                  padding: '10px 0'
-                }}
-              >
-                No extensions installed yet.
-              </div>
-            )}
-
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginTop: '14px',
-                marginBottom: '6px'
-              }}
-            >
-              <div className="extensions-list-header" style={{ margin: 0, border: 'none' }}>
-                Available from Store
-              </div>
-              <button
-                onClick={handleUploadExtension}
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'var(--accent-color)',
-                  borderRadius: '4px',
-                  padding: '2px 8px',
-                  fontSize: '10px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Upload Custom Extension XML"
-              >
-                <i className="bx bx-upload"></i> Upload XML
-              </button>
+          {/* Section: Installed */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', fontWeight: 'bold', color: '#fff', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '4px' }}>
+              <span>Installed</span>
+              <span style={{ background: '#005fb8', color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '9px', fontWeight: '800' }}>9</span>
             </div>
-            {storeExtensions
-              .filter((ext) => !installedExtensions.some((e) => e.id === ext.id))
-              .filter((ext) => ext.name.toLowerCase().includes(extSearchQuery.toLowerCase()))
-              .map((ext) => (
-                <div key={ext.id} className="extensions-item">
-                  <div className="extensions-item-icon">
-                    <i className="bx bx-package"></i>
-                  </div>
-                  <div className="extensions-item-info">
-                    <div className="extensions-item-name">{ext.name}</div>
-                    <div className="extensions-item-desc">{ext.description}</div>
-                    <div className="extensions-item-footer">
-                      <span className="extensions-item-version">v{ext.version}</span>
-                      <button
-                        className="extensions-btn-install"
-                        onClick={() => handleInstallExtension(ext)}
-                      >
-                        Install
-                      </button>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                {
+                  id: 'go',
+                  name: 'Go',
+                  pub: 'golang',
+                  desc: 'Rich Go language suppo...',
+                  icon: 'https://img.icons8.com/color/48/golang.png',
+                  action: 'Update'
+                },
+                {
+                  id: 'clangd',
+                  name: 'clangd',
+                  pub: 'llvm-vs-code-extensions',
+                  desc: 'C/C++ completion, navi...',
+                  icon: 'https://img.icons8.com/color/48/c-plus-plus-logo.png'
+                },
+                {
+                  id: 'github-theme',
+                  name: 'GitHub Theme',
+                  pub: 'GitHub',
+                  desc: 'GitHub theme for VS Co...',
+                  icon: 'https://img.icons8.com/ios-filled/50/github.png'
+                },
+                {
+                  id: 'material-icons',
+                  name: 'Material Theme Icons ...',
+                  pub: 'kd3n1z',
+                  desc: 'Material Theme Icons, th...',
+                  icon: 'https://img.icons8.com/color/48/folder-invoices.png'
+                },
+                {
+                  id: 'pyrefly',
+                  name: 'Pyrefly - Python Lang...',
+                  pub: 'meta',
+                  desc: 'Python autocomplete, ty...',
+                  icon: 'https://img.icons8.com/color/48/butterfly.png'
+                }
+              ]
+              .filter(ext => ext.name.toLowerCase().includes(extSearchQuery.toLowerCase()))
+              .map(ext => (
+                <div key={ext.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '11px' }}>
+                  <img src={ext.icon} alt="" style={{ width: '28px', height: '28px', borderRadius: '4px', background: 'rgba(255,255,255,0.04)', padding: '2px', objectFit: 'contain' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ext.name}</span>
                     </div>
+                    <div style={{ color: '#8b949e', fontSize: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ext.desc}</div>
+                    <div style={{ color: '#8b949e', fontSize: '9px', marginTop: '2px' }}>{ext.pub}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', alignSelf: 'center' }}>
+                    {ext.action === 'Update' && (
+                      <button style={{ background: '#1f883d', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', outline: 'none' }}>Update</button>
+                    )}
+                    <span style={{ color: '#8b949e', cursor: 'pointer', fontSize: '13px' }} title="Manage">⚙</span>
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Section: Recommended */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', fontWeight: 'bold', color: '#fff', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '4px' }}>
+              <span>Recommended</span>
+              <span style={{ background: '#005fb8', color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '9px', fontWeight: '800' }}>8</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                {
+                  id: 'eslint',
+                  name: 'ESLint',
+                  pub: 'dbaeumer',
+                  desc: 'Integrates ESLint JavaScr...',
+                  icon: 'https://img.icons8.com/color/48/eslint.png',
+                  rating: 5,
+                  downloads: '5.6M'
+                },
+                {
+                  id: 'msedge',
+                  name: 'Microsoft Ed...',
+                  pub: 'microsoft',
+                  desc: 'Use the Microsoft Edge ...',
+                  icon: 'https://img.icons8.com/color/48/ms-edge.png',
+                  rating: 5,
+                  downloads: '250K'
+                }
+              ]
+              .filter(ext => ext.name.toLowerCase().includes(extSearchQuery.toLowerCase()))
+              .map(ext => (
+                <div key={ext.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '11px' }}>
+                  <img src={ext.icon} alt="" style={{ width: '28px', height: '28px', borderRadius: '4px', background: 'rgba(255,255,255,0.04)', padding: '2px', objectFit: 'contain' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ext.name}</span>
+                    </div>
+                    <div style={{ color: '#8b949e', fontSize: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ext.desc}</div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8b949e', fontSize: '9px', marginTop: '2px' }}>
+                      <span>{ext.pub}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <i className="bx bx-cloud-download" style={{ fontSize: '10px' }}></i> {ext.downloads}
+                      </span>
+                      <span style={{ color: '#e3b341' }}>★ {ext.rating}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'center' }}>
+                    <button style={{ background: '#1f883d', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', outline: 'none' }}>Install</button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : loadedFolder ? (

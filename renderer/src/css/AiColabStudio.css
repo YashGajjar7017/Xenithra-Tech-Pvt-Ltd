@@ -1,11 +1,11 @@
-/* Google Colab & AI DSA Studio Styles */
+/* Monochrome Sleek Dark Theme - AI Colab & Real-time DSA Studio */
 .colab-studio-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: #0d1117;
-  color: #e6edf3;
+  background: #020202;
+  color: #e5e5e5;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
   position: relative;
@@ -17,8 +17,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  background: #161b22;
-  border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  background: #0d0d0d;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   gap: 12px;
   flex-shrink: 0;
 }
@@ -30,8 +30,8 @@
 }
 
 .colab-badge {
-  background: linear-gradient(135deg, #ff9800 0%, #f44336 100%);
-  color: #fff;
+  background: #ffffff;
+  color: #000000;
   font-size: 10px;
   font-weight: 800;
   padding: 2px 6px;
@@ -41,9 +41,9 @@
 }
 
 .colab-notebook-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: #ffffff;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -52,8 +52,8 @@
 .colab-nav-menus {
   display: flex;
   gap: 12px;
-  font-size: 12px;
-  color: #8b949e;
+  font-size: 11px;
+  color: #888888;
   margin-top: 4px;
 }
 
@@ -63,19 +63,20 @@
 }
 
 .colab-nav-menus span:hover {
-  color: #58a6ff;
+  color: #ffffff;
 }
 
-/* Colab Resource Meter in Header */
+/* Resource Telemetry */
 .colab-resource-metrics {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   padding: 4px 12px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 11px;
+  color: #888888;
 }
 
 .metric-pill {
@@ -88,30 +89,29 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #00ffaa;
-  box-shadow: 0 0 6px #00ffaa;
+  background: #ffffff;
+  box-shadow: 0 0 6px #ffffff;
 }
 
-/* Colab Action Bar */
+/* Action Bar */
 .colab-action-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  background: rgba(22, 27, 34, 0.85);
-  border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.08));
+  background: #080808;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   gap: 12px;
   flex-shrink: 0;
-  backdrop-filter: blur(12px);
 }
 
 .colab-tab-btn {
   background: transparent;
   border: 1px solid transparent;
-  color: #8b949e;
+  color: #888888;
   padding: 6px 14px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -121,18 +121,18 @@
 }
 
 .colab-tab-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .colab-tab-btn.active {
-  color: #00f3ff;
-  background: rgba(0, 243, 255, 0.1);
-  border-color: rgba(0, 243, 255, 0.3);
-  box-shadow: 0 0 10px rgba(0, 243, 255, 0.15);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
 }
 
-/* Main Content Workspace */
+/* Main Workspace */
 .colab-workspace {
   flex: 1;
   overflow-y: auto;
@@ -142,23 +142,23 @@
   gap: 20px;
 }
 
-/* Colab Cell Container */
+/* Cells */
 .colab-cell {
-  background: #161b22;
+  background: #0d0d0d;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   transition: border-color 0.2s ease;
 }
 
 .colab-cell:hover {
-  border-color: rgba(0, 243, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .colab-cell.focused {
-  border-color: #58a6ff;
-  box-shadow: 0 0 12px rgba(88, 166, 255, 0.25);
+  border-color: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
 }
 
 .colab-cell-header {
@@ -169,7 +169,7 @@
   background: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 11px;
-  color: #8b949e;
+  color: #888888;
 }
 
 .colab-cell-body {
@@ -179,145 +179,188 @@
 }
 
 .colab-cell-run-btn {
-  width: 38px;
-  height: 38px;
-  background: rgba(255, 255, 255, 0.05);
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: #ffffff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   margin: 10px;
-  font-size: 14px;
+  font-size: 12px;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .colab-cell-run-btn:hover {
-  background: #a855f7;
-  color: #fff;
-  border-color: #a855f7;
-  transform: scale(1.08);
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 
-.colab-cell-code {
+/* Code area */
+.colab-code-area {
   flex: 1;
-  padding: 12px 14px 12px 0;
-  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  padding: 10px 10px 10px 0;
+  font-family: 'Fira Code', 'Courier New', monospace;
   font-size: 12px;
-  line-height: 1.6;
-  color: #e6edf3;
-  white-space: pre-wrap;
-}
-
-.colab-cell-output {
-  background: #090d13;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px 16px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: #c9d1d9;
   line-height: 1.5;
-  max-height: 280px;
-  overflow-y: auto;
+  color: #e5e5e5;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
-/* Visual DSA Arena */
-.dsa-arena-card {
-  background: #161b22;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+/* Output area */
+.colab-output-area {
+  background: #050505;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px 16px 12px 52px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #a0a0a0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
+/* Split screen layout */
+.dsa-split-studio {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* Interactive Code Editor Component */
+.dsa-code-editor-box {
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.dsa-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+}
+
+.dsa-editor-textarea {
+  flex: 1;
+  background: #030303;
+  color: #e5e5e5;
+  border: none;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 12px;
+  resize: none;
+  outline: none;
+  width: 100%;
+}
+
+/* Visualizer Nodes & Bars */
 .dsa-node {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #0d0d0d;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 13px;
   font-weight: 700;
-  font-size: 14px;
-  color: #fff;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: #ffffff;
   position: relative;
-}
-
-.dsa-node.active {
-  background: linear-gradient(135deg, #a855f7 0%, #b8a2db 100%);
-  border-color: #d8b4fe;
-  color: #fff;
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.65);
-  transform: scale(1.15);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
 .dsa-node.visited {
-  background: rgba(168, 85, 247, 0.15);
-  border-color: #a855f7;
-  color: #d8b4fe;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .dsa-node.comparing {
-  background: rgba(245, 158, 11, 0.25);
-  border-color: #f59e0b;
-  color: #f59e0b;
-  animation: pulse 0.5s infinite alternate;
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
-/* Layman Card */
-.layman-card {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(88, 166, 255, 0.06) 100%);
-  border: 1px solid rgba(168, 85, 247, 0.25);
-  border-radius: 10px;
-  padding: 16px;
-  font-size: 13px;
-  line-height: 1.6;
+.dsa-node.active {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #000000;
+  transform: scale(1.15);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.4);
 }
 
-.layman-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(168, 85, 247, 0.15);
-  color: #d8b4fe;
+/* Complexity Telemetry Panel */
+.dsa-complexity-panel {
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.complexity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.complexity-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.complexity-label {
+  font-size: 9px;
+  color: #888888;
   font-weight: 700;
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  margin-bottom: 8px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-/* Visual Neural Architecture Layers */
-.neural-layer-box {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 140px;
-  position: relative;
-  transition: all 0.2s ease;
+.complexity-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: 'Fira Code', monospace;
+  margin-top: 2px;
 }
 
-.neural-layer-box:hover {
-  border-color: #d8b4fe;
-  background: rgba(168, 85, 247, 0.05);
+.layman-card {
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 3px solid #ffffff;
+  padding: 12px;
+  border-radius: 4px;
+  color: #a0a0a0;
+  font-size: 11px;
+  line-height: 1.5;
 }
 
-.neural-arrow {
-  color: #8b949e;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
+.layman-badge {
+  display: inline-block;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 6px;
 }
