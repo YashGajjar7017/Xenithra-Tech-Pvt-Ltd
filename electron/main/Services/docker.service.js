@@ -84,12 +84,11 @@ export async function getDockerContainers() {
     'docker ps -a --format "{{.ID}}|{{.Image}}|{{.Command}}|{{.Status}}|{{.Names}}"'
   )
   if (!res.success || !res.output) {
-    const cache = getCache()
-    return cache.containers
+    return []
   }
 
   const lines = res.output.split('\n')
-  const containers = lines.map((l) => {
+  const containers = lines.filter(Boolean).map((l) => {
     const [id, image, command, status, name] = l.split('|')
     return {
       id: id ? id.substring(0, 8) : 'unknown',
@@ -100,31 +99,20 @@ export async function getDockerContainers() {
       isRunning: status ? status.toLowerCase().includes('up') : false
     }
   })
-
-  // Sync to cache
-  const cache = getCache()
-  cache.containers = containers
-  saveCache(cache)
   return containers
 }
 
 export async function getDockerImages() {
   const res = await runCmd('docker images --format "{{.Repository}}|{{.Tag}}|{{.ID}}|{{.Size}}"')
   if (!res.success || !res.output) {
-    const cache = getCache()
-    return cache.images
+    return []
   }
 
   const lines = res.output.split('\n')
-  const images = lines.map((l) => {
+  const images = lines.filter(Boolean).map((l) => {
     const [repository, tag, id, size] = l.split('|')
     return { repository, tag, id: id ? id.substring(0, 8) : 'img', size }
   })
-
-  // Sync to cache
-  const cache = getCache()
-  cache.images = images
-  saveCache(cache)
   return images
 }
 

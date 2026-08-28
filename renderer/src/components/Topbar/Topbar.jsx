@@ -758,6 +758,16 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
                 <span>Toggle Sidebar</span>
                 <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+B</span>
               </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveMenu(null)
+                  window.dispatchEvent(new CustomEvent('toggle-terminal'))
+                }}
+              >
+                <span>Toggle Terminal</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+`</span>
+              </button>
               <hr />
               <button
                 onClick={(e) => {

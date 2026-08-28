@@ -16,12 +16,16 @@ import EditorPage from './pages/EditorPage'
 import PreferencesPage from './pages/PreferencesPage'
 import OcrPage from './pages/OcrPage'
 import AiColabStudioPage from './pages/AiColabStudioPage'
+import DsaStudioPage from './pages/DsaStudioPage'
 import FooterEnvSelector from './components/ui/FooterEnvSelector'
 
 const MainApp = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'github-dark')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [sidebarWidth, setSidebarWidth] = useState(230)
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('sidebarWidth')
+    return saved ? parseInt(saved, 10) : 230
+  })
 
   // Sync theme attribute with state
   useEffect(() => {
@@ -162,6 +166,21 @@ const MainApp = () => {
           }
         />
         <Route
+          path="/dsa-studio"
+          element={
+            <MainLayout
+              theme={theme}
+              setTheme={setTheme}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
+              sidebarWidth={sidebarWidth}
+              setSidebarWidth={setSidebarWidth}
+            >
+              <DsaStudioPage />
+            </MainLayout>
+          }
+        />
+        <Route
           path="/*"
           element={
             <MainLayout
@@ -192,7 +211,7 @@ const MainLayout = ({
   setSidebarWidth
 }) => {
   const location = useLocation()
-  const isAiColab = location.pathname === '/ai-colab'
+  const isAiColab = location.pathname === '/ai-colab' || location.pathname === '/dsa-studio'
 
   const defaultOrder = [
     'explorer',
@@ -200,6 +219,7 @@ const MainLayout = ({
     'git',
     'debug',
     'aicolab',
+    'dsastudio',
     'extensions',
     'docker',
     'firebase',
@@ -316,6 +336,7 @@ const MainLayout = ({
     const handleMouseMove = (moveEvent) => {
       const newWidth = Math.max(150, Math.min(500, startWidth + (moveEvent.clientX - startX)))
       setSidebarWidth(newWidth)
+      localStorage.setItem('sidebarWidth', newWidth.toString())
     }
 
     const handleMouseUp = () => {
@@ -441,7 +462,7 @@ const MainLayout = ({
                     }
                   case 'aicolab':
                     return {
-                      title: 'AI Colab & Real-time DSA Studio',
+                      title: 'AI Colab Studio',
                       element: (
                         <>
                           <span style={{ fontSize: '18px', color: '#00f3ff' }}>⚡</span>
@@ -460,6 +481,30 @@ const MainLayout = ({
                         </>
                       ),
                       onClick: () => triggerColabTransition()
+                    }
+                  case 'dsastudio':
+                    return {
+                      title: 'DSA Play & Step Compile Studio',
+                      element: (
+                        <>
+                          <i className="bx bx-code-block" style={{ fontSize: '20px', color: '#ff4d4f' }}></i>
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '6px',
+                              right: '6px',
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: '#ff4d4f',
+                              boxShadow: '0 0 6px #ff4d4f'
+                            }}
+                          />
+                        </>
+                      ),
+                      onClick: () => {
+                        window.location.hash = '#/dsa-studio'
+                      }
                     }
                   case 'extensions':
                     return {

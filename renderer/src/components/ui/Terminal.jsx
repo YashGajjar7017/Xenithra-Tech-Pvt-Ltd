@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react'
 
 const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter }) => {
-  const [history, setHistory] = useState([
-    {
-      type: 'sys',
-      text: 'Xenithra Cyber Terminal Engine v2.0 initialized.\nConnected to backend native shell process (Kernel32.dll / cmd.exe).'
-    }
-  ])
+  const [terminalTabs, setTerminalTabs] = useState(['Terminal 1'])
+  const [activeTermIdx, setActiveTermIdx] = useState(0)
+  const [activeTab, setActiveTab] = useState('Terminal 1') // 'Terminal 1', 'Terminal 2', 'AI Assistant Trace', etc.
+  
+  const [termHistories, setTermHistories] = useState({
+    0: [
+      {
+        type: 'sys',
+        text: 'Xenithra Cyber Terminal Engine v2.0 (Terminal 1) initialized.\nConnected to backend native shell process (Kernel32.dll / cmd.exe).'
+      }
+    ]
+  })
+  
   const [inputVal, setInputVal] = useState('')
   const [cmdHistory, setCmdHistory] = useState([])
   const [historyIdx, setHistoryIdx] = useState(-1)
-  const [activeTab, setActiveTab] = useState('Terminal')
   const [terminalTheme, setTerminalTheme] = useState('cyber-neon') // 'cyber-neon', 'matrix-green', 'obsidian'
 
   const terminalEndRef = useRef(null)
@@ -22,31 +28,44 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
 
     if (window.api && typeof window.api.onTerminalData === 'function') {
       unsubscribe = window.api.onTerminalData((data) => {
-        setHistory((prev) => [...prev, data])
+        setTermHistories((prev) => {
+          // Find which index is currently active to direct the output stream
+          const currentHistory = prev[activeTermIdx] || []
+          return {
+            ...prev,
+            [activeTermIdx]: [...currentHistory, data]
+          }
+        })
       })
     }
 
     if (window.api && typeof window.api.initTerminal === 'function') {
       const activePath = localStorage.getItem('activeWorkspacePath') || ''
       window.api.initTerminal(activePath).catch((err) => {
-        setHistory((prev) => [
-          ...prev,
-          { type: 'stderr', text: `Failed to initialize backend shell: ${err.message}` }
-        ])
+        setTermHistories((prev) => {
+          const currentHistory = prev[activeTermIdx] || []
+          return {
+            ...prev,
+            [activeTermIdx]: [
+              ...currentHistory,
+              { type: 'stderr', text: `Failed to initialize backend shell: ${err.message}` }
+            ]
+          }
+        })
       })
     }
 
     return () => {
-      // Cleanup
+      if (unsubscribe) unsubscribe()
     }
-  }, [])
+  }, [activeTermIdx])
 
   // Auto-scroll to bottom on new output
   useEffect(() => {
     if (terminalEndRef.current) {
       terminalEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [history])
+  }, [termHistories, activeTab, activeTermIdx])
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -59,17 +78,29 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
       setHistoryIdx(-1)
 
       // Print input line
-      setHistory((prev) => [...prev, { type: 'input', text: cmd }])
+      setTermHistories((prev) => {
+        const currentHistory = prev[activeTermIdx] || []
+        return {
+          ...prev,
+          [activeTermIdx]: [...currentHistory, { type: 'input', text: cmd }]
+        }
+      })
       setInputVal('')
 
       // Send to backend shell process
       if (window.api && typeof window.api.writeTerminal === 'function') {
         window.api.writeTerminal(cmd)
       } else {
-        setHistory((prev) => [
-          ...prev,
-          { type: 'stderr', text: 'Backend terminal IPC unavailable.' }
-        ])
+        setTermHistories((prev) => {
+          const currentHistory = prev[activeTermIdx] || []
+          return {
+            ...prev,
+            [activeTermIdx]: [
+              ...currentHistory,
+              { type: 'stderr', text: 'Backend terminal IPC unavailable.' }
+            ]
+          }
+        })
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
@@ -92,18 +123,46 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
   }
 
   const handleClear = () => {
-    setHistory([{ type: 'sys', text: 'Terminal output cleared.' }])
+    setTermHistories((prev) => ({
+      ...prev,
+      [activeTermIdx]: [{ type: 'sys', text: 'Terminal output cleared.' }]
+    }))
   }
 
   const handleAiAutoFix = () => {
-    setHistory((prev) => [
+    setTermHistories((prev) => {
+      const currentHistory = prev[activeTermIdx] || []
+      return {
+        ...prev,
+        [activeTermIdx]: [
+          ...currentHistory,
+          { type: 'sys', text: '🤖 AI Diagnostic Assistant scanning terminal output for tracebacks & errors...' },
+          { type: 'sys', text: '✓ Solution: All environment dependencies configured. No fatal compilation errors detected.' }
+        ]
+      }
+    })
+  }
+
+  const handleNewTerminal = (e) => {
+    if (e) e.stopPropagation()
+    const newIdx = terminalTabs.length
+    const name = `Terminal ${newIdx + 1}`
+    setTerminalTabs([...terminalTabs, name])
+    setTermHistories((prev) => ({
       ...prev,
-      { type: 'sys', text: '🤖 AI Diagnostic Assistant scanning terminal output for tracebacks & errors...' },
-      { type: 'sys', text: '✓ Solution: All environment dependencies configured. No fatal compilation errors detected.' }
-    ])
+      [newIdx]: [
+        {
+          type: 'sys',
+          text: `Xenithra Cyber Terminal Engine v2.0 (${name}) initialized.\nConnected to backend native shell process.`
+        }
+      ]
+    }))
+    setActiveTab(name)
+    setActiveTermIdx(newIdx)
   }
 
   const isCenter = layoutMode === 'center'
+  const currentHistory = termHistories[activeTermIdx] || []
 
   return (
     <div
@@ -149,7 +208,7 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
         }}
       >
         {/* Left Tabs */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {isCenter && (
             <span
               style={{
@@ -166,7 +225,35 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
             </span>
           )}
 
-          {['Terminal', 'AI Assistant Trace', 'Problems', 'Output'].map((tab) => (
+          {/* Render Active Terminals */}
+          {terminalTabs.map((tabName, idx) => (
+            <span
+              key={tabName}
+              onClick={() => {
+                setActiveTab(tabName)
+                setActiveTermIdx(idx)
+              }}
+              style={{
+                fontSize: '11px',
+                fontWeight: activeTab === tabName ? '700' : 'normal',
+                color: activeTab === tabName ? '#00f3ff' : '#8b949e',
+                cursor: 'pointer',
+                borderBottom:
+                  activeTab === tabName ? '2px solid #00f3ff' : '2px solid transparent',
+                paddingBottom: '2px',
+                transition: 'all 0.2s ease',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <span>💻</span>
+              <span>{tabName}</span>
+            </span>
+          ))}
+
+          {/* Render Other Diagnostic Tabs */}
+          {['AI Assistant Trace', 'Problems', 'Output'].map((tab) => (
             <span
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -184,6 +271,28 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
               {tab}
             </span>
           ))}
+
+          {/* Plus Add Terminal Tab Button */}
+          <button
+            onClick={handleNewTerminal}
+            title="Create New Terminal tab"
+            style={{
+              background: 'rgba(0, 243, 255, 0.12)',
+              border: '1px solid rgba(0, 243, 255, 0.3)',
+              color: '#00f3ff',
+              borderRadius: '4px',
+              padding: '1px 6px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: '4px'
+            }}
+          >
+            + Tab
+          </button>
         </div>
 
         {/* Right Actions */}
@@ -261,7 +370,8 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
                 fontSize: '14px',
                 cursor: 'pointer',
                 display: 'flex',
-                alignItems: 'center'
+                alignItems: 'center',
+                padding: '2px'
               }}
               title="Close Terminal Panel"
             >
@@ -282,9 +392,9 @@ const Terminal = ({ isRunning, onClose, layoutMode = 'bottom', onToggleCenter })
           wordBreak: 'break-all'
         }}
       >
-        {activeTab === 'Terminal' ? (
+        {activeTab.startsWith('Terminal') ? (
           <React.Fragment>
-            {history.map((item, idx) => {
+            {currentHistory.map((item, idx) => {
               if (item.type === 'input') {
                 return (
                   <div

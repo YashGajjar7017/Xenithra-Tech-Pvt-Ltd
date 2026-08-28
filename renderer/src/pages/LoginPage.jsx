@@ -204,8 +204,8 @@ const LoginPage = () => {
             <button
               type="button"
               onClick={() => {
-                setOauthProvider('github')
-                setOauthEmail('dev@github.com')
+                const port = localStorage.getItem('api-port') || '8000'
+                window.location.href = `http://localhost:${port}/api/auth/github`
               }}
               style={{
                 ...styles.socialBtn,

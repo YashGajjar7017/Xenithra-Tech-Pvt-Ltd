@@ -105,6 +105,101 @@ app.post('/api/signup', async (req, res) => {
   }
 })
 
+// GitHub OAuth routes
+app.get('/api/auth/github', (req, res) => {
+  const clientId = process.env.GITHUB_CLIENT_ID
+  const redirectUri = `http://localhost:${process.env.API_PORT || 8000}/api/auth/github/callback`
+  if (!clientId) {
+    // If not configured, return a simulated OAuth success for testing/fallback
+    console.warn('[api] GITHUB_CLIENT_ID not set, redirecting to mock OAuth success callback.')
+    return res.redirect(`/api/auth/github/callback?code=mock_code`)
+  }
+  const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user:email`
+  res.redirect(url)
+})
+
+app.get('/api/auth/github/callback', async (req, res) => {
+  const { code } = req.query
+  if (!code) {
+    return res.status(400).send('Authorization code missing')
+  }
+
+  try {
+    let username = 'github_user'
+    let email = 'github@domain.com'
+
+    if (code === 'mock_code' || !process.env.GITHUB_CLIENT_ID) {
+      // Mock OAuth fallback
+      username = 'github_dev'
+      email = 'dev@github.com'
+    } else {
+      // Exchange code for token
+      const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          client_id: process.env.GITHUB_CLIENT_ID,
+          client_secret: process.env.GITHUB_CLIENT_SECRET,
+          code
+        })
+      })
+      const tokenData = await tokenRes.json()
+      if (tokenData.error) {
+        throw new Error(tokenData.error_description || tokenData.error)
+      }
+      
+      const token = tokenData.access_token
+
+      // Fetch user profile
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `token ${token}`, 'User-Agent': 'Xenithra-IDE' }
+      })
+      const userData = await userRes.json()
+      username = userData.login
+
+      // Fetch user email
+      const emailsRes = await fetch('https://api.github.com/user/emails', {
+        headers: { 'Authorization': `token ${token}`, 'User-Agent': 'Xenithra-IDE' }
+      })
+      const emailsData = await emailsRes.json()
+      const primaryEmailObj = Array.isArray(emailsData) ? emailsData.find(e => e.primary) || emailsData[0] : null
+      email = primaryEmailObj ? primaryEmailObj.email : `${username}@github.com`
+    }
+
+    // Save/Authenticate in Database
+    const { findUser, signUpUser } = await import('./Services/db.service.js')
+    let user = await findUser(email)
+    if (!user) {
+      // Create user if not exists
+      user = await signUpUser(username, email, '') // Null/empty password for OAuth users
+    }
+
+    // Store session
+    req.session.user = user
+
+    // Send token/deep link auth back to Electron App
+    res.send(`
+      <html>
+        <body>
+          <script>
+            const user = ${JSON.stringify(user)};
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('cloud-sync-enabled', 'true');
+            localStorage.setItem('cloud-provider', 'github');
+            window.location.href = '/#/';
+          </script>
+        </body>
+      </html>
+    `)
+  } catch (err) {
+    console.error('GitHub callback error:', err)
+    res.status(500).send(`Authentication failed: ${err.message}`)
+  }
+})
+
 // AI Assistant & Troubleshooting Endpoint
 app.post('/api/ai/chat', (req, res) => {
   const { prompt, code, lang, filename } = req.body

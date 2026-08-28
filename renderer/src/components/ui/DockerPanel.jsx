@@ -188,8 +188,31 @@ const DockerPanel = () => {
           paddingRight: '2px'
         }}
       >
-        {activeTab === 'containers'
-          ? containers.map((c) => (
+        {activeTab === 'containers' ? (
+          containers.length === 0 ? (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '40px 20px',
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                background: 'rgba(255,255,255,0.01)',
+                border: '1px dashed rgba(255,255,255,0.08)',
+                borderRadius: '8px',
+                margin: '10px 0'
+              }}
+            >
+              <i className="bx bx-cube" style={{ fontSize: '36px', color: 'var(--text-muted)', opacity: 0.4, marginBottom: '8px' }}></i>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-main)' }}>No Docker Containers Active</div>
+              <div style={{ fontSize: '10px', marginTop: '4px', lineHeight: '1.4' }}>
+                Verify that local Docker engine is started and containers are configured.
+              </div>
+            </div>
+          ) : (
+            containers.map((c) => (
               <div
                 key={c.id}
                 style={{
@@ -356,7 +379,29 @@ const DockerPanel = () => {
                 </div>
               </div>
             ))
-          : images.map((img, idx) => (
+          )
+        ) : (
+          images.length === 0 ? (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '40px 20px',
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                background: 'rgba(255,255,255,0.01)',
+                border: '1px dashed rgba(255,255,255,0.08)',
+                borderRadius: '8px',
+                margin: '10px 0'
+              }}
+            >
+              <i className="bx bx-image" style={{ fontSize: '36px', color: 'var(--text-muted)', opacity: 0.4, marginBottom: '8px' }}></i>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-main)' }}>No Docker Images Found</div>
+            </div>
+          ) : (
+            images.map((img, idx) => (
               <div
                 key={idx}
                 style={{
@@ -400,7 +445,9 @@ const DockerPanel = () => {
                   {img.size}
                 </span>
               </div>
-            ))}
+            ))
+          )
+        )}
       </div>
 
       {/* Logs View Modal */}

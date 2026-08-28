@@ -264,7 +264,7 @@ const EditorPage = () => {
   const [terminalLayout, setTerminalLayout] = useState('bottom') // 'bottom' | 'center'
 
   // AI Chat & Code Adjuster states
-  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true)
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false)
   const [rightPanelTab, setRightPanelTab] = useState('chat')
   const [chatInput, setChatInput] = useState('')
   const [chatMessages, setChatMessages] = useState([
@@ -473,6 +473,28 @@ const EditorPage = () => {
     }
   }, [activeTabId])
 
+  // Toggle terminal listener & keyboard shortcut
+  useEffect(() => {
+    const handleToggleTerminal = () => {
+      setTerminalLayout((prev) => (prev === 'hidden' ? 'bottom' : 'hidden'))
+    }
+    
+    const handleGlobalKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === '`') {
+        e.preventDefault()
+        handleToggleTerminal()
+      }
+    }
+
+    window.addEventListener('toggle-terminal', handleToggleTerminal)
+    window.addEventListener('keydown', handleGlobalKeyDown)
+
+    return () => {
+      window.removeEventListener('toggle-terminal', handleToggleTerminal)
+      window.removeEventListener('keydown', handleGlobalKeyDown)
+    }
+  }, [])
+
   // WebRTC Code & Cursor Sync listeners
   useEffect(() => {
     const handleWebRtcCodeSync = (e) => {
@@ -638,16 +660,17 @@ const EditorPage = () => {
           .replace(/```/g, '')
           .trim()
 
+        const tokens = cleanCode.split(/(\s+|\b)/).filter(Boolean)
         let typedText = '\n'
-        let index = 0
+        let tokenIndex = 0
 
         const typingInterval = setInterval(() => {
-          if (index < cleanCode.length) {
-            typedText += cleanCode.charAt(index)
+          if (tokenIndex < tokens.length) {
+            typedText += tokens[tokenIndex]
             setOpenTabs((prev) =>
               prev.map((t) => (t.id === activeTabId ? { ...t, code: currentCode + typedText } : t))
             )
-            index++
+            tokenIndex++
           } else {
             clearInterval(typingInterval)
             setIsCopilotTyping(false)
@@ -663,7 +686,7 @@ const EditorPage = () => {
               { text: 'xenithra@studio:~$', className: 'prompt' }
             ])
           }
-        }, 15)
+        }, 25)
       } catch (err) {
         console.error('Copilot error:', err)
         setIsCopilotTyping(false)
@@ -955,7 +978,6 @@ const EditorPage = () => {
       : Math.min(total, Math.ceil((scrollTop + (editorHeight || 600)) / lineHeight) + 25)
 
     return lines.map((line, lIdx) => {
-      // Off-screen line spacer for 60fps performance on large files
       if (!isMinimap && total > 150 && (lIdx < visibleStart || lIdx > visibleEnd)) {
         return <div key={lIdx} style={{ height: '19.5px' }} />
       }
@@ -966,8 +988,9 @@ const EditorPage = () => {
         if (!token) return null
 
         if (token.startsWith('"') || token.startsWith("'") || token.startsWith('`')) {
+          // Blue for value strings
           return (
-            <span key={tIdx} style={{ color: '#ce9178' }}>
+            <span key={tIdx} style={{ color: '#569cd6' }}>
               {token}
             </span>
           )
@@ -1009,7 +1032,7 @@ const EditorPage = () => {
         ]
         if (keywords.includes(token)) {
           return (
-            <span key={tIdx} style={{ color: '#c586c0', fontWeight: 'bold' }}>
+            <span key={tIdx} style={{ color: '#569cd6', fontWeight: 'bold' }}>
               {token}
             </span>
           )
@@ -1021,42 +1044,79 @@ const EditorPage = () => {
           token === 'null' ||
           token === 'undefined'
         ) {
+          // Blue for values
           return (
-            <span key={tIdx} style={{ color: '#b5cea8' }}>
+            <span key={tIdx} style={{ color: '#569cd6' }}>
               {token}
             </span>
           )
         }
         const nextToken = tokens[tIdx + 1] || ''
         const prevToken = tokens[tIdx - 1] || ''
+
+        // JSON formatting check
+        const isJson = selectedLanguage === 'JSON' || activeTab.toLowerCase().endsWith('.json')
+        if (isJson) {
+          if (token === '{' || token === '}' || token === '[' || token === ']') {
+            return (
+              <span key={tIdx} style={{ color: '#ffffff' }}>
+                {token}
+              </span>
+            )
+          }
+          if (nextToken.trim() === ':') {
+            // JSON keys in white
+            return (
+              <span key={tIdx} style={{ color: '#ffffff' }}>
+                {token}
+              </span>
+            )
+          }
+        }
+
+        // Structural elements in white
+        if (token === '{' || token === '}' || token === '[' || token === ']') {
+          return (
+            <span key={tIdx} style={{ color: '#ffffff' }}>
+              {token}
+            </span>
+          )
+        }
+
+        // Functions in purple
         if (prevToken === 'function' || prevToken === 'def' || prevToken === 'class') {
           return (
-            <span key={tIdx} style={{ color: '#ff79c6', fontWeight: 'bold' }}>
+            <span key={tIdx} style={{ color: '#c586c0', fontWeight: 'bold' }}>
               {token}
             </span>
           )
         }
         if (nextToken.trim() === '(' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
           return (
-            <span key={tIdx} style={{ color: '#ff79c6', fontWeight: '500' }}>
+            <span key={tIdx} style={{ color: '#c586c0' }}>
               {token}
             </span>
           )
         }
-        if (nextToken.trim() === ':' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
+
+        // Objects in dark yellow (when followed by a dot)
+        if (nextToken.trim() === '.' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
           return (
-            <span key={tIdx} style={{ color: '#58a6ff' }}>
+            <span key={tIdx} style={{ color: '#dcdcaa' }}>
               {token}
             </span>
           )
         }
+
+        // Variables in red
         if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
           return (
-            <span key={tIdx} style={{ color: '#9cdcfe' }}>
+            <span key={tIdx} style={{ color: '#f44747' }}>
               {token}
             </span>
           )
         }
+
         return (
           <span key={tIdx} style={{ color: 'var(--text-main)' }}>
             {token}
@@ -1088,6 +1148,8 @@ const EditorPage = () => {
   const leftLineNumbersRef = useRef(null)
   const leftHighlightRef = useRef(null)
   const rightCodeAreaRef = useRef(null)
+  const rightLineNumbersRef = useRef(null)
+  const rightHighlightRef = useRef(null)
   const codeAreaRef = activePane === 'left' ? leftCodeAreaRef : rightCodeAreaRef
   const terminalBodyRef = useRef(null)
 
@@ -1104,7 +1166,15 @@ const EditorPage = () => {
     updateCursorCoords()
   }
 
-  const handleRightScroll = () => {
+  const handleRightScroll = (e) => {
+    const { scrollTop, scrollLeft } = e.target
+    if (rightHighlightRef.current) {
+      rightHighlightRef.current.scrollTop = scrollTop
+      rightHighlightRef.current.scrollLeft = scrollLeft
+    }
+    if (rightLineNumbersRef.current) {
+      rightLineNumbersRef.current.scrollTop = scrollTop
+    }
     updateCursorCoords()
   }
 
@@ -2828,7 +2898,7 @@ const EditorPage = () => {
                 </div>
               </div>
               <div className="editor" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                <div className="line-numbers">
+                <div ref={rightLineNumbersRef} className="line-numbers">
                   {Array.from({ length: getLineCount(rightCode) }).map((_, i) => (
                     <div
                       key={i}
@@ -2853,6 +2923,27 @@ const EditorPage = () => {
                     overflow: 'hidden'
                   }}
                 >
+                  {/* Syntax Color Highlighting Backdrop Layer */}
+                  <div
+                    ref={rightHighlightRef}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      padding: '10px',
+                      fontSize: '13px',
+                      lineHeight: '19.5px',
+                      fontFamily: "'JetBrains Mono', Consolas, monospace",
+                      pointerEvents: 'none',
+                      overflow: 'hidden',
+                      zIndex: 1
+                    }}
+                  >
+                    {renderHighlightedCode(rightCode)}
+                  </div>
+
                   <textarea
                     ref={rightCodeAreaRef}
                     className="code-area"
@@ -2884,13 +2975,16 @@ const EditorPage = () => {
                       lineHeight: '19.5px',
                       fontFamily: "'JetBrains Mono', Consolas, monospace",
                       background: 'transparent',
-                      color: 'var(--text-main)',
+                      color: 'transparent',
+                      caretColor: 'var(--accent-color)',
                       border: 'none',
                       resize: 'none',
                       outline: 'none',
                       flex: 1,
                       height: '100%',
-                      overflowY: 'auto'
+                      overflowY: 'auto',
+                      overflowX: 'auto',
+                      zIndex: 2
                     }}
                   />
 
@@ -3590,7 +3684,7 @@ const EditorPage = () => {
             isRunning={isRunning}
             layoutMode="center"
             onToggleCenter={() => setTerminalLayout('bottom')}
-            onClose={() => setTerminalLayout('bottom')}
+            onClose={() => setTerminalLayout('hidden')}
           />
         </div>
       )}
@@ -3616,6 +3710,7 @@ const EditorPage = () => {
             isRunning={isRunning}
             layoutMode="bottom"
             onToggleCenter={() => setTerminalLayout('center')}
+            onClose={() => setTerminalLayout('hidden')}
           />
         </div>
       )}
@@ -3951,6 +4046,48 @@ const getTextareaCaretCoordinates = (textarea, position) => {
 
   document.body.removeChild(clone)
   return coordinates
+}
+
+const highlightCode = (code, lang = 'javascript') => {
+  if (!code) return '';
+
+  let html = code
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  const isJson = (lang && lang.toLowerCase() === 'json') || (code.trim().startsWith('{') && code.trim().endsWith('}'));
+
+  if (isJson) {
+    html = html.replace(/([{}[\]])/g, '<span style="color: #ffffff;">$1</span>');
+    html = html.replace(/(".*?")(\s*):/g, '<span style="color: #ffffff;">$1</span>$2:');
+    html = html.replace(/:(\s*)(".*?")/g, ':$1<span style="color: #569cd6;">$2</span>');
+    html = html.replace(/:(\s*)([0-9.-]+|true|false|null)/g, ':$1<span style="color: #569cd6;">$2</span>');
+    return html;
+  }
+
+  // Keywords (blue)
+  html = html.replace(/\b(const|let|var|function|return|if|else|for|while|import|export|from|class|new)\b/g, '<span style="color: #569cd6;">$1</span>');
+
+  // Variables (declarations - red): const x, let y, var z
+  html = html.replace(/\b(const|let|var)(\s+)([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '$1$2<span style="color: #f44747;">$3</span>');
+
+  // Objects (dark yellow): object before a dot
+  html = html.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\.)/g, '<span style="color: #dcdcaa;">$1</span>');
+
+  // Functions (purple): call or declaration
+  html = html.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\()/g, '<span style="color: #c586c0;">$1</span>');
+  html = html.replace(/\b(function)(\s+)([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '$1$2<span style="color: #c586c0;">$3</span>');
+
+  // Values (blue)
+  html = html.replace(/(["'`])(.*?)\1/g, '<span style="color: #569cd6;">$1$2$1</span>');
+  html = html.replace(/\b(true|false|null)\b/g, '<span style="color: #569cd6;">$1</span>');
+  html = html.replace(/\b(\d+)\b/g, '<span style="color: #569cd6;">$1</span>');
+
+  // White for curly braces/brackets
+  html = html.replace(/([{}[\]])/g, '<span style="color: #ffffff;">$1</span>');
+
+  return html;
 }
 
 export default EditorPage
