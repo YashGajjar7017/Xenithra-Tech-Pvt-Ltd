@@ -1762,11 +1762,11 @@ const EditorPage = () => {
       {/* Editor Main Section */}
       <div
         style={{
-          height: `${editorHeight}px`,
+          height: terminalLayout === 'bottom' ? `${editorHeight}px` : '100%',
           display: 'flex',
           flexDirection: 'row',
           overflow: 'hidden',
-          borderBottom: '1px solid var(--panel-border)',
+          borderBottom: terminalLayout === 'bottom' ? '1px solid var(--panel-border)' : 'none',
           position: 'relative'
         }}
       >

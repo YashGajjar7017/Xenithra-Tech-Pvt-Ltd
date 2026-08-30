@@ -229,7 +229,22 @@ const MainLayout = ({
 
   const [activityOrder, setActivityOrder] = useState(() => {
     const saved = localStorage.getItem('activity-order')
-    return saved ? JSON.parse(saved) : defaultOrder
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        // Ensure all default items are present in case they were added in newer versions
+        const merged = [...parsed]
+        defaultOrder.forEach((item) => {
+          if (!merged.includes(item)) {
+            merged.push(item)
+          }
+        })
+        return merged
+      } catch (e) {
+        return defaultOrder
+      }
+    }
+    return defaultOrder
   })
 
   const [colabTransitionActive, setColabTransitionActive] = useState(false)

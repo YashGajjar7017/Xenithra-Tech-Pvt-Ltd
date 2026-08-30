@@ -71,7 +71,13 @@ const api = {
   writeTerminal: (input) => ipcRenderer.invoke('terminal:write', input),
   killTerminal: () => ipcRenderer.invoke('terminal:kill'),
   executeTerminal: (cmd, cwd) => ipcRenderer.invoke('terminal:execute', cmd, cwd),
-  onTerminalData: (cb) => ipcRenderer.on('terminal:data', (_event, data) => cb(data)),
+  onTerminalData: (cb) => {
+    const listener = (_event, data) => cb(data)
+    ipcRenderer.on('terminal:data', listener)
+    return () => {
+      ipcRenderer.removeListener('terminal:data', listener)
+    }
+  },
 
   // Live Server API
   startLiveServer: (rootPath, port) => ipcRenderer.invoke('liveserver:start', rootPath, port),

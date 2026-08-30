@@ -873,6 +873,12 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
             >
               Open File
             </button>
+            <button
+              style={{ ...styles.welcomeBtn, background: 'rgba(255,77,79,0.05)', borderColor: 'rgba(255,77,79,0.25)', color: '#ff4d4f' }}
+              onClick={() => { window.location.hash = '#/dsa-studio' }}
+            >
+              Open DSA Studio Sandbox
+            </button>
           </div>
 
           <div

@@ -796,6 +796,24 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
               >
                 <span>System Control Center</span>
               </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveMenu(null)
+                  window.location.hash = '#/ai-colab'
+                }}
+              >
+                <span>AI Colab Studio Sandbox</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveMenu(null)
+                  window.location.hash = '#/dsa-studio'
+                }}
+              >
+                <span>DSA Play & Compile Studio</span>
+              </button>
             </div>
           )}
         </div>
@@ -1070,7 +1088,7 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
         {/* AI Colab Studio Quick Launcher */}
         <button
           onClick={openAiColabStudio}
-          title="Open AI Colab & Real-time DSA Studio"
+          title="Open AI Colab Studio"
           style={{
             background: 'linear-gradient(135deg, rgba(0, 243, 255, 0.15) 0%, rgba(168, 85, 247, 0.2) 100%)',
             border: '1px solid rgba(0, 243, 255, 0.35)',
@@ -1086,7 +1104,8 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
             gap: '5px',
             boxShadow: '0 0 10px rgba(0, 243, 255, 0.15)',
             transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
+            marginRight: '6px'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 243, 255, 0.45)'
@@ -1099,6 +1118,41 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
         >
           <span style={{ fontSize: '11px' }}>⚡</span>
           <span>AI Colab</span>
+        </button>
+
+        {/* DSA Studio Quick Launcher */}
+        <button
+          onClick={() => { window.location.hash = '#/dsa-studio' }}
+          title="Open Real-time DSA Play & Step Compile Studio"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255, 77, 79, 0.15) 0%, rgba(255, 120, 117, 0.2) 100%)',
+            border: '1px solid rgba(255, 77, 79, 0.35)',
+            borderRadius: '5px',
+            color: '#ff4d4f',
+            fontSize: '11px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            padding: '3px 9px',
+            height: '25px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            boxShadow: '0 0 10px rgba(255, 77, 79, 0.15)',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            marginRight: '6px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 16px rgba(255, 77, 79, 0.45)'
+            e.currentTarget.style.borderColor = '#ff4d4f'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 10px rgba(255, 77, 79, 0.15)'
+            e.currentTarget.style.borderColor = 'rgba(255, 77, 79, 0.35)'
+          }}
+        >
+          <span style={{ fontSize: '11px' }}>🧩</span>
+          <span>DSA Studio</span>
         </button>
 
         {/* User Accounts Popover Dropdown */}
