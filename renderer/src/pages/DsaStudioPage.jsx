@@ -7,6 +7,10 @@ const DsaStudioPage = () => {
   const [dsaSpeed, setDsaSpeed] = useState(1500)
   const [selectedLang, setSelectedLang] = useState('javascript')
   const [customInputVal, setCustomInputVal] = useState('56')
+  const [isInteractiveMode, setIsInteractiveMode] = useState(false)
+  const [customCode, setCustomCode] = useState('')
+  const [testResults, setTestResults] = useState([])
+  const [customComplexities, setCustomComplexities] = useState(null)
 
   const playTimerRef = useRef(null)
 
@@ -309,6 +313,141 @@ const DsaStudioPage = () => {
     }
   }, [dsaPlaying, dsaSpeed, traces])
 
+  // Sync template values if target changes
+  useEffect(() => {
+    const template = codeTemplates[selectedAlgo]?.javascript?.join('\n') || ''
+    setCustomCode(template)
+    setTestResults([])
+    setCustomComplexities(null)
+  }, [selectedAlgo])
+
+  const testCases = {
+    'binary-search': [
+      { input: [[1, 3, 5, 7, 9], 5], expect: 2, name: 'Target in Middle' },
+      { input: [[1, 3, 5, 7, 9], 1], expect: 0, name: 'Target at Start' },
+      { input: [[1, 3, 5, 7, 9], 4], expect: -1, name: 'Target Missing' }
+    ],
+    'bubble-sort': [
+      { input: [[5, 3, 8, 4, 2]], expect: [2, 3, 4, 5, 8], name: 'Unsorted Array' },
+      { input: [[1, 2, 3, 4, 5]], expect: [1, 2, 3, 4, 5], name: 'Already Sorted' }
+    ],
+    'fibonacci': [
+      { input: [5], expect: 5, name: 'N = 5' },
+      { input: [10], expect: 55, name: 'N = 10' }
+    ],
+    'linked-list': [
+      { input: [null, 5], expect: [5], name: 'Insert into Empty List' }
+    ],
+    'gradient-descent': [
+      { input: [10.0, 0.1], expect: 2.0, name: 'Converge from 10.0' }
+    ]
+  }
+
+  const analyzeCustomCode = (codeText, algoType) => {
+    let timeComplexity = 'O(n)'
+    let omegaComplexity = 'Ω(1)'
+    let spaceComplexity = 'O(1)'
+
+    const codeLower = (codeText || '').toLowerCase()
+
+    if (algoType === 'bubble-sort' || codeLower.includes('bubble')) {
+      const nestedLoops = (codeLower.match(/for\s*\(|while\s*\(/g) || []).length >= 2
+      timeComplexity = nestedLoops ? 'O(n²)' : 'O(n)'
+      omegaComplexity = codeLower.includes('break') ? 'Ω(n)' : 'Ω(n²)'
+      spaceComplexity = 'O(1)'
+    } else if (algoType === 'binary-search' || codeLower.includes('binary')) {
+      timeComplexity = 'O(log n)'
+      omegaComplexity = 'Ω(1)'
+      spaceComplexity = 'O(1)'
+    } else if (algoType === 'fibonacci' || codeLower.includes('fib')) {
+      const hasRecursion = codeLower.includes('fib(') || codeLower.includes('fibonacci(')
+      timeComplexity = hasRecursion ? 'O(2ⁿ)' : 'O(n)'
+      omegaComplexity = 'Ω(1)'
+      spaceComplexity = hasRecursion ? 'O(n)' : 'O(1)'
+    } else {
+      const loopCount = (codeLower.match(/for\s*\(|while\s*\(/g) || []).length
+      if (loopCount === 0) {
+        timeComplexity = 'O(1)'
+        omegaComplexity = 'Ω(1)'
+        spaceComplexity = 'O(1)'
+      } else if (loopCount === 1) {
+        timeComplexity = 'O(n)'
+        omegaComplexity = 'Ω(1)'
+        spaceComplexity = 'O(1)'
+      } else if (loopCount >= 2) {
+        timeComplexity = 'O(n²)'
+        omegaComplexity = 'Ω(n)'
+        spaceComplexity = 'O(1)'
+      }
+    }
+
+    return { timeComplexity, omegaComplexity, spaceComplexity }
+  }
+
+  const handleRunTestSuite = () => {
+    try {
+      let fullCode = customCode
+      if (selectedAlgo === 'linked-list') {
+        fullCode = `
+          class Node {
+            constructor(val) {
+              this.val = val;
+              this.next = null;
+            }
+          }
+          \n${fullCode}
+        `
+      }
+
+      let funcName = 'binarySearch'
+      if (selectedAlgo === 'bubble-sort') funcName = 'bubbleSort'
+      if (selectedAlgo === 'linked-list') funcName = 'insertNode'
+      if (selectedAlgo === 'gradient-descent') funcName = 'gradientDescent'
+      if (selectedAlgo === 'fibonacci') funcName = 'fibonacci'
+
+      const evalFunc = new Function(fullCode + `\nreturn ${funcName};`)
+      const userFunc = evalFunc()
+
+      const results = []
+      const cases = testCases[selectedAlgo] || []
+
+      for (let tc of cases) {
+        let output
+        let pass = false
+        try {
+          const clonedInputs = JSON.parse(JSON.stringify(tc.input))
+          output = userFunc(...clonedInputs)
+
+          if (Array.isArray(tc.expect)) {
+            pass = JSON.stringify(output) === JSON.stringify(tc.expect)
+          } else if (selectedAlgo === 'linked-list') {
+            let vals = []
+            let curr = output
+            while (curr) {
+              vals.push(curr.val)
+              curr = curr.next
+            }
+            pass = JSON.stringify(vals) === JSON.stringify([5])
+          } else if (selectedAlgo === 'gradient-descent') {
+            pass = Math.abs(output - 2.0) < 0.2
+          } else {
+            pass = output === tc.expect
+          }
+        } catch (e) {
+          output = `Error: ${e.message}`
+          pass = false
+        }
+        results.push({ name: tc.name, expect: JSON.stringify(tc.expect), got: JSON.stringify(output), pass })
+      }
+
+      setTestResults(results)
+      const analyzerResult = analyzeCustomCode(customCode, selectedAlgo)
+      setCustomComplexities(analyzerResult)
+    } catch (err) {
+      setTestResults([{ name: 'Syntax/Compilation Error', expect: 'Valid syntax', got: err.message, pass: false }])
+    }
+  }
+
   const exitStudio = () => {
     window.location.hash = '#/'
   }
@@ -351,6 +490,39 @@ const DsaStudioPage = () => {
               Line-by-line compiler execution visualizer sandbox
             </div>
           </div>
+          
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.04)', padding: '2px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', marginLeft: '24px' }}>
+            <button
+              onClick={() => setIsInteractiveMode(false)}
+              style={{
+                background: !isInteractiveMode ? 'rgba(0, 243, 255, 0.15)' : 'transparent',
+                border: 'none',
+                color: !isInteractiveMode ? '#00f3ff' : '#888',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Simulation Mode
+            </button>
+            <button
+              onClick={() => setIsInteractiveMode(true)}
+              style={{
+                background: isInteractiveMode ? 'rgba(0, 243, 255, 0.15)' : 'transparent',
+                border: 'none',
+                color: isInteractiveMode ? '#00f3ff' : '#888',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Interactive Playground
+            </button>
+          </div>
         </div>
 
         <button
@@ -385,96 +557,197 @@ const DsaStudioPage = () => {
           boxSizing: 'border-box'
         }}
       >
-        {/* LEFT COLUMN: Huge Code Compiler Simulation Viewer */}
-        <div
-          style={{
-            background: '#070707',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-          }}
-        >
+        {/* LEFT COLUMN: Huge Code Compiler Simulation Viewer OR Interactive Playground */}
+        {!isInteractiveMode ? (
           <div
             style={{
-              padding: '12px 16px',
-              background: '#0d0d0d',
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
+              background: '#070707',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '12px',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
+              flexDirection: 'column',
+              overflow: 'hidden'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 'bold' }}>
-              <span>💻</span>
-              <span>Compiler Source Highlighting</span>
+            <div
+              style={{
+                padding: '12px 16px',
+                background: '#0d0d0d',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 'bold' }}>
+                <span>💻</span>
+                <span>Compiler Source Highlighting</span>
+              </div>
+              <div style={{ fontSize: '10px', color: '#ff4d4f', fontWeight: 'bold' }}>
+                ● LINE {currentTrace.line} ACTIVE
+              </div>
             </div>
-            <div style={{ fontSize: '10px', color: '#ff4d4f', fontWeight: 'bold' }}>
-              ● LINE {currentTrace.line} ACTIVE
-            </div>
-          </div>
 
-          <div
-            style={{
-              flex: 1,
-              padding: '24px',
-              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-              fontSize: '13px',
-              lineHeight: '2.1',
-              background: '#030303',
-              overflowY: 'auto'
-            }}
-          >
-            {activeTemplate.map((codeLine, idx) => {
-              const lineNum = idx + 1
-              const isActive = lineNum === currentTrace.line
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    background: isActive ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
-                    color: isActive ? '#ffffff' : 'rgba(255,255,255,0.45)',
-                    borderLeft: isActive ? '4px solid #ffffff' : '4px solid transparent',
-                    paddingLeft: '12px',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <span
+            <div
+              style={{
+                flex: 1,
+                padding: '24px',
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                fontSize: '13px',
+                lineHeight: '2.1',
+                background: '#030303',
+                overflowY: 'auto'
+              }}
+            >
+              {activeTemplate.map((codeLine, idx) => {
+                const lineNum = idx + 1
+                const isActive = lineNum === currentTrace.line
+                return (
+                  <div
+                    key={idx}
                     style={{
-                      width: '32px',
-                      color: isActive ? '#ffffff' : 'rgba(255,255,255,0.18)',
-                      userSelect: 'none',
-                      textAlign: 'right',
-                      paddingRight: '16px'
+                      display: 'flex',
+                      background: isActive ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                      color: isActive ? '#ffffff' : 'rgba(255,255,255,0.45)',
+                      borderLeft: isActive ? '4px solid #ffffff' : '4px solid transparent',
+                      paddingLeft: '12px',
+                      transition: 'all 0.15s ease'
                     }}
                   >
-                    {lineNum}
-                  </span>
-                  <pre style={{ margin: 0, fontFamily: 'inherit' }}>{codeLine}</pre>
-                </div>
-              )
-            })}
-          </div>
+                    <span
+                      style={{
+                        width: '32px',
+                        color: isActive ? '#ffffff' : 'rgba(255,255,255,0.18)',
+                        userSelect: 'none',
+                        textAlign: 'right',
+                        paddingRight: '16px'
+                      }}
+                    >
+                      {lineNum}
+                    </span>
+                    <pre style={{ margin: 0, fontFamily: 'inherit' }}>{codeLine}</pre>
+                  </div>
+                )
+              })}
+            </div>
 
-          {/* Trace Description Banner */}
+            {/* Trace Description Banner */}
+            <div
+              style={{
+                padding: '16px 20px',
+                background: '#090909',
+                borderTop: '1px solid rgba(255,255,255,0.08)',
+                minHeight: '60px'
+              }}
+            >
+              <div style={{ fontSize: '10px', color: '#666', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                Step {dsaStep + 1} of {traces.length}: Compiler Evaluation Note
+              </div>
+              <div style={{ fontSize: '12px', color: '#eee', marginTop: '6px', fontWeight: '600', lineHeight: '1.4' }}>
+                {currentTrace.desc}
+              </div>
+            </div>
+          </div>
+        ) : (
           <div
             style={{
-              padding: '16px 20px',
-              background: '#090909',
-              borderTop: '1px solid rgba(255,255,255,0.08)',
-              minHeight: '60px'
+              background: '#070707',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
             }}
           >
-            <div style={{ fontSize: '10px', color: '#666', fontWeight: 'bold', textTransform: 'uppercase' }}>
-              Step {dsaStep + 1} of {traces.length}: Compiler Evaluation Note
+            <div
+              style={{
+                padding: '12px 16px',
+                background: '#0d0d0d',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 'bold' }}>
+                <span>✍️</span>
+                <span>Interactive Code Playground</span>
+              </div>
+              <button
+                onClick={handleRunTestSuite}
+                style={{
+                  background: 'linear-gradient(135deg, #00ffaa 0%, #00bfff 100%)',
+                  border: 'none',
+                  color: '#020617',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  padding: '6px 14px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 10px rgba(0,255,170,0.3)'
+                }}
+              >
+                ⚡ Compile & Run
+              </button>
             </div>
-            <div style={{ fontSize: '12px', color: '#eee', marginTop: '6px', fontWeight: '600', lineHeight: '1.4' }}>
-              {currentTrace.desc}
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <textarea
+                value={customCode}
+                onChange={(e) => setCustomCode(e.target.value)}
+                spellCheck="false"
+                style={{
+                  flex: 1,
+                  background: '#030303',
+                  color: '#00f3ff',
+                  border: 'none',
+                  padding: '16px',
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  resize: 'none',
+                  outline: 'none',
+                  overflowY: 'auto'
+                }}
+              />
+              
+              {/* Test Suite Dashboard */}
+              <div
+                style={{
+                  height: '200px',
+                  borderTop: '1px solid rgba(255,255,255,0.08)',
+                  background: '#090909',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden'
+                }}
+              >
+                <div style={{ padding: '8px 16px', background: '#0d0d0d', fontSize: '10px', fontWeight: 'bold', color: '#888', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  TEST SUITE telemetry
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {testResults.length === 0 ? (
+                    <div style={{ color: '#666', fontSize: '12px', fontStyle: 'italic', textAlign: 'center', marginTop: '40px' }}>
+                      Click "⚡ Compile & Run" to execute test cases.
+                    </div>
+                  ) : (
+                    testResults.map((tr, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifycontent: 'space-between', padding: '8px 12px', background: tr.pass ? 'rgba(0, 255, 170, 0.04)' : 'rgba(255, 77, 79, 0.04)', border: tr.pass ? '1px solid rgba(0, 255, 170, 0.15)' : '1px solid rgba(255, 77, 79, 0.15)', borderRadius: '6px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff' }}>{tr.name}</span>
+                          <span style={{ fontSize: '9px', color: '#888' }}>Expect: {tr.expect} | Got: <span style={{ color: tr.pass ? '#00ffaa' : '#ff4d4f' }}>{tr.got}</span></span>
+                        </div>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: tr.pass ? '#00ffaa' : '#ff4d4f', marginLeft: 'auto' }}>
+                          {tr.pass ? '✓ PASS' : '✗ FAIL'}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* RIGHT COLUMN: Visual Arena & Complexity Dashboard */}
         <div
@@ -863,35 +1136,47 @@ const DsaStudioPage = () => {
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               <div style={{ background: '#030303', padding: '10px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: '9px', color: '#666' }}>Average Time</div>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#ffffff', marginTop: '4px', fontFamily: 'monospace' }}>
-                  {selectedAlgo === 'binary-search' && 'O(log n)'}
-                  {selectedAlgo === 'bubble-sort' && 'O(n²)'}
-                  {selectedAlgo === 'linked-list' && 'O(n)'}
-                  {selectedAlgo === 'gradient-descent' && 'O(E)'}
-                  {selectedAlgo === 'fibonacci' && 'O(2ⁿ)'}
+                <div style={{ fontSize: '9px', color: '#666' }}>Time O(•)</div>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#00f3ff', marginTop: '4px', fontFamily: 'monospace' }}>
+                  {customComplexities ? customComplexities.timeComplexity : (
+                    <>
+                      {selectedAlgo === 'binary-search' && 'O(log n)'}
+                      {selectedAlgo === 'bubble-sort' && 'O(n²)'}
+                      {selectedAlgo === 'linked-list' && 'O(n)'}
+                      {selectedAlgo === 'gradient-descent' && 'O(E)'}
+                      {selectedAlgo === 'fibonacci' && 'O(2ⁿ)'}
+                    </>
+                  )}
                 </div>
               </div>
 
               <div style={{ background: '#030303', padding: '10px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: '9px', color: '#666' }}>Worst Time</div>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#ffffff', marginTop: '4px', fontFamily: 'monospace' }}>
-                  {selectedAlgo === 'binary-search' && 'O(log n)'}
-                  {selectedAlgo === 'bubble-sort' && 'O(n²)'}
-                  {selectedAlgo === 'linked-list' && 'O(n)'}
-                  {selectedAlgo === 'gradient-descent' && 'O(E)'}
-                  {selectedAlgo === 'fibonacci' && 'O(2ⁿ)'}
+                <div style={{ fontSize: '9px', color: '#666' }}>Best Ω(•)</div>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#00ffaa', marginTop: '4px', fontFamily: 'monospace' }}>
+                  {customComplexities ? customComplexities.omegaComplexity : (
+                    <>
+                      {selectedAlgo === 'binary-search' && 'Ω(1)'}
+                      {selectedAlgo === 'bubble-sort' && 'Ω(n)'}
+                      {selectedAlgo === 'linked-list' && 'Ω(1)'}
+                      {selectedAlgo === 'gradient-descent' && 'Ω(1)'}
+                      {selectedAlgo === 'fibonacci' && 'Ω(1)'}
+                    </>
+                  )}
                 </div>
               </div>
 
               <div style={{ background: '#030303', padding: '10px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: '9px', color: '#666' }}>Auxiliary Space</div>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#ffffff', marginTop: '4px', fontFamily: 'monospace' }}>
-                  {selectedAlgo === 'binary-search' && 'O(1)'}
-                  {selectedAlgo === 'bubble-sort' && 'O(1)'}
-                  {selectedAlgo === 'linked-list' && 'O(1)'}
-                  {selectedAlgo === 'gradient-descent' && 'O(1)'}
-                  {selectedAlgo === 'fibonacci' && 'O(n)'}
+                <div style={{ fontSize: '9px', color: '#666' }}>Space S(•)</div>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#ff00c8', marginTop: '4px', fontFamily: 'monospace' }}>
+                  {customComplexities ? customComplexities.spaceComplexity : (
+                    <>
+                      {selectedAlgo === 'binary-search' && 'O(1)'}
+                      {selectedAlgo === 'bubble-sort' && 'O(1)'}
+                      {selectedAlgo === 'linked-list' && 'O(1)'}
+                      {selectedAlgo === 'gradient-descent' && 'O(1)'}
+                      {selectedAlgo === 'fibonacci' && 'O(n)'}
+                    </>
+                  )}
                 </div>
               </div>
             </div>

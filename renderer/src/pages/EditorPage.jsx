@@ -8,6 +8,8 @@ const EditorPage = () => {
   const [isDraggingTab, setIsDraggingTab] = useState(false)
   const [showMinimap, setShowMinimap] = useState(true)
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
+  const [localCursorIndex, setLocalCursorIndex] = useState(0)
+  const [localCursorCoords, setLocalCursorCoords] = useState(null)
 
   // Collaborative Remote Cursors
   const [remoteCursors, setRemoteCursors] = useState({})
@@ -473,6 +475,101 @@ const EditorPage = () => {
     }
   }, [activeTabId])
 
+  const handleAddLineComment = () => {
+    const ta = activePane === 'left' ? leftCodeAreaRef.current : rightCodeAreaRef.current
+    if (!ta) return
+    const text = ta.value
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    const lines = text.split('\n')
+
+    let currentAccum = 0
+    let startLineIdx = -1
+    let endLineIdx = -1
+    for (let i = 0; i < lines.length; i++) {
+      const lineLen = lines[i].length + 1
+      if (startLineIdx === -1 && start >= currentAccum && start <= currentAccum + lines[i].length) {
+        startLineIdx = i
+      }
+      if (endLineIdx === -1 && end >= currentAccum && end <= currentAccum + lines[i].length) {
+        endLineIdx = i
+      }
+      currentAccum += lineLen
+    }
+
+    if (startLineIdx === -1 || endLineIdx === -1) return
+
+    const commentSymbol = (selectedLanguage === 'Python 3' || selectedLanguage === 'MySQL') ? '# ' : '// '
+    const updatedLines = [...lines]
+    for (let i = startLineIdx; i <= endLineIdx; i++) {
+      const line = lines[i]
+      if (line.trim().startsWith('//') || line.trim().startsWith('#')) {
+        updatedLines[i] = line.replace(/^\s*(\/\/|#)\s*/, '')
+      } else {
+        updatedLines[i] = commentSymbol + line
+      }
+    }
+
+    const newCode = updatedLines.join('\n')
+    setCode(newCode)
+    if (activePane === 'left') setLeftCode(newCode)
+    else setRightCode(newCode)
+  }
+
+  const handleCopyLineDown = () => {
+    const ta = activePane === 'left' ? leftCodeAreaRef.current : rightCodeAreaRef.current
+    if (!ta) return
+    const text = ta.value
+    const start = ta.selectionStart
+    const lines = text.split('\n')
+
+    let accum = 0
+    let lineIdx = 0
+    for (let i = 0; i < lines.length; i++) {
+      const len = lines[i].length + 1
+      if (start >= accum && start <= accum + lines[i].length) {
+        lineIdx = i
+        break
+      }
+      accum += len
+    }
+
+    lines.splice(lineIdx + 1, 0, lines[lineIdx])
+    const newCode = lines.join('\n')
+    setCode(newCode)
+    if (activePane === 'left') setLeftCode(newCode)
+    else setRightCode(newCode)
+  }
+
+  const handleMoveLineDown = () => {
+    const ta = activePane === 'left' ? leftCodeAreaRef.current : rightCodeAreaRef.current
+    if (!ta) return
+    const text = ta.value
+    const start = ta.selectionStart
+    const lines = text.split('\n')
+
+    let accum = 0
+    let lineIdx = 0
+    for (let i = 0; i < lines.length; i++) {
+      const len = lines[i].length + 1
+      if (start >= accum && start <= accum + lines[i].length) {
+        lineIdx = i
+        break
+      }
+      accum += len
+    }
+
+    if (lineIdx < lines.length - 1) {
+      const temp = lines[lineIdx]
+      lines[lineIdx] = lines[lineIdx + 1]
+      lines[lineIdx + 1] = temp
+      const newCode = lines.join('\n')
+      setCode(newCode)
+      if (activePane === 'left') setLeftCode(newCode)
+      else setRightCode(newCode)
+    }
+  }
+
   // Toggle terminal listener & keyboard shortcut
   useEffect(() => {
     const handleToggleTerminal = () => {
@@ -480,20 +577,79 @@ const EditorPage = () => {
     }
     
     const handleGlobalKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === '`') {
+      if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+        return // Skip shortcut routing when editing input fields
+      }
+
+      const keys = []
+      if (e.ctrlKey || e.metaKey) keys.push('Ctrl')
+      if (e.altKey) keys.push('Alt')
+      if (e.shiftKey) keys.push('Shift')
+      
+      const mainKey = e.key.length === 1 ? e.key.toUpperCase() : e.key
+      // Normalize arrow keys
+      let normalizedKey = mainKey
+      if (e.key === 'ArrowDown') normalizedKey = 'DownArrow'
+      if (e.key === 'ArrowUp') normalizedKey = 'UpArrow'
+      if (e.key === 'ArrowLeft') normalizedKey = 'LeftArrow'
+      if (e.key === 'ArrowRight') normalizedKey = 'RightArrow'
+
+      if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
+        keys.push(normalizedKey)
+      }
+      
+      const pressedCombo = keys.join(' + ')
+
+      // Load keyboard shortcuts
+      const saved = localStorage.getItem('user_keybindings')
+      const shortcuts = saved ? JSON.parse(saved) : [
+        { command: 'Save Active File', keybinding: 'Ctrl + S' },
+        { command: 'Run Code Script', keybinding: 'Ctrl + F5' },
+        { command: 'Toggle Integrated Terminal', keybinding: 'Ctrl + `' }
+      ]
+
+      const match = shortcuts.find(
+        (s) => s.keybinding.toLowerCase() === pressedCombo.toLowerCase()
+      )
+
+      if (match) {
         e.preventDefault()
-        handleToggleTerminal()
+        e.stopPropagation()
+
+        const cmd = match.command
+        if (cmd === 'Save Active File' || cmd === 'Save All Files') {
+          window.dispatchEvent(new CustomEvent('menu-file-save'))
+        } else if (cmd === 'Run Code Script') {
+          window.dispatchEvent(new CustomEvent('menu-run-code'))
+        } else if (cmd === 'Debug Execution') {
+          window.dispatchEvent(new CustomEvent('menu-debug-code'))
+        } else if (cmd === 'Stop Execution') {
+          window.dispatchEvent(new CustomEvent('menu-stop-code'))
+        } else if (cmd === 'Toggle Integrated Terminal') {
+          handleToggleTerminal()
+        } else if (cmd === 'Split Editor') {
+          window.dispatchEvent(new CustomEvent('menu-split-editor'))
+        } else if (cmd === 'Add Line Comment') {
+          handleAddLineComment()
+        } else if (cmd === 'Copy Line Down') {
+          handleCopyLineDown()
+        } else if (cmd === 'Move Line Down') {
+          handleMoveLineDown()
+        } else if (cmd === 'Toggle Sidebar') {
+          // Fire event to toggle sidebar
+          window.dispatchEvent(new CustomEvent('toggle-sidebar'))
+        }
       }
     }
 
     window.addEventListener('toggle-terminal', handleToggleTerminal)
-    window.addEventListener('keydown', handleGlobalKeyDown)
+    window.addEventListener('keydown', handleGlobalKeyDown, true)
 
     return () => {
       window.removeEventListener('toggle-terminal', handleToggleTerminal)
-      window.removeEventListener('keydown', handleGlobalKeyDown)
+      window.removeEventListener('keydown', handleGlobalKeyDown, true)
     }
-  }, [])
+  }, [code, activeTabId, activePane, selectedLanguage])
 
   // WebRTC Code & Cursor Sync listeners
   useEffect(() => {
@@ -540,13 +696,18 @@ const EditorPage = () => {
   const handleEditorCursorActivity = (e) => {
     setCursorMoveCount((prev) => prev + 1)
     const cursorIndex = e.target.selectionStart
+    setLocalCursorIndex(cursorIndex)
+
+    const coords = getTextareaCaretCoordinates(e.target, cursorIndex)
+    setLocalCursorCoords(coords)
+
     const userStr = localStorage.getItem('user')
     let currentUsername = 'Local Developer'
     if (userStr) {
       try {
         const u = JSON.parse(userStr)
         currentUsername = u.username || u.name || 'Local Developer'
-      } catch (e) {}
+      } catch (err) {}
     }
 
     if (window.api && typeof window.api.sendTcpCursor === 'function') {
@@ -694,11 +855,31 @@ const EditorPage = () => {
     }, 1200)
   }
 
-  const updateCodeWithML = async (newCode) => {
+  const updateCodeWithML = async (newCode, cursorPos = null) => {
     setKeystrokeCount((prev) => prev + 1)
     setCode(newCode)
+    if (activePane === 'left') setLeftCode(newCode)
+    else setRightCode(newCode)
+
+    const activeTextarea = activePane === 'left' ? leftCodeAreaRef.current : rightCodeAreaRef.current
+    const selStart = cursorPos !== null ? cursorPos : (activeTextarea ? activeTextarea.selectionStart : newCode.length)
+    setLocalCursorIndex(selStart)
+    if (activeTextarea) {
+      const coords = getTextareaCaretCoordinates(activeTextarea, selStart)
+      setLocalCursorCoords(coords)
+    }
+
     const lines = newCode.split('\n')
-    const currentLineIdx = lines.length - 1
+    let currentLineIdx = 0
+    let accum = 0
+    for (let i = 0; i < lines.length; i++) {
+      const lineLen = lines[i].length + 1
+      if (selStart >= accum && selStart <= accum + lines[i].length) {
+        currentLineIdx = i
+        break
+      }
+      accum += lineLen
+    }
     const currentLineContent = lines[currentLineIdx] || ''
 
     // Broadcast code updates to TCP local network clients
@@ -798,15 +979,46 @@ const EditorPage = () => {
     // 3. Autocomplete ML ghost text on Tab
     if (e.key === 'Tab' && ghostText) {
       e.preventDefault()
+      const activeTextarea = activePane === 'left' ? leftCodeAreaRef.current : rightCodeAreaRef.current
+      if (!activeTextarea) return
+
+      const selStart = activeTextarea.selectionStart
+      const before = code.slice(0, selStart)
+      const after = code.slice(selStart)
+
+      const newCode = before + ghostText + after
+      setCode(newCode)
+      if (activePane === 'left') setLeftCode(newCode)
+      else setRightCode(newCode)
+
       const lines = code.split('\n')
-      const currentLineContent = lines[lines.length - 1] || ''
+      let currentLineIdx = 0
+      let accum = 0
+      for (let i = 0; i < lines.length; i++) {
+        const lineLen = lines[i].length + 1
+        if (selStart >= accum && selStart <= accum + lines[i].length) {
+          currentLineIdx = i
+          break
+        }
+        accum += lineLen
+      }
+      const currentLineContent = lines[currentLineIdx] || ''
 
       if (window.api && typeof window.api.trainML === 'function') {
         window.api.trainML(currentLineContent, ghostText, selectedLanguage)
       }
 
-      setCode(code + ghostText)
+      const newCursorPos = selStart + ghostText.length
+      setTimeout(() => {
+        activeTextarea.selectionStart = newCursorPos
+        activeTextarea.selectionEnd = newCursorPos
+        setLocalCursorIndex(newCursorPos)
+        const coords = getTextareaCaretCoordinates(activeTextarea, newCursorPos)
+        setLocalCursorCoords(coords)
+      }, 0)
+
       setGhostText('')
+      return
     }
   }
 
@@ -977,130 +1189,58 @@ const EditorPage = () => {
       ? total
       : Math.min(total, Math.ceil((scrollTop + (editorHeight || 600)) / lineHeight) + 25)
 
+    const keywords = new Set([
+      'const', 'let', 'var', 'function', 'class', 'def', 'import', 'export', 'from', 'default',
+      'if', 'else', 'for', 'while', 'do', 'return', 'break', 'continue', 'switch', 'case',
+      'async', 'await', 'try', 'catch', 'finally', 'throw', 'new', 'typeof', 'instanceof',
+      'void', 'delete', 'in', 'of', 'public', 'private', 'protected', 'static', 'extends',
+      'interface', 'implements', 'package', 'enum', 'struct', 'int', 'float', 'double', 'char',
+      'bool', 'boolean', 'string', 'null', 'undefined', 'true', 'false', 'and', 'or',
+      'not', 'elif', 'print', 'lambda', 'with', 'as', 'pass', 'global', 'nonlocal', 'yield'
+    ])
+
+    // Tokenizer regex that handles comments, strings, function calls, identifiers, numbers, punctuation and spaces.
+    const tokenRegex = /(\/\/.*|\/\*[\s\S]*?\*\/|#.*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|[a-zA-Z_]\w*(?=\s*\()|[a-zA-Z_]\w*|\d+(?:\.\d+)?|[{}()[\];,.:=+\-*/%&|^<>!~]|[^\s\w]+|\s+)/g
+
     return lines.map((line, lIdx) => {
       if (!isMinimap && total > 150 && (lIdx < visibleStart || lIdx > visibleEnd)) {
         return <div key={lIdx} style={{ height: '19.5px' }} />
       }
 
-      const tokens = line.split(/(\s+|[{}()[\];,.:=+\-*/%&|^<>!~"'`#])/g)
+      const tokens = line.match(tokenRegex) || [line]
 
       const lineElements = tokens.map((token, tIdx) => {
         if (!token) return null
 
-        if (token.startsWith('"') || token.startsWith("'") || token.startsWith('`')) {
-          // Blue for value strings
-          return (
-            <span key={tIdx} style={{ color: '#569cd6' }}>
-              {token}
-            </span>
-          )
-        }
-        if (token.startsWith('//') || token.startsWith('#')) {
+        // 1. Comments
+        if (token.startsWith('//') || token.startsWith('/*') || token.startsWith('#')) {
           return (
             <span key={tIdx} style={{ color: '#6a9955', fontStyle: 'italic' }}>
               {token}
             </span>
           )
         }
-        const keywords = [
-          'function',
-          'const',
-          'let',
-          'var',
-          'if',
-          'else',
-          'return',
-          'import',
-          'export',
-          'from',
-          'default',
-          'async',
-          'await',
-          'def',
-          'class',
-          'for',
-          'while',
-          'try',
-          'catch',
-          'public',
-          'private',
-          'new',
-          'switch',
-          'case',
-          'typeof',
-          'void'
-        ]
-        if (keywords.includes(token)) {
+
+        // 2. Strings
+        if (token.startsWith('"') || token.startsWith("'") || token.startsWith('`')) {
+          return (
+            <span key={tIdx} style={{ color: '#ce9178' }}>
+              {token}
+            </span>
+          )
+        }
+
+        // 3. Keywords
+        if (keywords.has(token)) {
           return (
             <span key={tIdx} style={{ color: '#569cd6', fontWeight: 'bold' }}>
               {token}
             </span>
           )
         }
-        if (
-          /^\d+$/.test(token) ||
-          token === 'true' ||
-          token === 'false' ||
-          token === 'null' ||
-          token === 'undefined'
-        ) {
-          // Blue for values
-          return (
-            <span key={tIdx} style={{ color: '#569cd6' }}>
-              {token}
-            </span>
-          )
-        }
-        const nextToken = tokens[tIdx + 1] || ''
-        const prevToken = tokens[tIdx - 1] || ''
 
-        // JSON formatting check
-        const isJson = selectedLanguage === 'JSON' || activeTab.toLowerCase().endsWith('.json')
-        if (isJson) {
-          if (token === '{' || token === '}' || token === '[' || token === ']') {
-            return (
-              <span key={tIdx} style={{ color: '#ffffff' }}>
-                {token}
-              </span>
-            )
-          }
-          if (nextToken.trim() === ':') {
-            // JSON keys in white
-            return (
-              <span key={tIdx} style={{ color: '#ffffff' }}>
-                {token}
-              </span>
-            )
-          }
-        }
-
-        // Structural elements in white
-        if (token === '{' || token === '}' || token === '[' || token === ']') {
-          return (
-            <span key={tIdx} style={{ color: '#ffffff' }}>
-              {token}
-            </span>
-          )
-        }
-
-        // Functions in purple
-        if (prevToken === 'function' || prevToken === 'def' || prevToken === 'class') {
-          return (
-            <span key={tIdx} style={{ color: '#c586c0', fontWeight: 'bold' }}>
-              {token}
-            </span>
-          )
-        }
-        if (nextToken.trim() === '(' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
-          return (
-            <span key={tIdx} style={{ color: '#c586c0' }}>
-              {token}
-            </span>
-          )
-        }
-
-        // Objects in dark yellow (when followed by a dot)
-        if (nextToken.trim() === '.' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
+        // 4. Function calls (matches word followed by parenthesis)
+        if (/[a-zA-Z_]\w*(?=\s*\()/.test(token)) {
           return (
             <span key={tIdx} style={{ color: '#dcdcaa' }}>
               {token}
@@ -1108,15 +1248,46 @@ const EditorPage = () => {
           )
         }
 
-        // Variables in red
-        if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(token)) {
+        // 5. Numbers
+        if (/^\d+(?:\.\d+)?$/.test(token)) {
           return (
-            <span key={tIdx} style={{ color: '#f44747' }}>
+            <span key={tIdx} style={{ color: '#b5cea8' }}>
               {token}
             </span>
           )
         }
 
+        // 6. JSON Formatting
+        const isJson = selectedLanguage === 'JSON' || activeTab.toLowerCase().endsWith('.json')
+        if (isJson) {
+          if (token === '{' || token === '}' || token === '[' || token === ']') {
+            return (
+              <span key={tIdx} style={{ color: '#ffd700' }}>
+                {token}
+              </span>
+            )
+          }
+        }
+
+        // 7. Operators and punctuation
+        if (/^[{}()[\];,.:=+\-*/%&|^<>!~]$/.test(token)) {
+          return (
+            <span key={tIdx} style={{ color: '#d4d4d4' }}>
+              {token}
+            </span>
+          )
+        }
+
+        // 8. Variables / General Identifiers
+        if (/^[a-zA-Z_]\w*$/.test(token)) {
+          return (
+            <span key={tIdx} style={{ color: '#9cdcfe' }}>
+              {token}
+            </span>
+          )
+        }
+
+        // 9. Whitespace or others
         return (
           <span key={tIdx} style={{ color: 'var(--text-main)' }}>
             {token}
@@ -1369,6 +1540,9 @@ const EditorPage = () => {
     setTerminalLines(newLines)
 
     try {
+      const savedPaths = localStorage.getItem('user_compiler_paths')
+      const compilerPaths = savedPaths ? JSON.parse(savedPaths) : {}
+
       const port = localStorage.getItem('api-port') || '8000'
       const res = await fetch(`http://localhost:${port}/api/run`, {
         method: 'POST',
@@ -1376,7 +1550,8 @@ const EditorPage = () => {
         body: JSON.stringify({
           lang: selectedLanguage,
           args: cliArgs,
-          code: code
+          code: code,
+          compilerPaths
         })
       })
 
@@ -2387,7 +2562,7 @@ const EditorPage = () => {
                     ref={leftCodeAreaRef}
                     className="code-area"
                     value={leftCode}
-                    onChange={(e) => updateCodeWithML(e.target.value)}
+                    onChange={(e) => updateCodeWithML(e.target.value, e.target.selectionStart)}
                     onKeyDown={handleEditorKeyDown}
                     onScroll={handleLeftScroll}
                     onClick={(e) => {
@@ -2471,6 +2646,25 @@ const EditorPage = () => {
                       </div>
                     )
                   })}
+
+                  {ghostText && localCursorCoords && activePane === 'left' && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: `${localCursorCoords.left}px`,
+                        top: `${localCursorCoords.top}px`,
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        whiteSpace: 'pre',
+                        lineHeight: '19.5px',
+                        transform: 'translateY(-1px)'
+                      }}
+                    >
+                      <InlineSuggestOverlay ghostText={ghostText} />
+                    </div>
+                  )}
 
                   {isDraggingTab && openTabs.length >= 2 && (
                     <div
@@ -3031,6 +3225,25 @@ const EditorPage = () => {
                       </div>
                     )
                   })}
+
+                  {ghostText && localCursorCoords && activePane === 'right' && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: `${localCursorCoords.left}px`,
+                        top: `${localCursorCoords.top}px`,
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        whiteSpace: 'pre',
+                        lineHeight: '19.5px',
+                        transform: 'translateY(-1px)'
+                      }}
+                    >
+                      <InlineSuggestOverlay ghostText={ghostText} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -24,7 +24,7 @@ const SignupPage = () => {
     setSuccess('')
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Authorization keys do not match')
+      setError('Access keys do not match')
       return
     }
 
@@ -67,21 +67,11 @@ const SignupPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Custom Styles for Keyframes & Animations */}
       <style>{`
         @keyframes cyberPulse {
           0% { box-shadow: 0 0 15px rgba(255, 0, 200, 0.15), inset 0 0 15px rgba(255, 0, 200, 0.08); }
           50% { box-shadow: 0 0 30px rgba(255, 0, 200, 0.35), inset 0 0 30px rgba(255, 0, 200, 0.18); }
           100% { box-shadow: 0 0 15px rgba(255, 0, 200, 0.15), inset 0 0 15px rgba(255, 0, 200, 0.08); }
-        }
-        @keyframes scanline {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
-        }
-        @keyframes floatLogo {
-          0% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-8px) rotate(-2deg); }
-          100% { transform: translateY(0px) rotate(0deg); }
         }
         @keyframes gridFlow {
           0% { background-position: 0 0; }
@@ -89,90 +79,63 @@ const SignupPage = () => {
         }
         .cyber-grid {
           background-image: 
-            linear-gradient(rgba(255, 0, 200, 0.025) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 0, 200, 0.025) 1px, transparent 1px);
+            linear-gradient(rgba(255, 0, 200, 0.015) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 0, 200, 0.015) 1px, transparent 1px);
           background-size: 20px 20px;
           animation: gridFlow 10s linear infinite;
         }
-        .scan-overlay::after {
-          content: " ";
-          display: block;
-          position: absolute;
-          top: 0; left: 0; bottom: 0; right: 0;
-          background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-          z-index: 2;
-          background-size: 100% 2px, 3px 100%;
-          pointer-events: none;
-        }
       `}</style>
 
-      {/* Cyber Grid Background layer */}
+      {/* Cyber Grid Background */}
       <div className="cyber-grid" style={styles.gridLayer} />
 
-      {/* Animated Orbs */}
-      <div className="prism-bg">
-        <div
-          className="prism-orb prism-orb-1"
-          style={{ opacity: 0.25, width: '600px', height: '600px' }}
-        ></div>
-        <div
-          className="prism-orb prism-orb-3"
-          style={{ opacity: 0.22, width: '480px', height: '480px' }}
-        ></div>
-      </div>
-
-      <div className="scan-overlay" style={styles.cardContainer}>
-        {/* Glow Border panel */}
+      <div style={styles.cardContainer}>
+        {/* Glow Border layer */}
         <div style={styles.cardHeaderGlow} />
 
         <div style={styles.card}>
-          {/* Scanline beam animation */}
-          <div style={styles.scannerBeam} />
-
           <div style={styles.header}>
             <div style={styles.logoWrapper}>
-              <img src="Images/compiler_logo.png" alt="Xenithra Logo" style={styles.logoImg} />
+              <span style={{ fontSize: '32px' }}>🛰️</span>
             </div>
-            <h1 style={styles.title}>REGISTER OPERATOR</h1>
-            <p style={styles.subtitle}>Provision new terminal node configuration</p>
+            <h1 style={styles.title}>REGISTER ACCESS NODE</h1>
+            <p style={styles.subtitle}>Configure operator credentials to join network</p>
           </div>
 
           {error && <div style={styles.error}>{error}</div>}
           {success && <div style={styles.success}>{success}</div>}
 
           <form onSubmit={handleSignup} style={styles.form}>
-            <div style={styles.formRow}>
-              <div style={{ ...styles.formGroup, flex: 1 }}>
-                <label style={styles.label}>USERNAME</label>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                  placeholder="choose_username"
-                  disabled={loading || success}
-                />
-              </div>
-
-              <div style={{ ...styles.formGroup, flex: 1.2 }}>
-                <label style={styles.label}>EMAIL ADDRESS</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                  placeholder="name@domain.com"
-                  disabled={loading || success}
-                />
-              </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>OPERATOR USERNAME</label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                style={styles.input}
+                placeholder="operator_name"
+                disabled={loading || !!success}
+              />
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>ACCESS PASS KEY</label>
+              <label style={styles.label}>EMAIL ADDRESS</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                style={styles.input}
+                placeholder="operator@domain.com"
+                disabled={loading || !!success}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>ACCESS KEY PASSWORD</label>
               <div style={styles.passwordWrapper}>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -180,9 +143,9 @@ const SignupPage = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  style={{ ...styles.input, paddingRight: '45px', width: '100%' }}
-                  placeholder="Minimum 6 characters"
-                  disabled={loading || success}
+                  style={{ ...styles.input, paddingRight: '40px', width: '100%' }}
+                  placeholder="••••••••"
+                  disabled={loading || !!success}
                 />
                 <button
                   type="button"
@@ -196,7 +159,7 @@ const SignupPage = () => {
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>CONFIRM ACCESS PASS KEY</label>
+              <label style={styles.label}>CONFIRM ACCESS KEY</label>
               <div style={styles.passwordWrapper}>
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -204,9 +167,9 @@ const SignupPage = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  style={{ ...styles.input, paddingRight: '45px', width: '100%' }}
-                  placeholder="Re-enter pass key"
-                  disabled={loading || success}
+                  style={{ ...styles.input, paddingRight: '40px', width: '100%' }}
+                  placeholder="••••••••"
+                  disabled={loading || !!success}
                 />
                 <button
                   type="button"
@@ -221,87 +184,16 @@ const SignupPage = () => {
 
             <button
               type="submit"
-              disabled={loading || success}
-              style={{
-                ...styles.button,
-                ...(loading ? styles.buttonLoading : {}),
-                ...(success ? styles.buttonSuccess : {})
-              }}
+              disabled={loading || !!success}
+              style={styles.button}
             >
-              {loading
-                ? 'PROVISIONING SYSTEM ACCESS...'
-                : success
-                  ? 'NODE ONLINE'
-                  : 'REGISTER ACCESS NODE'}
+              {loading ? 'REGISTERING ACCESS NODE...' : success ? 'NODE REGISTERED' : 'REGISTER ACCESS NODE'}
             </button>
           </form>
-          {/* Social Sign-in Options */}
-          <div style={styles.dividerContainer}>
-            <div style={styles.dividerLine} />
-            <span style={styles.dividerText}>SECURE SOCIAL FEDERATION</span>
-            <div style={styles.dividerLine} />
-          </div>
-
-          <div style={styles.socialGroup}>
-            <button
-              type="button"
-              onClick={() => {
-                const googleUser = {
-                  name: 'Google Developer',
-                  email: 'dev@gmail.com',
-                  token: 'google_oauth_token_' + Date.now()
-                }
-                localStorage.setItem('user', JSON.stringify(googleUser))
-                setSuccess(true)
-                setTimeout(() => {
-                  window.location.href = '/#/'
-                }, 600)
-              }}
-              style={{
-                ...styles.socialBtn,
-                background: '#db4437',
-                color: '#fff',
-                border: '1px solid #c53c2f',
-                cursor: 'pointer'
-              }}
-            >
-              <i className="bx bxl-google" style={{ marginRight: '8px', fontSize: '15px' }}></i>
-              Continue with Google
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const githubUser = {
-                  name: 'GitHub Developer',
-                  email: 'dev@github.com',
-                  token: 'github_oauth_token_' + Date.now()
-                }
-                localStorage.setItem('user', JSON.stringify(githubUser))
-                setSuccess(true)
-                setTimeout(() => {
-                  window.location.href = '/#/'
-                }, 600)
-              }}
-              style={{
-                ...styles.socialBtn,
-                background: '#24292e',
-                color: '#fff',
-                border: '1px solid #1c2125',
-                cursor: 'pointer'
-              }}
-            >
-              <i className="bx bxl-github" style={{ marginRight: '8px', fontSize: '15px' }}></i>
-              Continue with GitHub
-            </button>
-          </div>
 
           <div style={styles.links}>
             <a href="#/Account/login" style={styles.link}>
-              [ Already authorized? Access credentials login ]
-            </a>
-            <br />
-            <a href="#/" style={styles.backLink}>
-              ← Return to Terminal IDE
+              [ Already have credentials? Authorize secure session ]
             </a>
           </div>
         </div>
@@ -317,10 +209,11 @@ const styles = {
     justifyContent: 'center',
     minHeight: '100vh',
     width: '100vw',
-    background: '#020308',
+    background: '#04020a',
     padding: '20px',
     position: 'relative',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    fontFamily: "'Inter', sans-serif"
   },
   gridLayer: {
     position: 'absolute',
@@ -332,115 +225,79 @@ const styles = {
     position: 'relative',
     zIndex: 10,
     width: '100%',
-    maxWidth: '480px'
+    maxWidth: '380px'
   },
   cardHeaderGlow: {
     position: 'absolute',
-    inset: '-2px',
-    background: 'linear-gradient(135deg, #ff00c8 0%, #00e5ff 100%)',
-    borderRadius: '24px',
-    filter: 'blur(8px)',
-    opacity: 0.45,
+    inset: '-1px',
+    background: 'linear-gradient(135deg, #ff00c8 0%, #a78bfa 100%)',
+    borderRadius: '16px',
+    filter: 'blur(6px)',
+    opacity: 0.35,
     zIndex: -1
   },
   card: {
-    background: 'rgba(12, 12, 28, 0.72)',
+    background: 'rgba(18, 8, 20, 0.85)',
     border: '1px solid rgba(255, 0, 200, 0.25)',
-    borderRadius: '22px',
-    padding: '45px 40px 35px 40px',
-    boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(255, 0, 200, 0.05)',
-    backdropFilter: 'blur(35px) saturate(180%)',
+    borderRadius: '16px',
+    padding: '30px 24px',
+    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
+    backdropFilter: 'blur(20px)',
     position: 'relative',
     overflow: 'hidden',
-    animation: 'cyberPulse 6s infinite ease-in-out'
-  },
-  scannerBeam: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    background: 'linear-gradient(90deg, transparent, rgba(255, 0, 200, 0.7), transparent)',
-    boxShadow: '0 0 15px #ff00c8',
-    opacity: 0.3,
-    pointerEvents: 'none',
-    animation: 'scanline 4.5s linear infinite'
+    animation: 'cyberPulse 5s infinite ease-in-out'
   },
   header: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: '28px'
+    textAlign: 'center',
+    marginBottom: '20px'
   },
   logoWrapper: {
-    width: '82px',
-    height: '82px',
-    borderRadius: '20px',
-    background: 'rgba(3, 5, 12, 0.65)',
-    border: '1px solid rgba(255, 0, 200, 0.3)',
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: '20px',
-    boxShadow: '0 0 25px rgba(255, 0, 200, 0.25)',
-    animation: 'floatLogo 4s infinite alternate ease-in-out',
-    overflow: 'hidden'
-  },
-  logoImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
+    width: '56px',
+    height: '56px',
+    background: 'rgba(255, 0, 200, 0.08)',
+    border: '1px solid rgba(255, 0, 200, 0.25)',
+    borderRadius: '12px',
+    marginBottom: '10px'
   },
   title: {
-    color: '#fff',
-    fontSize: '22px',
-    fontWeight: '700',
-    textAlign: 'center',
-    letterSpacing: '0.12em',
-    marginBottom: '8px',
-    background: 'linear-gradient(to right, #ffffff, #ff00c8)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent'
+    fontSize: '16px',
+    fontWeight: '900',
+    color: '#ff00c8',
+    margin: 0,
+    letterSpacing: '0.08em'
   },
   subtitle: {
-    color: '#8fa6c2',
-    fontSize: '12px',
-    textAlign: 'center',
-    margin: 0,
-    opacity: 0.8,
-    letterSpacing: '0.04em'
+    fontSize: '10px',
+    color: '#64748b',
+    margin: '4px 0 0 0'
   },
   error: {
-    background: 'rgba(255, 75, 75, 0.12)',
-    color: '#ff6b6b',
-    padding: '10px 14px',
-    borderRadius: '10px',
-    marginBottom: '20px',
-    fontSize: '13px',
-    border: '1px solid rgba(255, 75, 75, 0.3)',
-    textAlign: 'center',
-    letterSpacing: '0.02em'
+    background: 'rgba(239, 68, 68, 0.1)',
+    border: '1px solid rgba(239, 68, 68, 0.25)',
+    color: '#f87171',
+    fontSize: '11px',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    marginBottom: '14px',
+    textAlign: 'center'
   },
   success: {
-    background: 'rgba(0, 230, 118, 0.12)',
-    color: '#00ff88',
-    padding: '10px 14px',
-    borderRadius: '10px',
-    marginBottom: '20px',
-    fontSize: '13px',
-    border: '1px solid rgba(0, 230, 118, 0.3)',
-    textAlign: 'center',
-    letterSpacing: '0.02em'
+    background: 'rgba(16, 185, 129, 0.1)',
+    border: '1px solid rgba(16, 185, 129, 0.25)',
+    color: '#34d399',
+    fontSize: '11px',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    marginBottom: '14px',
+    textAlign: 'center'
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '18px'
-  },
-  formRow: {
-    display: 'flex',
-    gap: '16px',
-    flexDirection: 'row'
+    gap: '12px'
   },
   formGroup: {
     display: 'flex',
@@ -448,153 +305,57 @@ const styles = {
     gap: '6px'
   },
   label: {
-    color: 'rgba(255, 0, 200, 0.75)',
-    fontSize: '11px',
-    fontWeight: '600',
-    letterSpacing: '0.1em'
+    fontSize: '9px',
+    fontWeight: '800',
+    color: '#8b949e',
+    letterSpacing: '0.04em'
+  },
+  input: {
+    background: 'rgba(0, 0, 0, 0.4)',
+    border: '1px solid rgba(255, 0, 200, 0.25)',
+    color: '#fff',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   passwordWrapper: {
     position: 'relative',
     display: 'flex',
     alignItems: 'center'
   },
-  input: {
-    background: 'rgba(3, 5, 12, 0.85)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '10px',
-    color: '#fff',
-    padding: '11px 15px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    outline: 'none',
-    transition: 'all 0.3s ease',
-    boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5)'
-  },
   toggleBtn: {
     position: 'absolute',
-    right: '15px',
+    right: '10px',
     background: 'transparent',
     border: 'none',
-    color: 'rgba(255, 255, 255, 0.4)',
     cursor: 'pointer',
-    fontSize: '16px',
-    outline: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'color 0.2s',
-    padding: '4px'
+    fontSize: '13px'
   },
   button: {
-    background: 'linear-gradient(135deg, #ff00c8 0%, #00e5ff 100%)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '10px',
+    background: 'linear-gradient(135deg, #ff00c8 0%, #a78bfa 100%)',
+    border: 'none',
     color: '#fff',
-    padding: '14px',
-    fontSize: '14px',
-    fontWeight: '600',
-    letterSpacing: '0.08em',
-    marginTop: '10px',
-    boxShadow: '0 0 20px rgba(255, 0, 200, 0.35)',
+    fontWeight: '700',
+    padding: '10px',
+    borderRadius: '6px',
+    fontSize: '11px',
+    letterSpacing: '0.04em',
     cursor: 'pointer',
-    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-  },
-  buttonLoading: {
-    background: 'rgba(255, 255, 255, 0.08)',
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    color: 'rgba(255, 255, 255, 0.4)',
-    cursor: 'not-allowed',
-    boxShadow: 'none'
-  },
-  buttonSuccess: {
-    background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
-    borderColor: 'rgba(0, 230, 118, 0.4)',
-    boxShadow: '0 0 25px rgba(0, 230, 118, 0.4)'
+    marginTop: '6px',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 12px rgba(255, 0, 200, 0.3)'
   },
   links: {
     textAlign: 'center',
-    marginTop: '24px'
+    marginTop: '16px'
   },
   link: {
-    color: '#00e5ff',
-    textDecoration: 'none',
-    fontSize: '12px',
-    letterSpacing: '0.02em',
-    transition: 'color 0.2s ease',
-    opacity: 0.85
-  },
-  backLink: {
-    color: '#8fa6c2',
-    textDecoration: 'none',
     fontSize: '11px',
-    marginTop: '14px',
-    display: 'inline-block',
-    opacity: 0.65,
-    transition: 'all 0.2s ease'
-  },
-  dividerContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '20px 0 15px 0',
-    gap: '10px'
-  },
-  dividerLine: {
-    flex: 1,
-    height: '1px',
-    background: 'rgba(255, 255, 255, 0.08)'
-  },
-  dividerText: {
-    fontSize: '9px',
-    color: '#8fa6c2',
-    opacity: 0.5,
-    letterSpacing: '0.08em',
-    fontWeight: 'bold'
-  },
-  socialGroup: {
-    display: 'flex',
-    gap: '10px',
-    width: '100%',
-    marginBottom: '15px'
-  },
-  socialBtn: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '8px',
-    padding: '10px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+    color: '#a78bfa',
+    textDecoration: 'none'
   }
-}
-
-// Active styling states (hover/focus emulation inside React)
-if (typeof document !== 'undefined') {
-  const css = `
-    input:focus {
-      border-color: #ff00c8 !important;
-      box-shadow: 0 0 15px rgba(255, 0, 200, 0.35) !important;
-    }
-    a:hover {
-      color: #fff !important;
-      opacity: 1 !important;
-      text-shadow: 0 0 8px rgba(255, 0, 200, 0.5);
-    }
-    button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      filter: brightness(1.1);
-    }
-  `
-  const head = document.head || document.getElementsByTagName('head')[0]
-  const style = document.createElement('style')
-  style.type = 'text/css'
-  style.appendChild(document.createTextNode(css))
-  head.appendChild(style)
 }
 
 export default SignupPage

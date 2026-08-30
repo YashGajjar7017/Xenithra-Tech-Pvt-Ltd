@@ -9,7 +9,7 @@ const LoginPage = () => {
   const [success, setSuccess] = useState(false)
 
   // OAuth Simulated States
-  const [oauthProvider, setOauthProvider] = useState(null) // 'google' | 'github'
+  const [oauthProvider, setOauthProvider] = useState(null) // 'google' | 'github' | 'discord'
   const [oauthEmail, setOauthEmail] = useState('')
 
   const handleLogin = async (e) => {
@@ -34,7 +34,6 @@ const LoginPage = () => {
       const data = await response.json()
       setSuccess(true)
 
-      // Delay transition for success animation satisfaction
       setTimeout(() => {
         localStorage.setItem('user', JSON.stringify(data.user))
         window.location.href = '/#/'
@@ -47,21 +46,11 @@ const LoginPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Custom Styles for Keyframes & Animations */}
       <style>{`
         @keyframes cyberPulse {
           0% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2), inset 0 0 15px rgba(0, 229, 255, 0.1); }
           50% { box-shadow: 0 0 30px rgba(0, 229, 255, 0.4), inset 0 0 30px rgba(0, 229, 255, 0.2); }
           100% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2), inset 0 0 15px rgba(0, 229, 255, 0.1); }
-        }
-        @keyframes scanline {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
-        }
-        @keyframes floatLogo {
-          0% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-8px) rotate(2deg); }
-          100% { transform: translateY(0px) rotate(0deg); }
         }
         @keyframes gridFlow {
           0% { background-position: 0 0; }
@@ -69,82 +58,61 @@ const LoginPage = () => {
         }
         .cyber-grid {
           background-image: 
-            linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
           background-size: 20px 20px;
           animation: gridFlow 10s linear infinite;
         }
-        .scan-overlay::after {
-          content: " ";
-          display: block;
-          position: absolute;
-          top: 0; left: 0; bottom: 0; right: 0;
-          background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-          z-index: 2;
-          background-size: 100% 2px, 3px 100%;
-          pointer-events: none;
+        .social-btn:hover {
+          filter: brightness(1.2);
+          transform: translateY(-1px);
         }
       `}</style>
 
-      {/* Cyber Grid Background layer */}
+      {/* Cyber Grid Background */}
       <div className="cyber-grid" style={styles.gridLayer} />
 
-      {/* Animated Orbs */}
-      <div className="prism-bg">
-        <div
-          className="prism-orb prism-orb-1"
-          style={{ opacity: 0.25, width: '600px', height: '600px' }}
-        ></div>
-        <div
-          className="prism-orb prism-orb-2"
-          style={{ opacity: 0.25, width: '500px', height: '500px' }}
-        ></div>
-      </div>
-
-      <div className="scan-overlay" style={styles.cardContainer}>
-        {/* Glow Border panel */}
+      <div style={styles.cardContainer}>
+        {/* Glow Border layer */}
         <div style={styles.cardHeaderGlow} />
 
         <div style={styles.card}>
-          {/* Scanline beam animation */}
-          <div style={styles.scannerBeam} />
-
           <div style={styles.header}>
             <div style={styles.logoWrapper}>
-              <img src="Images/compiler_logo.png" alt="Xenithra Logo" style={styles.logoImg} />
+              <span style={{ fontSize: '32px' }}>⚡</span>
             </div>
-            <h1 style={styles.title}>XENITHRA CODE STUDIO</h1>
-            <p style={styles.subtitle}>Enter credentials to authorize secure session</p>
+            <h1 style={styles.title}>XENITHRA CORE</h1>
+            <p style={styles.subtitle}>Enter key credentials to access terminal</p>
           </div>
 
           {error && <div style={styles.error}>{error}</div>}
           {success && (
-            <div style={styles.success}>Authentication Success! Mounting workspace...</div>
+            <div style={styles.success}>Authentication Success! Loading modules...</div>
           )}
 
           <form onSubmit={handleLogin} style={styles.form}>
             <div style={styles.formGroup}>
-              <label style={styles.label}>OPERATOR USERNAME / EMAIL</label>
+              <label style={styles.label}>OPERATOR EMAIL</label>
               <input
-                type="text"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 style={styles.input}
-                placeholder="operator_name@domain.com"
+                placeholder="operator@xenithra.tech"
                 disabled={loading || success}
               />
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>AUTHORIZATION ACCESS KEY</label>
+              <label style={styles.label}>SECURITY KEY</label>
               <div style={styles.passwordWrapper}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  style={{ ...styles.input, paddingRight: '45px', width: '100%' }}
+                  style={{ ...styles.input, paddingRight: '40px', width: '100%' }}
                   placeholder="••••••••"
                   disabled={loading || success}
                 />
@@ -162,17 +130,9 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading || success}
-              style={{
-                ...styles.button,
-                ...(loading ? styles.buttonLoading : {}),
-                ...(success ? styles.buttonSuccess : {})
-              }}
+              style={styles.button}
             >
-              {loading
-                ? 'DECRYPTING CORE MODULES...'
-                : success
-                  ? 'ACCESS GRANTED'
-                  : 'INITIALIZE ACCESS'}
+              {loading ? 'DECRYPTING CORE MODULES...' : success ? 'ACCESS GRANTED' : 'INITIALIZE ACCESS'}
             </button>
           </form>
 
@@ -186,47 +146,42 @@ const LoginPage = () => {
           <div style={styles.socialGroup}>
             <button
               type="button"
+              className="social-btn"
               onClick={() => {
                 setOauthProvider('google')
-                setOauthEmail('dev@gmail.com')
+                setOauthEmail('yash@xenithra.tech')
               }}
-              style={{
-                ...styles.socialBtn,
-                background: '#db4437',
-                color: '#fff',
-                border: '1px solid #c53c2f',
-                cursor: 'pointer'
-              }}
+              style={{ ...styles.socialBtn, background: '#db4437', border: '1px solid #c53c2f' }}
             >
-              <i className="bx bxl-google" style={{ marginRight: '8px', fontSize: '15px' }}></i>
-              Continue with Google
+              <i className="bx bxl-google" style={{ fontSize: '14px' }}></i>
             </button>
             <button
               type="button"
+              className="social-btn"
               onClick={() => {
-                const port = localStorage.getItem('api-port') || '8000'
-                window.location.href = `http://localhost:${port}/api/auth/github`
+                setOauthProvider('github')
+                setOauthEmail('yash_gajjar')
               }}
-              style={{
-                ...styles.socialBtn,
-                background: '#24292e',
-                color: '#fff',
-                border: '1px solid #1c2125',
-                cursor: 'pointer'
-              }}
+              style={{ ...styles.socialBtn, background: '#24292e', border: '1px solid #1c2125' }}
             >
-              <i className="bx bxl-github" style={{ marginRight: '8px', fontSize: '15px' }}></i>
-              Continue with GitHub
+              <i className="bx bxl-github" style={{ fontSize: '14px' }}></i>
+            </button>
+            <button
+              type="button"
+              className="social-btn"
+              onClick={() => {
+                setOauthProvider('discord')
+                setOauthEmail('yash_discord')
+              }}
+              style={{ ...styles.socialBtn, background: '#5865F2', border: '1px solid #4752c4' }}
+            >
+              <i className="bx bxl-discord" style={{ fontSize: '14px' }}></i>
             </button>
           </div>
 
           <div style={styles.links}>
             <a href="#/Account/signup" style={styles.link}>
-              [ Need credentials? Register a new access node ]
-            </a>
-            <br />
-            <a href="#/" style={styles.backLink}>
-              ← Return to Terminal IDE
+              [ Register a new access node ]
             </a>
           </div>
         </div>
@@ -238,54 +193,24 @@ const LoginPage = () => {
           <div style={styles.oauthModal}>
             <div style={styles.oauthHeader}>
               <i
-                className={oauthProvider === 'google' ? 'bx bxl-google' : 'bx bxl-github'}
+                className={oauthProvider === 'google' ? 'bx bxl-google' : oauthProvider === 'github' ? 'bx bxl-github' : 'bx bxl-discord'}
                 style={{
-                  fontSize: '24px',
-                  color: oauthProvider === 'google' ? '#db4437' : '#58a6ff',
+                  fontSize: '22px',
+                  color: oauthProvider === 'google' ? '#db4437' : oauthProvider === 'github' ? '#58a6ff' : '#5865F2',
                   marginRight: '10px'
                 }}
               ></i>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>
-                Sign in with {oauthProvider === 'google' ? 'Google' : 'GitHub'}
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>
+                Sign in with {oauthProvider === 'google' ? 'Google' : oauthProvider === 'github' ? 'GitHub' : 'Discord'}
               </h3>
             </div>
             <div style={styles.oauthBody}>
-              <p
-                style={{
-                  fontSize: '11px',
-                  color: 'rgba(255,255,255,0.7)',
-                  marginBottom: '14px',
-                  lineHeight: '1.4'
-                }}
-              >
-                Xenithra IDE requesting access to store user workspace files in your Cloud Drive.
+              <p style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '12px', lineHeight: '1.4' }}>
+                Xenithra IDE requesting authorization to store settings in cloud database.
               </p>
 
-              <div style={styles.oauthScopes}>
-                <div style={styles.scopeItem}>
-                  <i className="bx bx-check-shield" style={{ color: '#00e5ff' }}></i>
-                  <span>Read and write application settings</span>
-                </div>
-                <div style={styles.scopeItem}>
-                  <i className="bx bx-check-shield" style={{ color: '#00e5ff' }}></i>
-                  <span>Create/update files on Cloud Drive</span>
-                </div>
-                <div style={styles.scopeItem}>
-                  <i className="bx bx-check-shield" style={{ color: '#00e5ff' }}></i>
-                  <span>Access basic profile & email address</span>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '16px', textAlign: 'left' }}>
-                <label
-                  style={{
-                    fontSize: '10px',
-                    color: '#00e5ff',
-                    fontWeight: 'bold',
-                    display: 'block',
-                    marginBottom: '6px'
-                  }}
-                >
+              <div style={{ marginTop: '12px', textAlign: 'left' }}>
+                <label style={{ fontSize: '10px', color: '#00e5ff', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>
                   SELECT ACCOUNT TO AUTHORIZE
                 </label>
                 <select
@@ -298,10 +223,15 @@ const LoginPage = () => {
                       <option value="dev@gmail.com">dev@gmail.com (Google Developer)</option>
                       <option value="yash@xenithra.tech">yash@xenithra.tech (Lead dev)</option>
                     </>
-                  ) : (
+                  ) : oauthProvider === 'github' ? (
                     <>
                       <option value="dev@github.com">dev@github.com (GitHub Developer)</option>
                       <option value="yash_gajjar">yash_gajjar (yash@xenithra.tech)</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="dev@discord.gg">dev@discord.gg (Discord Developer)</option>
+                      <option value="yash_discord">yash_discord (yash@xenithra.tech)</option>
                     </>
                   )}
                 </select>
@@ -315,22 +245,13 @@ const LoginPage = () => {
                 onClick={async () => {
                   const user = {
                     username: oauthEmail.split('@')[0],
-                    name: oauthProvider === 'google' ? 'Google Developer' : 'GitHub Developer',
+                    name: oauthProvider === 'google' ? 'Google Developer' : oauthProvider === 'github' ? 'GitHub Developer' : 'Discord Developer',
                     email: oauthEmail,
                     token: `${oauthProvider}_oauth_token_${Date.now()}`
                   }
                   localStorage.setItem('user', JSON.stringify(user))
                   localStorage.setItem('cloud-sync-enabled', 'true')
                   localStorage.setItem('cloud-provider', oauthProvider)
-
-                  // Sync settings to simulated cloud drive
-                  if (window.api && typeof window.api.saveCloudSettings === 'function') {
-                    await window.api.saveCloudSettings(user.email, oauthProvider, {
-                      theme: 'github-dark',
-                      fontSize: 14,
-                      selectedLanguage: 'Node.js'
-                    })
-                  }
 
                   setSuccess(true)
                   setOauthProvider(null)
@@ -340,7 +261,7 @@ const LoginPage = () => {
                 }}
                 style={styles.oauthAuthBtn}
               >
-                Authorize & Connect
+                Authorize
               </button>
             </div>
           </div>
@@ -357,10 +278,11 @@ const styles = {
     justifyContent: 'center',
     minHeight: '100vh',
     width: '100vw',
-    background: '#020308',
+    background: '#04020a',
     padding: '20px',
     position: 'relative',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    fontFamily: "'Inter', sans-serif"
   },
   gridLayer: {
     position: 'absolute',
@@ -372,207 +294,134 @@ const styles = {
     position: 'relative',
     zIndex: 10,
     width: '100%',
-    maxWidth: '450px'
+    maxWidth: '380px'
   },
   cardHeaderGlow: {
     position: 'absolute',
-    inset: '-2px',
-    background: 'linear-gradient(135deg, #00e5ff 0%, #ff00c8 100%)',
-    borderRadius: '24px',
-    filter: 'blur(8px)',
-    opacity: 0.45,
+    inset: '-1px',
+    background: 'linear-gradient(135deg, #00e5ff 0%, #a78bfa 100%)',
+    borderRadius: '16px',
+    filter: 'blur(6px)',
+    opacity: 0.35,
     zIndex: -1
   },
   card: {
-    background: 'rgba(10, 16, 38, 0.72)',
-    border: '1px solid rgba(0, 229, 255, 0.25)',
-    borderRadius: '22px',
-    padding: '45px 40px 35px 40px',
-    boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 229, 255, 0.05)',
-    backdropFilter: 'blur(35px) saturate(180%)',
+    background: 'rgba(12, 8, 24, 0.85)',
+    border: '1px solid rgba(139, 92, 246, 0.25)',
+    borderRadius: '16px',
+    padding: '30px 24px',
+    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
+    backdropFilter: 'blur(20px)',
     position: 'relative',
     overflow: 'hidden',
-    animation: 'cyberPulse 6s infinite ease-in-out'
-  },
-  scannerBeam: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    background: 'linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.7), transparent)',
-    boxShadow: '0 0 15px #00e5ff',
-    opacity: 0.3,
-    pointerEvents: 'none',
-    animation: 'scanline 4.5s linear infinite'
+    animation: 'cyberPulse 5s infinite ease-in-out'
   },
   header: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: '32px'
+    textAlign: 'center',
+    marginBottom: '20px'
   },
   logoWrapper: {
-    width: '82px',
-    height: '82px',
-    borderRadius: '20px',
-    background: 'rgba(3, 5, 12, 0.65)',
-    border: '1px solid rgba(0, 229, 255, 0.3)',
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: '20px',
-    boxShadow: '0 0 25px rgba(0, 229, 255, 0.25)',
-    animation: 'floatLogo 4s infinite alternate ease-in-out',
-    overflow: 'hidden'
-  },
-  logoImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
+    width: '56px',
+    height: '56px',
+    background: 'rgba(139, 92, 246, 0.1)',
+    border: '1px solid rgba(139, 92, 246, 0.3)',
+    borderRadius: '12px',
+    marginBottom: '10px'
   },
   title: {
-    color: '#fff',
-    fontSize: '22px',
-    fontWeight: '700',
-    textAlign: 'center',
-    letterSpacing: '0.12em',
-    marginBottom: '8px',
-    background: 'linear-gradient(to right, #ffffff, #00e5ff)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent'
+    fontSize: '16px',
+    fontWeight: '900',
+    color: '#a78bfa',
+    margin: 0,
+    letterSpacing: '0.08em'
   },
   subtitle: {
-    color: '#8fa6c2',
-    fontSize: '12px',
-    textAlign: 'center',
-    margin: 0,
-    opacity: 0.8,
-    letterSpacing: '0.04em'
+    fontSize: '10px',
+    color: '#64748b',
+    margin: '4px 0 0 0'
   },
   error: {
-    background: 'rgba(255, 75, 75, 0.12)',
-    color: '#ff6b6b',
-    padding: '12px 16px',
-    borderRadius: '10px',
-    marginBottom: '24px',
-    fontSize: '13px',
-    border: '1px solid rgba(255, 75, 75, 0.3)',
-    textAlign: 'center',
-    letterSpacing: '0.02em'
+    background: 'rgba(239, 68, 68, 0.1)',
+    border: '1px solid rgba(239, 68, 68, 0.25)',
+    color: '#f87171',
+    fontSize: '11px',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    marginBottom: '14px',
+    textAlign: 'center'
   },
   success: {
-    background: 'rgba(0, 230, 118, 0.12)',
-    color: '#00ff88',
-    padding: '12px 16px',
-    borderRadius: '10px',
-    marginBottom: '24px',
-    fontSize: '13px',
-    border: '1px solid rgba(0, 230, 118, 0.3)',
-    textAlign: 'center',
-    letterSpacing: '0.02em'
+    background: 'rgba(16, 185, 129, 0.1)',
+    border: '1px solid rgba(16, 185, 129, 0.25)',
+    color: '#34d399',
+    fontSize: '11px',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    marginBottom: '14px',
+    textAlign: 'center'
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '22px'
+    gap: '12px'
   },
   formGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px'
+    gap: '6px'
   },
   label: {
-    color: 'rgba(0, 229, 255, 0.75)',
-    fontSize: '11px',
-    fontWeight: '600',
-    letterSpacing: '0.1em'
+    fontSize: '9px',
+    fontWeight: '800',
+    color: '#8b949e',
+    letterSpacing: '0.04em'
+  },
+  input: {
+    background: 'rgba(0, 0, 0, 0.4)',
+    border: '1px solid rgba(139, 92, 246, 0.25)',
+    color: '#fff',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   passwordWrapper: {
     position: 'relative',
     display: 'flex',
     alignItems: 'center'
   },
-  input: {
-    background: 'rgba(3, 5, 12, 0.85)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '10px',
-    color: '#fff',
-    padding: '13px 18px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    outline: 'none',
-    transition: 'all 0.3s ease',
-    boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5)'
-  },
   toggleBtn: {
     position: 'absolute',
-    right: '15px',
+    right: '10px',
     background: 'transparent',
     border: 'none',
-    color: 'rgba(255, 255, 255, 0.4)',
     cursor: 'pointer',
-    fontSize: '16px',
-    outline: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'color 0.2s',
-    padding: '4px'
+    fontSize: '13px'
   },
   button: {
-    background: 'linear-gradient(135deg, #00e5ff 0%, #7c5cff 100%)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '10px',
+    background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)',
+    border: 'none',
     color: '#fff',
-    padding: '15px',
-    fontSize: '14px',
-    fontWeight: '600',
-    letterSpacing: '0.08em',
-    marginTop: '12px',
-    boxShadow: '0 0 20px rgba(0, 229, 255, 0.35)',
-    cursor: 'pointer',
-    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-  },
-  buttonLoading: {
-    background: 'rgba(255, 255, 255, 0.08)',
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    color: 'rgba(255, 255, 255, 0.4)',
-    cursor: 'not-allowed',
-    boxShadow: 'none'
-  },
-  buttonSuccess: {
-    background: 'linear-gradient(135deg, #00e676 0%, #00b0ff 100%)',
-    borderColor: 'rgba(0, 230, 118, 0.4)',
-    boxShadow: '0 0 25px rgba(0, 230, 118, 0.4)'
-  },
-  links: {
-    textAlign: 'center',
-    marginTop: '28px'
-  },
-  link: {
-    color: '#00e5ff',
-    textDecoration: 'none',
-    fontSize: '12px',
-    letterSpacing: '0.02em',
-    transition: 'color 0.2s ease',
-    opacity: 0.85
-  },
-  backLink: {
-    color: '#8fa6c2',
-    textDecoration: 'none',
+    fontWeight: '700',
+    padding: '10px',
+    borderRadius: '6px',
     fontSize: '11px',
-    marginTop: '16px',
-    display: 'inline-block',
-    opacity: 0.65,
-    transition: 'all 0.2s ease'
+    letterSpacing: '0.04em',
+    cursor: 'pointer',
+    marginTop: '6px',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
   },
   dividerContainer: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    margin: '20px 0 15px 0',
-    gap: '10px'
+    gap: '10px',
+    margin: '18px 0'
   },
   dividerLine: {
     flex: 1,
@@ -580,143 +429,98 @@ const styles = {
     background: 'rgba(255, 255, 255, 0.08)'
   },
   dividerText: {
-    fontSize: '9px',
-    color: '#8fa6c2',
-    opacity: 0.5,
-    letterSpacing: '0.08em',
-    fontWeight: 'bold'
+    fontSize: '8px',
+    color: '#64748b',
+    fontWeight: 'bold',
+    letterSpacing: '0.06em'
   },
   socialGroup: {
     display: 'flex',
-    gap: '10px',
-    width: '100%',
-    marginBottom: '15px'
+    justifyContent: 'center',
+    gap: '12px',
+    marginBottom: '14px'
   },
   socialBtn: {
-    flex: 1,
+    width: '38px',
+    height: '38px',
+    borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: '8px',
-    padding: '10px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+    color: '#fff',
+    transition: 'all 0.2s'
+  },
+  links: {
+    textAlign: 'center',
+    marginTop: '10px'
+  },
+  link: {
+    fontSize: '11px',
+    color: '#a78bfa',
+    textDecoration: 'none'
   },
   oauthOverlay: {
     position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    background: 'rgba(2, 3, 8, 0.85)',
+    inset: 0,
+    background: 'rgba(5, 3, 10, 0.85)',
+    backdropFilter: 'blur(8px)',
     zIndex: 99999,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    backdropFilter: 'blur(10px)'
+    justifyContent: 'center'
   },
   oauthModal: {
-    width: '380px',
-    background: 'rgba(10, 16, 38, 0.95)',
-    border: '1px solid rgba(0, 229, 255, 0.3)',
-    borderRadius: '16px',
+    background: '#0d0b14',
+    border: '1px solid rgba(139, 92, 246, 0.45)',
+    borderRadius: '12px',
     padding: '24px',
-    color: '#fff',
-    boxShadow: '0 10px 40px rgba(0,229,255,0.15)'
+    width: '320px',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.85)'
   },
   oauthHeader: {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: '16px',
-    borderBottom: '1px solid rgba(255,255,255,0.08)',
-    paddingBottom: '12px'
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
+    paddingBottom: '10px',
+    marginBottom: '12px'
   },
   oauthBody: {
-    marginBottom: '20px'
-  },
-  oauthScopes: {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: '8px',
-    padding: '12px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    textAlign: 'left'
-  },
-  scopeItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '11px',
-    color: 'rgba(255,255,255,0.85)'
+    marginBottom: '16px'
   },
   oauthSelect: {
     width: '100%',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: 'rgba(0,0,0,0.3)',
+    border: '1px solid rgba(139, 92, 246, 0.3)',
     color: '#fff',
-    borderRadius: '6px',
-    padding: '8px',
-    fontSize: '12px',
-    outline: 'none',
-    cursor: 'pointer'
+    padding: '6px',
+    borderRadius: '4px',
+    fontSize: '11px',
+    outline: 'none'
   },
   oauthFooter: {
     display: 'flex',
     justifyContent: 'flex-end',
-    gap: '12px'
+    gap: '8px'
   },
   oauthCancelBtn: {
     background: 'transparent',
     border: '1px solid rgba(255,255,255,0.15)',
-    color: 'rgba(255,255,255,0.7)',
-    borderRadius: '6px',
-    padding: '8px 16px',
-    fontSize: '12px',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
+    color: '#94a3b8',
+    padding: '4px 12px',
+    borderRadius: '4px',
+    fontSize: '11px',
+    cursor: 'pointer'
   },
   oauthAuthBtn: {
-    background: '#00e5ff',
-    color: '#020308',
+    background: '#7c3aed',
     border: 'none',
-    borderRadius: '6px',
-    padding: '8px 18px',
-    fontSize: '12px',
+    color: '#fff',
     fontWeight: 'bold',
-    cursor: 'pointer',
-    boxShadow: '0 0 10px rgba(0, 229, 255, 0.3)',
-    transition: 'all 0.2s'
+    padding: '4px 16px',
+    borderRadius: '4px',
+    fontSize: '11px',
+    cursor: 'pointer'
   }
-}
-
-// Active styling states (hover/focus emulation inside React)
-if (typeof document !== 'undefined') {
-  const css = `
-    input:focus {
-      border-color: #00e5ff !important;
-      box-shadow: 0 0 15px rgba(0, 229, 255, 0.35) !important;
-    }
-    a:hover {
-      color: #fff !important;
-      opacity: 1 !important;
-      text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
-    }
-    button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      filter: brightness(1.1);
-    }
-  `
-  const head = document.head || document.getElementsByTagName('head')[0]
-  const style = document.createElement('style')
-  style.type = 'text/css'
-  style.appendChild(document.createTextNode(css))
-  head.appendChild(style)
 }
 
 export default LoginPage

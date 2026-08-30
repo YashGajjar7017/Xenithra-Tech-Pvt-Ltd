@@ -343,9 +343,9 @@ app.post('/api/ai/chat', (req, res) => {
 
 // Code Compilation & Execution Engine
 app.post('/api/run', async (req, res) => {
-  const { lang, code, args } = req.body
+  const { lang, code, args, compilerPaths } = req.body
   try {
-    const result = await runCode(lang, code, args)
+    const result = await runCode(lang, code, args, compilerPaths)
     res.json(result)
   } catch (err) {
     console.error('Run route error:', err)

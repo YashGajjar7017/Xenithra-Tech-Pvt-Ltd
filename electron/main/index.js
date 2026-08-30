@@ -443,6 +443,20 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('dialog:selectExecutable', async (event) => {
+    const mainWindow = BrowserWindow.fromWebContents(event.sender)
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select Compiler/Interpreter Executable',
+      properties: ['openFile'],
+      filters: [
+        { name: 'Executables', extensions: ['exe', 'bat', 'cmd', 'sh', 'bin', 'lnk'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    })
+    if (canceled || !filePaths.length) return null
+    return filePaths[0]
+  })
+
   // File save dialog IPC
   ipcMain.handle('dialog:saveFile', async (event, content, defaultName) => {
     const mainWindow = BrowserWindow.fromWebContents(event.sender)

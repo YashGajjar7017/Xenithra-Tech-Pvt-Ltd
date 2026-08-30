@@ -23,6 +23,7 @@ const api = {
   onToggleTheme: (cb) => ipcRenderer.on('toggle-theme', () => cb()),
   onDeepLinkToken: (cb) => ipcRenderer.on('deep-link-token', (_event, data) => cb(data)),
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
+  selectExecutableDialog: () => ipcRenderer.invoke('dialog:selectExecutable'),
   saveFileDialog: (content, defaultName) =>
     ipcRenderer.invoke('dialog:saveFile', content, defaultName),
   saveFile: (filePath, content) => ipcRenderer.invoke('file:save', filePath, content),

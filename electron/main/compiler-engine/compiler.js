@@ -21,7 +21,7 @@ const ensureTempDir = () => {
  * @param {string} args
  * @returns {Promise<{success: boolean, output: string}>}
  */
-export const runCode = (lang, code, args) => {
+export const runCode = (lang, code, args, compilerPaths = {}) => {
   return new Promise((resolve) => {
     ensureTempDir()
 
@@ -37,48 +37,56 @@ export const runCode = (lang, code, args) => {
     let binaryFile = ''
 
     const escapedArgs = args ? ' ' + args : ''
+    const customExe = compilerPaths ? compilerPaths[lang] : null
 
     switch (lang) {
       case 'Node.js':
         ext = 'js'
         sourceFile = path.join(tempDir, `run_${fileId}.js`)
-        runCmd = `node "${sourceFile}"${escapedArgs}`
+        const nodeExe = customExe ? `"${customExe}"` : 'node'
+        runCmd = `${nodeExe} "${sourceFile}"${escapedArgs}`
         break
       case 'Python 3':
         ext = 'py'
         sourceFile = path.join(tempDir, `run_${fileId}.py`)
-        runCmd = `python "${sourceFile}"${escapedArgs}`
+        const pythonExe = customExe ? `"${customExe}"` : 'python'
+        runCmd = `${pythonExe} "${sourceFile}"${escapedArgs}`
         break
       case 'C (GCC)':
         ext = 'c'
         sourceFile = path.join(tempDir, `run_${fileId}.c`)
         binaryFile = path.join(tempDir, `run_${fileId}.exe`)
-        compileCmd = `gcc "${sourceFile}" -o "${binaryFile}"`
+        const gccExe = customExe ? `"${customExe}"` : 'gcc'
+        compileCmd = `${gccExe} "${sourceFile}" -o "${binaryFile}"`
         runCmd = `"${binaryFile}"${escapedArgs}`
         break
       case 'C++ (G++)':
         ext = 'cpp'
         sourceFile = path.join(tempDir, `run_${fileId}.cpp`)
         binaryFile = path.join(tempDir, `run_${fileId}.exe`)
-        compileCmd = `g++ "${sourceFile}" -o "${binaryFile}"`
+        const gppExe = customExe ? `"${customExe}"` : 'g++'
+        compileCmd = `${gppExe} "${sourceFile}" -o "${binaryFile}"`
         runCmd = `"${binaryFile}"${escapedArgs}`
         break
       case 'Dot Net':
         ext = 'cs'
         sourceFile = path.join(tempDir, `run_${fileId}.cs`)
         binaryFile = path.join(tempDir, `run_${fileId}.exe`)
-        compileCmd = `csc "${sourceFile}" /out:"${binaryFile}"`
+        const cscExe = customExe ? `"${customExe}"` : 'csc'
+        compileCmd = `${cscExe} "${sourceFile}" /out:"${binaryFile}"`
         runCmd = `"${binaryFile}"${escapedArgs}`
         break
       case 'Dart':
         ext = 'dart'
         sourceFile = path.join(tempDir, `run_${fileId}.dart`)
-        runCmd = `dart "${sourceFile}"${escapedArgs}`
+        const dartExe = customExe ? `"${customExe}"` : 'dart'
+        runCmd = `${dartExe} "${sourceFile}"${escapedArgs}`
         break
       case 'PHP':
         ext = 'php'
         sourceFile = path.join(tempDir, `run_${fileId}.php`)
-        runCmd = `php "${sourceFile}"${escapedArgs}`
+        const phpExe = customExe ? `"${customExe}"` : 'php'
+        runCmd = `${phpExe} "${sourceFile}"${escapedArgs}`
         break
       case 'MySQL':
         return resolve({

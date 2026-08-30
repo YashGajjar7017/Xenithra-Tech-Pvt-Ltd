@@ -38,7 +38,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
     },
     {
       command: 'Add Line Comment',
-      keybinding: 'Ctrl + K  Ctrl + C',
+      keybinding: 'Ctrl + /',
       when: 'editorTextFocus && !editorReadonly',
       source: 'System'
     },
@@ -58,13 +58,19 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
     { command: 'Open File', keybinding: 'Ctrl + O', when: 'always', source: 'User' },
     {
       command: 'Run Code Script',
-      keybinding: 'Ctrl + Shift + R',
+      keybinding: 'Ctrl + F5',
       when: 'editorFocus',
       source: 'User'
     },
     {
       command: 'Debug Execution',
-      keybinding: 'Ctrl + Shift + D',
+      keybinding: 'F5',
+      when: 'editorFocus',
+      source: 'User'
+    },
+    {
+      command: 'Stop Execution',
+      keybinding: 'Shift + F5',
       when: 'editorFocus',
       source: 'User'
     },
@@ -78,10 +84,36 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
     { command: 'Command Palette', keybinding: 'Ctrl + Shift + P', when: 'always', source: 'System' }
   ]
 
+  const vscodeShortcuts = [
+    { command: 'Save Active File', keybinding: 'Ctrl + S', when: 'editorFocus', source: 'System' },
+    { command: 'Open File', keybinding: 'Ctrl + O', when: 'always', source: 'System' },
+    { command: 'Save All Files', keybinding: 'Ctrl + K  S', when: 'always', source: 'System' },
+    { command: 'Run Code Script', keybinding: 'Ctrl + F5', when: 'editorFocus', source: 'System' },
+    { command: 'Debug Execution', keybinding: 'F5', when: 'editorFocus', source: 'System' },
+    { command: 'Stop Execution', keybinding: 'Shift + F5', when: 'editorFocus', source: 'System' },
+    { command: 'Toggle Integrated Terminal', keybinding: 'Ctrl + `', when: 'always', source: 'System' },
+    { command: 'Find in Files', keybinding: 'Ctrl + Shift + F', when: 'always', source: 'System' },
+    { command: 'Command Palette', keybinding: 'Ctrl + Shift + P', when: 'always', source: 'System' },
+    { command: 'Add Line Comment', keybinding: 'Ctrl + /', when: 'editorTextFocus', source: 'System' },
+    { command: 'Copy Line Down', keybinding: 'Shift + Alt + DownArrow', when: 'editorTextFocus', source: 'System' },
+    { command: 'Move Line Down', keybinding: 'Alt + DownArrow', when: 'editorTextFocus', source: 'System' },
+    { command: 'Toggle Sidebar', keybinding: 'Ctrl + B', when: 'always', source: 'System' }
+  ]
+
   const [shortcuts, setShortcuts] = useState(() => {
     const saved = localStorage.getItem('user_keybindings')
     return saved ? JSON.parse(saved) : initialShortcuts
   })
+
+  // Sync shortcuts list if loaded from custom reset templates
+  useEffect(() => {
+    const handleSync = () => {
+      const saved = localStorage.getItem('user_keybindings')
+      if (saved) setShortcuts(JSON.parse(saved))
+    }
+    window.addEventListener('keybindings-updated', handleSync)
+    return () => window.removeEventListener('keybindings-updated', handleSync)
+  }, [])
 
   if (!isOpen) return null
 
@@ -123,6 +155,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
     )
     setShortcuts(updated)
     localStorage.setItem('user_keybindings', JSON.stringify(updated))
+    window.dispatchEvent(new CustomEvent('keybindings-updated'))
     setEditingCommand(null)
   }
 
@@ -168,9 +201,31 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
             background: 'rgba(255,255,255,0.02)'
           }}
         >
-          <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '0.04em' }}>
-            KEYBOARD SHORTCUTS
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '0.04em' }}>
+              KEYBOARD SHORTCUTS
+            </span>
+            <button
+              onClick={() => {
+                setShortcuts(vscodeShortcuts)
+                localStorage.setItem('user_keybindings', JSON.stringify(vscodeShortcuts))
+                window.dispatchEvent(new CustomEvent('keybindings-updated'))
+              }}
+              style={{
+                background: 'rgba(0, 255, 170, 0.1)',
+                border: '1px solid rgba(0, 255, 170, 0.3)',
+                color: '#00ffaa',
+                borderRadius: '4px',
+                padding: '4px 10px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Reset to VS Code Defaults
+            </button>
+          </div>
           <button
             onClick={onClose}
             style={{

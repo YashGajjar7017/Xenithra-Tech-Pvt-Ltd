@@ -17,6 +17,7 @@ import PreferencesPage from './pages/PreferencesPage'
 import OcrPage from './pages/OcrPage'
 import AiColabStudioPage from './pages/AiColabStudioPage'
 import DsaStudioPage from './pages/DsaStudioPage'
+import CodeArenaPage from './pages/CodeArenaPage'
 import FooterEnvSelector from './components/ui/FooterEnvSelector'
 
 const MainApp = () => {
@@ -181,6 +182,21 @@ const MainApp = () => {
           }
         />
         <Route
+          path="/code-arena"
+          element={
+            <MainLayout
+              theme={theme}
+              setTheme={setTheme}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
+              sidebarWidth={sidebarWidth}
+              setSidebarWidth={setSidebarWidth}
+            >
+              <CodeArenaPage />
+            </MainLayout>
+          }
+        />
+        <Route
           path="/*"
           element={
             <MainLayout
@@ -211,7 +227,7 @@ const MainLayout = ({
   setSidebarWidth
 }) => {
   const location = useLocation()
-  const isAiColab = location.pathname === '/ai-colab' || location.pathname === '/dsa-studio'
+  const isAiColab = location.pathname === '/ai-colab' || location.pathname === '/dsa-studio' || location.pathname === '/code-arena'
 
   const defaultOrder = [
     'explorer',
@@ -220,6 +236,7 @@ const MainLayout = ({
     'debug',
     'aicolab',
     'dsastudio',
+    'codearena',
     'extensions',
     'docker',
     'firebase',
@@ -519,6 +536,30 @@ const MainLayout = ({
                       ),
                       onClick: () => {
                         window.location.hash = '#/dsa-studio'
+                      }
+                    }
+                  case 'codearena':
+                    return {
+                      title: 'Code Arena 1v1 PvP',
+                      element: (
+                        <>
+                          <i className="bx bx-trophy" style={{ fontSize: '20px', color: '#a78bfa' }}></i>
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '6px',
+                              right: '6px',
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: '#a78bfa',
+                              boxShadow: '0 0 6px #a78bfa'
+                            }}
+                          />
+                        </>
+                      ),
+                      onClick: () => {
+                        window.location.hash = '#/code-arena'
                       }
                     }
                   case 'extensions':
