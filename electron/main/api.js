@@ -10,6 +10,11 @@ import { exec } from 'child_process'
 import fs from 'fs'
 import { signUpUser, authenticateUser } from './Services/db.service.js'
 import { runCode, packageCode } from './code-runner/runner.js'
+import {
+  compileCToDll,
+  getSessionDownloadFile,
+  cleanupSession
+} from './Services/dllCompiler.service.js'
 
 dotenv.config()
 
@@ -383,6 +388,45 @@ app.post('/api/package', async (req, res) => {
       .status(500)
       .json({ success: false, output: `Internal packaging engine error: ${err.message}` })
   }
+})
+
+// MinGW C to DLL Compilation Endpoint
+app.post('/api/dll/compile', async (req, res) => {
+  const { code, filename, flags, compilerPath } = req.body
+  try {
+    const result = await compileCToDll({ code, filename, flags, compilerPath })
+    res.json(result)
+  } catch (err) {
+    console.error('[main/api] DLL compilation error:', err)
+    res.status(500).json({
+      success: false,
+      stderr: `Internal DLL compilation error: ${err.message}`,
+      stdout: '',
+      symbols: []
+    })
+  }
+})
+
+// Download Generated DLL / LIB file
+app.get('/api/dll/download/:sessionId/:fileType', (req, res) => {
+  const { sessionId, fileType } = req.params
+  const fileInfo = getSessionDownloadFile(sessionId, fileType)
+  if (!fileInfo) {
+    return res.status(404).json({ error: 'Requested binary file not found or expired.' })
+  }
+
+  res.download(fileInfo.filePath, fileInfo.filename, (err) => {
+    if (err) {
+      console.error('[main/api] DLL download error:', err.message)
+    }
+  })
+})
+
+// Clean up session files manually
+app.post('/api/dll/cleanup/:sessionId', (req, res) => {
+  const { sessionId } = req.params
+  cleanupSession(sessionId)
+  res.json({ success: true, message: 'Session workspace cleaned up.' })
 })
 
 // WebRTC Signaling Session Map

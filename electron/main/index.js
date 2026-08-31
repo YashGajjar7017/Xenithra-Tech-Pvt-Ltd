@@ -91,6 +91,11 @@ import {
   saveCloudSettings,
   loadCloudSettings
 } from './Services/cloudStorage.service.js'
+import {
+  compileCToDll,
+  getSessionDownloadFile,
+  cleanupSession
+} from './Services/dllCompiler.service.js'
 
 const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
 
@@ -573,6 +578,49 @@ app.whenReady().then(() => {
     } catch (err) {
       console.error('Error saving extensions XML:', err)
       return false
+    }
+  })
+
+  // DLL Compiler IPC Handlers
+  ipcMain.handle('dll:compile', async (_event, payload) => {
+    try {
+      return await compileCToDll(payload || {})
+    } catch (err) {
+      console.error('[ipc dll:compile error]', err)
+      return {
+        success: false,
+        stderr: err.message,
+        stdout: '',
+        symbols: []
+      }
+    }
+  })
+
+  ipcMain.handle('dll:saveBinaryDialog', async (event, sessionId, fileType, defaultName) => {
+    const fileInfo = getSessionDownloadFile(sessionId, fileType)
+    if (!fileInfo || !fs.existsSync(fileInfo.filePath)) {
+      return { success: false, message: 'Source binary not found or expired.' }
+    }
+
+    const mainWindow = BrowserWindow.fromWebContents(event.sender)
+    const ext = fileType === 'dll' ? 'dll' : fileType === 'lib' ? 'lib' : 'c'
+    const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
+      title: `Save Compiled .${ext.toUpperCase()} File`,
+      defaultPath: defaultName || fileInfo.filename,
+      filters: [
+        { name: `${ext.toUpperCase()} File (*.${ext})`, extensions: [ext] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    })
+
+    if (canceled || !filePath) return { success: false, canceled: true }
+
+    try {
+      await fs.promises.copyFile(fileInfo.filePath, filePath)
+      return { success: true, filePath, filename: path.basename(filePath) }
+    } catch (err) {
+      console.error('[dll:saveBinaryDialog error]', err)
+      return { success: false, message: err.message }
     }
   })
 

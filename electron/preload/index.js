@@ -167,7 +167,12 @@ const api = {
   getXamppStatus: () => ipcRenderer.invoke('xampp:status'),
   checkXamppInstalled: () => ipcRenderer.invoke('xampp:check-installed'),
   startXamppService: (service) => ipcRenderer.invoke('xampp:start', service),
-  stopXamppService: (service) => ipcRenderer.invoke('xampp:stop', service)
+  stopXamppService: (service) => ipcRenderer.invoke('xampp:stop', service),
+
+  // MinGW C to DLL API
+  compileDll: (payload) => ipcRenderer.invoke('dll:compile', payload),
+  saveDllBinaryDialog: (sessionId, fileType, defaultName) =>
+    ipcRenderer.invoke('dll:saveBinaryDialog', sessionId, fileType, defaultName)
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).

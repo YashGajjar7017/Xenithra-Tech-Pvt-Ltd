@@ -18,6 +18,7 @@ import OcrPage from './pages/OcrPage'
 import AiColabStudioPage from './pages/AiColabStudioPage'
 import DsaStudioPage from './pages/DsaStudioPage'
 import CodeArenaPage from './pages/CodeArenaPage'
+import CDllStudioPage from './pages/CDllStudioPage'
 import FooterEnvSelector from './components/ui/FooterEnvSelector'
 
 const MainApp = () => {
@@ -197,6 +198,21 @@ const MainApp = () => {
           }
         />
         <Route
+          path="/c-dll-studio"
+          element={
+            <MainLayout
+              theme={theme}
+              setTheme={setTheme}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
+              sidebarWidth={sidebarWidth}
+              setSidebarWidth={setSidebarWidth}
+            >
+              <CDllStudioPage />
+            </MainLayout>
+          }
+        />
+        <Route
           path="/*"
           element={
             <MainLayout
@@ -227,13 +243,18 @@ const MainLayout = ({
   setSidebarWidth
 }) => {
   const location = useLocation()
-  const isAiColab = location.pathname === '/ai-colab' || location.pathname === '/dsa-studio' || location.pathname === '/code-arena'
+  const isAiColab =
+    location.pathname === '/ai-colab' ||
+    location.pathname === '/dsa-studio' ||
+    location.pathname === '/code-arena' ||
+    location.pathname === '/c-dll-studio'
 
   const defaultOrder = [
     'explorer',
     'search',
     'git',
     'debug',
+    'cdllstudio',
     'aicolab',
     'dsastudio',
     'codearena',
@@ -560,6 +581,30 @@ const MainLayout = ({
                       ),
                       onClick: () => {
                         window.location.hash = '#/code-arena'
+                      }
+                    }
+                  case 'cdllstudio':
+                    return {
+                      title: 'C to DLL MinGW Studio',
+                      element: (
+                        <>
+                          <i className="bx bx-cog" style={{ fontSize: '20px', color: '#00f3ff' }}></i>
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '6px',
+                              right: '6px',
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: '#00f3ff',
+                              boxShadow: '0 0 6px #00f3ff'
+                            }}
+                          />
+                        </>
+                      ),
+                      onClick: () => {
+                        window.location.hash = '#/c-dll-studio'
                       }
                     }
                   case 'extensions':

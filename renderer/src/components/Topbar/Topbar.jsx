@@ -796,7 +796,8 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
               >
                 <span>System Control Center</span>
               </button>
-              <button
+              {/* Commented out AI Studio & DSA Studio as requested */}
+              {/* <button
                 onClick={(e) => {
                   e.stopPropagation()
                   setActiveMenu(null)
@@ -813,6 +814,15 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
                 }}
               >
                 <span>DSA Play & Compile Studio</span>
+              </button> */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveMenu(null)
+                  window.location.hash = '#/c-dll-studio'
+                }}
+              >
+                <span>⚡ C to DLL Compiler Studio</span>
               </button>
             </div>
           )}
@@ -1085,7 +1095,8 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
           </div>
         )}
 
-        {/* AI Colab Studio Quick Launcher */}
+        {/* AI Colab & DSA Studio Quick Launchers (Commented out) */}
+        {/*
         <button
           onClick={openAiColabStudio}
           title="Open AI Colab Studio"
@@ -1120,7 +1131,6 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
           <span>AI Colab</span>
         </button>
 
-        {/* DSA Studio Quick Launcher */}
         <button
           onClick={() => { window.location.hash = '#/dsa-studio' }}
           title="Open Real-time DSA Play & Step Compile Studio"
@@ -1153,6 +1163,42 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
         >
           <span style={{ fontSize: '11px' }}>🧩</span>
           <span>DSA Studio</span>
+        </button>
+        */}
+
+        {/* C to DLL Studio Quick Launcher */}
+        <button
+          onClick={() => { window.location.hash = '#/c-dll-studio' }}
+          title="Open C to DLL MinGW Compiler Studio"
+          style={{
+            background: 'linear-gradient(135deg, rgba(0, 243, 255, 0.15) 0%, rgba(168, 85, 247, 0.2) 100%)',
+            border: '1px solid rgba(0, 243, 255, 0.35)',
+            borderRadius: '5px',
+            color: '#00f3ff',
+            fontSize: '11px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            padding: '3px 9px',
+            height: '25px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            boxShadow: '0 0 10px rgba(0, 243, 255, 0.15)',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            marginRight: '6px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 243, 255, 0.45)'
+            e.currentTarget.style.borderColor = '#00f3ff'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 243, 255, 0.15)'
+            e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.35)'
+          }}
+        >
+          <span style={{ fontSize: '11px' }}>⚙️</span>
+          <span>C &rarr; DLL Studio</span>
         </button>
 
         {/* User Accounts Popover Dropdown */}
