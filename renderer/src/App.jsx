@@ -197,21 +197,7 @@ const MainApp = () => {
             </MainLayout>
           }
         />
-        <Route
-          path="/c-dll-studio"
-          element={
-            <MainLayout
-              theme={theme}
-              setTheme={setTheme}
-              sidebarCollapsed={sidebarCollapsed}
-              setSidebarCollapsed={setSidebarCollapsed}
-              sidebarWidth={sidebarWidth}
-              setSidebarWidth={setSidebarWidth}
-            >
-              <CDllStudioPage />
-            </MainLayout>
-          }
-        />
+        <Route path="/c-dll-studio" element={<CDllStudioPage />} />
         <Route
           path="/*"
           element={
@@ -680,6 +666,18 @@ const MainLayout = ({
               )
             })}
             <div style={{ flex: 1 }}></div>
+
+            {/* Visual Divider distinguishing Settings from Main Activities */}
+            <div
+              style={{
+                width: '32px',
+                height: '1px',
+                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent)',
+                margin: '6px auto',
+                boxShadow: '0 0 6px rgba(0, 243, 255, 0.2)'
+              }}
+            />
+
             <div
               className={`activity-icon ${activeActivity === 'settings' ? 'active' : ''}`}
               onClick={() => setIsSettingsOpen(true)}

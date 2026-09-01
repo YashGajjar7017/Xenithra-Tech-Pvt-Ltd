@@ -226,6 +226,30 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
   }
 }
 
+// Live extract functions tagged with __declspec(dllexport)
+const extractLiveSymbols = (srcCode) => {
+  if (!srcCode) return []
+  const results = []
+  const lines = srcCode.split('\n')
+  const regex = /__declspec\s*\(\s*dllexport\s*\)\s+([a-zA-Z0-9_*]+(?:\s+[a-zA-Z0-9_*]+)*)\s+([a-zA-Z0-9_]+)\s*\(([^)]*)\)/g
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    let match
+    regex.lastIndex = 0
+    while ((match = regex.exec(line)) !== null) {
+      results.push({
+        returnType: match[1].trim(),
+        name: match[2].trim(),
+        params: match[3].trim(),
+        signature: `${match[1].trim()} ${match[2].trim()}(${match[3].trim()})`,
+        line: i + 1
+      })
+    }
+  }
+  return results
+}
+
 const CDllStudioPage = () => {
   const [selectedTemplate, setSelectedTemplate] = useState('standard')
   const [filename, setFilename] = useState('math_library')
@@ -238,7 +262,7 @@ const CDllStudioPage = () => {
   const [compileStatus, setCompileStatus] = useState('idle') // 'idle' | 'running' | 'success' | 'error'
   const [logs, setLogs] = useState([
     { type: 'info', text: '⚡ MinGW GCC C-to-DLL Compiler Studio Ready.' },
-    { type: 'info', text: 'Select a starter template or write C code with __declspec(dllexport), then click "Compile to DLL".' }
+    { type: 'info', text: 'Write C code with __declspec(dllexport) functions, then click "Compile to DLL" or press Ctrl+Enter.' }
   ])
   const [compilationResult, setCompilationResult] = useState(null)
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 })
@@ -249,7 +273,7 @@ const CDllStudioPage = () => {
   const terminalEndRef = useRef(null)
   const fileInputRef = useRef(null)
 
-  // Window Controls for Frameless Electron Window
+  // Frameless Window Controls
   const handleMinimizeWindow = () => {
     if (window.api && typeof window.api.minimizeWindow === 'function') {
       window.api.minimizeWindow()
@@ -580,7 +604,7 @@ const CDllStudioPage = () => {
         .join('\n')
 
       setCode(formatted)
-      setLogs((prev) => [...prev, { type: 'info', text: 'Formatted C source code.' }])
+      setLogs((prev) => [...prev, { type: 'info', text: 'Formatted C source code structure.' }])
     } catch (err) {
       console.warn('Formatting error:', err)
     }
@@ -687,6 +711,10 @@ const CDllStudioPage = () => {
           {
             type: 'error',
             text: result.stderr || result.error || 'MinGW GCC exited with error.'
+          },
+          {
+            type: 'warning',
+            text: '💡 Tip: Ensure MinGW GCC is installed (e.g. C:\\MinGW\\bin or MSYS2) and available in your Windows PATH.'
           }
         ])
       }
@@ -749,13 +777,17 @@ const CDllStudioPage = () => {
 
   const lineCount = Math.max(1, code.split('\n').length)
 
+  // Live extracted symbols + compilation symbols fallback
+  const liveSymbols = extractLiveSymbols(code)
+  const displaySymbols =
+    compilationResult && compilationResult.symbols && compilationResult.symbols.length > 0
+      ? compilationResult.symbols
+      : liveSymbols
+
   // Language Usage Snippets generator
   const getUsageSnippets = () => {
     const base = compilationResult ? compilationResult.baseName : filename || 'library'
-    const symbols = compilationResult && compilationResult.symbols && compilationResult.symbols.length > 0
-      ? compilationResult.symbols
-      : [{ name: 'Add', returnType: 'int', params: 'int a, int b' }]
-    const firstFunc = symbols[0]
+    const firstFunc = displaySymbols[0] || { name: 'Add', returnType: 'int', params: 'int a, int b' }
 
     return {
       python: `# Python Integration with ctypes
@@ -846,7 +878,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   const generateHeaderContent = () => {
     const base = compilationResult ? compilationResult.baseName : filename || 'library'
     const upperBase = base.toUpperCase().replace(/[^A-Z0-9]/g, '_')
-    const symbols = compilationResult && compilationResult.symbols ? compilationResult.symbols : []
+    const symbols = displaySymbols
 
     let h = `/*
  * Auto-Generated C Header for ${base}.dll
@@ -908,7 +940,7 @@ extern "C" {
           </button>
           <div className="cdll-title-wrap">
             <div className="cdll-title-row">
-              <i className="bx bx-chip" style={{ fontSize: '17px', color: '#00f3ff' }}></i>
+              <i className="bx bx-chip" style={{ fontSize: '18px', color: '#00f3ff' }}></i>
               <span className="cdll-title-main">C &rarr; DLL MinGW Studio</span>
               <span className="cdll-badge-mingw">GCC 6.3 MinGW</span>
             </div>
@@ -1114,7 +1146,7 @@ extern "C" {
               <span>{code.length} characters</span>
             </div>
             <div>
-              <span style={{ color: '#00f3ff', fontWeight: 600 }}>__declspec(dllexport)</span> Enabled &bull; MinGW 64-bit GCC
+              <span style={{ color: '#00f3ff', fontWeight: 600 }}>__declspec(dllexport)</span> {displaySymbols.length} Exports Detected &bull; MinGW 64-bit GCC
             </div>
           </div>
         </div>
@@ -1134,7 +1166,7 @@ extern "C" {
                 onClick={() => setActiveTab('symbols')}
               >
                 <span>🔍 Exported Symbols</span>
-                {compilationResult && compilationResult.symbols && (
+                {displaySymbols.length > 0 && (
                   <span
                     style={{
                       background: 'rgba(0, 243, 255, 0.15)',
@@ -1144,7 +1176,7 @@ extern "C" {
                       fontSize: '10px'
                     }}
                   >
-                    {compilationResult.symbols.length}
+                    {displaySymbols.length}
                   </span>
                 )}
               </button>
@@ -1250,7 +1282,7 @@ extern "C" {
                       onClick={() => setActiveTab('symbols')}
                       style={{ padding: '4px 10px', fontSize: '11px' }}
                     >
-                      🔍 Inspect Symbols
+                      🔍 Inspect Symbols ({displaySymbols.length})
                     </button>
                   </div>
                 </div>
@@ -1269,7 +1301,7 @@ extern "C" {
                 </div>
                 <button
                   className="cdll-tool-btn"
-                  style={{ background: 'rgba(0,243,255,0.1)', color: '#00f3ff', padding: '4px 8px' }}
+                  style={{ background: 'rgba(0,243,255,0.12)', color: '#00f3ff', padding: '4px 10px', fontWeight: '600' }}
                   onClick={() => {
                     navigator.clipboard.writeText(generateHeaderContent())
                     alert('Generated C Header (.h) copied to clipboard!')
@@ -1280,7 +1312,7 @@ extern "C" {
                 </button>
               </div>
 
-              {compilationResult && compilationResult.symbols && compilationResult.symbols.length > 0 ? (
+              {displaySymbols.length > 0 ? (
                 <table className="cdll-symbols-table">
                   <thead>
                     <tr>
@@ -1291,7 +1323,7 @@ extern "C" {
                     </tr>
                   </thead>
                   <tbody>
-                    {compilationResult.symbols.map((sym, idx) => (
+                    {displaySymbols.map((sym, idx) => (
                       <tr key={idx}>
                         <td className="cdll-symbol-name">{sym.name}</td>
                         <td style={{ color: '#79c0ff' }}>{sym.returnType}</td>
