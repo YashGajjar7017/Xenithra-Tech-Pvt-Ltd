@@ -6,25 +6,37 @@
 .cdll-studio-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100vw;
+  height: 100vh !important;
+  width: 100vw !important;
+  max-height: 100vh !important;
+  max-width: 100vw !important;
+  min-height: 100vh;
+  min-width: 100vw;
   background: radial-gradient(circle at 10% 10%, #0d1322 0%, #050811 50%, #020307 100%);
   color: #e2e8f0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  overflow: hidden;
-  position: relative;
+  overflow: hidden !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 /* Studio Ambient Light Effects */
 .cdll-ambient-glow {
   position: absolute;
-  width: 500px;
-  height: 500px;
+  width: 450px;
+  height: 450px;
   border-radius: 50%;
   filter: blur(140px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.15;
+  opacity: 0.12;
 }
 .cdll-glow-1 {
   top: -100px;
@@ -45,39 +57,55 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 18px;
-  background: rgba(10, 16, 30, 0.85);
-  border-bottom: 1px solid rgba(0, 243, 255, 0.18);
+  padding: 0 12px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  background: rgba(10, 16, 30, 0.96);
+  border-bottom: 1px solid rgba(0, 243, 255, 0.2);
   backdrop-filter: blur(20px);
-  gap: 16px;
-  z-index: 10;
+  gap: 10px;
+  z-index: 100;
   flex-shrink: 0;
+  box-sizing: border-box;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.cdll-top-header button,
+.cdll-top-header input,
+.cdll-top-header select,
+.cdll-window-controls {
+  -webkit-app-region: no-drag;
 }
 
 .cdll-brand-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .cdll-exit-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #94a3b8;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  outline: none;
 }
 .cdll-exit-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.35);
   transform: translateX(-2px);
 }
 
@@ -93,44 +121,48 @@
 }
 
 .cdll-title-main {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   background: linear-gradient(135deg, #00f3ff 0%, #d8b4fe 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
 .cdll-badge-mingw {
   background: rgba(0, 243, 255, 0.12);
   border: 1px solid rgba(0, 243, 255, 0.35);
   color: #00f3ff;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .cdll-header-center-tools {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex: 1;
-  max-width: 750px;
+  max-width: 680px;
   justify-content: center;
+  min-width: 0;
 }
 
 /* Filename Input Component */
 .cdll-filename-box {
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
   padding: 2px 8px;
   transition: all 0.2s ease;
+  height: 28px;
 }
 .cdll-filename-box:focus-within {
   border-color: #00f3ff;
@@ -142,16 +174,16 @@
   border: none;
   color: #f1f5f9;
   font-family: 'JetBrains Mono', Consolas, monospace;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   outline: none;
-  width: 130px;
+  width: 105px;
 }
 
 .cdll-filename-ext {
   color: #00f3ff;
   font-family: 'JetBrains Mono', Consolas, monospace;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -164,22 +196,24 @@
 .cdll-target-dll {
   color: #a855f7;
   font-family: 'JetBrains Mono', Consolas, monospace;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 /* Select Dropdown styling */
 .cdll-select {
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
+  border-radius: 5px;
   color: #cbd5e1;
   font-size: 11px;
   font-weight: 600;
-  padding: 5px 10px;
+  padding: 4px 8px;
+  height: 28px;
   outline: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  max-width: 220px;
 }
 .cdll-select:hover,
 .cdll-select:focus {
@@ -196,27 +230,30 @@
 .cdll-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .cdll-btn-compile {
   background: linear-gradient(135deg, #00f3ff 0%, #3b82f6 50%, #8b5cf6 100%);
   border: none;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  padding: 6px 16px;
-  border-radius: 6px;
+  padding: 5px 14px;
+  height: 28px;
+  border-radius: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 0 16px rgba(0, 243, 255, 0.35);
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.35);
   transition: all 0.2s ease;
   white-space: nowrap;
+  outline: none;
 }
 .cdll-btn-compile:hover:not(:disabled) {
-  box-shadow: 0 0 24px rgba(0, 243, 255, 0.65);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.65);
   transform: translateY(-1px);
 }
 .cdll-btn-compile:active:not(:disabled) {
@@ -232,16 +269,18 @@
   background: rgba(168, 85, 247, 0.15);
   border: 1px solid #a855f7;
   color: #d8b4fe;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  height: 28px;
+  border-radius: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.2s ease;
   white-space: nowrap;
+  outline: none;
   animation: cdll-pulse-glow 2.5s infinite alternate;
 }
 .cdll-btn-download:hover {
@@ -265,13 +304,16 @@
   color: #94a3b8;
   font-size: 11px;
   font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 4px 8px;
+  height: 28px;
+  border-radius: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  outline: none;
 }
 .cdll-btn-download-secondary:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -279,44 +321,91 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Frameless Window Control Buttons */
+.cdll-window-controls {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin-left: 6px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 6px;
+}
+
+.cdll-win-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-radius: 4px;
+  outline: none;
+}
+.cdll-win-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+.cdll-win-btn.close:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
 /* ==========================================================================
-   STUDIO MAIN WORKSPACE GRID
+   STUDIO MAIN WORKSPACE
    ========================================================================== */
 
 .cdll-workspace {
   display: flex;
   flex: 1;
+  min-height: 0;
+  height: calc(100vh - 44px) !important;
+  max-height: calc(100vh - 44px);
+  width: 100%;
   overflow: hidden;
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 /* Left Pane: Code Editor */
 .cdll-editor-pane {
   flex: 1.1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  background: rgba(6, 11, 22, 0.95);
+  background: rgba(6, 11, 22, 0.96);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .cdll-editor-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 14px;
-  background: rgba(0, 0, 0, 0.3);
+  padding: 0 12px;
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  background: rgba(0, 0, 0, 0.35);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 11px;
   color: #64748b;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .cdll-editor-tools-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .cdll-editor-tab-active {
@@ -330,7 +419,7 @@
 .cdll-editor-tools-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cdll-tool-btn {
@@ -339,12 +428,13 @@
   color: #94a3b8;
   font-size: 11px;
   cursor: pointer;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  outline: none;
 }
 .cdll-tool-btn:hover {
   background: rgba(255, 255, 255, 0.08);
@@ -355,29 +445,37 @@
 .cdll-editor-core {
   display: flex;
   flex: 1;
+  min-height: 0;
+  height: calc(100% - 32px - 26px);
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .cdll-line-numbers {
   width: 48px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.3);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   color: #475569;
-  font-family: 'JetBrains Mono', Consolas, monospace;
-  font-size: 12px;
-  line-height: 20px;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 12.5px;
+  line-height: 22px;
   padding: 12px 6px;
   text-align: right;
   user-select: none;
   overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .cdll-code-container {
   position: relative;
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   height: 100%;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .cdll-syntax-layer {
@@ -387,14 +485,15 @@
   right: 0;
   bottom: 0;
   padding: 12px;
-  font-family: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
-  font-size: 13px;
-  line-height: 20px;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 12.5px;
+  line-height: 22px;
   pointer-events: none;
   overflow: hidden;
   white-space: pre-wrap;
   word-break: break-all;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 .cdll-textarea {
@@ -409,9 +508,9 @@
   background: transparent;
   color: transparent;
   caret-color: #00f3ff;
-  font-family: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
-  font-size: 13px;
-  line-height: 20px;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 12.5px;
+  line-height: 22px;
   border: none;
   outline: none;
   resize: none;
@@ -420,6 +519,7 @@
   overflow: auto;
   z-index: 2;
   tab-size: 4;
+  box-sizing: border-box;
 }
 
 /* Syntax Highlighting Tokens */
@@ -449,21 +549,22 @@
   color: #8b949e;
   font-style: italic;
 }
-.c-token-func {
-  color: #e3b341;
-}
 
 /* Editor Bottom Status Bar */
 .cdll-editor-statusbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 14px;
-  background: rgba(0, 0, 0, 0.4);
+  padding: 0 12px;
+  height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  background: rgba(0, 0, 0, 0.45);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 11px;
   color: #64748b;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================
@@ -472,25 +573,33 @@
 
 .cdll-console-pane {
   flex: 0.9;
+  min-width: 320px;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  background: rgba(4, 8, 16, 0.95);
+  background: rgba(4, 8, 16, 0.96);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .cdll-console-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
-  background: rgba(0, 0, 0, 0.35);
+  padding: 0 8px;
+  height: 34px;
+  min-height: 34px;
+  max-height: 34px;
+  background: rgba(0, 0, 0, 0.4);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .cdll-console-tabs {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 .cdll-tab-btn {
@@ -499,13 +608,14 @@
   color: #64748b;
   font-size: 11px;
   font-weight: 700;
-  padding: 8px 14px;
+  padding: 6px 10px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: all 0.15s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  outline: none;
 }
 .cdll-tab-btn:hover {
   color: #e2e8f0;
@@ -519,14 +629,14 @@
 .cdll-console-metrics {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 11px;
+  gap: 6px;
+  font-size: 10.5px;
   color: #94a3b8;
 }
 
 .cdll-status-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
 .cdll-dot-idle {
@@ -535,7 +645,6 @@
 .cdll-dot-running {
   background: #00f3ff;
   box-shadow: 0 0 8px #00f3ff;
-  animation: cdll-spin 1s infinite linear;
 }
 .cdll-dot-success {
   background: #10b981;
@@ -549,12 +658,15 @@
 /* Tab 1: Terminal Log Body */
 .cdll-terminal-body {
   flex: 1;
-  padding: 14px;
+  min-height: 0;
+  height: calc(100% - 34px);
+  padding: 12px;
   overflow-y: auto;
   font-family: 'JetBrains Mono', Consolas, monospace;
-  font-size: 12px;
-  line-height: 19px;
+  font-size: 11.5px;
+  line-height: 18px;
   background: rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
 }
 
 .cdll-log-line {
@@ -583,14 +695,14 @@
 
 /* Success Card Banner */
 .cdll-success-card {
-  margin-top: 14px;
-  padding: 14px;
+  margin-top: 12px;
+  padding: 12px;
   background: rgba(16, 185, 129, 0.08);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .cdll-card-header {
@@ -602,57 +714,60 @@
 .cdll-card-title {
   color: #34d399;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 12px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .cdll-file-chips {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .cdll-chip {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10.5px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   color: #cbd5e1;
 }
 
 /* Tab 2: Exported Symbols Table */
 .cdll-symbols-view {
   flex: 1;
-  padding: 16px;
+  min-height: 0;
+  height: calc(100% - 34px);
+  padding: 14px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .cdll-symbols-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .cdll-symbols-table th {
   text-align: left;
-  padding: 8px 10px;
+  padding: 6px 8px;
   background: rgba(255, 255, 255, 0.03);
   color: #64748b;
   font-weight: 700;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 9.5px;
   letter-spacing: 0.05em;
 }
 
 .cdll-symbols-table td {
-  padding: 10px;
+  padding: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   color: #e2e8f0;
 }
@@ -672,15 +787,18 @@
 /* Tab 3: Usage Snippets */
 .cdll-usage-view {
   flex: 1;
-  padding: 16px;
+  min-height: 0;
+  height: calc(100% - 34px);
+  padding: 14px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .cdll-snippet-card {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  margin-bottom: 16px;
+  border-radius: 6px;
+  margin-bottom: 12px;
   overflow: hidden;
 }
 
@@ -688,36 +806,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: #94a3b8;
 }
 
 .cdll-snippet-code {
-  padding: 12px;
+  padding: 10px;
   font-family: 'JetBrains Mono', Consolas, monospace;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 11.5px;
+  line-height: 17px;
   color: #e2e8f0;
   white-space: pre;
   overflow-x: auto;
-}
-
-/* Responsive tweaks */
-@media (max-width: 900px) {
-  .cdll-workspace {
-    flex-direction: column;
-  }
-  .cdll-editor-pane {
-    height: 55%;
-  }
-  .cdll-console-pane {
-    height: 45%;
-  }
-  .cdll-header-center-tools {
-    display: none;
-  }
+  margin: 0;
 }

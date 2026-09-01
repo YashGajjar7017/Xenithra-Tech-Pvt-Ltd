@@ -588,7 +588,7 @@ const MainLayout = ({
                       title: 'C to DLL MinGW Studio',
                       element: (
                         <>
-                          <i className="bx bx-cog" style={{ fontSize: '20px', color: '#00f3ff' }}></i>
+                          <i className="bx bx-chip" style={{ fontSize: '20px', color: '#00f3ff' }}></i>
                           <span
                             style={{
                               position: 'absolute',
@@ -710,30 +710,42 @@ const MainLayout = ({
         {/* MAIN WORKSPACE */}
         <div
           className="main"
-          style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            height: isAiColab ? '100%' : 'auto',
+            width: '100%'
+          }}
         >
           {children}
         </div>
       </div>
 
       {/* BOTTOM SLIM STATUS BAR */}
-      <div className="status-bar">
-        <div className="status-item">
-          <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>🌿 main</span>
-          <span style={{ opacity: 0.4 }}>|</span>
-          <span>✗ 0</span>
-          <span>⚠ 0</span>
+      {!isAiColab && (
+        <div className="status-bar">
+          <div className="status-item">
+            <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>🌿 main</span>
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span>✗ 0</span>
+            <span>⚠ 0</span>
+          </div>
+          <div
+            className="status-item"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <FooterEnvSelector />
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span>Spaces: 2</span>
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span style={{ textTransform: 'capitalize' }}>Theme: {theme.replace('-', ' ')}</span>
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span style={{ color: 'var(--accent-color)' }}>GLM-4 Core: Online</span>
+          </div>
         </div>
-        <div className="status-item" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <FooterEnvSelector />
-          <span style={{ opacity: 0.4 }}>|</span>
-          <span>Spaces: 2</span>
-          <span style={{ opacity: 0.4 }}>|</span>
-          <span style={{ textTransform: 'capitalize' }}>Theme: {theme.replace('-', ' ')}</span>
-          <span style={{ opacity: 0.4 }}>|</span>
-          <span style={{ color: 'var(--accent-color)' }}>GLM-4 Core: Online</span>
-        </div>
-      </div>
+      )}
 
       <SettingsModal
         isOpen={isSettingsOpen}

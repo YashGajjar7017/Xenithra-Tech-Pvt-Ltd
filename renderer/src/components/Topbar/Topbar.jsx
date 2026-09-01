@@ -1197,7 +1197,7 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
             e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.35)'
           }}
         >
-          <span style={{ fontSize: '11px' }}>⚙️</span>
+          <i className="bx bx-chip" style={{ fontSize: '13px', color: '#00f3ff' }}></i>
           <span>C &rarr; DLL Studio</span>
         </button>
 
