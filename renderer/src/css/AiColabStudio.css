@@ -1,366 +1,478 @@
-/* Monochrome Sleek Dark Theme - AI Colab & Real-time DSA Studio */
-.colab-studio-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  background: #020202;
-  color: #e5e5e5;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  overflow: hidden;
-  position: relative;
+/* ==========================================================================
+   XENITHRA AI STUDIO & COLAB LABORATORY STYLES
+   High-Contrast Cyber Amber & Sleek Monochrome Dark Aesthetic
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-/* Colab Top Header */
-.colab-header {
+.ai-studio-container {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  background: #03050a;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  z-index: 9999;
+}
+
+/* ==========================================================================
+   TOP HEADER BAR
+   ========================================================================== */
+.ai-top-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
-  background: #0d0d0d;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 14px;
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  background: rgba(10, 14, 24, 0.98);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+  backdrop-filter: blur(20px);
+  gap: 12px;
+  z-index: 100;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.ai-brand-group {
+  display: flex;
+  align-items: center;
   gap: 12px;
   flex-shrink: 0;
 }
 
-.colab-title-row {
+.ai-exit-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #cbd5e1;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  outline: none;
+}
+.ai-exit-btn:hover {
+  background: rgba(245, 158, 11, 0.2);
+  color: #ffffff;
+  border-color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+  transform: translateX(-2px);
 }
 
-.colab-badge {
-  background: #ffffff;
-  color: #000000;
-  font-size: 10px;
+.ai-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-title-main {
+  font-size: 13.5px;
   font-weight: 800;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+}
+
+.ai-badge-model {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+  font-size: 9.5px;
+  font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  letter-spacing: 0.05em;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
-.colab-notebook-name {
-  font-size: 13px;
+.ai-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ai-btn-run-all {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border: 1px solid #fbbf24;
+  color: #000000;
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+}
+.ai-btn-run-all:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.ai-btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #cbd5e1;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 11px;
   font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+.ai-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
+}
+
+/* Window Controls */
+.ai-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+.ai-win-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+.ai-win-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+.ai-win-btn.close:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   STUDIO WORKSPACE & SIDEBAR
+   ========================================================================== */
+.ai-workspace {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 48px - 28px);
+  max-height: calc(100vh - 48px - 28px);
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Sidebar */
+.ai-sidebar {
+  width: 270px;
+  min-width: 270px;
+  max-width: 270px;
+  height: 100%;
+  background: #060913;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ai-sidebar-header {
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ai-topics-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-topic-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+.ai-topic-item:hover {
+  background: rgba(245, 158, 11, 0.06);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+.ai-topic-item.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.03) 100%);
+  border-color: #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
+}
+
+.ai-topic-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
   display: flex;
   align-items: center;
   gap: 6px;
 }
+.ai-topic-item.active .ai-topic-title {
+  color: #fbbf24;
+}
 
-.colab-nav-menus {
+.ai-topic-desc {
+  font-size: 10.5px;
+  color: #64748b;
+  line-height: 14px;
+}
+
+/* Sidebar Telemetry Card */
+.ai-sidebar-telemetry {
+  padding: 12px;
+  margin: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
   display: flex;
-  gap: 12px;
-  font-size: 11px;
-  color: #888888;
-  margin-top: 4px;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10.5px;
 }
 
-.colab-nav-menus span {
-  cursor: pointer;
-  transition: color 0.15s;
+/* ==========================================================================
+   NOTEBOOK CONTENT AREA
+   ========================================================================== */
+.ai-notebook-scroll {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: radial-gradient(circle at 40% 10%, #0a0e1a 0%, #020409 60%, #000103 100%);
+  animation: aiFadeIn 0.3s ease-out;
 }
 
-.colab-nav-menus span:hover {
-  color: #ffffff;
+@keyframes aiFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Resource Telemetry */
-.colab-resource-metrics {
+/* Notebook Header Card */
+.ai-topic-header-card {
+  padding: 20px 24px;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.ai-topic-badge-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ai-pill-tag {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* Markdown Text Block */
+.ai-markdown-card {
+  padding: 16px 20px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid #38bdf8;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+/* ==========================================================================
+   YELLOW-BORDERED EXECUTABLE CODE CONTAINERS (ITEM 10)
+   ========================================================================== */
+.ai-code-cell-container {
+  border: 1px solid #f59e0b;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.15);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.04) 0%, rgba(6, 10, 18, 0.9) 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ai-code-cell-container:focus-within,
+.ai-code-cell-container:hover {
+  border-color: #fbbf24;
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.25);
+}
+
+.ai-cell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.ai-cell-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 4px 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 11px;
-  color: #888888;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fbbf24;
 }
 
-.metric-pill {
+.ai-cell-run-btn {
+  background: #f59e0b;
+  border: 1px solid #fbbf24;
+  color: #000000;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  outline: none;
+}
+.ai-cell-run-btn:hover {
+  background: #fbbf24;
+  transform: scale(1.03);
+}
+.ai-cell-run-btn.running {
+  background: #3b82f6;
+  border-color: #60a5fa;
+  color: #ffffff;
+}
+
+/* Darker Inner Code Editor */
+.ai-cell-editor-box {
+  background: #020408;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', Consolas, 'Fira Code', monospace;
+  font-size: 12.5px;
+  line-height: 20px;
+  color: #e2e8f0;
+  overflow-x: auto;
+  white-space: pre;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Output Stream Container */
+.ai-cell-output-box {
+  background: rgba(0, 0, 0, 0.85);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 18px;
+}
+
+.ai-output-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #10b981;
+  text-transform: uppercase;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.metric-indicator {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 6px #ffffff;
-}
-
-/* Action Bar */
-.colab-action-bar {
+/* ==========================================================================
+   PINNED FOOTER STATUSBAR
+   ========================================================================== */
+.ai-footer-statusbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
-  background: #080808;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  gap: 12px;
+  padding: 0 14px;
+  height: 28px;
+  min-height: 28px;
+  max-height: 28px;
+  background: #060913;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  color: #94a3b8;
   flex-shrink: 0;
-}
-
-.colab-tab-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  color: #888888;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.colab-tab-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.colab-tab-btn.active {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
-}
-
-/* Main Workspace */
-.colab-workspace {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Cells */
-.colab-cell {
-  background: #0d0d0d;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  transition: border-color 0.2s ease;
-}
-
-.colab-cell:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.colab-cell.focused {
-  border-color: #ffffff;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
-}
-
-.colab-cell-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 11px;
-  color: #888888;
-}
-
-.colab-cell-body {
-  display: flex;
-  align-items: flex-start;
-  position: relative;
-}
-
-.colab-cell-run-btn {
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin: 10px;
-  font-size: 12px;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.colab-cell-run-btn:hover {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-}
-
-/* Code area */
-.colab-code-area {
-  flex: 1;
-  padding: 10px 10px 10px 0;
-  font-family: 'Fira Code', 'Courier New', monospace;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #e5e5e5;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-/* Output area */
-.colab-output-area {
-  background: #050505;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px 16px 12px 52px;
-  font-family: 'Fira Code', 'Courier New', monospace;
-  font-size: 11px;
-  line-height: 1.6;
-  color: #a0a0a0;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-}
-
-/* Split screen layout */
-.dsa-split-studio {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 20px;
-  align-items: stretch;
-}
-
-/* Interactive Code Editor Component */
-.dsa-code-editor-box {
-  background: #0d0d0d;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-.dsa-editor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 11px;
-}
-
-.dsa-editor-textarea {
-  flex: 1;
-  background: #030303;
-  color: #e5e5e5;
-  border: none;
-  font-family: 'Fira Code', 'Courier New', monospace;
-  font-size: 12px;
-  line-height: 1.5;
-  padding: 12px;
-  resize: none;
-  outline: none;
-  width: 100%;
-}
-
-/* Visualizer Nodes & Bars */
-.dsa-node {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: #0d0d0d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: #ffffff;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-}
-
-.dsa-node.visited {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.dsa-node.comparing {
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-  transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-}
-
-.dsa-node.active {
-  border-color: #ffffff;
-  background: #ffffff;
-  color: #000000;
-  transform: scale(1.15);
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.4);
-}
-
-/* Complexity Telemetry Panel */
-.dsa-complexity-panel {
-  background: #0d0d0d;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.complexity-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.complexity-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 8px 12px;
-}
-
-.complexity-label {
-  font-size: 9px;
-  color: #888888;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.complexity-value {
-  font-size: 16px;
-  font-weight: 800;
-  color: #ffffff;
-  font-family: 'Fira Code', monospace;
-  margin-top: 2px;
-}
-
-.layman-card {
-  background: rgba(255, 255, 255, 0.02);
-  border-left: 3px solid #ffffff;
-  padding: 12px;
-  border-radius: 4px;
-  color: #a0a0a0;
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.layman-badge {
-  display: inline-block;
-  font-weight: bold;
-  color: #ffffff;
-  margin-bottom: 6px;
+  box-sizing: border-box;
+  z-index: 100;
 }

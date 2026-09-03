@@ -918,10 +918,6 @@ extern "C" {
 
   return (
     <div className="cdll-studio-container">
-      {/* Ambient background glow effects */}
-      <div className="cdll-ambient-glow cdll-glow-1"></div>
-      <div className="cdll-ambient-glow cdll-glow-2"></div>
-
       {/* Hidden File Input for .c file loading */}
       <input
         type="file"

@@ -805,6 +805,154 @@ app.get('/api/extensions/package/:id', (req, res) => {
   })
 })
 
+// ==========================================================================
+// CODE BATTLE ARENA REAL-TIME NETWORKING
+// ==========================================================================
+const arenaRooms = new Map()
+
+app.post('/api/arena/create-room', (req, res) => {
+  try {
+    const { hostName, problemId } = req.body || {}
+    const roomCode = 'ARENA-' + Math.floor(1000 + Math.random() * 9000)
+    const port = process.env.API_PORT || 8000
+
+    let localIp = '127.0.0.1'
+    const networkInterfaces = os.networkInterfaces()
+    for (const name of Object.keys(networkInterfaces)) {
+      for (const net of networkInterfaces[name]) {
+        if (net.family === 'IPv4' && !net.internal) {
+          localIp = net.address
+          break
+        }
+      }
+    }
+
+    const sharePayload = JSON.stringify({ roomCode, ip: localIp, port, type: 'xenithra-arena' })
+    const shareToken = 'ARENA-TOKEN:' + Buffer.from(sharePayload).toString('base64')
+
+    const starterCode = 'function twoSum(nums, target) {\n    // Write optimized code here\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const diff = target - nums[i];\n        if (map.has(diff)) return [map.get(diff), i];\n        map.set(nums[i], i);\n    }\n    return [];\n}'
+
+    const room = {
+      roomCode,
+      shareToken,
+      hostIp: localIp,
+      port,
+      status: 'waiting', // 'waiting' | 'playing' | 'finished'
+      problem: {
+        id: problemId || 'two-sum',
+        title: 'Two Sum Algorithm PvP',
+        difficulty: 'Medium / Speed',
+        description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+        starterCode
+      },
+      player1: { id: 'p1', name: hostName || 'Host Warrior', code: starterCode, status: 'ready', testsPassed: 0 },
+      player2: null,
+      timer: 180,
+      winner: null,
+      createdAt: new Date().toISOString()
+    }
+
+    arenaRooms.set(roomCode, room)
+
+    res.json({
+      success: true,
+      roomCode,
+      shareToken,
+      localIp,
+      port,
+      room
+    })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
+  }
+})
+
+app.post('/api/arena/join-room', (req, res) => {
+  try {
+    let { roomCode, playerName, shareToken } = req.body || {}
+
+    if (shareToken && shareToken.startsWith('ARENA-TOKEN:')) {
+      try {
+        const decoded = JSON.parse(Buffer.from(shareToken.replace('ARENA-TOKEN:', ''), 'base64').toString('utf-8'))
+        if (decoded.roomCode) roomCode = decoded.roomCode
+      } catch (e) {
+        console.warn('Failed to parse shareToken:', e)
+      }
+    }
+
+    const room = arenaRooms.get(roomCode)
+    if (!room) {
+      return res.status(404).json({ success: false, message: `Arena room "${roomCode}" not found on this host.` })
+    }
+
+    room.player2 = {
+      id: 'p2',
+      name: playerName || 'Remote Challenger',
+      code: room.problem.starterCode,
+      status: 'ready',
+      testsPassed: 0
+    }
+    room.status = 'playing'
+
+    res.json({
+      success: true,
+      roomCode,
+      room
+    })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
+  }
+})
+
+app.get('/api/arena/room/:code', (req, res) => {
+  const { code } = req.params
+  const room = arenaRooms.get(code)
+  if (!room) {
+    return res.status(404).json({ success: false, message: 'Room not found' })
+  }
+  res.json({ success: true, room })
+})
+
+app.post('/api/arena/update', (req, res) => {
+  const { roomCode, playerId, code, testsPassed } = req.body || {}
+  const room = arenaRooms.get(roomCode)
+  if (!room) {
+    return res.status(404).json({ success: false, message: 'Room not found' })
+  }
+
+  if (playerId === 'p1' && room.player1) {
+    if (code !== undefined) room.player1.code = code
+    if (testsPassed !== undefined) room.player1.testsPassed = testsPassed
+  } else if (playerId === 'p2' && room.player2) {
+    if (code !== undefined) room.player2.code = code
+    if (testsPassed !== undefined) room.player2.testsPassed = testsPassed
+  }
+
+  res.json({ success: true, room })
+})
+
+app.post('/api/arena/submit', (req, res) => {
+  const { roomCode, playerId, testsPassed, totalTests } = req.body || {}
+  const room = arenaRooms.get(roomCode)
+  if (!room) {
+    return res.status(404).json({ success: false, message: 'Room not found' })
+  }
+
+  if (testsPassed === totalTests) {
+    room.status = 'finished'
+    room.winner = playerId === 'p1' ? room.player1?.name : room.player2?.name
+  }
+
+  res.json({ success: true, room, isWinner: room.winner !== null })
+})
+
+app.get('/api/arena/rooms', (req, res) => {
+  res.json({
+    success: true,
+    rooms: Array.from(arenaRooms.values())
+  })
+})
+
 app.get('/collaborate/:token', (req, res) => {
   const { token } = req.params
   const session = collaborationSessions.get(token) || { filename: 'untitled.js', lang: 'javascript', code: '// Live collaboration\n' }

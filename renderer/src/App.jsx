@@ -154,63 +154,19 @@ const MainApp = () => {
         />
         <Route
           path="/ai-colab"
-          element={
-            <MainLayout
-              theme={theme}
-              setTheme={setTheme}
-              sidebarCollapsed={sidebarCollapsed}
-              setSidebarCollapsed={setSidebarCollapsed}
-              sidebarWidth={sidebarWidth}
-              setSidebarWidth={setSidebarWidth}
-            >
-              <AiColabStudioPage />
-            </MainLayout>
-          }
+          element={<AiColabStudioPage />}
         />
         <Route
           path="/dsa-studio"
-          element={
-            <MainLayout
-              theme={theme}
-              setTheme={setTheme}
-              sidebarCollapsed={sidebarCollapsed}
-              setSidebarCollapsed={setSidebarCollapsed}
-              sidebarWidth={sidebarWidth}
-              setSidebarWidth={setSidebarWidth}
-            >
-              <DsaStudioPage />
-            </MainLayout>
-          }
+          element={<DsaStudioPage />}
         />
         <Route
           path="/code-arena"
-          element={
-            <MainLayout
-              theme={theme}
-              setTheme={setTheme}
-              sidebarCollapsed={sidebarCollapsed}
-              setSidebarCollapsed={setSidebarCollapsed}
-              sidebarWidth={sidebarWidth}
-              setSidebarWidth={setSidebarWidth}
-            >
-              <CodeArenaPage />
-            </MainLayout>
-          }
+          element={<CodeArenaPage />}
         />
         <Route
           path="/c-dll-studio"
-          element={
-            <MainLayout
-              theme={theme}
-              setTheme={setTheme}
-              sidebarCollapsed={sidebarCollapsed}
-              setSidebarCollapsed={setSidebarCollapsed}
-              sidebarWidth={sidebarWidth}
-              setSidebarWidth={setSidebarWidth}
-            >
-              <CDllStudioPage />
-            </MainLayout>
-          }
+          element={<CDllStudioPage />}
         />
         <Route
           path="/*"

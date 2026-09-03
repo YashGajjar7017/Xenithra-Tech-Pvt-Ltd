@@ -11,6 +11,106 @@ const DsaStudioPage = () => {
   const [customCode, setCustomCode] = useState('')
   const [testResults, setTestResults] = useState([])
   const [customComplexities, setCustomComplexities] = useState(null)
+  const [selectedFlowNode, setSelectedFlowNode] = useState(null)
+
+  const parseCustomCodeFlowchart = (codeText) => {
+    const raw = codeText || ''
+    const nodes = []
+
+    // 1. Function entry
+    const funcMatch = raw.match(/function\s+([a-zA-Z0-9_]+)\s*\(([^)]*)\)/)
+    const funcName = funcMatch ? funcMatch[1] : 'customAlgorithm'
+    const funcParams = funcMatch ? funcMatch[2] : 'input'
+    nodes.push({
+      id: 'entry',
+      type: 'entry',
+      color: '#00ffaa',
+      badge: 'START NODE',
+      title: `Function Entry: ${funcName}(${funcParams})`,
+      detail: `Initializes execution frame. Arguments [${funcParams}] bound to local scope.`
+    })
+
+    // 2. Variable Declarations
+    const varMatches = raw.match(/(?:let|const|var)\s+([a-zA-Z0-9_]+)\s*=\s*([^;\n]+)/g) || []
+    if (varMatches.length > 0) {
+      nodes.push({
+        id: 'vars',
+        type: 'vars',
+        color: '#38bdf8',
+        badge: 'STATE MEMORY',
+        title: 'Variable Declarations',
+        detail: varMatches.slice(0, 3).join('; ')
+      })
+    }
+
+    // 3. Outer Loop
+    const forOrWhileMatches = [...raw.matchAll(/(for|while)\s*\(([^)]+)\)/g)]
+    if (forOrWhileMatches.length > 0) {
+      const outer = forOrWhileMatches[0]
+      nodes.push({
+        id: 'outer-loop',
+        type: 'outer-loop',
+        color: '#f59e0b',
+        badge: 'OUTER LOOP',
+        title: `Loop 1: ${outer[1]} (${outer[2]})`,
+        detail: 'Evaluates iteration predicate. While true, executes loop body.'
+      })
+
+      // 4. Nested Loop in Loop
+      if (forOrWhileMatches.length > 1) {
+        const inner = forOrWhileMatches[1]
+        nodes.push({
+          id: 'nested-loop',
+          type: 'nested-loop',
+          color: '#ec4899',
+          badge: 'NESTED LOOP IN LOOP',
+          title: `Loop 2 (Nested): ${inner[1]} (${inner[2]})`,
+          detail: 'Inner iteration running O(n * m) Cartesian passes inside outer block.'
+        })
+      }
+    }
+
+    // 5. Conditionals (if statements)
+    const ifMatches = raw.match(/if\s*\(([^)]+)\)/g) || []
+    if (ifMatches.length > 0) {
+      nodes.push({
+        id: 'condition',
+        type: 'condition',
+        color: '#a855f7',
+        badge: 'DECISION BRANCH',
+        title: `Predicate: ${ifMatches[0]}`,
+        detail: 'True: executes immediate return / swap block. False: advances pointer to next iteration.'
+      })
+    }
+
+    // 6. Return Statements (Where & How Output Comes)
+    const returnMatches = raw.match(/return\s+([^;\n]+)/g) || []
+    if (returnMatches.length > 0) {
+      returnMatches.forEach((ret, idx) => {
+        nodes.push({
+          id: `return-${idx}`,
+          type: 'return',
+          color: '#10b981',
+          badge: 'OUTPUT GENERATION',
+          title: `Result Yield: ${ret}`,
+          detail: idx === 0 
+            ? 'Success Output: Calculated when condition evaluates to true.' 
+            : 'Fallback Output: Returned upon loop termination.'
+        })
+      })
+    } else {
+      nodes.push({
+        id: 'return-default',
+        type: 'return',
+        color: '#10b981',
+        badge: 'OUTPUT GENERATION',
+        title: 'Result Yield: return value',
+        detail: 'Outputs computed return value or undefined.'
+      })
+    }
+
+    return nodes
+  }
 
   const playTimerRef = useRef(null)
 
@@ -525,39 +625,64 @@ const DsaStudioPage = () => {
           </div>
         </div>
 
-        <button
-          onClick={exitStudio}
-          style={{
-            background: 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            color: '#fff',
-            fontWeight: '600',
-            fontSize: '11px',
-            padding: '6px 14px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => (e.target.style.background = 'rgba(255,255,255,0.15)')}
-          onMouseLeave={(e) => (e.target.style.background = 'rgba(255,255,255,0.08)')}
-        >
-          ✕ Exit Studio
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={exitStudio}
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#fff',
+              fontWeight: '600',
+              fontSize: '11px',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => (e.target.style.background = 'rgba(255,255,255,0.15)')}
+            onMouseLeave={(e) => (e.target.style.background = 'rgba(255,255,255,0.08)')}
+          >
+            ← Exit Studio
+          </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '6px' }}>
+            <button
+              onClick={() => window.api && window.api.minimizeWindow && window.api.minimizeWindow()}
+              style={{ background: 'transparent', border: 'none', color: '#888', padding: '4px 8px', cursor: 'pointer', fontSize: '12px' }}
+              title="Minimize"
+            >
+              &#8212;
+            </button>
+            <button
+              onClick={() => window.api && window.api.maximizeWindow && window.api.maximizeWindow()}
+              style={{ background: 'transparent', border: 'none', color: '#888', padding: '4px 8px', cursor: 'pointer', fontSize: '12px' }}
+              title="Maximize"
+            >
+              &#9633;
+            </button>
+            <button
+              onClick={() => window.api && window.api.closeWindow && window.api.closeWindow()}
+              style={{ background: 'transparent', border: 'none', color: '#888', padding: '4px 8px', cursor: 'pointer', fontSize: '12px' }}
+              title="Close"
+            >
+              &#10005;
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Main Studio Arena */}
       <div
         style={{
           flex: 1,
           display: 'grid',
           gridTemplateColumns: '1.1fr 0.9fr',
-          padding: '20px',
+          padding: '16px 20px',
           gap: '20px',
           overflow: 'hidden',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          height: 'calc(100vh - 48px - 28px)'
         }}
       >
-        {/* LEFT COLUMN: Huge Code Compiler Simulation Viewer OR Interactive Playground */}
         {!isInteractiveMode ? (
           <div
             style={{
@@ -631,7 +756,6 @@ const DsaStudioPage = () => {
               })}
             </div>
 
-            {/* Trace Description Banner */}
             <div
               style={{
                 padding: '16px 20px',
@@ -711,10 +835,9 @@ const DsaStudioPage = () => {
                 }}
               />
               
-              {/* Test Suite Dashboard */}
               <div
                 style={{
-                  height: '200px',
+                  height: '180px',
                   borderTop: '1px solid rgba(255,255,255,0.08)',
                   background: '#090909',
                   display: 'flex',
@@ -723,16 +846,16 @@ const DsaStudioPage = () => {
                 }}
               >
                 <div style={{ padding: '8px 16px', background: '#0d0d0d', fontSize: '10px', fontWeight: 'bold', color: '#888', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                  TEST SUITE telemetry
+                  TEST SUITE TELEMETRY
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {testResults.length === 0 ? (
-                    <div style={{ color: '#666', fontSize: '12px', fontStyle: 'italic', textAlign: 'center', marginTop: '40px' }}>
+                    <div style={{ color: '#666', fontSize: '12px', fontStyle: 'italic', textAlign: 'center', marginTop: '30px' }}>
                       Click "⚡ Compile & Run" to execute test cases.
                     </div>
                   ) : (
                     testResults.map((tr, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifycontent: 'space-between', padding: '8px 12px', background: tr.pass ? 'rgba(0, 255, 170, 0.04)' : 'rgba(255, 77, 79, 0.04)', border: tr.pass ? '1px solid rgba(0, 255, 170, 0.15)' : '1px solid rgba(255, 77, 79, 0.15)', borderRadius: '6px' }}>
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: tr.pass ? 'rgba(0, 255, 170, 0.04)' : 'rgba(255, 77, 79, 0.04)', border: tr.pass ? '1px solid rgba(0, 255, 170, 0.15)' : '1px solid rgba(255, 77, 79, 0.15)', borderRadius: '6px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff' }}>{tr.name}</span>
                           <span style={{ fontSize: '9px', color: '#888' }}>Expect: {tr.expect} | Got: <span style={{ color: tr.pass ? '#00ffaa' : '#ff4d4f' }}>{tr.got}</span></span>
@@ -749,440 +872,463 @@ const DsaStudioPage = () => {
           </div>
         )}
 
-        {/* RIGHT COLUMN: Visual Arena & Complexity Dashboard */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-            overflowY: 'auto',
-            paddingRight: '4px'
-          }}
-        >
-          {/* Algorithm Switcher Grid */}
+        {isInteractiveMode ? (
           <div
             style={{
-              background: '#070707',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '12px',
-              padding: '16px'
-            }}
-          >
-            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#888', marginBottom: '12px' }}>
-              SELECT TRACE ALGORITHM
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {[
-                { id: 'binary-search', label: '🔍 Binary Search' },
-                { id: 'bubble-sort', label: '📊 Bubble Sort' },
-                { id: 'linked-list', label: '🔗 Linked List' },
-                { id: 'gradient-descent', label: '📉 Gradient Descent' },
-                { id: 'fibonacci', label: '🌀 Fibonacci Stack' }
-              ].map((algo) => (
-                <button
-                  key={algo.id}
-                  onClick={() => {
-                    setSelectedAlgo(algo.id)
-                    setDsaStep(0)
-                    setDsaPlaying(false)
-                  }}
-                  style={{
-                    background: selectedAlgo === algo.id ? '#ffffff' : 'rgba(255,255,255,0.04)',
-                    border: selectedAlgo === algo.id ? '1px solid #ffffff' : '1px solid rgba(255,255,255,0.08)',
-                    color: selectedAlgo === algo.id ? '#000000' : '#cccccc',
-                    padding: '8px 12px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    textAlign: 'left'
-                  }}
-                >
-                  {algo.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Playback Controls Panel */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginTop: '16px',
-                background: 'rgba(0,0,0,0.3)',
-                padding: '10px 14px',
-                borderRadius: '8px'
-              }}
-            >
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={handleDsaReset}
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: 'none',
-                    color: '#fff',
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '10px',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  ⏮ Reset
-                </button>
-                <button
-                  onClick={() => setDsaPlaying(!dsaPlaying)}
-                  style={{
-                    background: '#ffffff',
-                    border: 'none',
-                    color: '#000',
-                    fontWeight: 'bold',
-                    padding: '6px 16px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '10px'
-                  }}
-                >
-                  {dsaPlaying ? '⏸ Pause' : '▶ Auto Play'}
-                </button>
-                <button
-                  onClick={handleDsaNext}
-                  style={{
-                    background: 'rgba(255,255,255,0.15)',
-                    border: '1px solid rgba(255,255,255,0.25)',
-                    color: '#fff',
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '10px',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  ▶▶ Step Next
-                </button>
-              </div>
-
-              {/* Speed Buttons */}
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {[
-                  { label: 'Slow', speed: 2000 },
-                  { label: 'Normal', speed: 1500 },
-                  { label: 'Fast', speed: 800 }
-                ].map((s) => (
-                  <button
-                    key={s.label}
-                    onClick={() => setDsaSpeed(s.speed)}
-                    style={{
-                      background: dsaSpeed === s.speed ? '#ffffff' : 'rgba(255,255,255,0.05)',
-                      border: 'none',
-                      color: dsaSpeed === s.speed ? '#000' : '#aaa',
-                      padding: '2px 8px',
-                      borderRadius: '3px',
-                      fontSize: '9px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Graphical Visualization Sandbox Area */}
-          <div
-            style={{
-              background: '#070707',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '12px',
-              padding: '20px',
-              minHeight: '180px',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'center',
-              boxSizing: 'border-box'
+              gap: '14px',
+              overflowY: 'auto',
+              paddingRight: '4px'
             }}
           >
-            <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '14px', textTransform: 'uppercase' }}>
-              Interactive Visual Arena
-            </div>
-
-            {/* Binary Search Visualization */}
-            {selectedAlgo === 'binary-search' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontSize: '11px', color: '#aaa', textAlign: 'center', marginBottom: '8px' }}>
-                  Searching Target: <span style={{ color: '#fff', fontWeight: 'bold' }}>56</span>
+            <div
+              style={{
+                background: '#070707',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#00ffaa', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>⚡</span>
+                  <span>AST CODE EXECUTION FLOWCHART</span>
                 </div>
-                <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', padding: '16px 0', justifyContent: 'center' }}>
-                  {binarySearchArray.map((num, idx) => {
-                    const pointers = getBspPointersForStep(dsaStep)
-                    const isLow = idx === pointers.low
-                    const isHigh = idx === pointers.high
-                    const isMid = idx === pointers.mid
-                    const inRange = idx >= pointers.low && idx <= pointers.high
-
-                    let bg = 'rgba(255,255,255,0.03)'
-                    let border = '1px solid rgba(255,255,255,0.1)'
-                    let color = '#777'
-
-                    if (inRange) {
-                      bg = 'rgba(255,255,255,0.06)'
-                      border = '1px solid rgba(255,255,255,0.3)'
-                      color = '#ccc'
-                    }
-                    if (isMid) {
-                      bg = 'rgba(255, 255, 255, 0.2)'
-                      border = '1px solid #ffffff'
-                      color = '#ffffff'
-                    }
-                    if (num === 56 && isMid && dsaStep >= 19) {
-                      bg = '#ffffff'
-                      color = '#000000'
-                      border = '1px solid #ffffff'
-                    }
-
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                          width: '28px',
-                          height: '28px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderRadius: '4px',
-                          background: bg,
-                          border: border,
-                          color: color,
-                          fontSize: '11px',
-                          fontWeight: 'bold',
-                          position: 'relative',
-                          transition: 'all 0.3s ease'
-                        }}
-                      >
-                        {num}
-                        {isLow && <span style={{ position: 'absolute', top: '-18px', fontSize: '8px', color: '#fff', fontWeight: 'bold' }}>LOW</span>}
-                        {isMid && <span style={{ position: 'absolute', bottom: '-18px', fontSize: '8px', color: '#ffffff', fontWeight: 'bold' }}>MID</span>}
-                        {isHigh && <span style={{ position: 'absolute', top: '-18px', fontSize: '8px', color: '#fff', fontWeight: 'bold' }}>HIGH</span>}
-                      </div>
-                    )
-                  })}
-                </div>
+                <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold' }}>
+                  Loop-in-Loop Hierarchy
+                </span>
               </div>
-            )}
 
-            {/* Bubble Sort Visualization */}
-            {selectedAlgo === 'bubble-sort' && (
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '8px', height: '110px', padding: '10px 0' }}>
-                {getSortArrayForStep(dsaStep).map((val, idx) => {
-                  const indices = getSortIndicesForStep(dsaStep)
-                  const isComparing = idx === indices.i || idx === indices.j
-                  const isSorted = idx >= 6 - Math.floor(dsaStep / 10) // highlight sorted end
-                  return (
-                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '10px', color: isComparing ? '#fff' : '#666' }}>{val}</span>
-                      <div
-                        style={{
-                          width: '28px',
-                          height: `${val * 1.1}px`,
-                          background: isComparing ? '#ffffff' : isSorted ? 'rgba(255,255,255,0.4)' : '#333',
-                          borderRadius: '4px 4px 0 0',
-                          transition: 'all 0.3s ease',
-                          border: isComparing ? '1px solid #fff' : 'none'
-                        }}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Linked List Insertion Visualization */}
-            {selectedAlgo === 'linked-list' && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', overflowX: 'auto', padding: '16px 0' }}>
-                {getLinkedListNodesForStep(dsaStep).map((node) => {
-                  const isNew = node.id === 5
-                  const isCurr = dsaStep === 4 && node.val === 25
-                  
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '4px 0' }}>
+                {parseCustomCodeFlowchart(customCode).map((node, idx, arr) => {
+                  const isSelected = selectedFlowNode === node.id || (!selectedFlowNode && idx === 0)
                   return (
                     <React.Fragment key={node.id}>
                       <div
+                        onClick={() => setSelectedFlowNode(node.id)}
                         style={{
-                          minWidth: '42px',
-                          height: '42px',
+                          background: isSelected ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)',
+                          border: isSelected ? `1px solid ${node.color}` : '1px solid rgba(255,255,255,0.06)',
+                          boxShadow: isSelected ? `0 0 12px ${node.color}33` : 'none',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
                           display: 'flex',
                           flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderRadius: '6px',
-                          background: isNew ? '#ffffff' : isCurr ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
-                          border: isNew ? '1px solid #ffffff' : isCurr ? '1px solid #ffffff' : '1px solid rgba(255,255,255,0.15)',
-                          color: isNew ? '#000000' : '#ffffff',
-                          transition: 'all 0.3s'
+                          gap: '3px'
                         }}
                       >
-                        <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{node.val}</div>
-                        <div style={{ fontSize: '7px', opacity: isNew ? 0.7 : 0.4 }}>node#{node.id}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '9.5px', fontWeight: '800', color: node.color, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {node.badge}
+                          </span>
+                          <span style={{ fontSize: '9px', color: '#666' }}>Node #{idx + 1}</span>
+                        </div>
+                        <div style={{ fontSize: '11.5px', fontWeight: 'bold', color: '#fff', fontFamily: 'monospace' }}>
+                          {node.title}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.4' }}>
+                          {node.detail}
+                        </div>
                       </div>
-                      {node.next ? (
-                        <span style={{ color: '#666', fontSize: '14px', fontWeight: 'bold' }}>──▶</span>
-                      ) : (
-                        <span style={{ color: '#444', fontSize: '8px', fontWeight: 'bold' }}>NULL</span>
+
+                      {idx < arr.length - 1 && (
+                        <div style={{ textAlign: 'center', color: node.color, fontSize: '12px', lineHeight: '1', opacity: 0.7 }}>
+                          ↓
+                        </div>
                       )}
                     </React.Fragment>
                   )
                 })}
               </div>
-            )}
+            </div>
 
-            {/* Gradient Descent Visualization */}
-            {selectedAlgo === 'gradient-descent' && (
-              <div style={{ height: '110px', background: '#030303', borderRadius: '8px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg viewBox="0 0 400 150" style={{ width: '80%', height: '100%' }}>
-                  <path d="M 20,20 Q 200,160 380,20" fill="none" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="2" />
-                  <circle
-                    cx={200 + (1.8 - (currentTrace.vars.w || 1.8)) * 140}
-                    cy={110 - Math.pow((currentTrace.vars.w || 1.8) - 0.5, 2) * 20}
-                    r="8"
-                    fill="#ffffff"
-                    style={{ filter: 'drop-shadow(0 0 6px #ffffff)', transition: 'all 0.5s ease' }}
-                  />
-                </svg>
+            <div
+              style={{
+                background: '#090909',
+                border: '1px solid rgba(0, 255, 170, 0.25)',
+                borderRadius: '12px',
+                padding: '14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px'
+              }}
+            >
+              <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#00ffaa', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>🎯</span>
+                <span>WHERE & HOW THE OUTPUT COMES</span>
               </div>
-            )}
+              <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                The algorithm traverses input sequences through the loop-in-loop state hierarchy. When the predicate evaluates to true, the return statement yields the final result to caller without redundant passes.
+              </div>
+            </div>
 
-            {/* Fibonacci Stack Visualization */}
-            {selectedAlgo === 'fibonacci' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontSize: '10px', color: '#aaa' }}>
-                  Call Stack: <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{currentTrace.vars.callStack || 'empty'}</span>
+            <div
+              style={{
+                background: '#070707',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '12px',
+                padding: '14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}
+            >
+              <div style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#666', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '4px', textTransform: 'uppercase' }}>
+                Big-O Telemetry Dashboard
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                <div style={{ background: '#030303', padding: '8px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div style={{ fontSize: '9px', color: '#666' }}>Time O(•)</div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 'bold', color: '#00f3ff', marginTop: '2px', fontFamily: 'monospace' }}>
+                    {customComplexities ? customComplexities.timeComplexity : 'O(n)'}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column-reverse', gap: '4px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', padding: '10px', minHeight: '80px', justifyContent: 'flex-start' }}>
-                  {Array.from({ length: currentTrace.vars.activeStackSize || 1 }).map((_, idx) => (
-                    <div
-                      key={idx}
+
+                <div style={{ background: '#030303', padding: '8px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div style={{ fontSize: '9px', color: '#666' }}>Best Ω(•)</div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 'bold', color: '#00ffaa', marginTop: '2px', fontFamily: 'monospace' }}>
+                    {customComplexities ? customComplexities.omegaComplexity : 'Ω(1)'}
+                  </div>
+                </div>
+
+                <div style={{ background: '#030303', padding: '8px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div style={{ fontSize: '9px', color: '#666' }}>Space S(•)</div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 'bold', color: '#ff00c8', marginTop: '2px', fontFamily: 'monospace' }}>
+                    {customComplexities ? customComplexities.spaceComplexity : 'O(1)'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              overflowY: 'auto',
+              paddingRight: '4px'
+            }}
+          >
+            <div
+              style={{
+                background: '#070707',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '12px',
+                padding: '16px'
+              }}
+            >
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#888', marginBottom: '12px' }}>
+                SELECT TRACE ALGORITHM
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                {[
+                  { id: 'binary-search', label: '🔍 Binary Search' },
+                  { id: 'bubble-sort', label: '📊 Bubble Sort' },
+                  { id: 'linked-list', label: '🔗 Linked List' },
+                  { id: 'gradient-descent', label: '📉 Gradient Descent' },
+                  { id: 'fibonacci', label: '🌀 Fibonacci Stack' }
+                ].map((algo) => (
+                  <button
+                    key={algo.id}
+                    onClick={() => {
+                      setSelectedAlgo(algo.id)
+                      setDsaStep(0)
+                      setDsaPlaying(false)
+                    }}
+                    style={{
+                      background: selectedAlgo === algo.id ? '#ffffff' : 'rgba(255,255,255,0.04)',
+                      border: selectedAlgo === algo.id ? '1px solid #ffffff' : '1px solid rgba(255,255,255,0.08)',
+                      color: selectedAlgo === algo.id ? '#000000' : '#cccccc',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      textAlign: 'left'
+                    }}
+                  >
+                    {algo.label}
+                  </button>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: '16px',
+                  background: 'rgba(0,0,0,0.3)',
+                  padding: '10px 14px',
+                  borderRadius: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={handleDsaReset}
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      border: 'none',
+                      color: '#fff',
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    ⏮ Reset
+                  </button>
+                  <button
+                    onClick={() => setDsaPlaying(!dsaPlaying)}
+                    style={{
+                      background: '#ffffff',
+                      border: 'none',
+                      color: '#000',
+                      fontWeight: 'bold',
+                      padding: '6px 16px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '10px'
+                    }}
+                  >
+                    {dsaPlaying ? '⏸ Pause' : '▶ Auto Play'}
+                  </button>
+                  <button
+                    onClick={handleDsaNext}
+                    style={{
+                      background: 'rgba(255,255,255,0.15)',
+                      border: '1px solid rgba(255,255,255,0.25)',
+                      color: '#fff',
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    ▶▶ Step Next
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {[
+                    { label: 'Slow', speed: 2000 },
+                    { label: 'Normal', speed: 1500 },
+                    { label: 'Fast', speed: 800 }
+                  ].map((s) => (
+                    <button
+                      key={s.label}
+                      onClick={() => setDsaSpeed(s.speed)}
                       style={{
-                        padding: '4px 10px',
-                        background: idx === (currentTrace.vars.activeStackSize - 1) ? '#ffffff' : 'rgba(255,255,255,0.1)',
-                        color: idx === (currentTrace.vars.activeStackSize - 1) ? '#000000' : '#ffffff',
-                        fontSize: '10px',
-                        fontWeight: 'bold',
+                        background: dsaSpeed === s.speed ? '#ffffff' : 'rgba(255,255,255,0.05)',
+                        border: 'none',
+                        color: dsaSpeed === s.speed ? '#000' : '#aaa',
+                        padding: '2px 8px',
                         borderRadius: '3px',
-                        textAlign: 'center',
-                        fontFamily: 'monospace'
+                        fontSize: '9px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
                       }}
                     >
-                      {idx === 0 ? "fib(4) entry" : idx === 1 ? "fib(3) left frame" : idx === 2 ? "fib(2) recursive frame" : "fib(1) base return"}
-                    </div>
+                      {s.label}
+                    </button>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Local Variables Telemetry Inspector */}
-          <div
-            style={{
-              background: '#070707',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '12px',
-              padding: '16px'
-            }}
-          >
-            <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '10px', textTransform: 'uppercase' }}>
-              Local Variable Telemetry
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-              {Object.keys(currentTrace.vars).map((keyName) => (
-                <div
-                  key={keyName}
-                  style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    padding: '8px 12px',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <span style={{ fontSize: '11px', color: '#888', fontFamily: 'monospace' }}>{keyName}</span>
-                  <span style={{ fontSize: '11px', color: '#fff', fontWeight: 'bold', fontFamily: 'monospace' }}>
-                    {currentTrace.vars[keyName]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Complexity Telemetry Dashboard */}
-          <div
-            style={{
-              background: '#070707',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '12px',
-              padding: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px'
-            }}
-          >
-            <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '6px', textTransform: 'uppercase' }}>
-              Big-O Telemetry Dashboard
-            </div>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              <div style={{ background: '#030303', padding: '10px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: '9px', color: '#666' }}>Time O(•)</div>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#00f3ff', marginTop: '4px', fontFamily: 'monospace' }}>
-                  {customComplexities ? customComplexities.timeComplexity : (
-                    <>
-                      {selectedAlgo === 'binary-search' && 'O(log n)'}
-                      {selectedAlgo === 'bubble-sort' && 'O(n²)'}
-                      {selectedAlgo === 'linked-list' && 'O(n)'}
-                      {selectedAlgo === 'gradient-descent' && 'O(E)'}
-                      {selectedAlgo === 'fibonacci' && 'O(2ⁿ)'}
-                    </>
-                  )}
-                </div>
+            <div
+              style={{
+                background: '#070707',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '12px',
+                padding: '20px',
+                minHeight: '180px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                boxSizing: 'border-box'
+              }}
+            >
+              <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '14px', textTransform: 'uppercase' }}>
+                Interactive Visual Arena
               </div>
 
-              <div style={{ background: '#030303', padding: '10px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: '9px', color: '#666' }}>Best Ω(•)</div>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#00ffaa', marginTop: '4px', fontFamily: 'monospace' }}>
-                  {customComplexities ? customComplexities.omegaComplexity : (
-                    <>
-                      {selectedAlgo === 'binary-search' && 'Ω(1)'}
-                      {selectedAlgo === 'bubble-sort' && 'Ω(n)'}
-                      {selectedAlgo === 'linked-list' && 'Ω(1)'}
-                      {selectedAlgo === 'gradient-descent' && 'Ω(1)'}
-                      {selectedAlgo === 'fibonacci' && 'Ω(1)'}
-                    </>
-                  )}
-                </div>
-              </div>
+              {selectedAlgo === 'binary-search' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '11px', color: '#aaa', textAlign: 'center', marginBottom: '8px' }}>
+                    Searching Target: <span style={{ color: '#fff', fontWeight: 'bold' }}>56</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', padding: '16px 0', justifyContent: 'center' }}>
+                    {binarySearchArray.map((num, idx) => {
+                      const pointers = getBspPointersForStep(dsaStep)
+                      const isLow = idx === pointers.low
+                      const isHigh = idx === pointers.high
+                      const isMid = idx === pointers.mid
+                      const inRange = idx >= pointers.low && idx <= pointers.high
 
-              <div style={{ background: '#030303', padding: '10px', borderRadius: '6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: '9px', color: '#666' }}>Space S(•)</div>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#ff00c8', marginTop: '4px', fontFamily: 'monospace' }}>
-                  {customComplexities ? customComplexities.spaceComplexity : (
-                    <>
-                      {selectedAlgo === 'binary-search' && 'O(1)'}
-                      {selectedAlgo === 'bubble-sort' && 'O(1)'}
-                      {selectedAlgo === 'linked-list' && 'O(1)'}
-                      {selectedAlgo === 'gradient-descent' && 'O(1)'}
-                      {selectedAlgo === 'fibonacci' && 'O(n)'}
-                    </>
-                  )}
+                      let bg = 'rgba(255,255,255,0.03)'
+                      let border = '1px solid rgba(255,255,255,0.1)'
+                      let color = '#777'
+
+                      if (inRange) {
+                        bg = 'rgba(255,255,255,0.06)'
+                        border = '1px solid rgba(255,255,255,0.3)'
+                        color = '#ccc'
+                      }
+                      if (isMid) {
+                        bg = 'rgba(255, 255, 255, 0.2)'
+                        border = '1px solid #ffffff'
+                        color = '#ffffff'
+                      }
+                      if (num === 56 && isMid && dsaStep >= 19) {
+                        bg = '#ffffff'
+                        color = '#000000'
+                        border = '1px solid #ffffff'
+                      }
+
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            width: '38px',
+                            height: '42px',
+                            background: bg,
+                            border: border,
+                            borderRadius: '6px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: color,
+                            fontWeight: 'bold',
+                            fontSize: '13px',
+                            transition: 'all 0.2s',
+                            position: 'relative'
+                          }}
+                        >
+                          <span>{num}</span>
+                          <span style={{ fontSize: '8px', position: 'absolute', bottom: '2px', opacity: 0.6 }}>
+                            {isLow && 'L'} {isMid && 'M'} {isHigh && 'H'}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
+              )}
+
+              {selectedAlgo === 'bubble-sort' && (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', height: '140px', justifyContent: 'center', padding: '10px 0' }}>
+                  {getSortArrayForStep(dsaStep).map((num, idx) => {
+                    const indices = getSortIndicesForStep(dsaStep)
+                    const isComparing = idx === indices.i || idx === indices.j
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          width: '32px',
+                          height: `${(num / 90) * 100}px`,
+                          background: isComparing ? 'linear-gradient(180deg, #ff4d4f 0%, #ff7875 100%)' : 'rgba(255,255,255,0.1)',
+                          border: isComparing ? '1px solid #ff4d4f' : '1px solid rgba(255,255,255,0.15)',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#fff',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {num}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div
+              style={{
+                background: '#070707',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '12px',
+                padding: '16px'
+              }}
+            >
+              <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '10px', textTransform: 'uppercase' }}>
+                State Machine Registry
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {Object.keys(currentTrace.vars || {}).map((keyName) => (
+                  <div
+                    key={keyName}
+                    style={{
+                      background: 'rgba(255,255,255,0.03)',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <span style={{ fontSize: '11px', color: '#888', fontFamily: 'monospace' }}>{keyName}</span>
+                    <span style={{ fontSize: '11px', color: '#fff', fontWeight: 'bold', fontFamily: 'monospace' }}>
+                      {currentTrace.vars[keyName]}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
+
+      <footer
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 20px',
+          height: '28px',
+          minHeight: '28px',
+          maxHeight: '28px',
+          background: '#090909',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          fontSize: '11px',
+          color: '#888',
+          boxSizing: 'border-box'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ color: '#00ffaa', fontWeight: 'bold' }}>
+            ● {isInteractiveMode ? 'Interactive Playground Mode' : 'Algorithm Simulation Mode'}
+          </span>
+          <span style={{ opacity: 0.3 }}>|</span>
+          <span>Active: {isInteractiveMode ? 'Custom Source Code AST' : selectedAlgo}</span>
+          <span style={{ opacity: 0.3 }}>|</span>
+          <span style={{ color: '#00f3ff' }}>V8 Runtime Engine: Online</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>Tests: {testResults.filter((t) => t.pass).length}/{testResults.length} Passed</span>
+          <span style={{ opacity: 0.3 }}>|</span>
+          <span>Memory: Safe O(1)</span>
+          <span style={{ opacity: 0.3 }}>|</span>
+          <span>Ready</span>
+        </div>
+      </footer>
     </div>
   )
 }
