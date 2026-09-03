@@ -5,6 +5,115 @@ import InlineSuggestOverlay from '../components/ui/InlineSuggestOverlay'
 const EditorPage = () => {
   const [isSplit, setIsSplit] = useState(false)
   const [activePane, setActivePane] = useState('left')
+  const [splitRatio, setSplitRatio] = useState(50)
+  const [isResizingSplit, setIsResizingSplit] = useState(false)
+  const [dragOverSplit, setDragOverSplit] = useState(false)
+  const [dragHoverZone, setDragHoverZone] = useState('left') // 'left' | 'right'
+  const splitContainerRef = useRef(null)
+
+  const detectLanguage = (filename) => {
+    if (!filename) return 'Node.js'
+    const ext = filename.split('.').pop().toLowerCase()
+    const map = {
+      js: 'Node.js',
+      jsx: 'Node.js',
+      ts: 'Node.js',
+      tsx: 'Node.js',
+      py: 'Python 3',
+      pyw: 'Python 3',
+      c: 'C (GCC)',
+      h: 'C (GCC)',
+      cpp: 'C++ (G++)',
+      hpp: 'C++ (G++)',
+      cs: 'Dot Net',
+      dart: 'Dart',
+      html: 'XML',
+      xml: 'XML',
+      svg: 'XML',
+      sql: 'MySQL',
+      php: 'PHP'
+    }
+    return map[ext] || 'Node.js'
+  }
+
+  const handleSplitResizeMouseDown = (e) => {
+    e.preventDefault()
+    setIsResizingSplit(true)
+    const container = splitContainerRef.current
+    if (!container) return
+
+    const handleMouseMove = (moveEvent) => {
+      const rect = container.getBoundingClientRect()
+      const offset = moveEvent.clientX - rect.left
+      const newRatio = Math.max(15, Math.min(85, (offset / rect.width) * 100))
+      setSplitRatio(newRatio)
+    }
+
+    const handleMouseUp = () => {
+      setIsResizingSplit(false)
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  const handleEditorDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!dragOverSplit) setDragOverSplit(true)
+    const rect = e.currentTarget.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left
+    if (mouseX < rect.width / 2) {
+      setDragHoverZone('left')
+    } else {
+      setDragHoverZone('right')
+    }
+  }
+
+  const handleEditorDragLeave = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.currentTarget.contains(e.relatedTarget)) return
+    setDragOverSplit(false)
+  }
+
+  const handleEditorDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOverSplit(false)
+
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0]
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const content = event.target.result || ''
+        const filename = file.name
+        const lang = detectLanguage(filename)
+        const path = file.path || ''
+
+        if (dragHoverZone === 'right') {
+          setIsSplit(true)
+          setRightTab(filename)
+          setRightCode(content)
+          setRightLang(lang)
+          setRightFilePath(path)
+          setActivePane('right')
+        } else {
+          const newId = `file_${Date.now()}`
+          setOpenTabs((prev) => [
+            ...prev,
+            { id: newId, filename, code: content, lang, path }
+          ])
+          setActiveTabId(newId)
+          setActivePane('left')
+        }
+      }
+      reader.readAsText(file)
+    }
+  }
+
   const [isDraggingTab, setIsDraggingTab] = useState(false)
   const [showMinimap, setShowMinimap] = useState(true)
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 })
@@ -1936,6 +2045,10 @@ const EditorPage = () => {
     >
       {/* Editor Main Section */}
       <div
+        ref={splitContainerRef}
+        onDragOver={handleEditorDragOver}
+        onDragLeave={handleEditorDragLeave}
+        onDrop={handleEditorDrop}
         style={{
           height: terminalLayout === 'bottom' ? `${editorHeight}px` : '100%',
           display: 'flex',
@@ -1945,6 +2058,65 @@ const EditorPage = () => {
           position: 'relative'
         }}
       >
+        {/* Drag-and-Drop Split Drop Target Overlay */}
+        {dragOverSplit && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 9999,
+              display: 'flex',
+              background: 'rgba(0, 0, 0, 0.75)',
+              backdropFilter: 'blur(4px)',
+              pointerEvents: 'none'
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                margin: '12px 6px 12px 12px',
+                border: `2px dashed ${dragHoverZone === 'left' ? '#00e5ff' : 'rgba(255,255,255,0.3)'}`,
+                background: dragHoverZone === 'left' ? 'rgba(0, 229, 255, 0.18)' : 'rgba(255,255,255,0.02)',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <i className="bx bx-window-open" style={{ fontSize: '38px', color: dragHoverZone === 'left' ? '#00e5ff' : '#94a3b8' }}></i>
+              <span style={{ fontSize: '13px', fontWeight: 'bold', color: dragHoverZone === 'left' ? '#00e5ff' : '#cbd5e1' }}>
+                Drop to Open in Left Pane
+              </span>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>Active Primary Tab (50%)</span>
+            </div>
+
+            <div
+              style={{
+                flex: 1,
+                margin: '12px 12px 12px 6px',
+                border: `2px dashed ${dragHoverZone === 'right' ? '#a855f7' : 'rgba(255,255,255,0.3)'}`,
+                background: dragHoverZone === 'right' ? 'rgba(168, 85, 247, 0.18)' : 'rgba(255,255,255,0.02)',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <i className="bx bx-layout" style={{ fontSize: '38px', color: dragHoverZone === 'right' ? '#a855f7' : '#94a3b8' }}></i>
+              <span style={{ fontSize: '13px', fontWeight: 'bold', color: dragHoverZone === 'right' ? '#a855f7' : '#cbd5e1' }}>
+                Drop to Split into Right Pane
+              </span>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>Side-by-Side Dual View (50%)</span>
+            </div>
+          </div>
+        )}
+
         {!isSplit ? (
           /* Single Pane Editor */
           <div
@@ -2889,21 +3061,23 @@ const EditorPage = () => {
               display: 'flex',
               flexDirection: 'row',
               height: '100%',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              position: 'relative'
             }}
           >
             {/* Left Pane */}
             <div
               className="editor-pane"
               style={{
-                flex: 1,
+                width: `${splitRatio}%`,
+                flex: 'none',
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
                 overflow: 'hidden',
                 borderRight: '1px solid var(--panel-border)',
                 background: activePane === 'left' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
-                transition: 'background 0.2s'
+                transition: isResizingSplit ? 'none' : 'background 0.2s'
               }}
               onClick={() => setActivePane('left')}
             >
@@ -3034,17 +3208,47 @@ const EditorPage = () => {
               </div>
             </div>
 
+            {/* Resizable Divider between Left & Right split panes */}
+            <div
+              className="resizer-split-v"
+              onMouseDown={handleSplitResizeMouseDown}
+              onDoubleClick={() => setSplitRatio(50)}
+              title="Drag to resize split panes (Double click to reset 50/50)"
+              style={{
+                width: '6px',
+                cursor: 'col-resize',
+                background: isResizingSplit ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)',
+                transition: 'background 0.2s',
+                zIndex: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                userSelect: 'none',
+                flexShrink: 0
+              }}
+            >
+              <div
+                style={{
+                  width: '2px',
+                  height: '28px',
+                  background: isResizingSplit ? '#000' : 'rgba(255,255,255,0.4)',
+                  borderRadius: '1px'
+                }}
+              />
+            </div>
+
             {/* Right Pane */}
             <div
               className="editor-pane"
               style={{
-                flex: 1,
+                width: `calc(${100 - splitRatio}% - 6px)`,
+                flex: 'none',
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
                 overflow: 'hidden',
                 background: activePane === 'right' ? 'rgba(0, 229, 255, 0.02)' : 'transparent',
-                transition: 'background 0.2s'
+                transition: isResizingSplit ? 'none' : 'background 0.2s'
               }}
               onClick={() => setActivePane('right')}
             >

@@ -172,7 +172,11 @@ const api = {
   // MinGW C to DLL API
   compileDll: (payload) => ipcRenderer.invoke('dll:compile', payload),
   saveDllBinaryDialog: (sessionId, fileType, defaultName) =>
-    ipcRenderer.invoke('dll:saveBinaryDialog', sessionId, fileType, defaultName)
+    ipcRenderer.invoke('dll:saveBinaryDialog', sessionId, fileType, defaultName),
+
+  // Multi-Window and System API
+  openNewWindow: (options) => ipcRenderer.invoke('window:new', options),
+  allocateExtension: (payload) => ipcRenderer.invoke('extensions:allocate', payload)
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).

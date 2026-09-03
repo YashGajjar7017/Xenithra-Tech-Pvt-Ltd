@@ -14,8 +14,37 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [installedExtensions, setInstalledExtensions] = useState([])
   const [extSearchQuery, setExtSearchQuery] = useState('')
-
   const [storeExtensions, setStoreExtensions] = useState([])
+  const [allocatingPkg, setAllocatingPkg] = useState(null)
+  const [allocatedPackages, setAllocatedPackages] = useState([])
+
+  const handleAllocatePackage = async (pkg) => {
+    try {
+      setAllocatingPkg(pkg.id)
+      const port = localStorage.getItem('api-port') || '8000'
+      const res = await fetch(`http://localhost:${port}/api/extensions/allocate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageId: pkg.id,
+          name: pkg.name,
+          version: pkg.version || '1.0.0',
+          publisher: pkg.pub || 'marketplace'
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setAllocatedPackages((prev) => [...prev, pkg.id])
+        alert(`Package '${pkg.name}' allocated and installed from XML Server successfully!`)
+      } else {
+        alert('Allocation failed: ' + (data.message || 'Unknown error'))
+      }
+    } catch (e) {
+      alert('Error allocating XML package: ' + e.message)
+    } finally {
+      setAllocatingPkg(null)
+    }
+  }
 
   // Listen to open-file event to keep track of active file highlight in sidebar
   useEffect(() => {
@@ -667,6 +696,24 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
       ) : activeActivity === 'extensions' ? (
         /* Extensions Panel View */
         <div className="extensions-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#040712', padding: '12px', color: '#c9d1d9', overflowY: 'auto', userSelect: 'none' }}>
+          
+          {/* XML Server Repository Status Banner */}
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(168, 85, 247, 0.1))',
+            border: '1px solid rgba(0, 229, 255, 0.25)',
+            borderRadius: '6px',
+            padding: '8px 10px',
+            marginBottom: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#00e5ff' }}>📡 XML Extensions Server</span>
+              <span style={{ fontSize: '9px', background: 'rgba(0,255,170,0.15)', color: '#00ffaa', padding: '1px 5px', borderRadius: '4px', fontWeight: '700' }}>CONNECTED</span>
+            </div>
+            <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.4' }}>
+              Allocates live XML packages to local engine workspace.
+            </div>
+          </div>
+
           <input
             type="text"
             placeholder="Search Extensions in Marketplace"
@@ -690,7 +737,9 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
           <div style={{ marginBottom: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', fontWeight: 'bold', color: '#fff', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '4px' }}>
               <span>Installed</span>
-              <span style={{ background: '#005fb8', color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '9px', fontWeight: '800' }}>9</span>
+              <span style={{ background: '#005fb8', color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '9px', fontWeight: '800' }}>
+                {5 + allocatedPackages.length}
+              </span>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -757,7 +806,7 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
           {/* Section: Recommended */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', fontWeight: 'bold', color: '#fff', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '4px' }}>
-              <span>Recommended</span>
+              <span>Marketplace & XML Allocation</span>
               <span style={{ background: '#005fb8', color: '#fff', borderRadius: '10px', padding: '1px 6px', fontSize: '9px', fontWeight: '800' }}>8</span>
             </div>
 
@@ -780,31 +829,61 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
                   icon: 'https://img.icons8.com/color/48/ms-edge.png',
                   rating: 5,
                   downloads: '250K'
+                },
+                {
+                  id: 'prettier',
+                  name: 'Prettier Formatter',
+                  pub: 'esbenp',
+                  desc: 'Code formatter for JS, TS, HTML...',
+                  icon: 'https://img.icons8.com/color/48/source-code.png',
+                  rating: 5,
+                  downloads: '10M'
                 }
               ]
               .filter(ext => ext.name.toLowerCase().includes(extSearchQuery.toLowerCase()))
-              .map(ext => (
-                <div key={ext.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '11px' }}>
-                  <img src={ext.icon} alt="" style={{ width: '28px', height: '28px', borderRadius: '4px', background: 'rgba(255,255,255,0.04)', padding: '2px', objectFit: 'contain' }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ext.name}</span>
+              .map(ext => {
+                const isAllocated = allocatedPackages.includes(ext.id)
+                const isAllocating = allocatingPkg === ext.id
+
+                return (
+                  <div key={ext.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '11px' }}>
+                    <img src={ext.icon} alt="" style={{ width: '28px', height: '28px', borderRadius: '4px', background: 'rgba(255,255,255,0.04)', padding: '2px', objectFit: 'contain' }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: '600', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ext.name}</span>
+                      </div>
+                      <div style={{ color: '#8b949e', fontSize: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ext.desc}</div>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8b949e', fontSize: '9px', marginTop: '2px' }}>
+                        <span>{ext.pub}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          <i className="bx bx-cloud-download" style={{ fontSize: '10px' }}></i> {ext.downloads}
+                        </span>
+                        <span style={{ color: '#e3b341' }}>★ {ext.rating}</span>
+                      </div>
                     </div>
-                    <div style={{ color: '#8b949e', fontSize: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ext.desc}</div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8b949e', fontSize: '9px', marginTop: '2px' }}>
-                      <span>{ext.pub}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        <i className="bx bx-cloud-download" style={{ fontSize: '10px' }}></i> {ext.downloads}
-                      </span>
-                      <span style={{ color: '#e3b341' }}>★ {ext.rating}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'center' }}>
+                      <button
+                        onClick={() => handleAllocatePackage(ext)}
+                        disabled={isAllocated || isAllocating}
+                        style={{
+                          background: isAllocated ? 'rgba(0, 255, 170, 0.2)' : '#1f883d',
+                          color: isAllocated ? '#00ffaa' : '#fff',
+                          border: isAllocated ? '1px solid #00ffaa' : 'none',
+                          borderRadius: '3px',
+                          padding: '3px 8px',
+                          fontSize: '10px',
+                          fontWeight: 'bold',
+                          cursor: isAllocated || isAllocating ? 'default' : 'pointer',
+                          outline: 'none'
+                        }}
+                      >
+                        {isAllocating ? 'Allocating...' : isAllocated ? '✔ Allocated' : 'Allocate XML'}
+                      </button>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'center' }}>
-                    <button style={{ background: '#1f883d', color: '#fff', border: 'none', borderRadius: '3px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', outline: 'none' }}>Install</button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>

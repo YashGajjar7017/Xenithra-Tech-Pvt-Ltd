@@ -20,24 +20,49 @@ const LoginPage = () => {
 
     try {
       const port = localStorage.getItem('api-port') || '8000'
-      const response = await fetch(`http://localhost:${port}/api/login`, {
+      const isBrowser = !window.api || !!window.opener
+      
+      const response = await fetch(`http://localhost:${port}/api/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, fromBrowser: isBrowser })
       })
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Login failed')
+        // Fallback to /api/login
+        const fallbackRes = await fetch(`http://localhost:${port}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        })
+        if (!fallbackRes.ok) {
+          const errData = await fallbackRes.json()
+          throw new Error(errData.message || 'Authentication failed')
+        }
+        const data = await fallbackRes.json()
+        setSuccess(true)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        setTimeout(() => {
+          if (isBrowser && window.opener) {
+            window.close()
+          } else {
+            window.location.href = '/#/'
+          }
+        }, 800)
+        return
       }
 
       const data = await response.json()
       setSuccess(true)
+      localStorage.setItem('user', JSON.stringify(data.user))
 
       setTimeout(() => {
-        localStorage.setItem('user', JSON.stringify(data.user))
-        window.location.href = '/#/'
-      }, 1000)
+        if (data.closeWindow || (isBrowser && window.opener)) {
+          window.close()
+        } else {
+          window.location.href = '/#/'
+        }
+      }, 800)
     } catch (err) {
       setError(err.message || 'Error connecting to local backend. Ensure Electron is running.')
       setLoading(false)

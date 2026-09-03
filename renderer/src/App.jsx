@@ -197,7 +197,21 @@ const MainApp = () => {
             </MainLayout>
           }
         />
-        <Route path="/c-dll-studio" element={<CDllStudioPage />} />
+        <Route
+          path="/c-dll-studio"
+          element={
+            <MainLayout
+              theme={theme}
+              setTheme={setTheme}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
+              sidebarWidth={sidebarWidth}
+              setSidebarWidth={setSidebarWidth}
+            >
+              <CDllStudioPage />
+            </MainLayout>
+          }
+        />
         <Route
           path="/*"
           element={
@@ -640,7 +654,7 @@ const MainLayout = ({
                   style={{ position: 'relative' }}
                 >
                   {details.element}
-                  
+
                   {/* Reordering Controls Overlay on Hover */}
                   <div className="reorder-buttons">
                     {!isFirst && (

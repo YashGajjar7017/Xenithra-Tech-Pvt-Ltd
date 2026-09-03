@@ -6,6 +6,9 @@ const WebRtcPanel = () => {
   const [hostIps, setHostIps] = useState([])
   const [inputIp, setInputIp] = useState('localhost')
   const [inputRoomCode, setInputRoomCode] = useState('')
+  const [shareToken, setShareToken] = useState('')
+  const [inputToken, setInputToken] = useState('')
+  const [copyFeedback, setCopyFeedback] = useState('')
 
   // Connection Log & Stats
   const [connLogs, setConnLogs] = useState([])
@@ -20,7 +23,15 @@ const WebRtcPanel = () => {
   const pingIntervalRef = useRef(null)
   const processedSignalsRef = useRef(new Set())
 
-  const apiPort = localStorage.getItem('api-port') || '8000'
+  const [apiPort, setApiPort] = useState(() => localStorage.getItem('api-port') || '8000')
+
+  useEffect(() => {
+    if (window.api && typeof window.api.getApiPort === 'function') {
+      window.api.getApiPort().then((p) => {
+        if (p) setApiPort(p.toString())
+      })
+    }
+  }, [])
 
   // Add Log Message helper
   const addLog = (msg, type = 'info') => {
@@ -270,6 +281,7 @@ const WebRtcPanel = () => {
       if (data.success) {
         setRoomCode(data.roomCode)
         setHostIps(data.ips || [])
+        setShareToken(data.shareToken || '')
         addLog(
           `Room ${data.roomCode} online. IPs: ${data.ips?.join(', ') || 'localhost'}`,
           'success'
@@ -353,6 +365,40 @@ const WebRtcPanel = () => {
     }
   }
 
+  // Join via Token directly
+  const handleJoinWithToken = async () => {
+    if (!inputToken.trim()) {
+      alert('Please paste a P2P Invite Token')
+      return
+    }
+
+    try {
+      let clean = inputToken.trim()
+      if (clean.startsWith('P2P-TOKEN:')) {
+        clean = clean.replace('P2P-TOKEN:', '')
+      }
+      const decoded = JSON.parse(atob(clean))
+      if (decoded.roomCode && decoded.ips && decoded.ips.length > 0) {
+        setInputRoomCode(decoded.roomCode)
+        setInputIp(decoded.ips[0])
+        setMode('joining')
+        setConnLogs([])
+        addLog(`Decoded token for room ${decoded.roomCode} at host ${decoded.ips[0]}...`, 'info')
+        await initWebRtcGuest(decoded.ips[0], decoded.roomCode)
+      } else {
+        alert('Invalid token format')
+      }
+    } catch (e) {
+      alert('Failed to parse P2P token: ' + e.message)
+    }
+  }
+
+  const handleCopy = (text, type = 'Token') => {
+    navigator.clipboard.writeText(text)
+    setCopyFeedback(`${type} copied to clipboard!`)
+    setTimeout(() => setCopyFeedback(''), 2000)
+  }
+
   const handleForceSync = () => {
     // Send request to EditorPage via custom event to get current code
     window.dispatchEvent(new CustomEvent('webrtc-request-code-push'))
@@ -386,6 +432,12 @@ const WebRtcPanel = () => {
         </div>
       </div>
 
+      {copyFeedback && (
+        <div style={{ background: 'rgba(0, 255, 170, 0.15)', border: '1px solid #00ffaa', color: '#00ffaa', padding: '6px 10px', borderRadius: '4px', fontSize: '11px', textAlign: 'center' }}>
+          ✔ {copyFeedback}
+        </div>
+      )}
+
       {/* Menu Mode */}
       {mode === 'menu' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -393,7 +445,26 @@ const WebRtcPanel = () => {
             📡 Host P2P Live Session
           </button>
 
-          <div style={styles.divider}>— OR JOIN PEER —</div>
+          {/* QUICK JOIN VIA TOKEN */}
+          <div style={{ background: 'rgba(0,0,0,0.25)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ fontSize: '11px', color: '#00e5ff', fontWeight: '600', marginBottom: '6px' }}>
+              🔑 Join with Share Token
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <input
+                type="text"
+                placeholder="Paste P2P-TOKEN:..."
+                value={inputToken}
+                onChange={(e) => setInputToken(e.target.value)}
+                style={styles.input}
+              />
+              <button onClick={handleJoinWithToken} style={styles.joinBtn}>
+                Connect
+              </button>
+            </div>
+          </div>
+
+          <div style={styles.divider}>— OR MANUAL IP / ROOM —</div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -453,6 +524,30 @@ const WebRtcPanel = () => {
               </div>
             )}
 
+            {shareToken && (
+              <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <button
+                  onClick={() => handleCopy(shareToken, 'P2P Token')}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(0, 255, 170, 0.2), rgba(0, 191, 255, 0.2))',
+                    border: '1px solid #00ffaa',
+                    color: '#00ffaa',
+                    padding: '6px 10px',
+                    borderRadius: '5px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px'
+                  }}
+                >
+                  📋 Copy Shareable Invite Token
+                </button>
+              </div>
+            )}
+
             {hostIps.length > 0 && (
               <div
                 style={{
@@ -462,7 +557,7 @@ const WebRtcPanel = () => {
                   textAlign: 'center'
                 }}
               >
-                Share your IP: <code>{hostIps[0]}</code>
+                Host IP: <code>{hostIps[0]}</code> &bull; Port: <code>{apiPort}</code>
               </div>
             )}
           </div>

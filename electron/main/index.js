@@ -400,6 +400,8 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  return mainWindow
 }
 
 // This method will be called when Electron has finished
@@ -535,6 +537,47 @@ app.whenReady().then(() => {
       } else {
         focusedWindow.maximize()
       }
+    }
+  })
+
+  // Open New Window instance (+1 port support) IPC
+  ipcMain.handle('window:new', async (_event, options) => {
+    try {
+      const newWin = createWindow()
+      if (newWin) {
+        newWin.show()
+        return { success: true, windowId: newWin.id }
+      }
+      return { success: false, error: 'Could not create new window' }
+    } catch (err) {
+      console.error('Error opening new window:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
+  // Extension XML Package Allocation IPC
+  ipcMain.handle('extensions:allocate', async (_event, payload) => {
+    try {
+      const { extensionId, extension } = payload || {}
+      let currentExts = []
+      if (fs.existsSync(xmlFilePath)) {
+        const content = await fs.promises.readFile(xmlFilePath, 'utf-8')
+        currentExts = parseExtensionsXml(content)
+      }
+      const targetExt = extension || {
+        id: extensionId,
+        name: extensionId,
+        version: '1.0.0',
+        description: 'Allocated package'
+      }
+      if (!currentExts.some((e) => e.id === targetExt.id)) {
+        currentExts.push(targetExt)
+      }
+      const xml = generateExtensionsXml(currentExts)
+      await fs.promises.writeFile(xmlFilePath, xml, 'utf-8')
+      return { success: true, message: `Extension ${targetExt.name} allocated!`, extensions: currentExts }
+    } catch (err) {
+      return { success: false, message: err.message }
     }
   })
 

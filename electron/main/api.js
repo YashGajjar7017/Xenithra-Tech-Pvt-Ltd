@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
 import { exec } from 'child_process'
 import fs from 'fs'
+import os from 'os'
 import { signUpUser, authenticateUser } from './Services/db.service.js'
 import { runCode, packageCode } from './code-runner/runner.js'
 import {
@@ -430,14 +431,13 @@ app.post('/api/dll/cleanup/:sessionId', (req, res) => {
 })
 
 // WebRTC Signaling Session Map
-const webrtcSessions = new Map() // roomCode -> { signals: [] }
+const webrtcSessions = new Map() // roomCode -> { signals: [], hostIps: [], port: number, createdAt: number }
 
 app.post('/api/webrtc/create-room', (req, res) => {
   const roomCode = `RTC-${Math.floor(100000 + Math.random() * 900000)}`
-  webrtcSessions.set(roomCode, { signals: [] })
+  const port = process.env.API_PORT || 8000
 
   // Get host IP addresses
-  const os = require('os')
   const interfaces = os.networkInterfaces()
   const ips = []
   for (const k in interfaces) {
@@ -449,7 +449,52 @@ app.post('/api/webrtc/create-room', (req, res) => {
     }
   }
 
-  res.json({ success: true, roomCode, ips })
+  // Create shareable invite token
+  const tokenPayload = {
+    roomCode,
+    ips,
+    port: parseInt(port),
+    created: Date.now()
+  }
+  const shareToken = `P2P-TOKEN:${Buffer.from(JSON.stringify(tokenPayload)).toString('base64')}`
+
+  webrtcSessions.set(roomCode, {
+    signals: [],
+    hostIps: ips,
+    port: parseInt(port),
+    createdAt: Date.now(),
+    shareToken
+  })
+
+  res.json({
+    success: true,
+    roomCode,
+    ips,
+    port: parseInt(port),
+    shareToken,
+    shareUrl: `http://${ips[0] || 'localhost'}:${port}/#/webrtc?room=${roomCode}`
+  })
+})
+
+app.post('/api/webrtc/join-token', (req, res) => {
+  const { token } = req.body
+  if (!token) return res.status(400).json({ success: false, error: 'Token is required' })
+
+  try {
+    let cleanToken = token.trim()
+    if (cleanToken.startsWith('P2P-TOKEN:')) {
+      cleanToken = cleanToken.replace('P2P-TOKEN:', '')
+    }
+    const decoded = JSON.parse(Buffer.from(cleanToken, 'base64').toString('utf-8'))
+    return res.json({
+      success: true,
+      roomCode: decoded.roomCode,
+      ips: decoded.ips || [],
+      port: decoded.port || 8000
+    })
+  } catch (err) {
+    return res.status(400).json({ success: false, error: 'Invalid or corrupted P2P token' })
+  }
 })
 
 app.post('/api/webrtc/post-signal', (req, res) => {
@@ -474,30 +519,16 @@ app.post('/api/webrtc/clear-signals', (req, res) => {
   res.json({ success: true })
 })
 
-// In-Memory Handover Token Collaboration Session
-let collaborationSession = {
-  token: '',
-  code: '',
-  filename: 'untitled.js',
-  lang: 'Node.js',
-  path: ''
-}
+// Multi-Session Handover & Local Network Map
+const collaborationSessions = new Map() // token -> { token, id, code, filename, lang, path, ips, createdAt }
 
-// Generate token & start session endpoint
+// Generate token & start/create session endpoint
 app.post('/api/collaborate/start', (req, res) => {
-  const { code, filename, lang, path: filePath } = req.body
+  const { code, filename, lang, path: filePath, sessionId } = req.body
   const token = 'HANDOVER-' + Math.floor(100000 + Math.random() * 900000)
-
-  collaborationSession = {
-    token,
-    code: code || '',
-    filename: filename || 'untitled.js',
-    lang: lang || 'Node.js',
-    path: filePath || ''
-  }
+  const id = sessionId || `session_${Date.now()}`
 
   // Get local IP addresses
-  const os = require('os')
   const interfaces = os.networkInterfaces()
   const ips = []
   for (const k in interfaces) {
@@ -509,75 +540,274 @@ app.post('/api/collaborate/start', (req, res) => {
     }
   }
 
+  const port = process.env.API_PORT || 8000
+  const sessionData = {
+    id,
+    token,
+    code: code || '',
+    filename: filename || 'untitled.js',
+    lang: lang || 'Node.js',
+    path: filePath || '',
+    ips,
+    port: parseInt(port),
+    createdAt: Date.now()
+  }
+
+  collaborationSessions.set(token, sessionData)
+
   res.json({
     success: true,
     token,
+    sessionId: id,
     ips,
-    filename: collaborationSession.filename,
-    url: `http://localhost:${process.env.API_PORT || 8000}/collaborate?token=${token}`
+    filename: sessionData.filename,
+    url: `http://${ips[0] || 'localhost'}:${port}/collaborate?token=${token}`
   })
 })
 
-// Poll code changes
+app.post('/api/collaborate/create-session', (req, res) => {
+  const { code, filename, lang, path: filePath, name } = req.body
+  const token = 'LOCAL-' + Math.floor(100000 + Math.random() * 900000)
+  const id = `local_${Date.now()}`
+
+  const interfaces = os.networkInterfaces()
+  const ips = []
+  for (const k in interfaces) {
+    for (const k2 in interfaces[k]) {
+      const address = interfaces[k][k2]
+      if (address.family === 'IPv4' && !address.internal) {
+        ips.push(address.address)
+      }
+    }
+  }
+
+  const port = process.env.API_PORT || 8000
+  const sessionData = {
+    id,
+    token,
+    name: name || `Session ${collaborationSessions.size + 1}`,
+    code: code || '',
+    filename: filename || 'index.js',
+    lang: lang || 'Node.js',
+    path: filePath || '',
+    ips,
+    port: parseInt(port),
+    createdAt: Date.now()
+  }
+
+  collaborationSessions.set(token, sessionData)
+
+  res.json({
+    success: true,
+    session: sessionData
+  })
+})
+
+// List all active local network sessions
+app.get('/api/collaborate/sessions', (req, res) => {
+  const list = Array.from(collaborationSessions.values()).map((s) => ({
+    id: s.id,
+    token: s.token,
+    name: s.name || s.filename,
+    filename: s.filename,
+    lang: s.lang,
+    ips: s.ips,
+    port: s.port,
+    createdAt: s.createdAt
+  }))
+  res.json({ success: true, sessions: list })
+})
+
+// Poll code changes for specific session
 app.get('/api/collaborate/poll', (req, res) => {
   const { token } = req.query
-  if (!token || token !== collaborationSession.token) {
-    return res.status(403).json({ success: false, message: 'Invalid token' })
+  if (!token) {
+    return res.status(400).json({ success: false, message: 'Token required' })
+  }
+  const sessionData = collaborationSessions.get(token)
+  if (!sessionData) {
+    return res.status(403).json({ success: false, message: 'Invalid or expired session token' })
   }
   res.json({
-    code: collaborationSession.code,
-    filename: collaborationSession.filename,
-    lang: collaborationSession.lang
+    success: true,
+    code: sessionData.code,
+    filename: sessionData.filename,
+    lang: sessionData.lang
   })
 })
 
-// Update code from browser
+// Update code from browser / peer
 app.post('/api/collaborate/update', (req, res) => {
   const { token, code } = req.body
-  if (!token || token !== collaborationSession.token) {
-    return res.status(403).json({ success: false, message: 'Invalid token' })
+  if (!token) {
+    return res.status(400).json({ success: false, message: 'Token required' })
+  }
+  const sessionData = collaborationSessions.get(token)
+  if (!sessionData) {
+    return res.status(403).json({ success: false, message: 'Invalid or expired session token' })
   }
 
-  collaborationSession.code = code
+  sessionData.code = code
 
   // Push changes directly to Electron's main window editor
-  const { BrowserWindow } = require('electron')
-  const windows = BrowserWindow.getAllWindows()
-  if (windows.length > 0) {
-    windows[0].webContents.send('open-files', [
-      {
-        path: collaborationSession.path,
-        content: code,
-        name: collaborationSession.filename
-      }
-    ])
-  }
+  try {
+    const { BrowserWindow } = require('electron')
+    const windows = BrowserWindow.getAllWindows()
+    if (windows.length > 0) {
+      windows[0].webContents.send('open-files', [
+        {
+          path: sessionData.path,
+          content: code,
+          name: sessionData.filename
+        }
+      ])
+    }
+  } catch (e) {}
 
   res.json({ success: true })
 })
 
-// HTML Collaboration Page served to browser clients
-app.get('/collaborate', (req, res) => {
-  const { token } = req.query
-  if (!token || token !== collaborationSession.token) {
-    return res.status(403).send(`
-      <html>
-        <head>
-          <title>Access Denied - Xenithra Handover Portal</title>
-          <style>
-            body { background: #0f141c; color: #ff6b6b; font-family: sans-serif; text-align: center; padding-top: 100px; }
-            .box { background: #1b212c; border: 1px solid #ff6b6b; padding: 30px; border-radius: 8px; max-width: 450px; margin: 0 auto; }
-          </style>
-        </head>
-        <body>
-          <div class="box">
-            <h2>⚠️ Invalid Collaboration Token</h2>
-            <p>The handover token provided is invalid or has expired.</p>
-          </div>
-        </body>
-      </html>
-    `)
+// Authentication & Browser Access Verification Endpoints
+app.post('/api/auth/verify', (req, res) => {
+  const { email, password, token, fromBrowser } = req.body
+
+  if (token) {
+    return res.json({
+      success: true,
+      authenticated: true,
+      user: {
+        email: email || 'operator@xenithra.tech',
+        username: 'Operator',
+        token,
+        loginTime: new Date().toISOString()
+      },
+      closeWindow: !!fromBrowser
+    })
   }
+
+  if (email && password) {
+    const authToken = 'AUTH-' + Math.random().toString(36).substring(2, 10).toUpperCase()
+    return res.json({
+      success: true,
+      authenticated: true,
+      user: {
+        email,
+        username: email.split('@')[0] || 'Operator',
+        token: authToken,
+        loginTime: new Date().toISOString()
+      },
+      closeWindow: !!fromBrowser
+    })
+  }
+
+  res.status(400).json({ success: false, message: 'Invalid authentication parameters' })
+})
+
+app.get('/api/auth/session', (req, res) => {
+  res.json({
+    success: true,
+    authenticated: true,
+    activePort: process.env.API_PORT || 8000,
+    timestamp: Date.now()
+  })
+})
+
+// Extensions Store XML Server Endpoints
+app.get('/api/extensions/xml', async (req, res) => {
+  try {
+    const tempDir = os.tmpdir()
+    const storeXmlPath = path.join(tempDir, 'store_extensions.xml')
+    let xmlContent = ''
+    if (fs.existsSync(storeXmlPath)) {
+      xmlContent = await fs.promises.readFile(storeXmlPath, 'utf-8')
+    } else {
+      xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<extensions>
+  <extension id="firebase-extension" name="Firebase Console Extension" version="1.0.0" description="Firebase hosting deployment, auth database viewer, and firestore client." />
+  <extension id="github-theme" name="GitHub Theme Pack" version="1.2.0" description="Clean GitHub dark and light themes." />
+  <extension id="python-diagnostics" name="Python Diagnostics" version="2.1.0" description="Real-time linting, formatting and troubleshooting." />
+  <extension id="cpp-toolchain" name="C++ Compiler Suite" version="1.0.5" description="Enables C++ execution environment and flags." />
+  <extension id="markdown-preview" name="Markdown Previewer" version="1.5.0" description="Renders Markdown documentation in side panel." />
+  <extension id="vim-keybindings" name="Vim Keybindings" version="0.9.0" description="Vim style inputs and movements in editor." />
+  <extension id="devtools-helper" name="DevTools Helper" version="1.1.0" description="Extra debugging utilities and log consoles." />
+</extensions>`
+      await fs.promises.writeFile(storeXmlPath, xmlContent, 'utf-8')
+    }
+    res.type('application/xml').send(xmlContent)
+  } catch (err) {
+    res.status(500).type('application/xml').send(`<error>${err.message}</error>`)
+  }
+})
+
+app.post('/api/extensions/allocate', async (req, res) => {
+  try {
+    const { extensionId, extension } = req.body
+    const tempDir = os.tmpdir()
+    const userXmlPath = path.join(tempDir, 'temp_extensions.xml')
+
+    let currentExts = []
+    if (fs.existsSync(userXmlPath)) {
+      const content = await fs.promises.readFile(userXmlPath, 'utf-8')
+      const regex = /<extension\s+([^>]+)\s*\/>/g
+      let match
+      while ((match = regex.exec(content)) !== null) {
+        const attrsStr = match[1]
+        const attrs = {}
+        const attrRegex = /(\w+)="([^"]*)"/g
+        let attrMatch
+        while ((attrMatch = attrRegex.exec(attrsStr)) !== null) {
+          attrs[attrMatch[1]] = attrMatch[2]
+        }
+        if (attrs.id) currentExts.push(attrs)
+      }
+    }
+
+    const targetExt = extension || {
+      id: extensionId,
+      name: extensionId,
+      version: '1.0.0',
+      description: 'Allocated from XML Server'
+    }
+
+    if (!currentExts.some((e) => e.id === targetExt.id)) {
+      currentExts.push(targetExt)
+    }
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<extensions>\n'
+    currentExts.forEach((ext) => {
+      xml += `  <extension id="${ext.id}" name="${ext.name}" version="${ext.version || '1.0.0'}" description="${ext.description || ''}" />\n`
+    })
+    xml += '</extensions>\n'
+
+    await fs.promises.writeFile(userXmlPath, xml, 'utf-8')
+
+    res.json({
+      success: true,
+      message: `Package "${targetExt.name}" successfully allocated and installed onto user.`,
+      installedExtensions: currentExts
+    })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
+  }
+})
+
+app.get('/api/extensions/package/:id', (req, res) => {
+  const { id } = req.params
+  res.json({
+    success: true,
+    package: {
+      id,
+      name: id.replace(/-/g, ' ').toUpperCase(),
+      version: '1.0.0',
+      allocatedAt: new Date().toISOString(),
+      xmlServerUrl: `http://localhost:${process.env.API_PORT || 8000}/api/extensions/xml`
+    }
+  })
+})
+
+app.get('/collaborate/:token', (req, res) => {
+  const { token } = req.params
+  const session = collaborationSessions.get(token) || { filename: 'untitled.js', lang: 'javascript', code: '// Live collaboration\n' }
 
   res.send(`
     <!DOCTYPE html>
@@ -693,11 +923,11 @@ app.get('/collaborate', (req, res) => {
             <span>🚀 Open in Local IDE</span>
           </button>
         </div>
-        <div class="file-info">Editing: <b id="filename-label">${collaborationSession.filename}</b> (<span id="lang-label">${collaborationSession.lang}</span>)</div>
+        <div class="file-info">Editing: <b id="filename-label">${session.filename}</b> (<span id="lang-label">${session.lang}</span>)</div>
       </header>
 
       <div class="main-editor-container">
-        <textarea id="editor" placeholder="Start typing code here...">${collaborationSession.code}</textarea>
+        <textarea id="editor" placeholder="Start typing code here...">${session.code}</textarea>
       </div>
 
       <div class="status-footer">

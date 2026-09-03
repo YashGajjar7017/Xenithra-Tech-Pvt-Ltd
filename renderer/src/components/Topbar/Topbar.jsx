@@ -255,13 +255,17 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
     }
   }
 
-  const handleNewWindow = (e) => {
+  const handleNewWindow = async (e) => {
     if (e) e.stopPropagation()
     setActiveMenu(null)
-    window.open(window.location.href, '_blank')
+    if (window.api && typeof window.api.openNewWindow === 'function') {
+      await window.api.openNewWindow()
+    } else {
+      window.open(window.location.href, '_blank')
+    }
   }
 
-  const handleNewWindowWithProfile = (e) => {
+  const handleNewWindowWithProfile = async (e) => {
     if (e) e.stopPropagation()
     setActiveMenu(null)
     const profile = prompt(
@@ -269,8 +273,11 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
       'Development'
     )
     if (profile) {
-      alert(`Launched new window workspace with '${profile}' profile!`)
-      window.open(window.location.href, '_blank')
+      if (window.api && typeof window.api.openNewWindow === 'function') {
+        await window.api.openNewWindow({ profile })
+      } else {
+        window.open(window.location.href, '_blank')
+      }
     }
   }
 
