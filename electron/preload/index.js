@@ -176,7 +176,16 @@ const api = {
 
   // Multi-Window and System API
   openNewWindow: (options) => ipcRenderer.invoke('window:new', options),
-  allocateExtension: (payload) => ipcRenderer.invoke('extensions:allocate', payload)
+  allocateExtension: (payload) => ipcRenderer.invoke('extensions:allocate', payload),
+
+  // ─── License API ─────────────────────────────────────────────────────
+  getLicenseStatus: () => ipcRenderer.invoke('license:status'),
+  activateLicense: (licenseKey, name, email) =>
+    ipcRenderer.invoke('license:activate', licenseKey, name, email),
+  deactivateLicense: () => ipcRenderer.invoke('license:deactivate'),
+  submitLicenseRegistration: (name, email, organization, plan) =>
+    ipcRenderer.invoke('license:register', name, email, organization, plan),
+  getMachineId: () => ipcRenderer.invoke('license:machineId')
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import GenZLogo from '../ui/GenZLogo'
 
-const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => {
+const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licenseStatus, onOpenLicense }) => {
   const [activeMenu, setActiveMenu] = useState(null) // 'file', 'edit', 'selection', 'view', 'run', 'help', 'theme', or null
   const [selectedLang, setSelectedLang] = useState('Node.js')
   const [autoSave, setAutoSave] = useState(localStorage.getItem('autoSave') === 'true')
@@ -926,6 +926,16 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
               <button onClick={handleHelpDocumentation}>
                 <span>Documentation</span>
               </button>
+              <hr />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveMenu(null)
+                  window.dispatchEvent(new CustomEvent('open-license-manager'))
+                }}
+              >
+                <span>◆ License Manager</span>
+              </button>
             </div>
           )}
         </div>
@@ -968,9 +978,14 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
                 <span>Cyber Amber</span>
                 {theme === 'cyber-amber' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
               </button>
+              <button onClick={(e) => updateTheme(e, 'xenithra-dark-pro')}>
+                <span>◆ Xenithra Dark Pro</span>
+                {theme === 'xenithra-dark-pro' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
             </div>
           )}
         </div>
+
       </div>
 
       {/* Centralised Command Search Input with Command Palette */}
@@ -1208,6 +1223,49 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
           <span>C &rarr; DLL Studio</span>
         </button>
 
+        {/* License Status Badge */}
+        {licenseStatus && licenseStatus.status !== 'licensed' && (
+          <button
+            onClick={onOpenLicense}
+            title={licenseStatus.status === 'expired' ? 'Trial Expired — Activate License' : `Trial: ${licenseStatus.daysLeft} days left`}
+            style={{
+              background: licenseStatus.status === 'expired'
+                ? 'rgba(239, 68, 68, 0.12)'
+                : 'rgba(245, 158, 11, 0.12)',
+              border: `1px solid ${licenseStatus.status === 'expired' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+              borderRadius: '5px',
+              color: licenseStatus.status === 'expired' ? '#f87171' : '#fbbf24',
+              fontSize: '11px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              padding: '3px 9px',
+              height: '25px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap',
+              marginRight: '4px',
+              fontFamily: 'Outfit, sans-serif'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = licenseStatus.status === 'expired'
+                ? 'rgba(239, 68, 68, 0.2)'
+                : 'rgba(245, 158, 11, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = licenseStatus.status === 'expired'
+                ? 'rgba(239, 68, 68, 0.12)'
+                : 'rgba(245, 158, 11, 0.12)'
+            }}
+          >
+            <i className={`bx ${licenseStatus.status === 'expired' ? 'bx-x-circle' : 'bx-time'}`} style={{ fontSize: '12px' }}></i>
+            <span>
+              {licenseStatus.status === 'expired' ? 'Expired' : `Trial · ${licenseStatus.daysLeft}d`}
+            </span>
+          </button>
+        )}
+
         {/* User Accounts Popover Dropdown */}
         <div style={{ position: 'relative' }}>
           <div
@@ -1305,6 +1363,22 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename }) => 
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 Manage Language Model Access...
+              </div>
+              <div
+                onClick={() => {
+                  setActiveMenu(null)
+                  if (typeof onOpenLicense === 'function') {
+                    onOpenLicense()
+                  } else {
+                    window.dispatchEvent(new CustomEvent('open-license-manager'))
+                  }
+                }}
+                style={{ padding: '6px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#5793ff', fontWeight: '500' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(87,147,255,0.12)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <i className="bx bx-badge-check" style={{ fontSize: '14px' }}></i>
+                <span>Manage License & Certificate...</span>
               </div>
               <div
                 style={{ height: '1px', background: 'rgba(255,255,255,0.08)', margin: '4px 0' }}

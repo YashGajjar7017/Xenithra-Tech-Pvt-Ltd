@@ -183,6 +183,45 @@
   --button-run-glow: 0 0 15px rgba(255, 159, 0, 0.3);
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Xenithra Dark Pro — Premium JetBrains-inspired Dark Theme
+   Exact colors extracted from the design reference photo:
+   Deep charcoal panels, electric blue accents, warm greys
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+[data-theme='xenithra-dark-pro'] {
+  /* Deep charcoal — exact JetBrains dark base */
+  --bg-gradient:
+    linear-gradient(180deg, #1c1f26 0%, #16191f 100%);
+  --panel-bg: #1e2127;
+  --panel-border: #2d3039;
+  --panel-border-glow: rgba(87, 147, 255, 0.35);
+  --accent-color: #5793ff;
+  /* Cool electric-blue glow */
+  --accent-glow: 0 0 12px rgba(87, 147, 255, 0.35), 0 0 30px rgba(87, 147, 255, 0.12);
+  /* Warm grey text — matches JetBrains editor text */
+  --text-main: #bec3cf;
+  --text-muted: #696e7a;
+  /* Slightly darker sidebar like JetBrains Project panel */
+  --sidebar-bg: #191c23;
+  --sidebar-active: rgba(87, 147, 255, 0.12);
+  /* Terminal exact match */
+  --terminal-bg: #111318;
+  --terminal-border: #2a2d36;
+  --terminal-text: #c5c8d0;
+  /* Input fields */
+  --input-bg: #14161c;
+  --input-border: #2d3039;
+  /* Run button — JetBrains green */
+  --button-run-bg: linear-gradient(135deg, #2d6a4f, #1a7a4a);
+  --button-run-text: #c8f7d4;
+  --button-run-border: rgba(72, 199, 116, 0.4);
+  --button-run-glow: 0 0 12px rgba(72, 199, 116, 0.3);
+  /* Extra custom tokens */
+  --header-bg: rgba(22, 24, 31, 0.88);
+  --header-border: rgba(255, 255, 255, 0.06);
+  --prism-header: 1; /* signals glassy prism header */
+}
+
 [data-theme='github-dark'] {
   /* GitHub Dark Theme Modern Aesthetic */
   --bg-gradient: #0d1117;
@@ -204,6 +243,165 @@
   --button-run-text: #ffffff;
   --button-run-border: #2ea44f;
   --button-run-glow: 0 0 8px rgba(46, 164, 79, 0.2);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GLASSY PRISM APPLE HEADER
+   Applied to [data-theme='xenithra-dark-pro'] .menu-bar
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Apple macOS Liquid Glass header effect */
+[data-theme='xenithra-dark-pro'] .menu-bar {
+  background: rgba(22, 24, 31, 0.72) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(40px) saturate(180%) brightness(1.05) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.05) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05),
+    0 4px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  position: relative;
+  overflow: visible;
+}
+
+/* Prismatic rainbow shimmer on the header border-bottom */
+[data-theme='xenithra-dark-pro'] .menu-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(87, 147, 255, 0.4) 15%,
+    rgba(167, 139, 250, 0.5) 30%,
+    rgba(0, 229, 255, 0.4) 45%,
+    rgba(72, 199, 116, 0.3) 60%,
+    rgba(251, 191, 36, 0.3) 75%,
+    rgba(239, 68, 68, 0.3) 88%,
+    transparent 100%
+  );
+  animation: prismShimmer 4s linear infinite;
+  background-size: 200% 100%;
+}
+
+@keyframes prismShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Floating ambient prism orbs in xenithra-dark-pro header */
+[data-theme='xenithra-dark-pro'] .menu-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 10% 50%, rgba(87, 147, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 50%, rgba(167, 139, 250, 0.05) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(0, 229, 255, 0.03) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Xenithra Dark Pro — menu items get extra polish */
+[data-theme='xenithra-dark-pro'] .menu-item {
+  color: #696e7a;
+  font-size: 12.5px;
+}
+
+[data-theme='xenithra-dark-pro'] .menu-item:hover,
+[data-theme='xenithra-dark-pro'] .menu-item.open {
+  color: #bec3cf;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 5px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   License Trial Banner
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.trial-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.06) 100%);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+  padding: 6px 16px;
+  font-size: 11.5px;
+  color: #fbbf24;
+  gap: 12px;
+  z-index: 998;
+}
+
+.trial-banner-expired {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.06) 100%);
+  border-bottom-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.trial-banner i { font-size: 14px; flex-shrink: 0; }
+
+.trial-banner-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.trial-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.trial-upgrade-btn {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+}
+
+.trial-upgrade-btn:hover {
+  background: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+.trial-upgrade-btn.expired {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.trial-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.trial-dismiss-btn:hover { color: #e2e8f0; }
+
+/* License activated celebration */
+@keyframes licenseActivatedPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  70%  { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.license-activated-flash {
+  animation: licenseActivatedPulse 0.8s ease-out 3;
 }
 
 * {

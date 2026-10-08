@@ -20,6 +20,7 @@ import DsaStudioPage from './pages/DsaStudioPage'
 import CodeArenaPage from './pages/CodeArenaPage'
 import CDllStudioPage from './pages/CDllStudioPage'
 import FooterEnvSelector from './components/ui/FooterEnvSelector'
+import LicensePage from './pages/LicensePage'
 
 const MainApp = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'github-dark')
@@ -47,7 +48,8 @@ const MainApp = () => {
             'glass-light',
             'neon-purple',
             'emerald',
-            'cyber-amber'
+            'cyber-amber',
+            'xenithra-dark-pro'
           ]
           const nextIdx = (themes.indexOf(prev) + 1) % themes.length
           return themes[nextIdx]
@@ -116,75 +118,137 @@ const MainApp = () => {
     }
   }, [])
 
+  const [showLicenseModal, setShowLicenseModal] = useState(false)
+  const [licenseStatus, setLicenseStatus] = useState(null)
+  const [trialBannerDismissed, setTrialBannerDismissed] = useState(
+    sessionStorage.getItem('trial-banner-dismissed') === 'true'
+  )
+
+  // Load license status on mount
+  useEffect(() => {
+    const fetchLicense = async () => {
+      try {
+        if (window.api && typeof window.api.getLicenseStatus === 'function') {
+          const status = await window.api.getLicenseStatus()
+          setLicenseStatus(status)
+        } else {
+          setLicenseStatus({ status: 'trial', type: 'trial', daysLeft: 29 })
+        }
+      } catch (e) {
+        setLicenseStatus({ status: 'trial', type: 'trial', daysLeft: 29 })
+      }
+    }
+    fetchLicense()
+    // Re-check after license activation
+    const handleActivated = () => {
+      fetchLicense()
+      setShowLicenseModal(false)
+    }
+    window.addEventListener('license-activated', handleActivated)
+    window.addEventListener('open-license-manager', () => setShowLicenseModal(true))
+    return () => {
+      window.removeEventListener('license-activated', handleActivated)
+      window.removeEventListener('open-license-manager', () => setShowLicenseModal(true))
+    }
+  }, [])
+
+  const dismissTrialBanner = () => {
+    setTrialBannerDismissed(true)
+    sessionStorage.setItem('trial-banner-dismissed', 'true')
+  }
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/Account/login" element={<LoginPage />} />
-        <Route path="/Account/signup" element={<SignupPage />} />
-        <Route path="/preferences" element={<PreferencesPage />} />
-        <Route
-          path="/ocr"
-          element={
-            <MainLayout
-              theme={theme}
-              setTheme={setTheme}
-              sidebarCollapsed={sidebarCollapsed}
-              setSidebarCollapsed={setSidebarCollapsed}
-              sidebarWidth={sidebarWidth}
-              setSidebarWidth={setSidebarWidth}
-            >
-              <OcrPage />
-            </MainLayout>
-          }
+    <>
+      <Router>
+        <Routes>
+          <Route path="/Account/login" element={<LoginPage />} />
+          <Route path="/Account/signup" element={<SignupPage />} />
+          <Route path="/preferences" element={<PreferencesPage />} />
+          <Route path="/license" element={<LicensePage onClose={() => window.history.back()} />} />
+          <Route
+            path="/ocr"
+            element={
+              <MainLayout
+                theme={theme}
+                setTheme={setTheme}
+                sidebarCollapsed={sidebarCollapsed}
+                setSidebarCollapsed={setSidebarCollapsed}
+                sidebarWidth={sidebarWidth}
+                setSidebarWidth={setSidebarWidth}
+                licenseStatus={licenseStatus}
+                onOpenLicense={() => setShowLicenseModal(true)}
+                trialBannerDismissed={trialBannerDismissed}
+                onDismissTrialBanner={dismissTrialBanner}
+              >
+                <OcrPage />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/Dashboard"
+            element={
+              <MainLayout
+                theme={theme}
+                setTheme={setTheme}
+                sidebarCollapsed={sidebarCollapsed}
+                setSidebarCollapsed={setSidebarCollapsed}
+                sidebarWidth={sidebarWidth}
+                setSidebarWidth={setSidebarWidth}
+                licenseStatus={licenseStatus}
+                onOpenLicense={() => setShowLicenseModal(true)}
+                trialBannerDismissed={trialBannerDismissed}
+                onDismissTrialBanner={dismissTrialBanner}
+              >
+                <DashboardPage />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/ai-colab"
+            element={<AiColabStudioPage />}
+          />
+          <Route
+            path="/dsa-studio"
+            element={<DsaStudioPage />}
+          />
+          <Route
+            path="/code-arena"
+            element={<CodeArenaPage />}
+          />
+          <Route
+            path="/c-dll-studio"
+            element={<CDllStudioPage />}
+          />
+          <Route
+            path="/*"
+            element={
+              <MainLayout
+                theme={theme}
+                setTheme={setTheme}
+                sidebarCollapsed={sidebarCollapsed}
+                setSidebarCollapsed={setSidebarCollapsed}
+                sidebarWidth={sidebarWidth}
+                setSidebarWidth={setSidebarWidth}
+                licenseStatus={licenseStatus}
+                onOpenLicense={() => setShowLicenseModal(true)}
+                trialBannerDismissed={trialBannerDismissed}
+                onDismissTrialBanner={dismissTrialBanner}
+              >
+                <EditorPage theme={theme} setTheme={setTheme} />
+              </MainLayout>
+            }
+          />
+        </Routes>
+      </Router>
+
+      {/* Global License Modal */}
+      {showLicenseModal && (
+        <LicensePage
+          onClose={() => setShowLicenseModal(false)}
+          onActivated={() => setShowLicenseModal(false)}
         />
-        <Route
-          path="/Dashboard"
-          element={
-            <MainLayout
-              theme={theme}
-              setTheme={setTheme}
-              sidebarCollapsed={sidebarCollapsed}
-              setSidebarCollapsed={setSidebarCollapsed}
-              sidebarWidth={sidebarWidth}
-              setSidebarWidth={setSidebarWidth}
-            >
-              <DashboardPage />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/ai-colab"
-          element={<AiColabStudioPage />}
-        />
-        <Route
-          path="/dsa-studio"
-          element={<DsaStudioPage />}
-        />
-        <Route
-          path="/code-arena"
-          element={<CodeArenaPage />}
-        />
-        <Route
-          path="/c-dll-studio"
-          element={<CDllStudioPage />}
-        />
-        <Route
-          path="/*"
-          element={
-            <MainLayout
-              theme={theme}
-              setTheme={setTheme}
-              sidebarCollapsed={sidebarCollapsed}
-              setSidebarCollapsed={setSidebarCollapsed}
-              sidebarWidth={sidebarWidth}
-              setSidebarWidth={setSidebarWidth}
-            >
-              <EditorPage theme={theme} setTheme={setTheme} />
-            </MainLayout>
-          }
-        />
-      </Routes>
-    </Router>
+      )}
+    </>
   )
 }
 
@@ -196,7 +260,11 @@ const MainLayout = ({
   sidebarCollapsed,
   setSidebarCollapsed,
   sidebarWidth,
-  setSidebarWidth
+  setSidebarWidth,
+  licenseStatus,
+  onOpenLicense,
+  trialBannerDismissed,
+  onDismissTrialBanner
 }) => {
   const location = useLocation()
   const isAiColab =
@@ -429,11 +497,42 @@ const MainLayout = ({
           setTheme={setTheme}
           filename={filename}
           setFilename={setFilename}
+          licenseStatus={licenseStatus}
+          onOpenLicense={onOpenLicense}
         />
       )}
 
       {/* SECONDARY TOOLBAR */}
       {!isAiColab && <Toolbar theme={theme} setTheme={setTheme} />}
+
+      {/* 30-DAY TRIAL BANNER */}
+      {!isAiColab &&
+        licenseStatus &&
+        licenseStatus.status !== 'licensed' &&
+        !trialBannerDismissed && (
+          <div className={`trial-banner ${licenseStatus.status === 'expired' ? 'trial-banner-expired' : ''}`}>
+            <div className="trial-banner-msg">
+              <i className={`bx ${licenseStatus.status === 'expired' ? 'bx-x-circle' : 'bx-time'}`}></i>
+              {licenseStatus.status === 'expired'
+                ? <span><strong>Your 30-day trial has expired.</strong> Some features are disabled. Activate a license to restore full access.</span>
+                : <span><strong>Trial Mode</strong> — {licenseStatus.daysLeft} days remaining of your 30-day free trial. Unlock all features with a license.</span>
+              }
+            </div>
+            <div className="trial-banner-actions">
+              <button
+                className={`trial-upgrade-btn ${licenseStatus.status === 'expired' ? 'expired' : ''}`}
+                onClick={onOpenLicense}
+              >
+                {licenseStatus.status === 'expired' ? '🔓 Activate Now' : '⚡ Upgrade'}
+              </button>
+              {licenseStatus.status !== 'expired' && (
+                <button className="trial-dismiss-btn" onClick={onDismissTrialBanner} title="Dismiss for this session">
+                  <i className="bx bx-x"></i>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
       <div className="app" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* LEFT ACTIVITY BAR */}

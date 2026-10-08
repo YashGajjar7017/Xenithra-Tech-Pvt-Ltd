@@ -1,0 +1,87 @@
+{
+  "version": "1.0.0",
+  "name": "Xenithra Tech License Registry",
+  "updatedAt": "2026-10-08T12:00:00Z",
+  "issuer": "Xenithra Technologies Pvt Ltd",
+  "public_key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyXNTH-PUBKEY-2026",
+  "keys": {
+    "XNTH-PRO1-2026-XNTH": {
+      "name": "Yash Gajjar",
+      "email": "yashgajjar@xenithra.tech",
+      "edition": "Enterprise Master",
+      "status": "active",
+      "maxMachines": 5,
+      "issuedAt": "2026-01-01T00:00:00Z",
+      "expiryDate": null,
+      "features": {
+        "editor": true,
+        "terminal": true,
+        "aiColab": true,
+        "dsaStudio": true,
+        "cdllStudio": true,
+        "codeArena": true,
+        "cloudSync": true,
+        "collaboration": true
+      },
+      "certificate": {
+        "certId": "CERT-XNTH-001",
+        "fingerprint": "SHA256:7b91a2d4e8c3f1092a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f",
+        "validFrom": "2026-01-01",
+        "validTo": "2036-01-01",
+        "tier": "Enterprise"
+      }
+    },
+    "XNTH-DEV9-8821-XNTH": {
+      "name": "Developer License",
+      "email": "dev@xenithra.tech",
+      "edition": "Professional Studio",
+      "status": "active",
+      "maxMachines": 2,
+      "issuedAt": "2026-03-15T00:00:00Z",
+      "expiryDate": "2027-03-15T00:00:00Z",
+      "features": {
+        "editor": true,
+        "terminal": true,
+        "aiColab": true,
+        "dsaStudio": true,
+        "cdllStudio": true,
+        "codeArena": true,
+        "cloudSync": true,
+        "collaboration": true
+      },
+      "certificate": {
+        "certId": "CERT-XNTH-002",
+        "fingerprint": "SHA256:3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b",
+        "validFrom": "2026-03-15",
+        "validTo": "2027-03-15",
+        "tier": "Professional"
+      }
+    },
+    "XNTH-TEAM-5544-XNTH": {
+      "name": "Engineering Team",
+      "email": "team@xenithra.tech",
+      "edition": "Team Commercial",
+      "status": "active",
+      "maxMachines": 10,
+      "issuedAt": "2026-04-01T00:00:00Z",
+      "expiryDate": "2028-04-01T00:00:00Z",
+      "features": {
+        "editor": true,
+        "terminal": true,
+        "aiColab": true,
+        "dsaStudio": true,
+        "cdllStudio": true,
+        "codeArena": true,
+        "cloudSync": true,
+        "collaboration": true
+      },
+      "certificate": {
+        "certId": "CERT-XNTH-003",
+        "fingerprint": "SHA256:9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e",
+        "validFrom": "2026-04-01",
+        "validTo": "2028-04-01",
+        "tier": "Team"
+      }
+    }
+  }
+}

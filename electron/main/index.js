@@ -97,6 +97,15 @@ import {
   cleanupSession
 } from './Services/dllCompiler.service.js'
 
+import {
+  getLicenseStatus,
+  activateLicense,
+  deactivateLicense,
+  initializeTrial,
+  submitRegistrationRequest,
+  getMachineId
+} from './Services/license.service.js'
+
 const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
 
 const xmlFilePath = join(app.getPath('temp'), 'temp_extensions.xml')
@@ -423,6 +432,56 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // ─── License IPC Handlers ──────────────────────────────────────────────
+  // Initialize trial on app start
+  try {
+    initializeTrial()
+  } catch (e) {
+    console.warn('[License] Trial init failed:', e.message)
+  }
+
+  ipcMain.handle('license:status', async () => {
+    try {
+      return getLicenseStatus()
+    } catch (e) {
+      console.error('[License] Status error:', e.message)
+      return { status: 'trial', type: 'trial', daysLeft: 30 }
+    }
+  })
+
+  ipcMain.handle('license:activate', async (_event, licenseKey, name, email) => {
+    try {
+      return await activateLicense(licenseKey, name, email)
+    } catch (e) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.handle('license:deactivate', async () => {
+    try {
+      return deactivateLicense()
+    } catch (e) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.handle('license:register', async (_event, name, email, organization, plan) => {
+    try {
+      return await submitRegistrationRequest(name, email, organization, plan)
+    } catch (e) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.handle('license:machineId', () => {
+    try {
+      return getMachineId()
+    } catch (e) {
+      return 'unknown'
+    }
+  })
+  // ─── End License IPC ──────────────────────────────────────────────────
 
   // File open dialog IPC
   ipcMain.handle('dialog:openFile', async (event) => {
