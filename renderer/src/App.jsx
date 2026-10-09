@@ -22,6 +22,117 @@ import CDllStudioPage from './pages/CDllStudioPage'
 import FooterEnvSelector from './components/ui/FooterEnvSelector'
 import LicensePage from './pages/LicensePage'
 
+const FeatureGate = ({ featureName, featureKey, licenseStatus, onOpenLicense, children }) => {
+  const isLicensed = licenseStatus?.status === 'licensed'
+  const isEnabled =
+    isLicensed ||
+    (licenseStatus?.status !== 'expired' && licenseStatus?.features?.[featureKey] !== false)
+
+  if (!isEnabled && licenseStatus) {
+    return (
+      <div
+        style={{
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #0d1117 0%, #161b22 100%)',
+          color: '#e2e8f0',
+          padding: '24px',
+          textAlign: 'center',
+          fontFamily: 'Outfit, sans-serif',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            width: '320px',
+            height: '320px',
+            background: 'radial-gradient(circle, rgba(87, 147, 255, 0.15) 0%, transparent 70%)',
+            top: '20%',
+            left: '35%',
+            filter: 'blur(50px)',
+            pointerEvents: 'none'
+          }}
+        />
+        <div
+          style={{
+            width: '76px',
+            height: '76px',
+            borderRadius: '20px',
+            background: 'rgba(87, 147, 255, 0.1)',
+            border: '1px solid rgba(87, 147, 255, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '36px',
+            color: '#5793ff',
+            marginBottom: '20px',
+            boxShadow: '0 0 35px rgba(87, 147, 255, 0.2)'
+          }}
+        >
+          <i className="bx bx-lock-alt"></i>
+        </div>
+        <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px', color: '#fff' }}>
+          {featureName} is Restricted
+        </h2>
+        <p
+          style={{
+            color: '#94a3b8',
+            maxWidth: '460px',
+            lineHeight: '1.6',
+            marginBottom: '24px',
+            fontSize: '14px'
+          }}
+        >
+          {licenseStatus.status === 'expired'
+            ? 'Your 30-day trial has expired. Activate a license to restore full access to all IDE studios.'
+            : `${featureName} is exclusive to licensed editions of Xenithra IDE. Activate your license or install your certificate to unlock.`}
+        </p>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={onOpenLicense}
+            style={{
+              background: 'linear-gradient(135deg, #5793ff, #8b5cf6)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '11px 24px',
+              color: '#fff',
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontSize: '13.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 18px rgba(87, 147, 255, 0.35)'
+            }}
+          >
+            <i className="bx bx-key"></i> Activate License
+          </button>
+          <button
+            onClick={() => window.history.back()}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '8px',
+              padding: '11px 20px',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              fontSize: '13px'
+            }}
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
+  }
+  return children
+}
+
 const MainApp = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'github-dark')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -205,19 +316,55 @@ const MainApp = () => {
           />
           <Route
             path="/ai-colab"
-            element={<AiColabStudioPage />}
+            element={
+              <FeatureGate
+                featureName="AI Colab Studio"
+                featureKey="aiColab"
+                licenseStatus={licenseStatus}
+                onOpenLicense={() => setShowLicenseModal(true)}
+              >
+                <AiColabStudioPage />
+              </FeatureGate>
+            }
           />
           <Route
             path="/dsa-studio"
-            element={<DsaStudioPage />}
+            element={
+              <FeatureGate
+                featureName="DSA Studio"
+                featureKey="dsaStudio"
+                licenseStatus={licenseStatus}
+                onOpenLicense={() => setShowLicenseModal(true)}
+              >
+                <DsaStudioPage />
+              </FeatureGate>
+            }
           />
           <Route
             path="/code-arena"
-            element={<CodeArenaPage />}
+            element={
+              <FeatureGate
+                featureName="Code Arena PvP"
+                featureKey="codeArena"
+                licenseStatus={licenseStatus}
+                onOpenLicense={() => setShowLicenseModal(true)}
+              >
+                <CodeArenaPage />
+              </FeatureGate>
+            }
           />
           <Route
             path="/c-dll-studio"
-            element={<CDllStudioPage />}
+            element={
+              <FeatureGate
+                featureName="C &rarr; DLL Studio"
+                featureKey="cdllStudio"
+                licenseStatus={licenseStatus}
+                onOpenLicense={() => setShowLicenseModal(true)}
+              >
+                <CDllStudioPage />
+              </FeatureGate>
+            }
           />
           <Route
             path="/*"

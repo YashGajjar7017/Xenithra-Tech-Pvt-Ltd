@@ -219,15 +219,62 @@ export async function validateLicenseKey(licenseKey) {
 
   const machineId = getMachineFingerprint()
 
+  // 1. Try local licensing backend server if running (port 5174 or custom)
   try {
-    // Attempt to verify against GitHub-hosted registry
+    const localServerUrl = `http://localhost:5174/licenses/status/${encodeURIComponent(normalizedKey)}`
+    const resp = await fetch(localServerUrl, { signal: AbortSignal.timeout(1500) })
+    if (resp.ok) {
+      const data = await resp.json()
+      if (data.valid) {
+        return {
+          valid: true,
+          licensedTo: data.name || 'Xenithra User',
+          email: data.email || '',
+          edition: data.edition || 'Professional Edition',
+          expiryDate: data.expiryDate || null,
+          certificate: data.certificate || null,
+          features: data.features
+        }
+      }
+    }
+  } catch {
+    // Local server not running or timed out, continue to file/remote
+  }
+
+  // 2. Check local workspace licenses/registry.json if present
+  try {
+    const localRegistryPath = path.resolve(__dirname, '../../../../licenses/registry.json')
+    if (fs.existsSync(localRegistryPath)) {
+      const reg = JSON.parse(fs.readFileSync(localRegistryPath, 'utf8'))
+      const keyEntry = reg.keys && reg.keys[normalizedKey]
+      if (keyEntry) {
+        if (keyEntry.status === 'revoked') {
+          return { valid: false, error: 'This license key has been revoked' }
+        }
+        return {
+          valid: true,
+          licensedTo: keyEntry.name || 'Xenithra User',
+          email: keyEntry.email || '',
+          edition: keyEntry.edition || 'Professional Edition',
+          expiryDate: keyEntry.expiryDate || null,
+          certificate: keyEntry.certificate || null,
+          keyEntry
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[License] Local file check error:', err.message)
+  }
+
+  // 3. Attempt to verify against GitHub-hosted registry
+  try {
     const registryUrl = `${LICENSE_SERVER_BASE}/registry.json?t=${Date.now()}`
     const response = await fetch(registryUrl, {
       headers: {
         'Cache-Control': 'no-cache',
         'User-Agent': 'Xenithra-IDE/1.0'
       },
-      signal: AbortSignal.timeout(8000)
+      signal: AbortSignal.timeout(5000)
     })
 
     if (response.ok) {
@@ -256,6 +303,7 @@ export async function validateLicenseKey(licenseKey) {
         email: keyEntry.email || '',
         edition: keyEntry.edition || 'Professional',
         expiryDate: keyEntry.expiryDate || null,
+        certificate: keyEntry.certificate || null,
         keyEntry
       }
     }
@@ -328,6 +376,14 @@ export async function activateLicense(licenseKey, licensedTo, email) {
     expiryDate: validation.expiryDate || null,
     machineId,
     signature: generateKeySignature(normalizedKey, machineId),
+    certificate: validation.certificate || validation.keyEntry?.certificate || {
+      certId: 'CERT-XNTH-' + Math.floor(1000 + Math.random() * 9000),
+      fingerprint: 'SHA256:' + crypto.createHash('sha256').update(`${normalizedKey}::${machineId}`).digest('hex'),
+      validFrom: new Date().toISOString().split('T')[0],
+      validTo: '2036-01-01',
+      tier: validation.edition || 'Professional',
+      issuer: 'Xenithra Technologies Pvt Ltd'
+    },
     features: {
       editor: true,
       terminal: true,
@@ -427,9 +483,92 @@ export function deactivateLicense() {
  * This creates a GitHub issue as a registration request.
  */
 export async function submitRegistrationRequest(name, email, organization, plan) {
-  try {
-    const machineId = getMachineFingerprint()
+  const machineId = getMachineFingerprint()
 
+  // 1. Try local licensing backend server (http://localhost:5174/licenses/register)
+  try {
+    const localResp = await fetch('http://localhost:5174/licenses/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, organization, plan, machineId }),
+      signal: AbortSignal.timeout(2000)
+    })
+    if (localResp.ok) {
+      const data = await localResp.json()
+      if (data.success) {
+        return {
+          success: true,
+          message: data.message || 'Registration approved! Your key has been generated.',
+          licenseKey: data.licenseKey,
+          certificate: data.certificate,
+          licensedTo: data.licensedTo,
+          plan: data.plan
+        }
+      }
+    }
+  } catch {
+    // Local server not running or timed out, fallback to GitHub / local registry
+  }
+
+  // 2. Check local workspace licenses/registry.json if present
+  try {
+    const localRegistryPath = path.resolve(__dirname, '../../../../licenses/registry.json')
+    if (fs.existsSync(localRegistryPath)) {
+      const reg = JSON.parse(fs.readFileSync(localRegistryPath, 'utf8'))
+      const seg2 = (plan || 'PRO').substring(0, 3).toUpperCase() + Math.floor(Math.random() * 9 + 1)
+      const seg3 = crypto.randomBytes(2).toString('hex').toUpperCase()
+      const newKey = `XNTH-${seg2}-${seg3}-XNTH`
+      const certId = 'CERT-XNTH-' + crypto.randomBytes(3).toString('hex').toUpperCase()
+      const fingerprint = 'SHA256:' + crypto.createHash('sha256').update(`${newKey}::${email}::${Date.now()}`).digest('hex')
+
+      const cert = {
+        certId,
+        fingerprint,
+        validFrom: new Date().toISOString().split('T')[0],
+        validTo: '2036-01-01',
+        tier: `${plan || 'Professional'} Edition`,
+        issuer: 'Xenithra Technologies Pvt Ltd'
+      }
+
+      reg.keys = reg.keys || {}
+      reg.keys[newKey] = {
+        name,
+        email,
+        edition: `${plan || 'Professional'} Edition`,
+        status: 'active',
+        maxMachines: 3,
+        issuedAt: new Date().toISOString(),
+        expiryDate: null,
+        machineId,
+        features: {
+          editor: true,
+          terminal: true,
+          aiColab: true,
+          dsaStudio: true,
+          cdllStudio: true,
+          codeArena: true,
+          cloudSync: true,
+          collaboration: true
+        },
+        certificate: cert
+      }
+      fs.writeFileSync(localRegistryPath, JSON.stringify(reg, null, 2), 'utf8')
+
+      return {
+        success: true,
+        message: 'Registration approved! Your key has been registered.',
+        licenseKey: newKey,
+        certificate: cert,
+        licensedTo: name,
+        plan
+      }
+    }
+  } catch (err) {
+    console.warn('[License] Local registry update failed:', err.message)
+  }
+
+  // 3. Fallback to GitHub Issues API
+  try {
     const payload = {
       title: `License Request: ${email}`,
       body: [
@@ -455,27 +594,27 @@ export async function submitRegistrationRequest(name, email, organization, plan)
         'User-Agent': 'Xenithra-IDE/1.0'
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(10000)
+      signal: AbortSignal.timeout(8000)
     })
 
     if (response.ok || response.status === 201) {
       return {
         success: true,
         message:
-          'Registration request submitted successfully. You will receive your license key via email within 24 hours.'
+          'Registration request submitted to server. You will receive your license key via email.'
       }
     }
 
     return {
       success: false,
-      error: `Server responded with status ${response.status}. Please email license@xenithra.tech directly.`
+      error: `Server responded with status ${response.status}. Please contact license@xenithra.tech directly.`
     }
   } catch (err) {
     return {
       success: false,
       error:
-        'Could not reach the license server. Please email license@xenithra.tech with your machine ID: ' +
-        getMachineFingerprint()
+        'Could not reach the license server. Please contact license@xenithra.tech with your machine ID: ' +
+        machineId
     }
   }
 }
