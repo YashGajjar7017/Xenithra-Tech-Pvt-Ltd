@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import '../../css/LicensePage.css'
+import '../css/LicensePage.css'
 
 const LicensePage = ({ onClose, onActivated }) => {
   const [activeTab, setActiveTab] = useState('status')
