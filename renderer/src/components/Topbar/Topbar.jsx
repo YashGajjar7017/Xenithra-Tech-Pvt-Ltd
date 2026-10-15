@@ -129,6 +129,16 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
       name: 'Switch Theme: Light Frosted',
       icon: '🎨',
       action: () => updateTheme(null, 'glass-light')
+    },
+    {
+      name: 'Switch Theme: JetBrains',
+      icon: '🎨',
+      action: () => updateTheme(null, 'jetbrains')
+    },
+    {
+      name: 'Switch Theme: JetBrains Darcula',
+      icon: '🎨',
+      action: () => updateTheme(null, 'jetbrains-darcula')
     }
   ]
 
@@ -526,12 +536,12 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
           style={{
             display: 'flex',
             alignItems: 'center',
-            padding: '0 4px 0 2px',
-            marginRight: '2px'
+            padding: '0 4px 0 6px',
+            marginRight: '3px'
           }}
         >
           <GenZLogo
-            size={22}
+            size={26}
             onClick={() => {
               window.location.hash = '#/'
             }}
@@ -982,6 +992,14 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
                 <span>◆ Xenithra Dark Pro</span>
                 {theme === 'xenithra-dark-pro' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
               </button>
+              <button onClick={(e) => updateTheme(e, 'jetbrains')}>
+                <span>⚡ JetBrains</span>
+                {(theme === 'jetbrains' || theme === 'jetbrains-dark') && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
+              <button onClick={(e) => updateTheme(e, 'jetbrains-darcula')}>
+                <span>🧿 JetBrains Darcula</span>
+                {theme === 'jetbrains-darcula' && <span style={{ color: 'var(--accent-color)' }}>✓</span>}
+              </button>
             </div>
           )}
         </div>
@@ -1188,40 +1206,7 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
         </button>
         */}
 
-        {/* C to DLL Studio Quick Launcher */}
-        <button
-          onClick={() => { window.location.hash = '#/c-dll-studio' }}
-          title="Open C to DLL MinGW Compiler Studio"
-          style={{
-            background: 'linear-gradient(135deg, rgba(0, 243, 255, 0.15) 0%, rgba(168, 85, 247, 0.2) 100%)',
-            border: '1px solid rgba(0, 243, 255, 0.35)',
-            borderRadius: '5px',
-            color: '#00f3ff',
-            fontSize: '11px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            padding: '3px 9px',
-            height: '25px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            boxShadow: '0 0 10px rgba(0, 243, 255, 0.15)',
-            transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap',
-            marginRight: '6px'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 243, 255, 0.45)'
-            e.currentTarget.style.borderColor = '#00f3ff'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 243, 255, 0.15)'
-            e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.35)'
-          }}
-        >
-          <i className="bx bx-chip" style={{ fontSize: '13px', color: '#00f3ff' }}></i>
-          <span>C &rarr; DLL Studio</span>
-        </button>
+
 
         {/* License Status Badge */}
         {licenseStatus && licenseStatus.status !== 'licensed' && (
@@ -1292,29 +1277,68 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
             <div
               style={{
                 position: 'absolute',
-                top: '32px',
+                top: '34px',
                 right: 0,
-                background: '#161b22',
-                border: '1px solid var(--panel-border)',
-                borderRadius: '6px',
-                width: '240px',
-                padding: '4px 0',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+                background: 'rgba(16, 20, 32, 0.72)',
+                backdropFilter: 'blur(28px) saturate(180%) brightness(1.08)',
+                WebkitBackdropFilter: 'blur(28px) saturate(180%) brightness(1.08)',
+                border: '1px solid rgba(255, 255, 255, 0.10)',
+                borderRadius: '10px',
+                width: '248px',
+                padding: '6px 0',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.06) inset, 0 0 0 0.5px rgba(255,255,255,0.04) inset',
                 zIndex: 99999,
-                fontSize: '11px',
-                color: '#c9d1d9'
+                fontSize: '11.5px',
+                color: '#c9d1d9',
+                overflow: 'hidden'
               }}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Glass shimmer top border */}
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)',
+                pointerEvents: 'none'
+              }} />
+
+              {/* User header area */}
+              <div style={{
+                padding: '10px 14px 8px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                marginBottom: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <div style={{
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #5793ff, #a855f7)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '14px', color: '#fff', fontWeight: '700', flexShrink: 0,
+                  boxShadow: '0 0 12px rgba(87,147,255,0.4)'
+                }}>
+                  {isLoggedIn ? username.charAt(0).toUpperCase() : '?'}
+                </div>
+                <div>
+                  <div style={{ fontWeight: '600', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.3 }}>
+                    {isLoggedIn ? username : 'Not Signed In'}
+                  </div>
+                  <div style={{ color: 'rgba(139,148,158,0.8)', fontSize: '10px' }}>
+                    {isLoggedIn ? 'Xenithra Account' : 'Sign in to sync settings'}
+                  </div>
+                </div>
+              </div>
+
               <div
                 onClick={() => {
                   setActiveMenu(null)
                   window.dispatchEvent(new CustomEvent('open-settings'))
                 }}
-                style={{ padding: '6px 12px', cursor: 'pointer' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '0', transition: 'background 0.15s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
+                <i className="bx bx-cloud-upload" style={{ fontSize: '13px', opacity: 0.7 }}></i>
                 Backup and Sync Settings...
               </div>
               <div
@@ -1322,10 +1346,11 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
                   setActiveMenu(null)
                   alert('Cloud Changes sync initialized with GitHub!')
                 }}
-                style={{ padding: '6px 12px', cursor: 'pointer' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
+                <i className="bx bx-refresh" style={{ fontSize: '13px', opacity: 0.7 }}></i>
                 Turn on Cloud Changes...
               </div>
               <div
@@ -1333,24 +1358,24 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
                   setActiveMenu(null)
                   alert('Remote Tunnel Access online: tunnel.xenithra.tech:443')
                 }}
-                style={{ padding: '6px 12px', cursor: 'pointer' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
+                <i className="bx bx-wifi" style={{ fontSize: '13px', opacity: 0.7 }}></i>
                 Turn on Remote Tunnel Access...
               </div>
-              <div
-                style={{ height: '1px', background: 'rgba(255,255,255,0.08)', margin: '4px 0' }}
-              />
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.07)', margin: '4px 0' }} />
               <div
                 onClick={() => {
                   setActiveMenu(null)
                   alert('Extension Account Preferences loaded.')
                 }}
-                style={{ padding: '6px 12px', cursor: 'pointer' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
+                <i className="bx bx-extension" style={{ fontSize: '13px', opacity: 0.7 }}></i>
                 Manage Extension Account Preferences...
               </div>
               <div
@@ -1358,10 +1383,11 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
                   setActiveMenu(null)
                   alert('Language Model Access: GLM-4 & Local ML Active')
                 }}
-                style={{ padding: '6px 12px', cursor: 'pointer' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
+                <i className="bx bx-brain" style={{ fontSize: '13px', opacity: 0.7 }}></i>
                 Manage Language Model Access...
               </div>
               <div
@@ -1373,25 +1399,24 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
                     window.dispatchEvent(new CustomEvent('open-license-manager'))
                   }
                 }}
-                style={{ padding: '6px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#5793ff', fontWeight: '500' }}
+                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#5793ff', fontWeight: '500', transition: 'background 0.15s' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(87,147,255,0.12)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <i className="bx bx-badge-check" style={{ fontSize: '14px' }}></i>
                 <span>Manage License & Certificate...</span>
               </div>
-              <div
-                style={{ height: '1px', background: 'rgba(255,255,255,0.08)', margin: '4px 0' }}
-              />
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.07)', margin: '4px 0' }} />
               <div
                 onClick={() => {
                   setActiveMenu(null)
                   window.dispatchEvent(new CustomEvent('open-keybindings'))
                 }}
-                style={{ padding: '6px 12px', cursor: 'pointer', color: '#58a6ff' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#58a6ff', transition: 'background 0.15s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
+                <i className="bx bx-keyboard" style={{ fontSize: '13px', opacity: 0.8 }}></i>
                 Keyboard Shortcuts (Ctrl+K Ctrl+S)...
               </div>
             </div>

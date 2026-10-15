@@ -21,6 +21,8 @@ import CodeArenaPage from './pages/CodeArenaPage'
 import CDllStudioPage from './pages/CDllStudioPage'
 import FooterEnvSelector from './components/ui/FooterEnvSelector'
 import LicensePage from './pages/LicensePage'
+import SplashScreen from './components/ui/SplashScreen'
+
 
 const FeatureGate = ({ featureName, featureKey, licenseStatus, onOpenLicense, children }) => {
   const isLicensed = licenseStatus?.status === 'licensed'
@@ -134,6 +136,15 @@ const FeatureGate = ({ featureName, featureKey, licenseStatus, onOpenLicense, ch
 }
 
 const MainApp = () => {
+  // Show splash once per session
+  const [showSplash, setShowSplash] = useState(
+    !sessionStorage.getItem('splash-shown')
+  )
+  const handleSplashDone = () => {
+    sessionStorage.setItem('splash-shown', '1')
+    setShowSplash(false)
+  }
+
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'github-dark')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -160,7 +171,9 @@ const MainApp = () => {
             'neon-purple',
             'emerald',
             'cyber-amber',
-            'xenithra-dark-pro'
+            'xenithra-dark-pro',
+            'jetbrains',
+            'jetbrains-darcula'
           ]
           const nextIdx = (themes.indexOf(prev) + 1) % themes.length
           return themes[nextIdx]
@@ -270,6 +283,7 @@ const MainApp = () => {
 
   return (
     <>
+      {showSplash && <SplashScreen onDone={handleSplashDone} />}
       <Router>
         <Routes>
           <Route path="/Account/login" element={<LoginPage />} />

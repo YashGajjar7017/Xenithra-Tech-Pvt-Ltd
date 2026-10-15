@@ -222,6 +222,118 @@
   --prism-header: 1; /* signals glassy prism header */
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   JetBrains Theme — Exact match to JetBrains New UI (IntelliJ / WebStorm)
+   Colors sampled directly from the JetBrains UI reference screenshot:
+   - Editor/Canvas background: #1e1f22
+   - Sidebars/Tool Windows: #2b2d30
+   - Accent / Active: #3574f0 (JetBrains Blue)
+   - Border lines: #393b40
+   - Primary text: #dfe1e5
+   - Secondary/Muted: #6f737a
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+[data-theme='jetbrains'],
+[data-theme='jetbrains-dark'] {
+  --bg-gradient: #1e1f22;
+  --panel-bg: #2b2d30;
+  --panel-border: #393b40;
+  --panel-border-glow: rgba(53, 116, 240, 0.25);
+  --accent-color: #3574f0;
+  --accent-glow: 0 0 10px rgba(53, 116, 240, 0.35);
+  --text-main: #dfe1e5;
+  --text-muted: #6f737a;
+  --sidebar-bg: #2b2d30;
+  --sidebar-active: rgba(53, 116, 240, 0.15);
+  --terminal-bg: #1e1f22;
+  --terminal-border: #393b40;
+  --terminal-text: #bcbec4;
+  --input-bg: #1e1f22;
+  --input-border: #43454a;
+  --button-run-bg: linear-gradient(135deg, #3574f0, #2b61cc);
+  --button-run-text: #ffffff;
+  --button-run-border: rgba(53, 116, 240, 0.5);
+  --button-run-glow: 0 0 10px rgba(53, 116, 240, 0.3);
+  --header-bg: #2b2d30;
+  --header-border: #393b40;
+}
+
+[data-theme='jetbrains'] .menu-bar,
+[data-theme='jetbrains-dark'] .menu-bar {
+  background: #2b2d30 !important;
+  border-bottom: 1px solid #393b40 !important;
+  box-shadow: none !important;
+}
+
+[data-theme='jetbrains'] .menu-item,
+[data-theme='jetbrains-dark'] .menu-item {
+  color: #dfe1e5;
+  font-size: 12.5px;
+  font-weight: 450;
+}
+
+[data-theme='jetbrains'] .menu-item:hover,
+[data-theme='jetbrains-dark'] .menu-item:hover,
+[data-theme='jetbrains'] .menu-item.open,
+[data-theme='jetbrains-dark'] .menu-item.open {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   JetBrains Darcula — Classic IntelliJ Darcula theme
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+[data-theme='jetbrains-darcula'] {
+  /* Darcula main background — iconic warm charcoal */
+  --bg-gradient: #2b2b2b;
+  /* Panel background — slightly lighter */
+  --panel-bg: #3c3f41;
+  /* Border — subtle dark separator */
+  --panel-border: #4a4a4a;
+  --panel-border-glow: rgba(255, 180, 50, 0.25);
+  /* Accent — Darcula's warm amber/orange (used in links, highlights) */
+  --accent-color: #ffc66d;
+  --accent-glow: 0 0 10px rgba(255, 198, 109, 0.3), 0 0 22px rgba(255, 198, 109, 0.1);
+  /* Editor text — classic Darcula warm off-white */
+  --text-main: #a9b7c6;
+  --text-muted: #6a737d;
+  /* Sidebar — Darcula project panel */
+  --sidebar-bg: #282828;
+  --sidebar-active: rgba(255, 198, 109, 0.12);
+  /* Terminal */
+  --terminal-bg: #1e1e1e;
+  --terminal-border: #404040;
+  --terminal-text: #bababa;
+  /* Input fields */
+  --input-bg: #2b2b2b;
+  --input-border: #555555;
+  /* Run button — Darcula green */
+  --button-run-bg: linear-gradient(135deg, #3c6b3c, #4a7c59);
+  --button-run-text: #c8f7c8;
+  --button-run-border: rgba(98, 180, 98, 0.45);
+  --button-run-glow: 0 0 10px rgba(98, 180, 98, 0.25);
+}
+
+/* JetBrains Darcula header */
+[data-theme='jetbrains-darcula'] .menu-bar {
+  background: #3c3f41 !important;
+  border-bottom: 1px solid #4a4a4a !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.4) !important;
+}
+
+/* JetBrains Darcula menu-item text */
+[data-theme='jetbrains-darcula'] .menu-item {
+  color: #bababa;
+  font-size: 12.5px;
+}
+
+[data-theme='jetbrains-darcula'] .menu-item:hover,
+[data-theme='jetbrains-darcula'] .menu-item.open {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+}
+
 [data-theme='github-dark'] {
   /* GitHub Dark Theme Modern Aesthetic */
   --bg-gradient: #0d1117;
