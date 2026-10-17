@@ -221,17 +221,9 @@ const EditorPage = () => {
     }, 450)
   }
 
-  // Multi-tab state management
-  const [openTabs, setOpenTabs] = useState([
-    {
-      id: 'default_index',
-      filename: 'index.html',
-      code: `<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>`,
-      lang: 'XML',
-      path: ''
-    }
-  ])
-  const [activeTabId, setActiveTabId] = useState('default_index')
+  // Multi-tab state management - start empty like JetBrains screenshot
+  const [openTabs, setOpenTabs] = useState([])
+  const [activeTabId, setActiveTabId] = useState('')
 
   // Right editor state (for split pane)
   const [rightTab, setRightTab] = useState('untitled.js')
@@ -241,14 +233,7 @@ const EditorPage = () => {
   const [rightLang, setRightLang] = useState('Node.js')
   const [rightFilePath, setRightFilePath] = useState('')
 
-  const activeTabObj = openTabs.find((t) => t.id === activeTabId) ||
-    openTabs[0] || {
-      id: 'empty',
-      filename: 'untitled.js',
-      code: '',
-      lang: 'Node.js',
-      path: ''
-    }
+  const activeTabObj = openTabs.find((t) => t.id === activeTabId) || openTabs[0] || null
 
   const leftCode = activeTabObj ? activeTabObj.code : ''
   const leftTab = activeTabObj ? activeTabObj.filename : 'untitled.js'
@@ -375,7 +360,7 @@ const EditorPage = () => {
   const [terminalLayout, setTerminalLayout] = useState('bottom') // 'bottom' | 'center'
 
   // AI Chat & Code Adjuster states
-  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false)
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true)
   const [rightPanelTab, setRightPanelTab] = useState('chat')
   const [chatInput, setChatInput] = useState('')
   const [chatMessages, setChatMessages] = useState([
@@ -2299,7 +2284,43 @@ const EditorPage = () => {
                 </button>
               </div>
             </div>
-            {selectedLanguage === 'MySQL' ? (
+            {openTabs.length === 0 ? (
+              <div
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#1e1f22',
+                  color: '#c4c7c5',
+                  userSelect: 'none',
+                  height: '100%'
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '420px', maxWidth: '90%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: '#868a91' }}>Search Everywhere</span>
+                    <span style={{ color: '#dfe1e5', fontWeight: '500' }}>Shift Shift or F1 or Ctrl+Shift+A</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: '#868a91' }}>Go to File</span>
+                    <span style={{ color: '#dfe1e5', fontWeight: '500' }}>Ctrl+P</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: '#868a91' }}>Recent Files</span>
+                    <span style={{ color: '#dfe1e5', fontWeight: '500' }}>Ctrl+E</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: '#868a91' }}>Navigation Bar</span>
+                    <span style={{ color: '#dfe1e5', fontWeight: '500' }}>Ctrl+Shift+;</span>
+                  </div>
+                  <div style={{ textAlign: 'center', marginTop: '16px', color: '#868a91', fontSize: '12.5px' }}>
+                    Drop files here to open them
+                  </div>
+                </div>
+              </div>
+            ) : selectedLanguage === 'MySQL' ? (
               <div
                 style={{
                   flex: 1,
@@ -3454,225 +3475,223 @@ const EditorPage = () => {
           </div>
         )}
 
-        {/* RIGHT SIDE AI CHAT & TEXT ADJUSTER DRAWER */}
+        {/* RIGHT SIDE JETBRAINS AI ASSISTANT TOOL WINDOW */}
         <div
           style={{
-            width: isRightPanelOpen ? '340px' : '0px',
+            width: isRightPanelOpen ? '360px' : '0px',
             display: 'flex',
             flexDirection: 'column',
-            borderLeft: isRightPanelOpen ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
-            background: 'rgba(15, 18, 25, 0.85)',
-            backdropFilter: 'blur(20px)',
-            boxShadow: isRightPanelOpen ? '-10px 0 30px rgba(0, 0, 0, 0.5)' : 'none',
+            borderLeft: isRightPanelOpen ? '1px solid #393b40' : 'none',
+            background: '#1e1f22',
             overflow: 'hidden',
             transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             height: '100%',
             zIndex: 5,
-            fontFamily: "'Outfit', sans-serif"
+            userSelect: 'none'
           }}
         >
-          {/* Drawer Header Tabs - Segmented Design */}
+          {/* JetBrains AI Assistant Header */}
           <div
             style={{
               display: 'flex',
-              background: 'rgba(0, 0, 0, 0.25)',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-              height: '42px',
               alignItems: 'center',
-              padding: '0 8px',
-              gap: '6px'
+              justifyContent: 'space-between',
+              padding: '8px 12px',
+              borderBottom: '1px solid #393b40',
+              background: '#2b2d30',
+              fontSize: '11.5px',
+              color: '#dfe1e5',
+              height: '38px',
+              boxSizing: 'border-box'
             }}
           >
-            {['chat', 'format', 'copilot'].map((tab) => {
-              const isActive = rightPanelTab === tab
-              return (
-                <div
-                  key={tab}
-                  onClick={() => setRightPanelTab(tab)}
-                  style={{
-                    flex: tab === 'copilot' ? 1.3 : 1,
-                    textAlign: 'center',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    letterSpacing: '0.04em',
-                    cursor: 'pointer',
-                    color: isActive ? '#ffffff' : '#8b949e',
-                    background: isActive ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                    border: isActive
-                      ? '1px solid rgba(255, 255, 255, 0.12)'
-                      : '1px solid transparent',
-                    borderRadius: '6px',
-                    height: '28px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) e.currentTarget.style.color = '#fff'
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) e.currentTarget.style.color = '#8b949e'
-                  }}
-                >
-                  {tab === 'chat' ? 'AI ASSISTANT' : tab === 'format' ? 'ADJUSTER' : 'COPILOT & ML'}
-                </div>
-              )
-            })}
-            {/* Center Terminal Toggle Quick Action */}
-            <button
-              onClick={() => setTerminalLayout(terminalLayout === 'center' ? 'bottom' : 'center')}
-              title={terminalLayout === 'center' ? 'Dock Terminal to Bottom' : 'Open Cyber Terminal in Center Container'}
-              style={{
-                background: terminalLayout === 'center' ? 'rgba(0, 243, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                border: terminalLayout === 'center' ? '1px solid #00f3ff' : '1px solid rgba(255, 255, 255, 0.1)',
-                color: terminalLayout === 'center' ? '#00f3ff' : '#8b949e',
-                borderRadius: '6px',
-                padding: '4px 8px',
-                fontSize: '10px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                height: '28px',
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              <span>{terminalLayout === 'center' ? '⬇ Dock' : '⛶ Center Term'}</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: '600' }}>
+                <span>Chat History</span>
+                <span style={{ fontSize: '9px', opacity: 0.7 }}>⌵</span>
+              </div>
+              <button
+                onClick={() => setChatMessages([])}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#dfe1e5',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  opacity: 0.85
+                }}
+              >
+                <span>+ New Chat</span>
+              </button>
+            </div>
 
-            <div
-              onClick={() => setIsRightPanelOpen(false)}
-              style={{
-                padding: '4px 8px',
-                cursor: 'pointer',
-                color: '#8b949e',
-                fontSize: '18px',
-                fontWeight: '300',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#8b949e')}
-            >
-              ×
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ cursor: 'pointer', opacity: 0.7, fontSize: '13px' }} title="Options">•••</span>
+              <span
+                onClick={() => setIsRightPanelOpen(false)}
+                style={{ cursor: 'pointer', opacity: 0.7, fontSize: '14px' }}
+                title="Hide AI Assistant"
+              >
+                &#8212;
+              </span>
             </div>
           </div>
 
-          {/* Drawer Body content */}
+          {/* JetBrains AI Assistant Body */}
           {rightPanelTab === 'chat' ? (
-            /* AI Chat Tab */
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                padding: '14px'
-              }}
-            >
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: 'auto',
-                  marginBottom: '12px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  paddingRight: '4px'
-                }}
-              >
-                {chatMessages.map((msg, idx) => {
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '12px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {chatMessages.length <= 1 ? (
+                /* JetBrains Empty State Prompt Card from image */
+                <div style={{ padding: '24px 8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '6px',
+                      background: 'rgba(53, 116, 240, 0.15)',
+                      border: '1px solid rgba(53, 116, 240, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#3574f0',
+                      fontSize: '16px',
+                      marginBottom: '4px'
+                    }}
+                  >
+                    <i className="bx bx-book-content"></i>
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#dfe1e5' }}>
+                    More room for your prompts
+                  </div>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#868a91', lineHeight: '1.45' }}>
+                    Chat can now open as an editor tab. Split or drag it to sit next to the code.
+                  </p>
+                  <div
+                    onClick={() => {
+                      const tabId = 'ai_chat_' + Date.now()
+                      setOpenTabs((prev) => [
+                        ...prev,
+                        { id: tabId, filename: 'AI Assistant Chat.md', code: '# AI Assistant Session\nAsk questions or review suggestions.', lang: 'XML' }
+                      ])
+                      setActiveTabId(tabId)
+                    }}
+                    style={{
+                      fontSize: '11px',
+                      color: '#3574f0',
+                      cursor: 'pointer',
+                      marginTop: '4px',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    Open Chat in Editor
+                  </div>
+                </div>
+              ) : (
+                chatMessages.map((msg, idx) => {
                   const isUser = msg.sender === 'user'
                   return (
                     <div
                       key={idx}
                       style={{
                         alignSelf: isUser ? 'flex-end' : 'flex-start',
-                        background: isUser
-                          ? 'linear-gradient(135deg, #1e2530 0%, #0f131a 100%)'
-                          : 'rgba(255, 255, 255, 0.04)',
-                        border: isUser
-                          ? '1px solid rgba(255, 255, 255, 0.15)'
-                          : '1px solid rgba(255, 255, 255, 0.06)',
-                        borderRadius: isUser ? '12px 12px 0 12px' : '12px 12px 12px 0',
-                        padding: '10px 14px',
-                        maxWidth: '85%',
-                        fontSize: '12px',
+                        background: isUser ? '#2b2d30' : '#26282b',
+                        border: '1px solid #393b40',
+                        borderRadius: '6px',
+                        padding: '8px 12px',
+                        maxWidth: '90%',
+                        fontSize: '11.5px',
                         lineHeight: '1.45',
-                        color: '#e6edf3',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                        color: '#dfe1e5'
                       }}
                     >
                       {isUser ? msg.text : formatChatMessage(msg.text)}
                     </div>
                   )
-                })}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '8px',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                  paddingTop: '12px'
+                })
+              )}
+            </div>
+
+            {/* JetBrains AI Input Box Container */}
+            <div
+              style={{
+                marginTop: 'auto',
+                background: '#2b2d30',
+                border: '1px solid #393b40',
+                borderRadius: '8px',
+                padding: '10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}
+            >
+              <textarea
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendChatMessage()
+                  }
                 }}
-              >
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
-                  placeholder="Ask AI Assistant..."
-                  style={{
-                    flex: 1,
-                    background: 'rgba(0,0,0,0.3)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: '6px',
-                    color: '#fff',
-                    fontSize: '12px',
-                    padding: '8px 12px',
-                    outline: 'none',
-                    transition: 'all 0.2s ease',
-                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.35)'
-                    e.target.style.boxShadow =
-                      '0 0 8px rgba(255, 255, 255, 0.15), inset 0 1px 3px rgba(0,0,0,0.3)'
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(255,255,255,0.12)'
-                    e.target.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.3)'
-                  }}
-                />
-                <button
-                  onClick={handleSendChatMessage}
-                  style={{
-                    background: 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)',
-                    border: 'none',
-                    color: '#000000',
-                    borderRadius: '6px',
-                    padding: '0 16px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 4px 10px rgba(255, 255, 255, 0.1)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-1px)'
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 255, 255, 0.2)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'none'
-                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(255, 255, 255, 0.1)'
-                  }}
-                >
-                  Send
-                </button>
+                placeholder="Ask AI Assistant, use @mentions or /commands"
+                rows={2}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#dfe1e5',
+                  fontSize: '11.5px',
+                  fontFamily: 'inherit',
+                  resize: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+
+              {/* Action row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    style={{ background: 'transparent', border: 'none', color: '#868a91', cursor: 'pointer', fontSize: '14px', padding: 0 }}
+                    title="Attach file or context"
+                  >
+                    +
+                  </button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    onClick={handleSendChatMessage}
+                    style={{
+                      background: chatInput.trim() ? '#3574f0' : 'transparent',
+                      border: 'none',
+                      color: chatInput.trim() ? '#fff' : '#868a91',
+                      borderRadius: '4px',
+                      padding: '3px 8px',
+                      fontSize: '11px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ➤
+                  </button>
+                </div>
+              </div>
+
+              {/* Sub-bar: Model selector and Feedback */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10px', color: '#868a91', paddingTop: '2px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
+                    <span>💥</span> Claude Agent <span>⌵</span>
+                  </span>
+                  <span style={{ cursor: 'pointer' }}>No models ⌵</span>
+                </div>
+                <span style={{ cursor: 'pointer' }}>Feedback ↗</span>
               </div>
             </div>
+          </div>
           ) : rightPanelTab === 'format' ? (
             /* Adjuster / Formatter Settings Tab */
             <div

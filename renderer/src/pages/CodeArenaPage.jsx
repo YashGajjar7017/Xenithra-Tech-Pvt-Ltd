@@ -1,22 +1,85 @@
 import React, { useState, useEffect, useRef } from 'react'
 
+const CHALLENGES = [
+  {
+    id: 'two-sum',
+    title: 'Two Sum Algorithm (Hash Map)',
+    difficulty: 'Medium / Speed',
+    fnName: 'twoSum',
+    description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+    starterCode: `function twoSum(nums, target) {\n    // Write your optimized solution here\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const diff = target - nums[i];\n        if (map.has(diff)) return [map.get(diff), i];\n        map.set(nums[i], i);\n    }\n    return [];\n}`,
+    aiSolution: `function twoSum(nums, target) {\n    const seen = {};\n    for (let i = 0; i < nums.length; i++) {\n        const rem = target - nums[i];\n        if (seen[rem] !== undefined) return [seen[rem], i];\n        seen[nums[i]] = i;\n    }\n    return [];\n}`,
+    testCases: [
+      { input: [[2, 7, 11, 15], 9], expected: [0, 1], desc: '[2, 7, 11, 15], target = 9' },
+      { input: [[3, 2, 4], 6], expected: [1, 2], desc: '[3, 2, 4], target = 6' },
+      { input: [[3, 3], 6], expected: [0, 1], desc: '[3, 3], target = 6' }
+    ]
+  },
+  {
+    id: 'valid-palindrome',
+    title: 'Valid Palindrome (Two Pointers)',
+    difficulty: 'Easy / Speed',
+    fnName: 'isPalindrome',
+    description: 'Given a string s, return true if it is a palindrome, considering only alphanumeric characters and ignoring cases.',
+    starterCode: `function isPalindrome(s) {\n    // Clean string and check palindrome\n    const clean = s.toLowerCase().replace(/[^a-z0-9]/g, '');\n    let l = 0, r = clean.length - 1;\n    while (l < r) {\n        if (clean[l] !== clean[r]) return false;\n        l++; r--;\n    }\n    return true;\n}`,
+    aiSolution: `function isPalindrome(s) {\n    const str = s.toLowerCase().replace(/[^a-z0-9]/g, '');\n    return str === str.split('').reverse().join('');\n}`,
+    testCases: [
+      { input: ['A man, a plan, a canal: Panama'], expected: true, desc: '"A man, a plan, a canal: Panama"' },
+      { input: ['race a car'], expected: false, desc: '"race a car"' },
+      { input: [' '], expected: true, desc: '" "' }
+    ]
+  },
+  {
+    id: 'valid-parentheses',
+    title: 'Valid Parentheses (Stack)',
+    difficulty: 'Medium / Speed',
+    fnName: 'isValid',
+    description: 'Given a string s containing just the characters "(", ")", "{", "}", "[" and "]", determine if the input string is valid.',
+    starterCode: `function isValid(s) {\n    // Stack implementation\n    const stack = [];\n    const map = { ')': '(', '}': '{', ']': '[' };\n    for (const ch of s) {\n        if (!map[ch]) stack.push(ch);\n        else if (stack.pop() !== map[ch]) return false;\n    }\n    return stack.length === 0;\n}`,
+    aiSolution: `function isValid(s) {\n    const st = [];\n    for (let c of s) {\n        if (c === '(') st.push(')');\n        else if (c === '{') st.push('}');\n        else if (c === '[') st.push(']');\n        else if (st.pop() !== c) return false;\n    }\n    return st.length === 0;\n}`,
+    testCases: [
+      { input: ['()[]{}'], expected: true, desc: '"()[]{}"' },
+      { input: ['(]'], expected: false, desc: '"(]"' },
+      { input: ['{[]}'], expected: true, desc: '"{[]}"' }
+    ]
+  },
+  {
+    id: 'binary-search',
+    title: 'Binary Search (Log N Complexity)',
+    difficulty: 'Easy / Speed',
+    fnName: 'search',
+    description: 'Given an array of integers nums which is sorted in ascending order, and an integer target, write a function to search target in nums. Return its index or -1.',
+    starterCode: `function search(nums, target) {\n    // Binary search logic\n    let low = 0, high = nums.length - 1;\n    while (low <= high) {\n        const mid = Math.floor((low + high) / 2);\n        if (nums[mid] === target) return mid;\n        if (nums[mid] < target) low = mid + 1;\n        else high = mid - 1;\n    }\n    return -1;\n}`,
+    aiSolution: `function search(nums, target) {\n    let l = 0, r = nums.length - 1;\n    while (l <= r) {\n        const m = (l + r) >> 1;\n        if (nums[m] === target) return m;\n        if (nums[m] < target) l = m + 1;\n        else r = m - 1;\n    }\n    return -1;\n}`,
+    testCases: [
+      { input: [[-1, 0, 3, 5, 9, 12], 9], expected: 4, desc: 'nums=[-1,0,3,5,9,12], target=9' },
+      { input: [[-1, 0, 3, 5, 9, 12], 2], expected: -1, desc: 'nums=[-1,0,3,5,9,12], target=2' },
+      { input: [[5], 5], expected: 0, desc: 'nums=[5], target=5' }
+    ]
+  }
+]
+
 const CodeArenaPage = () => {
-  const [matchStatus, setMatchStatus] = useState('idle') // 'idle' | 'hosting' | 'joining' | 'playing' | 'finished'
+  const [matchStatus, setMatchStatus] = useState('idle') // 'idle' | 'hosting' | 'playing' | 'finished'
   const [roomCode, setRoomCode] = useState('')
   const [shareToken, setShareToken] = useState('')
   const [hostIp, setHostIp] = useState('127.0.0.1')
-  const [port, setPort] = useState(8000)
+  const [port, setPort] = useState(localStorage.getItem('api-port') || '8000')
+  const [serverOnline, setServerOnline] = useState(false)
   const [playerId, setPlayerId] = useState('p1')
   const [playerName, setPlayerName] = useState('Warrior-' + Math.floor(Math.random() * 900 + 100))
   const [opponentName, setOpponentName] = useState('Waiting for opponent...')
-  
+  const [isAiMatch, setIsAiMatch] = useState(false)
+
+  // Challenge selection & Code generation
+  const [selectedChallengeIdx, setSelectedChallengeIdx] = useState(0)
+  const currentChallenge = CHALLENGES[selectedChallengeIdx]
+
   const [joinInput, setJoinInput] = useState('')
   const [copiedToken, setCopiedToken] = useState(false)
 
   // Coding States
-  const [userCode, setUserCode] = useState(
-    'function twoSum(nums, target) {\n    // Write your optimized solution here\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const diff = target - nums[i];\n        if (map.has(diff)) return [map.get(diff), i];\n        map.set(nums[i], i);\n    }\n    return [];\n}'
-  )
+  const [userCode, setUserCode] = useState(currentChallenge.starterCode)
   const [opponentCode, setOpponentCode] = useState('// Opponent is coding in real-time...\n')
   const [userTestsPassed, setUserTestsPassed] = useState(0)
   const [opponentTestsPassed, setOpponentTestsPassed] = useState(0)
@@ -26,6 +89,28 @@ const CodeArenaPage = () => {
 
   const pollIntervalRef = useRef(null)
   const timerIntervalRef = useRef(null)
+  const aiIntervalRef = useRef(null)
+
+  const apiBase = `http://localhost:${port}`
+
+  // Check Local Server Port 8000 Health on Mount
+  useEffect(() => {
+    const checkServer = async () => {
+      try {
+        const res = await fetch(`${apiBase}/api/health`)
+        if (res.ok) {
+          setServerOnline(true)
+        } else {
+          setServerOnline(false)
+        }
+      } catch (e) {
+        setServerOnline(false)
+      }
+    }
+    checkServer()
+    const intv = setInterval(checkServer, 5000)
+    return () => clearInterval(intv)
+  }, [apiBase])
 
   const exitArena = () => {
     window.location.hash = '#/'
@@ -36,14 +121,24 @@ const CodeArenaPage = () => {
   const handleMaximize = () => window.api?.maximizeWindow?.()
   const handleClose = () => window.api?.closeWindow?.()
 
-  // Host Arena Room on Open Port
+  // Generate / Cycle Challenge Problem and Starter Code
+  const handleGenerateChallenge = (idx) => {
+    const nextIdx = idx !== undefined ? idx : (selectedChallengeIdx + 1) % CHALLENGES.length
+    setSelectedChallengeIdx(nextIdx)
+    const chal = CHALLENGES[nextIdx]
+    setUserCode(chal.starterCode)
+    setUserTestsPassed(0)
+    setLogs([`⚡ Generated Challenge: "${chal.title}"`, `📋 ${chal.description}`])
+  }
+
+  // Host Arena Room on Open Port 8000
   const handleCreateRoom = async () => {
     try {
-      setLogs(['⚡ Opening port and registering Arena Room on local network...'])
-      const res = await fetch('/api/arena/create-room', {
+      setLogs([`⚡ Connecting to local engine on port ${port} and creating Arena Room...`])
+      const res = await fetch(`${apiBase}/api/arena/create-room`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hostName: playerName, problemId: 'two-sum' })
+        body: JSON.stringify({ hostName: playerName, problemId: currentChallenge.id })
       })
 
       if (res.ok) {
@@ -60,18 +155,65 @@ const CodeArenaPage = () => {
           `🌐 Host Listening on Port: ${data.port} (${data.localIp})`,
           '📡 Share Room Code or Invite Token to invite competitors on the network.'
         ])
+      } else {
+        throw new Error('Local server returned status ' + res.status)
       }
     } catch (err) {
-      setLogs((prev) => [...prev, `✗ Error opening Arena port: ${err.message}`])
+      setLogs((prev) => [
+        ...prev,
+        `✗ Error on Port ${port}: ${err.message}`,
+        `💡 Ensure Electron backend is running on http://localhost:${port}`
+      ])
     }
+  }
+
+  // Start AI Battle (Instant PvP Bot Match)
+  const handleStartAiBattle = () => {
+    setIsAiMatch(true)
+    const mockRoomCode = 'ARENA-AI-' + Math.floor(1000 + Math.random() * 9000)
+    setRoomCode(mockRoomCode)
+    setPlayerId('p1')
+    setOpponentName('DeepMind-Bot (AI)')
+    setMatchStatus('playing')
+    setTimer(180)
+    setUserTestsPassed(0)
+    setOpponentTestsPassed(0)
+    setOutcome('')
+    setLogs([
+      `⚔️ AI PvP Match Started! Opponent: DeepMind-Bot`,
+      `Problem: ${currentChallenge.title}`,
+      `⚡ Code and test against the AI in real time!`
+    ])
+
+    // Simulate AI typing solution over 30-45 seconds
+    const aiTargetCode = currentChallenge.aiSolution
+    let aiChars = 0
+    if (aiIntervalRef.current) clearInterval(aiIntervalRef.current)
+
+    aiIntervalRef.current = setInterval(() => {
+      aiChars += Math.floor(Math.random() * 6 + 2)
+      if (aiChars < aiTargetCode.length) {
+        setOpponentCode(aiTargetCode.substring(0, aiChars) + ' ▌')
+        if (aiChars > aiTargetCode.length * 0.4 && opponentTestsPassed === 0) {
+          setOpponentTestsPassed(1)
+        }
+        if (aiChars > aiTargetCode.length * 0.75 && opponentTestsPassed <= 1) {
+          setOpponentTestsPassed(2)
+        }
+      } else {
+        setOpponentCode(aiTargetCode)
+        setOpponentTestsPassed(3)
+        clearInterval(aiIntervalRef.current)
+      }
+    }, 400)
   }
 
   // Join Room by Code or Token
   const handleJoinRoom = async () => {
     if (!joinInput.trim()) return
     try {
-      setLogs([`⚡ Connecting to Arena room ${joinInput.trim()}...`])
-      const res = await fetch('/api/arena/join-room', {
+      setLogs([`⚡ Connecting to Arena room ${joinInput.trim()} on port ${port}...`])
+      const res = await fetch(`${apiBase}/api/arena/join-room`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,10 +242,10 @@ const CodeArenaPage = () => {
 
   // Polling room state every 800ms
   useEffect(() => {
-    if ((matchStatus === 'hosting' || matchStatus === 'playing') && roomCode) {
+    if (!isAiMatch && (matchStatus === 'hosting' || matchStatus === 'playing') && roomCode) {
       pollIntervalRef.current = setInterval(async () => {
         try {
-          const res = await fetch(`/api/arena/room/${roomCode}`)
+          const res = await fetch(`${apiBase}/api/arena/room/${roomCode}`)
           if (res.ok) {
             const data = await res.json()
             const room = data.room
@@ -133,24 +275,22 @@ const CodeArenaPage = () => {
               }
             }
           }
-        } catch (e) {
-          // Silent polling catch
-        }
+        } catch (e) {}
       }, 800)
     }
 
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
     }
-  }, [matchStatus, roomCode, playerId, playerName])
+  }, [matchStatus, roomCode, playerId, playerName, isAiMatch, apiBase])
 
   // Sync user typing to host
   const handleCodeChange = (e) => {
     const val = e.target.value
     setUserCode(val)
 
-    if (matchStatus === 'playing' && roomCode) {
-      fetch('/api/arena/update', {
+    if (!isAiMatch && matchStatus === 'playing' && roomCode) {
+      fetch(`${apiBase}/api/arena/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomCode, playerId, code: val })
@@ -171,42 +311,51 @@ const CodeArenaPage = () => {
     }
   }, [timer, matchStatus])
 
-  // Test Solution Validation
+  // Execute Dynamic Test Suite Validation
   const submitSolution = async () => {
-    setLogs((prev) => [...prev, '⚡ Compiling and executing test suite...'])
+    setLogs((prev) => [...prev, `⚡ Executing test suite for ${currentChallenge.title}...`])
 
     try {
-      const evalFunc = new Function(userCode + '\nreturn twoSum;')
-      const twoSum = evalFunc()
+      const evalFunc = new Function(userCode + `\nreturn ${currentChallenge.fnName};`)
+      const fn = evalFunc()
 
-      const t1 = twoSum([2, 7, 11, 15], 9)
-      const t2 = twoSum([3, 2, 4], 6)
-      const t3 = twoSum([3, 3], 6)
+      let passedCount = 0
+      const testResults = []
 
-      const pass1 = Array.isArray(t1) && t1.includes(0) && t1.includes(1)
-      const pass2 = Array.isArray(t2) && t2.includes(1) && t2.includes(2)
-      const pass3 = Array.isArray(t3) && t3.includes(0) && t3.includes(1)
-
-      const passedCount = (pass1 ? 1 : 0) + (pass2 ? 1 : 0) + (pass3 ? 1 : 0)
-      setUserTestsPassed(passedCount)
-
-      setLogs((prev) => [
-        ...prev,
-        pass1 ? '✓ Case 1 passed: [2,7,11,15], target=9' : '✗ Case 1 failed: [2,7,11,15], target=9',
-        pass2 ? '✓ Case 2 passed: [3,2,4], target=6' : '✗ Case 2 failed: [3,2,4], target=6',
-        pass3 ? '✓ Case 3 passed: [3,3], target=6' : '✗ Case 3 failed: [3,3], target=6'
-      ])
-
-      // Push test count to server
-      await fetch('/api/arena/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode, playerId, testsPassed: passedCount, totalTests: 3 })
+      currentChallenge.testCases.forEach((tc, idx) => {
+        try {
+          const res = fn(...tc.input)
+          const pass = JSON.stringify(res) === JSON.stringify(tc.expected)
+          if (pass) passedCount++
+          testResults.push(
+            pass
+              ? `✓ Case ${idx + 1} passed: ${tc.desc} => ${JSON.stringify(res)}`
+              : `✗ Case ${idx + 1} failed: ${tc.desc} (Expected ${JSON.stringify(tc.expected)}, got ${JSON.stringify(res)})`
+          )
+        } catch (err) {
+          testResults.push(`✗ Case ${idx + 1} error: ${err.message}`)
+        }
       })
 
-      if (passedCount === 3) {
+      setUserTestsPassed(passedCount)
+      setLogs((prev) => [...prev, ...testResults])
+
+      if (!isAiMatch && roomCode) {
+        await fetch(`${apiBase}/api/arena/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomCode,
+            playerId,
+            testsPassed: passedCount,
+            totalTests: currentChallenge.testCases.length
+          })
+        }).catch(() => {})
+      }
+
+      if (passedCount === currentChallenge.testCases.length) {
         setMatchStatus('finished')
-        setOutcome('🏆 VICTORY! All 3/3 Test Cases Passed!')
+        setOutcome('🏆 VICTORY! All ' + passedCount + '/' + currentChallenge.testCases.length + ' Test Cases Passed!')
       }
     } catch (err) {
       setLogs((prev) => [...prev, `✗ Syntax/Runtime Error: ${err.message}`])
@@ -231,40 +380,39 @@ const CodeArenaPage = () => {
         bottom: 0,
         width: '100vw',
         height: '100vh',
-        background: '#040209',
-        color: '#ffffff',
-        fontFamily: "'Inter', sans-serif",
+        background: '#1e1f22',
+        color: '#dfe1e5',
+        fontFamily: "'JetBrains Mono', 'Inter', monospace",
         overflow: 'hidden',
         boxSizing: 'border-box',
         zIndex: 9999
       }}
     >
-      {/* Pinned Top Header */}
+      {/* JetBrains-Style Header */}
       <header
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          height: '48px',
-          minHeight: '48px',
-          maxHeight: '48px',
-          background: '#0b0816',
-          borderBottom: '1px solid rgba(139, 92, 246, 0.3)',
+          height: '46px',
+          minHeight: '46px',
+          background: '#2b2d30',
+          borderBottom: '1px solid #393b40',
           boxSizing: 'border-box',
-          zIndex: 100
+          userSelect: 'none'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
             onClick={exitArena}
             style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              color: '#fff',
-              fontWeight: '700',
+              background: '#393b40',
+              border: '1px solid #4e5157',
+              color: '#dfe1e5',
+              fontWeight: '600',
               fontSize: '11px',
-              padding: '5px 12px',
+              padding: '4px 10px',
               borderRadius: '4px',
               cursor: 'pointer'
             }}
@@ -273,42 +421,34 @@ const CodeArenaPage = () => {
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px', color: '#a78bfa' }}>⚔️</span>
-            <span
-              style={{
-                fontSize: '13.5px',
-                fontWeight: '800',
-                background: 'linear-gradient(135deg, #c084fc 0%, #a78bfa 50%, #ffffff 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}
-            >
-              Xenithra Code Battle Arena (1v1 PvP)
+            <span style={{ fontSize: '16px', color: '#3574f0' }}>⚔️</span>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>
+              Xenithra Battle Arena
             </span>
             <span
               style={{
-                background: 'rgba(168, 85, 247, 0.15)',
-                border: '1px solid rgba(168, 85, 247, 0.4)',
-                color: '#c084fc',
-                fontSize: '9.5px',
+                background: serverOnline ? 'rgba(46, 164, 79, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                border: serverOnline ? '1px solid #2ea44f' : '1px solid #ef4444',
+                color: serverOnline ? '#3fb950' : '#f85149',
+                fontSize: '10px',
                 fontWeight: '700',
-                padding: '2px 6px',
+                padding: '2px 8px',
                 borderRadius: '4px'
               }}
             >
-              Port {port} Live Socket
+              {serverOnline ? `● Port ${port} Online` : `○ Port ${port} Offline`}
             </span>
           </div>
         </div>
 
         {/* Header Right Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {roomCode && (
             <div
               style={{
-                background: 'rgba(168, 85, 247, 0.12)',
-                border: '1px solid rgba(168, 85, 247, 0.3)',
-                padding: '4px 10px',
+                background: '#1e1f22',
+                border: '1px solid #393b40',
+                padding: '3px 8px',
                 borderRadius: '4px',
                 fontSize: '11px',
                 display: 'flex',
@@ -316,16 +456,10 @@ const CodeArenaPage = () => {
                 gap: '6px'
               }}
             >
-              <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>Room: {roomCode}</span>
+              <span style={{ color: '#3574f0', fontWeight: 'bold' }}>Room: {roomCode}</span>
               <button
                 onClick={handleCopyToken}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: '11px'
-                }}
+                style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '11px' }}
                 title="Copy Invite Token"
               >
                 {copiedToken ? '✓ Copied' : '📋'}
@@ -336,9 +470,9 @@ const CodeArenaPage = () => {
           {matchStatus === 'playing' && (
             <div
               style={{
-                background: timer <= 30 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.06)',
-                border: timer <= 30 ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)',
-                padding: '4px 12px',
+                background: timer <= 30 ? 'rgba(239, 68, 68, 0.2)' : '#1e1f22',
+                border: timer <= 30 ? '1px solid #ef4444' : '1px solid #393b40',
+                padding: '4px 10px',
                 borderRadius: '4px',
                 fontSize: '11px',
                 fontWeight: 'bold',
@@ -373,8 +507,8 @@ const CodeArenaPage = () => {
         </div>
       </header>
 
-      {/* Main Arena Content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 'calc(100vh - 48px - 28px)' }}>
+      {/* Main Arena Content Container */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {matchStatus === 'idle' && (
           <div
             style={{
@@ -384,34 +518,79 @@ const CodeArenaPage = () => {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '24px',
-              background: 'radial-gradient(circle at 50% 50%, #170f2e 0%, #06030c 100%)'
+              background: '#1e1f22'
             }}
           >
             <div
               style={{
                 width: '100%',
-                maxWidth: '540px',
-                background: 'rgba(18, 12, 34, 0.85)',
-                border: '1px solid rgba(168, 85, 247, 0.3)',
-                borderRadius: '12px',
+                maxWidth: '560px',
+                background: '#2b2d30',
+                border: '1px solid #393b40',
+                borderRadius: '8px',
                 padding: '28px',
-                boxShadow: '0 0 30px rgba(168, 85, 247, 0.2)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '18px'
+                gap: '16px'
               }}
             >
               <div style={{ textAlign: 'center' }}>
-                <h2 style={{ margin: 0, fontSize: '20px', color: '#c084fc', fontWeight: '800' }}>
-                  Xenithra Multi-Client PvP Arena
+                <h2 style={{ margin: 0, fontSize: '18px', color: '#fff', fontWeight: '700' }}>
+                  Xenithra PvP Code Arena
                 </h2>
-                <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>
-                  Battle against peers across open ports on the local network in real-time.
+                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#868a91' }}>
+                  Battle against peers or AI in real-time on local server port {port}.
+                </p>
+              </div>
+
+              {/* Problem / Code Generator Card */}
+              <div
+                style={{
+                  background: '#1e1f22',
+                  border: '1px solid #393b40',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#3574f0' }}>
+                    🎯 BATTLE CHALLENGE GENERATOR
+                  </span>
+                  <button
+                    onClick={() => handleGenerateChallenge()}
+                    style={{
+                      background: '#3574f0',
+                      border: 'none',
+                      color: '#fff',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🎲 Generate Next Problem
+                  </button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>
+                    {currentChallenge.title}
+                  </span>
+                  <span style={{ fontSize: '10px', color: '#f59e0b', background: 'rgba(245,158,11,0.15)', padding: '2px 6px', borderRadius: '4px' }}>
+                    {currentChallenge.difficulty}
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '11px', color: '#868a91', lineHeight: '1.4' }}>
+                  {currentChallenge.description}
                 </p>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '11px', color: '#868a91', marginBottom: '4px' }}>
                   Warrior Alias:
                 </label>
                 <input
@@ -420,12 +599,11 @@ const CodeArenaPage = () => {
                   onChange={(e) => setPlayerName(e.target.value)}
                   style={{
                     width: '100%',
-                    background: 'rgba(0,0,0,0.5)',
-                    border: '1px solid rgba(168, 85, 247, 0.3)',
-                    borderRadius: '6px',
-                    padding: '8px 12px',
+                    background: '#1e1f22',
+                    border: '1px solid #393b40',
+                    borderRadius: '4px',
+                    padding: '8px 10px',
                     color: '#fff',
-                    fontFamily: 'monospace',
                     fontSize: '12px',
                     outline: 'none',
                     boxSizing: 'border-box'
@@ -433,56 +611,74 @@ const CodeArenaPage = () => {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {/* Action Buttons */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <button
                   onClick={handleCreateRoom}
                   style={{
-                    background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
+                    background: '#3574f0',
                     border: 'none',
                     color: '#fff',
-                    padding: '12px',
-                    borderRadius: '6px',
+                    padding: '10px',
+                    borderRadius: '5px',
                     fontWeight: 'bold',
                     fontSize: '12px',
-                    cursor: 'pointer',
-                    boxShadow: '0 0 15px rgba(168, 85, 247, 0.4)'
+                    cursor: 'pointer'
                   }}
                 >
-                  🚀 Host Match on Port {port}
+                  🚀 Host Room on Port {port}
                 </button>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <input
-                    type="text"
-                    placeholder="Enter Room Code or Token..."
-                    value={joinInput}
-                    onChange={(e) => setJoinInput(e.target.value)}
-                    style={{
-                      background: 'rgba(0,0,0,0.5)',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: '6px',
-                      padding: '6px 10px',
-                      color: '#fff',
-                      fontSize: '11px',
-                      outline: 'none'
-                    }}
-                  />
-                  <button
-                    onClick={handleJoinRoom}
-                    style={{
-                      background: 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      color: '#fff',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      fontWeight: 'bold',
-                      fontSize: '11px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    🔑 Join Remote Match
-                  </button>
-                </div>
+                <button
+                  onClick={handleStartAiBattle}
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    border: 'none',
+                    color: '#fff',
+                    padding: '10px',
+                    borderRadius: '5px',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🤖 Battle vs AI Opponent
+                </button>
+              </div>
+
+              {/* Join Room Section */}
+              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid #393b40', paddingTop: '12px' }}>
+                <input
+                  type="text"
+                  placeholder="Enter Room Code (e.g. ARENA-1024)..."
+                  value={joinInput}
+                  onChange={(e) => setJoinInput(e.target.value)}
+                  style={{
+                    flex: 1,
+                    background: '#1e1f22',
+                    border: '1px solid #393b40',
+                    borderRadius: '4px',
+                    padding: '8px 10px',
+                    color: '#fff',
+                    fontSize: '11px',
+                    outline: 'none'
+                  }}
+                />
+                <button
+                  onClick={handleJoinRoom}
+                  style={{
+                    background: '#393b40',
+                    border: '1px solid #4e5157',
+                    color: '#fff',
+                    padding: '8px 14px',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔑 Join Match
+                </button>
               </div>
             </div>
           </div>
@@ -497,16 +693,16 @@ const CodeArenaPage = () => {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '24px',
-              background: '#040209'
+              background: '#1e1f22'
             }}
           >
             <div
               style={{
                 width: '100%',
-                maxWidth: '480px',
-                background: 'rgba(18, 12, 34, 0.85)',
-                border: '1px solid rgba(168, 85, 247, 0.4)',
-                borderRadius: '12px',
+                maxWidth: '460px',
+                background: '#2b2d30',
+                border: '1px solid #393b40',
+                borderRadius: '8px',
                 padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -515,44 +711,73 @@ const CodeArenaPage = () => {
               }}
             >
               <div style={{ fontSize: '32px' }}>📡</div>
-              <h3 style={{ margin: 0, color: '#c084fc', fontSize: '16px' }}>
-                Waiting for Challenger to Join...
+              <h3 style={{ margin: 0, color: '#fff', fontSize: '16px' }}>
+                Waiting for Competitor to Connect...
               </h3>
-              <p style={{ margin: 0, fontSize: '11.5px', color: '#94a3b8' }}>
-                Room Code: <strong style={{ color: '#fff' }}>{roomCode}</strong> (Port {port})
+              <p style={{ margin: 0, fontSize: '12px', color: '#868a91' }}>
+                Room Code: <strong style={{ color: '#3574f0' }}>{roomCode}</strong> (Port {port})
               </p>
 
-              <div style={{ background: 'rgba(0,0,0,0.6)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '10.5px', fontFamily: 'monospace', wordBreak: 'break-all', color: '#a78bfa' }}>
+              <div
+                style={{
+                  background: '#1e1f22',
+                  padding: '10px',
+                  borderRadius: '4px',
+                  border: '1px solid #393b40',
+                  fontSize: '10.5px',
+                  fontFamily: 'monospace',
+                  wordBreak: 'break-all',
+                  color: '#9da0a8'
+                }}
+              >
                 {shareToken}
               </div>
 
-              <button
-                onClick={handleCopyToken}
-                style={{
-                  background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
-                  border: 'none',
-                  color: '#fff',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  fontSize: '11px',
-                  cursor: 'pointer'
-                }}
-              >
-                {copiedToken ? '✓ Invite Token Copied!' : '📋 Copy Shareable Invite Token'}
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={handleCopyToken}
+                  style={{
+                    flex: 1,
+                    background: '#3574f0',
+                    border: 'none',
+                    color: '#fff',
+                    padding: '10px',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {copiedToken ? '✓ Invite Token Copied!' : '📋 Copy Invite Token'}
+                </button>
+                <button
+                  onClick={handleStartAiBattle}
+                  style={{
+                    background: '#10b981',
+                    border: 'none',
+                    color: '#fff',
+                    padding: '10px',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Switch to AI Bot
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {(matchStatus === 'playing' || matchStatus === 'finished') && (
-          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', padding: '12px', overflow: 'hidden' }}>
-            {/* Left Column: Player Editor */}
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '8px', overflow: 'hidden' }}>
+            {/* Left Column: Player Editor Card */}
             <div
               style={{
-                background: '#080512',
-                border: '1px solid rgba(168, 85, 247, 0.3)',
-                borderRadius: '8px',
+                background: '#1e1f22',
+                border: '1px solid #393b40',
+                borderRadius: '6px',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden'
@@ -560,33 +785,52 @@ const CodeArenaPage = () => {
             >
               <div
                 style={{
-                  padding: '8px 14px',
-                  background: '#0e091e',
-                  borderBottom: '1px solid rgba(168, 85, 247, 0.2)',
+                  padding: '8px 12px',
+                  background: '#2b2d30',
+                  borderBottom: '1px solid #393b40',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 'bold' }}>
-                  <span style={{ color: '#c084fc' }}>● {playerName} (You)</span>
-                  <span style={{ fontSize: '10px', color: '#10b981' }}>({userTestsPassed}/3 Cases Passed)</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', fontWeight: 'bold' }}>
+                  <span style={{ color: '#3574f0' }}>● {playerName} (You)</span>
+                  <span style={{ fontSize: '10px', color: '#10b981' }}>
+                    ({userTestsPassed}/{currentChallenge.testCases.length} Tests Passed)
+                  </span>
                 </div>
-                <button
-                  onClick={submitSolution}
-                  style={{
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    border: 'none',
-                    color: '#fff',
-                    padding: '4px 12px',
-                    borderRadius: '4px',
-                    fontWeight: 'bold',
-                    fontSize: '11px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  ⚡ Submit Solution
-                </button>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    onClick={() => handleGenerateChallenge()}
+                    style={{
+                      background: '#393b40',
+                      border: '1px solid #4e5157',
+                      color: '#dfe1e5',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      cursor: 'pointer'
+                    }}
+                    title="Change / Regenerate problem template"
+                  >
+                    🎲 Next Problem
+                  </button>
+                  <button
+                    onClick={submitSolution}
+                    style={{
+                      background: '#3574f0',
+                      border: 'none',
+                      color: '#fff',
+                      padding: '4px 12px',
+                      borderRadius: '4px',
+                      fontWeight: 'bold',
+                      fontSize: '11px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ⚡ Submit Solution
+                  </button>
+                </div>
               </div>
 
               <textarea
@@ -595,9 +839,9 @@ const CodeArenaPage = () => {
                 spellCheck="false"
                 style={{
                   flex: 1,
-                  background: '#030206',
-                  color: '#e2e8f0',
-                  padding: '14px',
+                  background: '#1e1f22',
+                  color: '#bcbec4',
+                  padding: '12px',
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: '12px',
                   lineHeight: '1.6',
@@ -607,14 +851,34 @@ const CodeArenaPage = () => {
                   overflowY: 'auto'
                 }}
               />
+
+              {/* Logs area */}
+              <div
+                style={{
+                  height: '80px',
+                  background: '#18191c',
+                  borderTop: '1px solid #393b40',
+                  padding: '8px',
+                  fontSize: '10.5px',
+                  fontFamily: 'monospace',
+                  overflowY: 'auto',
+                  color: '#9da0a8'
+                }}
+              >
+                {logs.map((log, i) => (
+                  <div key={i} style={{ color: log.startsWith('✓') ? '#10b981' : log.startsWith('✗') ? '#f87171' : '#9da0a8' }}>
+                    {log}
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Right Column: Opponent Live Screen & Outcome */}
+            {/* Right Column: Opponent Live Screen Card */}
             <div
               style={{
-                background: '#080512',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
+                background: '#1e1f22',
+                border: '1px solid #393b40',
+                borderRadius: '6px',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden'
@@ -622,19 +886,21 @@ const CodeArenaPage = () => {
             >
               <div
                 style={{
-                  padding: '8px 14px',
-                  background: '#0e091e',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                  padding: '8px 12px',
+                  background: '#2b2d30',
+                  borderBottom: '1px solid #393b40',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 'bold' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', fontWeight: 'bold' }}>
                   <span style={{ color: '#f59e0b' }}>⚔️ Opponent: {opponentName}</span>
-                  <span style={{ fontSize: '10px', color: '#f59e0b' }}>({opponentTestsPassed}/3 Cases Passed)</span>
+                  <span style={{ fontSize: '10px', color: '#f59e0b' }}>
+                    ({opponentTestsPassed}/{currentChallenge.testCases.length} Tests Passed)
+                  </span>
                 </div>
-                <span style={{ fontSize: '10px', color: '#888' }}>Live Synchronized</span>
+                <span style={{ fontSize: '10px', color: '#868a91' }}>Live Synchronized</span>
               </div>
 
               <textarea
@@ -643,17 +909,16 @@ const CodeArenaPage = () => {
                 spellCheck="false"
                 style={{
                   flex: 1,
-                  background: '#030206',
-                  color: '#94a3b8',
-                  padding: '14px',
+                  background: '#1e1f22',
+                  color: '#868a91',
+                  padding: '12px',
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: '12px',
                   lineHeight: '1.6',
                   border: 'none',
                   outline: 'none',
                   resize: 'none',
-                  overflowY: 'auto',
-                  opacity: 0.8
+                  overflowY: 'auto'
                 }}
               />
 
@@ -661,7 +926,7 @@ const CodeArenaPage = () => {
                 <div
                   style={{
                     padding: '12px 16px',
-                    background: outcome.includes('VICTORY') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                    background: outcome.includes('VICTORY') ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
                     borderTop: outcome.includes('VICTORY') ? '1px solid #10b981' : '1px solid #ef4444',
                     fontSize: '13px',
                     fontWeight: 'bold',
@@ -684,29 +949,31 @@ const CodeArenaPage = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          height: '28px',
-          minHeight: '28px',
-          maxHeight: '28px',
-          background: '#0b0816',
-          borderTop: '1px solid rgba(139, 92, 246, 0.25)',
+          height: '26px',
+          minHeight: '26px',
+          background: '#2b2d30',
+          borderTop: '1px solid #393b40',
           fontSize: '11px',
-          color: '#94a3b8',
-          boxSizing: 'border-box'
+          color: '#868a91',
+          boxSizing: 'border-box',
+          userSelect: 'none'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ color: '#c084fc', fontWeight: 'bold' }}>
-            ● Match Status: {matchStatus.toUpperCase()}
+          <span style={{ color: '#3574f0', fontWeight: 'bold' }}>
+            ● Status: {matchStatus.toUpperCase()}
           </span>
           <span style={{ opacity: 0.3 }}>|</span>
           <span>Room: {roomCode || 'None'}</span>
           <span style={{ opacity: 0.3 }}>|</span>
-          <span style={{ color: '#10b981' }}>Host Socket: http://{hostIp}:{port}</span>
+          <span style={{ color: '#10b981' }}>Host: http://{hostIp}:{port}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span>Latency: ~14ms</span>
+          <span>Latency: ~12ms</span>
           <span style={{ opacity: 0.3 }}>|</span>
-          <span>Port {port} Open</span>
+          <span style={{ color: serverOnline ? '#10b981' : '#ef4444' }}>
+            Port {port} {serverOnline ? 'Online' : 'Offline'}
+          </span>
         </div>
       </footer>
     </div>

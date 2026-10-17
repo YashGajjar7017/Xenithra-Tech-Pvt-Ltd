@@ -9,6 +9,7 @@ import { createRequire } from 'module'
 import { exec } from 'child_process'
 import fs from 'fs'
 import os from 'os'
+import crypto from 'crypto'
 import { signUpUser, authenticateUser } from './Services/db.service.js'
 import { runCode, packageCode } from './code-runner/runner.js'
 import {
@@ -60,14 +61,50 @@ app.use((req, res, next) => {
 
 // Legacy express view routes are bypassed in the React SPA build
 
+// Active Digital Fingerprint Server Sessions Store
+const activeServerSessions = new Map()
+
+function generateServerSession(user, fingerprint, req) {
+  const sessionId = 'XEN-SESS-' + crypto.randomBytes(16).toString('hex')
+  const sessionSecret = process.env.SESSION_SECRET || 'xenithra_local_secret_key_2024'
+  const clientIp = req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || '127.0.0.1'
+  const createdAt = new Date().toISOString()
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  const cleanFingerprint = fingerprint || 'client-hardware-fp-' + crypto.randomBytes(8).toString('hex')
+
+  const sessionToken = crypto
+    .createHmac('sha256', sessionSecret)
+    .update(`${sessionId}:${cleanFingerprint}:${user.email || user.username}`)
+    .digest('hex')
+
+  const sessionData = {
+    sessionId,
+    sessionToken,
+    digitalFingerprint: cleanFingerprint,
+    shortFingerprint: cleanFingerprint.substring(0, 12).toUpperCase(),
+    user: {
+      id: user._id || user.id || user.email,
+      email: user.email,
+      username: user.username || user.email?.split('@')[0] || 'Operator'
+    },
+    clientIp,
+    createdAt,
+    expiresAt,
+    verified: true
+  }
+
+  activeServerSessions.set(sessionId, sessionData)
+  return sessionData
+}
+
 // Basic health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', pid: process.pid })
+  res.json({ status: 'ok', pid: process.pid, activeSessions: activeServerSessions.size })
 })
 
-// Basic Login route with local DB fallback
+// Basic Login route with local DB fallback & digital fingerprint session
 app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body
+  const { email, password, fingerprint } = req.body
 
   if (!email || !password) {
     return res.status(400).json({ message: 'Email/Username and password required' })
@@ -82,16 +119,22 @@ app.post('/api/login', async (req, res) => {
     }
 
     req.session.user = user
-    res.json({ message: 'Login successful', user })
+    const serverSession = generateServerSession(user, fingerprint, req)
+
+    res.json({
+      message: 'Login successful',
+      user: { ...user, token: serverSession.sessionToken },
+      session: serverSession
+    })
   } catch (err) {
     console.error('Login error:', err)
     res.status(500).json({ message: err.message || 'Internal server error during login' })
   }
 })
 
-// Basic Signup route with local DB fallback
+// Basic Signup route with local DB fallback & digital fingerprint session
 app.post('/api/signup', async (req, res) => {
-  const { username, email, password } = req.body
+  const { username, email, password, fingerprint } = req.body
 
   if (!username || !email || !password) {
     return res.status(400).json({ message: 'Username, email, and password required' })
@@ -104,11 +147,78 @@ app.post('/api/signup', async (req, res) => {
   try {
     const user = await signUpUser(username, email, password)
     req.session.user = user
-    res.json({ message: 'Signup successful', user })
+    const serverSession = generateServerSession(user, fingerprint, req)
+
+    res.json({
+      message: 'Signup successful',
+      user: { ...user, token: serverSession.sessionToken },
+      session: serverSession
+    })
   } catch (err) {
     console.error('Signup error:', err)
     res.status(400).json({ message: err.message || 'Error occurred during signup' })
   }
+})
+
+// Digital Fingerprint Server Verification Endpoint
+app.post('/api/auth/verify-session', (req, res) => {
+  try {
+    const { sessionId, fingerprint, token } = req.body
+
+    if (!sessionId) {
+      return res.status(400).json({ verified: false, message: 'Missing sessionId' })
+    }
+
+    const session = activeServerSessions.get(sessionId)
+    if (!session) {
+      return res.status(404).json({ verified: false, message: 'Session not found or expired on server' })
+    }
+
+    // Check expiration
+    if (new Date(session.expiresAt).getTime() < Date.now()) {
+      activeServerSessions.delete(sessionId)
+      return res.status(401).json({ verified: false, message: 'Session has expired' })
+    }
+
+    // Verify digital fingerprint binding
+    if (fingerprint && session.digitalFingerprint !== fingerprint) {
+      return res.status(403).json({
+        verified: false,
+        message: 'Security Alert: Digital fingerprint mismatch. Hardware/browser profile differs from session origin.'
+      })
+    }
+
+    // Verify cryptographic token if provided
+    if (token && session.sessionToken !== token) {
+      return res.status(403).json({ verified: false, message: 'Invalid session token signature' })
+    }
+
+    res.json({
+      success: true,
+      verified: true,
+      session,
+      user: session.user,
+      verifiedAt: new Date().toISOString()
+    })
+  } catch (err) {
+    res.status(500).json({ verified: false, message: err.message })
+  }
+})
+
+// List active verified sessions
+app.get('/api/auth/active-sessions', (req, res) => {
+  res.json({
+    success: true,
+    count: activeServerSessions.size,
+    sessions: Array.from(activeServerSessions.values()).map(s => ({
+      sessionId: s.sessionId,
+      shortFingerprint: s.shortFingerprint,
+      user: s.user,
+      clientIp: s.clientIp,
+      createdAt: s.createdAt,
+      expiresAt: s.expiresAt
+    }))
+  })
 })
 
 // GitHub OAuth routes
@@ -686,16 +796,21 @@ app.post('/api/auth/verify', (req, res) => {
   }
 
   if (email && password) {
-    const authToken = 'AUTH-' + Math.random().toString(36).substring(2, 10).toUpperCase()
+    const user = {
+      email,
+      username: email.split('@')[0] || 'Operator'
+    }
+    const serverSession = generateServerSession(user, req.body.fingerprint, req)
     return res.json({
       success: true,
       authenticated: true,
       user: {
         email,
-        username: email.split('@')[0] || 'Operator',
-        token: authToken,
+        username: user.username,
+        token: serverSession.sessionToken,
         loginTime: new Date().toISOString()
       },
+      session: serverSession,
       closeWindow: !!fromBrowser
     })
   }

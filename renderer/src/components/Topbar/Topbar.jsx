@@ -529,19 +529,99 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
 
   return (
     <div className="menu-bar">
-      {/* Menus Group with Gen-Z Logo Emblem */}
-      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', zIndex: 10, flexShrink: 0 }}>
-        {/* Gen-Z Logo - Only Logo, No Company Text */}
+      {/* Menus Group with JetBrains Hamburger & Project Selector */}
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', zIndex: 10, flexShrink: 0 }}>
+        {/* JetBrains Hamburger Menu Icon */}
+        <div
+          onClick={(e) => {
+            e.stopPropagation()
+            setActiveMenu(activeMenu === 'file' ? null : 'file')
+          }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '26px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            padding: '2px 4px'
+          }}
+          title="Main Menu"
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke="#dfe1e5" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </div>
+
+        {/* JetBrains Project Badge: "U untitled ⌵" */}
+        <div
+          onClick={handleOpenFolder}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '2px 8px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '4px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            border: '1px solid rgba(255, 255, 255, 0.06)'
+          }}
+          title="Current Project"
+        >
+          <div
+            style={{
+              width: '15px',
+              height: '15px',
+              borderRadius: '3px',
+              background: '#00a3bf',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
+              fontWeight: '700'
+            }}
+          >
+            U
+          </div>
+          <span style={{ fontWeight: '500', color: '#dfe1e5' }}>untitled</span>
+          <span style={{ fontSize: '9px', opacity: 0.6 }}>⌵</span>
+        </div>
+
+        {/* Version Control Dropdown */}
+        <div
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('menu-git-toggle'))
+          }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '2px 8px',
+            fontSize: '12px',
+            color: '#9da0a8',
+            cursor: 'pointer'
+          }}
+        >
+          <span>Version Control</span>
+          <span style={{ fontSize: '9px', opacity: 0.6 }}>⌵</span>
+        </div>
+
+        {/* Gen-Z Logo - Compact */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            padding: '0 4px 0 6px',
-            marginRight: '3px'
+            padding: '0 2px',
+            opacity: 0.8
           }}
         >
           <GenZLogo
-            size={26}
+            size={20}
             onClick={() => {
               window.location.hash = '#/'
             }}
@@ -1421,6 +1501,154 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
               </div>
             </div>
           )}
+        </div>
+
+        {/* JetBrains Run & Debug Widget matching Image 2 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '6px', marginRight: '4px' }}>
+          <div
+            title="Run Configuration"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '2px 8px',
+              height: '24px',
+              borderRadius: '5px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              color: '#c9d1d9',
+              fontSize: '11px',
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.09)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)')}
+          >
+            <i className="bx bx-file" style={{ fontSize: '12px', color: '#7ee787' }}></i>
+            <span>Current File</span>
+            <span style={{ fontSize: '9px', opacity: 0.6 }}>⌵</span>
+          </div>
+
+          <button
+            title="Run 'Current File' (Shift+F10)"
+            onClick={() => window.dispatchEvent(new CustomEvent('run-code'))}
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '4px',
+              background: 'transparent',
+              border: 'none',
+              color: '#59a869',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(89, 168, 105, 0.15)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+            }}
+          >
+            <i className="bx bx-play" style={{ fontSize: '16px' }}></i>
+          </button>
+
+          <button
+            title="Debug 'Current File' (Shift+F9)"
+            onClick={() => window.dispatchEvent(new CustomEvent('run-code'))}
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '4px',
+              background: 'transparent',
+              border: 'none',
+              color: '#59a869',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(89, 168, 105, 0.15)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+            }}
+          >
+            <i className="bx bx-bug" style={{ fontSize: '13px' }}></i>
+          </button>
+
+          <button
+            title="More Options"
+            style={{
+              width: '22px',
+              height: '24px',
+              borderRadius: '4px',
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <i className="bx bx-dots-vertical-rounded"></i>
+          </button>
+
+          <div style={{ width: '1px', height: '14px', background: 'rgba(255, 255, 255, 0.12)', margin: '0 2px' }} />
+
+          <button
+            title="Search Everywhere (Double Shift)"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-quick-open'))}
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '4px',
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <i className="bx bx-search"></i>
+          </button>
+
+          <button
+            title="Settings (Ctrl+Alt+S)"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-settings'))}
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '4px',
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <i className="bx bx-cog"></i>
+          </button>
         </div>
 
         {/* Native Windows Controls (Minimize, Maximize/Restore, Close) */}

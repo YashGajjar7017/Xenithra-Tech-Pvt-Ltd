@@ -887,86 +887,244 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
             </div>
           </div>
         </div>
-      ) : loadedFolder ? (
-        /* Workspace Loaded File Tree */
-        <React.Fragment>
-          {/* Explorer Header */}
-          <div style={styles.header}>
-            <span style={styles.headerTitle}>{loadedFolder.name.toUpperCase()}</span>
-            <div style={styles.headerActions}>
-              <span style={styles.actionIcon} onClick={handleOpenFileClick} title="Open File">
-                <i className="bx bx-file" style={{ fontSize: '13px' }}></i>
-              </span>
-              <span style={styles.actionIcon} onClick={handleOpenFolderClick} title="Change Folder">
-                <i className="bx bx-folder" style={{ fontSize: '13px' }}></i>
-              </span>
-              <span
-                style={styles.actionIcon}
-                onClick={async () => {
-                  if (window.api && typeof window.api.readDirectory === 'function') {
-                    const result = await window.api.readDirectory(loadedFolder.path)
-                    if (result) setLoadedFolder(result)
-                  }
-                }}
-                title="Refresh Workspace"
-              >
-                <i className="bx bx-refresh" style={{ fontSize: '13px' }}></i>
-              </span>
+      ) : (
+        /* JetBrains Container Layout: Project & Structure Tool Windows */
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '6px', padding: '4px', boxSizing: 'border-box' }}>
+          {/* Top Card: Project Tool Window */}
+          <div
+            style={{
+              flex: 1,
+              background: '#1e1f22',
+              border: '1px solid #393b40',
+              borderRadius: '8px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Project Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '6px 10px',
+                borderBottom: '1px solid #393b40',
+                background: '#2b2d30',
+                fontSize: '11px',
+                fontWeight: '600',
+                color: '#dfe1e5'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>Project</span>
+                <span style={{ fontSize: '9px', opacity: 0.7 }}>⌵</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span
+                  onClick={handleOpenFileClick}
+                  style={{ cursor: 'pointer', opacity: 0.7 }}
+                  title="Open File..."
+                >
+                  <i className="bx bx-file" style={{ fontSize: '13px' }}></i>
+                </span>
+                <span
+                  onClick={handleOpenFolderClick}
+                  style={{ cursor: 'pointer', opacity: 0.7 }}
+                  title="Open Project Folder..."
+                >
+                  <i className="bx bx-folder" style={{ fontSize: '13px' }}></i>
+                </span>
+                <span
+                  onClick={async () => {
+                    if (loadedFolder && window.api && typeof window.api.readDirectory === 'function') {
+                      const result = await window.api.readDirectory(loadedFolder.path)
+                      if (result) setLoadedFolder(result)
+                    }
+                  }}
+                  style={{ cursor: 'pointer', opacity: 0.7 }}
+                  title="Refresh"
+                >
+                  <i className="bx bx-refresh" style={{ fontSize: '13px' }}></i>
+                </span>
+              </div>
+            </div>
+
+            {/* Project Tree Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
+              {loadedFolder ? (
+                renderTree(loadedFolder.tree)
+              ) : (
+                /* Exact JetBrains Project Structure from image */
+                <div style={{ fontSize: '12px', color: '#dfe1e5', userSelect: 'none' }}>
+                  {/* Root Project Item */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      background: 'rgba(255,255,255,0.04)'
+                    }}
+                  >
+                    <span style={{ fontSize: '8px', opacity: 0.8 }}>▼</span>
+                    <i className="bx bxs-folder" style={{ color: '#689f38', fontSize: '14px' }}></i>
+                    <span style={{ fontWeight: '600' }}>untitled</span>
+                    <span style={{ color: '#868a91', fontSize: '11px' }}>
+                      C:\Users\Admin\WebstormProjects\untitled
+                    </span>
+                  </div>
+
+                  {/* .idea folder */}
+                  <div style={{ paddingLeft: '22px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '3px 8px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <span style={{ fontSize: '8px', opacity: 0.8 }}>▼</span>
+                      <i className="bx bxs-folder" style={{ color: '#868a91', fontSize: '14px' }}></i>
+                      <span>.idea</span>
+                    </div>
+
+                    <div style={{ paddingLeft: '18px' }}>
+                      <div
+                        onClick={() => {
+                          window.dispatchEvent(
+                            new CustomEvent('open-file', {
+                              detail: { filename: '.gitignore', code: '.idea/\nnode_modules/\n*.log\n' }
+                            })
+                          )
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px', cursor: 'pointer' }}
+                      >
+                        <i className="bx bxl-git" style={{ color: '#f05133', fontSize: '13px' }}></i>
+                        <span>.gitignore</span>
+                      </div>
+                      <div
+                        onClick={() => {
+                          window.dispatchEvent(
+                            new CustomEvent('open-file', {
+                              detail: { filename: 'modules.xml', code: '<?xml version="1.0" encoding="UTF-8"?>\n<project version="4">\n  <component name="ProjectModuleManager">\n    <modules>\n      <module fileurl="file://$PROJECT_DIR$/.idea/untitled.iml" filepath="$PROJECT_DIR$/.idea/untitled.iml" />\n    </modules>\n  </component>\n</project>' }
+                            })
+                          )
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px', cursor: 'pointer' }}
+                      >
+                        <i className="bx bx-code-alt" style={{ color: '#ffb300', fontSize: '13px' }}></i>
+                        <span>modules.xml</span>
+                      </div>
+                      <div
+                        onClick={() => {
+                          window.dispatchEvent(
+                            new CustomEvent('open-file', {
+                              detail: { filename: 'untitled.iml', code: '<?xml version="1.0" encoding="UTF-8"?>\n<module type="WEB_MODULE" version="4">\n  <component name="NewModuleRootManager">\n    <content url="file://$MODULE_DIR$" />\n  </component>\n</module>' }
+                            })
+                          )
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px', cursor: 'pointer' }}
+                      >
+                        <i className="bx bx-file" style={{ color: '#29b6f6', fontSize: '13px' }}></i>
+                        <span>untitled.iml</span>
+                      </div>
+                      <div
+                        onClick={() => {
+                          window.dispatchEvent(
+                            new CustomEvent('open-file', {
+                              detail: { filename: 'workspace.xml', code: '<?xml version="1.0" encoding="UTF-8"?>\n<project version="4">\n  <component name="ChangeListManager">\n    <list default="true" id="workspace" name="Changes" comment="" />\n  </component>\n</project>' }
+                            })
+                          )
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px', cursor: 'pointer' }}
+                      >
+                        <i className="bx bx-code-curly" style={{ color: '#ab47bc', fontSize: '13px' }}></i>
+                        <span>workspace.xml</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* External Libraries */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '3px 8px',
+                      paddingLeft: '22px',
+                      cursor: 'pointer',
+                      color: '#868a91'
+                    }}
+                  >
+                    <span style={{ fontSize: '8px', opacity: 0.8 }}>▶</span>
+                    <i className="bx bx-library" style={{ fontSize: '13px' }}></i>
+                    <span>External Libraries</span>
+                  </div>
+
+                  {/* Scratches and Consoles */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '3px 8px',
+                      paddingLeft: '22px',
+                      cursor: 'pointer',
+                      color: '#868a91'
+                    }}
+                  >
+                    <i className="bx bx-terminal" style={{ fontSize: '13px' }}></i>
+                    <span>Scratches and Consoles</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Open Editors Section */}
-          <div style={styles.openEditorsSection}>
-            <div style={styles.openEditorsHeader}>▼ ACTIVE EDITOR</div>
-            {activeFile && (
-              <div style={styles.openEditorsItem}>
-                {getFileIcon(activeFile.split(/[\\/]/).pop())}
-                <span style={{ fontSize: '12px', color: 'var(--accent-color)', fontWeight: '500' }}>
-                  {activeFile.split(/[\\/]/).pop()}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Project Files */}
-          <div style={styles.treeContainer}>{renderTree(loadedFolder.tree)}</div>
-        </React.Fragment>
-      ) : (
-        /* Welcome / Drag & Drop Dashboard with Flat Monochrome Design */
-        <div style={{ ...styles.welcomePane, borderStyle: isDragOver ? 'solid' : 'dashed' }}>
-          <div style={styles.welcomeIcon}>
-            <i className="bx bx-folder-open" style={{ fontSize: '42px', opacity: 0.7 }}></i>
-          </div>
-          <h3 style={styles.welcomeHeader}>No Workspace Open</h3>
-          <p style={styles.welcomeSub}>
-            Open a folder or drag & drop directory files here to mount workspace.
-          </p>
-
-          <div style={styles.btnGroup}>
-            <button style={styles.welcomeBtn} onClick={handleOpenFolderClick}>
-              Open Folder
-            </button>
-            <button
-              style={{ ...styles.welcomeBtn, background: 'rgba(255,255,255,0.03)' }}
-              onClick={handleOpenFileClick}
-            >
-              Open File
-            </button>
-            <button
-              style={{ ...styles.welcomeBtn, background: 'rgba(255,77,79,0.05)', borderColor: 'rgba(255,77,79,0.25)', color: '#ff4d4f' }}
-              onClick={() => { window.location.hash = '#/dsa-studio' }}
-            >
-              Open DSA Studio Sandbox
-            </button>
-          </div>
-
+          {/* Bottom Card: Structure Tool Window */}
           <div
             style={{
-              ...styles.dropIndicator,
-              borderColor: isDragOver ? 'var(--accent-color)' : 'rgba(255,255,255,0.15)'
+              height: '180px',
+              background: '#1e1f22',
+              border: '1px solid #393b40',
+              borderRadius: '8px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
             }}
           >
-            Drop directory here
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '6px 10px',
+                borderBottom: '1px solid #393b40',
+                background: '#2b2d30',
+                fontSize: '11px',
+                fontWeight: '600',
+                color: '#dfe1e5'
+              }}
+            >
+              <span>Structure</span>
+            </div>
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#868a91',
+                fontSize: '11.5px',
+                fontStyle: 'normal'
+              }}
+            >
+              No structure
+            </div>
           </div>
         </div>
       )}

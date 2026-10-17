@@ -22,6 +22,7 @@ import CDllStudioPage from './pages/CDllStudioPage'
 import FooterEnvSelector from './components/ui/FooterEnvSelector'
 import LicensePage from './pages/LicensePage'
 import SplashScreen from './components/ui/SplashScreen'
+import { verifyServerSession } from './utils/digitalFingerprint'
 
 
 const FeatureGate = ({ featureName, featureKey, licenseStatus, onOpenLicense, children }) => {
@@ -145,7 +146,15 @@ const MainApp = () => {
     setShowSplash(false)
   }
 
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'github-dark')
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    // Force JetBrains theme if unset or previously on default
+    if (!saved || saved === 'github-dark') {
+      localStorage.setItem('theme', 'jetbrains')
+      return 'jetbrains'
+    }
+    return saved
+  })
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem('sidebarWidth')
@@ -164,6 +173,8 @@ const MainApp = () => {
       window.api.onToggleTheme(() => {
         setTheme((prev) => {
           const themes = [
+            'jetbrains',
+            'jetbrains-darcula',
             'vscode-dark',
             'github-dark',
             'glass-dark',
@@ -171,9 +182,7 @@ const MainApp = () => {
             'neon-purple',
             'emerald',
             'cyber-amber',
-            'xenithra-dark-pro',
-            'jetbrains',
-            'jetbrains-darcula'
+            'xenithra-dark-pro'
           ]
           const nextIdx = (themes.indexOf(prev) + 1) % themes.length
           return themes[nextIdx]
@@ -182,19 +191,30 @@ const MainApp = () => {
     }
   }, [])
 
-  // Resolve backend port dynamically on mount
+  // Resolve backend port dynamically on mount and verify digital fingerprint session
   useEffect(() => {
-    if (window.api && typeof window.api.getApiPort === 'function') {
-      window.api
-        .getApiPort()
-        .then((port) => {
-          console.log('[App] Resolved backend API port:', port)
-          localStorage.setItem('api-port', port)
-        })
-        .catch((err) => {
+    const initPortAndSession = async () => {
+      let activePort = '8000'
+      if (window.api && typeof window.api.getApiPort === 'function') {
+        try {
+          activePort = await window.api.getApiPort()
+          console.log('[App] Resolved backend API port:', activePort)
+          localStorage.setItem('api-port', activePort)
+        } catch (err) {
           console.error('[App] Failed to get API port:', err)
-        })
+        }
+      }
+      // Verify digital fingerprint session with backend
+      try {
+        const verifyRes = await verifyServerSession(activePort)
+        if (verifyRes.valid) {
+          console.log('[App] Verified server session with digital fingerprint:', verifyRes)
+        }
+      } catch (e) {
+        console.warn('[App] Session verification check:', e.message)
+      }
     }
+    initPortAndSession()
 
     if (window.api && typeof window.api.onOpenFiles === 'function') {
       window.api.onOpenFiles((files) => {

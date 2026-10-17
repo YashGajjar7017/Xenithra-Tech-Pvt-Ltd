@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { generateDigitalFingerprint } from '../utils/digitalFingerprint'
 
 const LoginPage = () => {
   const [email, setEmail] = useState('')
@@ -7,6 +8,14 @@ const LoginPage = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [digitalFp, setDigitalFp] = useState('')
+
+  // Generate digital fingerprint on mount
+  useEffect(() => {
+    generateDigitalFingerprint().then((fp) => {
+      setDigitalFp(fp.shortFingerprint)
+    })
+  }, [])
 
   // OAuth Simulated States
   const [oauthProvider, setOauthProvider] = useState(null) // 'google' | 'github' | 'discord'
@@ -21,11 +30,17 @@ const LoginPage = () => {
     try {
       const port = localStorage.getItem('api-port') || '8000'
       const isBrowser = !window.api || !!window.opener
-      
+      const fpData = await generateDigitalFingerprint()
+
       const response = await fetch(`http://localhost:${port}/api/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, fromBrowser: isBrowser })
+        body: JSON.stringify({
+          email,
+          password,
+          fromBrowser: isBrowser,
+          fingerprint: fpData.fingerprint
+        })
       })
 
       if (!response.ok) {
@@ -33,7 +48,7 @@ const LoginPage = () => {
         const fallbackRes = await fetch(`http://localhost:${port}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password, fingerprint: fpData.fingerprint })
         })
         if (!fallbackRes.ok) {
           const errData = await fallbackRes.json()
@@ -42,6 +57,10 @@ const LoginPage = () => {
         const data = await fallbackRes.json()
         setSuccess(true)
         localStorage.setItem('user', JSON.stringify(data.user))
+        if (data.session) {
+          localStorage.setItem('xenithra-session', JSON.stringify(data.session))
+          localStorage.setItem('xenithra-session-token', data.session.sessionToken)
+        }
         setTimeout(() => {
           if (isBrowser && window.opener) {
             window.close()
@@ -55,6 +74,10 @@ const LoginPage = () => {
       const data = await response.json()
       setSuccess(true)
       localStorage.setItem('user', JSON.stringify(data.user))
+      if (data.session) {
+        localStorage.setItem('xenithra-session', JSON.stringify(data.session))
+        localStorage.setItem('xenithra-session-token', data.session.sessionToken)
+      }
 
       setTimeout(() => {
         if (data.closeWindow || (isBrowser && window.opener)) {
@@ -108,6 +131,27 @@ const LoginPage = () => {
             </div>
             <h1 style={styles.title}>XENITHRA CORE</h1>
             <p style={styles.subtitle}>Enter key credentials to access terminal</p>
+            {digitalFp && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(0, 229, 255, 0.08)',
+                  border: '1px solid rgba(0, 229, 255, 0.25)',
+                  borderRadius: '12px',
+                  padding: '3px 10px',
+                  fontSize: '10px',
+                  fontFamily: 'monospace',
+                  color: '#00e5ff',
+                  margin: '0 auto 10px auto'
+                }}
+              >
+                <span>🛡️ Digital Fingerprint:</span>
+                <strong>{digitalFp}</strong>
+                <span style={{ color: '#00ffaa' }}>[Active]</span>
+              </div>
+            )}
           </div>
 
           {error && <div style={styles.error}>{error}</div>}

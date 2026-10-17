@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { generateDigitalFingerprint } from '../utils/digitalFingerprint'
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,13 @@ const SignupPage = () => {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [digitalFp, setDigitalFp] = useState('')
+
+  useEffect(() => {
+    generateDigitalFingerprint().then((fp) => {
+      setDigitalFp(fp.shortFingerprint)
+    })
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -37,13 +45,16 @@ const SignupPage = () => {
 
     try {
       const port = localStorage.getItem('api-port') || '8000'
+      const fpData = await generateDigitalFingerprint()
+
       const response = await fetch(`http://localhost:${port}/api/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          fingerprint: fpData.fingerprint
         })
       })
 
@@ -55,6 +66,10 @@ const SignupPage = () => {
       const data = await response.json()
       setSuccess('Access authorization registered successfully!')
       localStorage.setItem('user', JSON.stringify(data.user))
+      if (data.session) {
+        localStorage.setItem('xenithra-session', JSON.stringify(data.session))
+        localStorage.setItem('xenithra-session-token', data.session.sessionToken)
+      }
 
       setTimeout(() => {
         window.location.href = '/#/'

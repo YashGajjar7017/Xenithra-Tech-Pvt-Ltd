@@ -37,9 +37,15 @@ export default defineConfig({
   renderer: {
     // The renderer files live in the top-level `renderer` folder (not renderer/renderer)
     root: 'renderer',
-    publicDir: 'renderer/public',
+    publicDir: resolve('renderer/public'),
     server: {
-      port: 3000
+      port: 3000,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8000',
+          changeOrigin: true
+        }
+      }
     },
     resolve: {
       alias: {
