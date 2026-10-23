@@ -19,48 +19,67 @@ const PORT = process.env.LICENSE_SERVER_PORT || 5174
 const REGISTRY_PATH = path.join(__dirname, 'registry.json')
 const REGISTRATIONS_PATH = path.join(__dirname, 'registrations.json')
 
+let memoryRegistry = null
+let memoryRegistrations = null
+
 // Helper to read registry
 function getRegistry() {
+  if (memoryRegistry) return memoryRegistry
   try {
     if (fs.existsSync(REGISTRY_PATH)) {
-      return JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'))
+      memoryRegistry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'))
+      return memoryRegistry
     }
   } catch (err) {
     console.error('[LicenseServer] Error reading registry:', err.message)
   }
-  return { keys: {} }
+  memoryRegistry = { keys: {} }
+  return memoryRegistry
 }
 
-// Helper to save registry
+// Helper to save registry (safe against read-only Vercel filesystem)
 function saveRegistry(data) {
+  memoryRegistry = data
   try {
     fs.writeFileSync(REGISTRY_PATH, JSON.stringify(data, null, 2), 'utf8')
     return true
   } catch (err) {
-    console.error('[LicenseServer] Error saving registry:', err.message)
-    return false
+    try {
+      const tmpPath = path.join('/tmp', 'registry.json')
+      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf8')
+      return true
+    } catch (e) {}
+    return true
   }
 }
 
 // Helper to get registrations
 function getRegistrations() {
+  if (memoryRegistrations) return memoryRegistrations
   try {
     if (fs.existsSync(REGISTRATIONS_PATH)) {
-      return JSON.parse(fs.readFileSync(REGISTRATIONS_PATH, 'utf8'))
+      memoryRegistrations = JSON.parse(fs.readFileSync(REGISTRATIONS_PATH, 'utf8'))
+      return memoryRegistrations
     }
   } catch (err) {}
-  return []
+  memoryRegistrations = []
+  return memoryRegistrations
 }
 
-// Helper to save registration
+// Helper to save registration (safe against read-only Vercel filesystem)
 function saveRegistration(reg) {
+  const list = getRegistrations()
+  list.push(reg)
+  memoryRegistrations = list
   try {
-    const list = getRegistrations()
-    list.push(reg)
     fs.writeFileSync(REGISTRATIONS_PATH, JSON.stringify(list, null, 2), 'utf8')
     return true
   } catch (err) {
-    return false
+    try {
+      const tmpPath = path.join('/tmp', 'registrations.json')
+      fs.writeFileSync(tmpPath, JSON.stringify(list, null, 2), 'utf8')
+    } catch (e) {}
+    return true
   }
 }
 
@@ -90,8 +109,8 @@ function generateCertificate(key, name, email, tier) {
   }
 }
 
-// Create HTTP Server
-const server = http.createServer((req, res) => {
+// Request Handler (Vercel Serverless & Node.js HTTP)
+const handler = (req, res) => {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -287,10 +306,18 @@ const server = http.createServer((req, res) => {
   // Fallback 404
   res.writeHead(404, { 'Content-Type': 'application/json' })
   res.end(JSON.stringify({ error: 'Endpoint not found' }))
-})
+}
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[LicenseServer] Xenithra Licensing Server listening on http://localhost:${PORT}`)
-})
+const server = http.createServer(handler)
 
-module.exports = server
+// Only bind port when run directly (not inside Vercel serverless environment)
+if (require.main === module || (!process.env.VERCEL && !process.env.NOW_REGION)) {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`[LicenseServer] Xenithra Licensing Server listening on http://localhost:${PORT}`)
+  })
+}
+
+module.exports = handler
+module.exports.handler = handler
+module.exports.default = handler
+module.exports.server = server

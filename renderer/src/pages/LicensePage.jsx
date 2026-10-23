@@ -14,11 +14,68 @@ const LicensePage = ({ onClose, onActivated }) => {
   const [animatingKey, setAnimatingKey] = useState(false)
   const [certInput, setCertInput] = useState('')
   const [copiedFingerprint, setCopiedFingerprint] = useState(false)
+  const [serverUrl, setServerUrl] = useState('https://license-server-hazel-three.vercel.app')
+  const [serverPingStatus, setServerPingStatus] = useState(null)
+  const [isPinging, setIsPinging] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
 
-  // Load license status on mount
+  // Load license status & server URL on mount
   useEffect(() => {
     fetchLicenseStatus()
+    if (window.api && typeof window.api.getLicenseServerUrl === 'function') {
+      window.api.getLicenseServerUrl().then((url) => {
+        if (url) setServerUrl(url)
+      }).catch(() => {})
+    }
   }, [])
+
+  const handlePingServer = async (testUrl) => {
+    const target = testUrl || serverUrl
+    setIsPinging(true)
+    setServerPingStatus({ testing: true })
+    try {
+      if (window.api && typeof window.api.pingLicenseServer === 'function') {
+        const res = await window.api.pingLicenseServer(target)
+        setServerPingStatus(res)
+      } else {
+        const start = Date.now()
+        const resp = await fetch(`${target}/health`, { signal: AbortSignal.timeout(4000) })
+        const latency = Date.now() - start
+        setServerPingStatus({ online: resp.ok, status: resp.status, latencyMs: latency })
+      }
+    } catch (err) {
+      setServerPingStatus({ online: false, error: err.message })
+    } finally {
+      setIsPinging(false)
+    }
+  }
+
+  const handleSaveServerUrl = async () => {
+    try {
+      if (window.api && typeof window.api.setLicenseServerUrl === 'function') {
+        await window.api.setLicenseServerUrl(serverUrl)
+      }
+      localStorage.setItem('license_server_url', serverUrl)
+      setMessage({ type: 'success', text: `License server updated to ${serverUrl}` })
+      handlePingServer(serverUrl)
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Failed to save license server URL' })
+    }
+  }
+
+  const handleSyncLicenses = async () => {
+    setIsSyncing(true)
+    setMessage({ type: 'info', text: 'Connecting to Vercel license server to synchronize licenses...' })
+    try {
+      await handlePingServer(serverUrl)
+      await fetchLicenseStatus()
+      setMessage({ type: 'success', text: 'Synchronized with license server. Local store updated!' })
+    } catch (e) {
+      setMessage({ type: 'error', text: 'Sync failed: ' + e.message })
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   const fetchLicenseStatus = async () => {
     try {
@@ -397,7 +454,8 @@ const LicensePage = ({ onClose, onActivated }) => {
             { id: 'status', label: 'License Status', icon: 'bx-shield-quarter' },
             { id: 'activate', label: 'Activate Key', icon: 'bx-key' },
             { id: 'certificate', label: 'Certificate', icon: 'bx-certification' },
-            { id: 'register', label: 'Get License', icon: 'bx-user-plus' }
+            { id: 'register', label: 'Get License', icon: 'bx-user-plus' },
+            { id: 'server', label: 'License Server', icon: 'bx-server' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -968,6 +1026,148 @@ const LicensePage = ({ onClose, onActivated }) => {
                   <p>
                     Contact: <strong>license@xenithra.tech</strong>
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 5. SERVER CONFIG TAB */}
+          {activeTab === 'server' && (
+            <div className="license-register-tab">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', color: '#fff', fontWeight: '700' }}>Vercel License Server</h3>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#64748b' }}>
+                      Primary cloud backend for key verification, activation registry, and certificates
+                    </p>
+                  </div>
+                  {serverPingStatus && (
+                    <span
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        background: serverPingStatus.online ? 'rgba(0, 255, 170, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        border: `1px solid ${serverPingStatus.online ? '#00ffaa' : '#ef4444'}`,
+                        color: serverPingStatus.online ? '#00ffaa' : '#ef4444'
+                      }}
+                    >
+                      {serverPingStatus.online ? `● Online (${serverPingStatus.latencyMs}ms)` : '○ Offline / Error'}
+                    </span>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#00f3ff', letterSpacing: '0.04em' }}>
+                    SERVER ENDPOINT URL
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                    <input
+                      type="text"
+                      value={serverUrl}
+                      onChange={(e) => setServerUrl(e.target.value)}
+                      placeholder="https://license-server-hazel-three.vercel.app"
+                      style={{
+                        flex: 1,
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#fff',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        outline: 'none'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handlePingServer(serverUrl)}
+                      disabled={isPinging}
+                      style={{
+                        background: 'rgba(0, 243, 255, 0.12)',
+                        border: '1px solid rgba(0, 243, 255, 0.35)',
+                        color: '#00f3ff',
+                        padding: '0 16px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {isPinging ? 'Pinging...' : '⚡ Test Connection'}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={handleSaveServerUrl}
+                    style={{
+                      background: 'linear-gradient(135deg, #00f3ff 0%, #3574f0 100%)',
+                      border: 'none',
+                      color: '#fff',
+                      padding: '8px 20px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    💾 Save Server URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setServerUrl('https://license-server-hazel-three.vercel.app')
+                      if (window.api && typeof window.api.setLicenseServerUrl === 'function') {
+                        window.api.setLicenseServerUrl('https://license-server-hazel-three.vercel.app')
+                      }
+                      setMessage({ type: 'info', text: 'Reset to default Vercel server' })
+                      handlePingServer('https://license-server-hazel-three.vercel.app')
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      color: '#94a3b8',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Reset to Default
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSyncLicenses}
+                    disabled={isSyncing}
+                    style={{
+                      background: 'rgba(168, 85, 247, 0.15)',
+                      border: '1px solid rgba(168, 85, 247, 0.4)',
+                      color: '#c084fc',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      marginLeft: 'auto'
+                    }}
+                  >
+                    {isSyncing ? 'Syncing...' : '🔄 Fetch & Sync Licenses'}
+                  </button>
+                </div>
+
+                <div className="register-info-box" style={{ marginTop: '10px' }}>
+                  <i className="bx bx-server"></i>
+                  <div style={{ fontSize: '11px', lineHeight: '1.5' }}>
+                    <strong>Active Server:</strong> <code>{serverUrl}</code>
+                    <br />
+                    All license activations, registrations, cryptographic certificates, and machine hardware fingerprints automatically synchronize with this Vercel server.
+                  </div>
                 </div>
               </div>
             </div>

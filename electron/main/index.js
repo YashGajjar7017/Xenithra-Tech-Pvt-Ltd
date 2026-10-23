@@ -109,10 +109,13 @@ import {
   deactivateLicense,
   initializeTrial,
   submitRegistrationRequest,
-  getMachineId
+  getMachineId,
+  getLicenseServerUrl,
+  setLicenseServerUrl,
+  pingLicenseServer
 } from './Services/license.service.js'
 
-const icoLogoPath = join(__dirname, '../../Logo/Logo_Xenithra.ico')
+const icoLogoPath = join(__dirname, '../../Logo/Logo_Xenithra_transparent.ico')
 const icon = process.platform === 'win32' && fs.existsSync(icoLogoPath)
   ? icoLogoPath
   : join(__dirname, '../../renderer/public/Images/app_logo.png')
@@ -495,6 +498,30 @@ app.whenReady().then(() => {
       return getMachineId()
     } catch (e) {
       return 'unknown'
+    }
+  })
+
+  ipcMain.handle('license:serverUrl:get', () => {
+    try {
+      return getLicenseServerUrl()
+    } catch (e) {
+      return 'https://license-server-hazel-three.vercel.app'
+    }
+  })
+
+  ipcMain.handle('license:serverUrl:set', (_event, url) => {
+    try {
+      return setLicenseServerUrl(url)
+    } catch (e) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.handle('license:serverUrl:ping', async (_event, url) => {
+    try {
+      return await pingLicenseServer(url)
+    } catch (e) {
+      return { online: false, error: e.message }
     }
   })
   // ─── End License IPC ──────────────────────────────────────────────────

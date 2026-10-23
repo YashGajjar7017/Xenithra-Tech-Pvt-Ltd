@@ -58,9 +58,9 @@
   "build": {
     "appId": "com.xenithra.ide",
     "productName": "XenithraIDE",
-    "icon": "Logo/Logo_Xenithra.ico",
+    "icon": "Logo/Logo_Xenithra_transparent.ico",
     "win": {
-      "icon": "Logo/Logo_Xenithra.ico",
+      "icon": "Logo/Logo_Xenithra_transparent.ico",
       "target": [
         {
           "target": "nsis",

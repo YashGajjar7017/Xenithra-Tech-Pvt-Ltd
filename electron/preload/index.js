@@ -191,7 +191,10 @@ const api = {
   deactivateLicense: () => ipcRenderer.invoke('license:deactivate'),
   submitLicenseRegistration: (name, email, organization, plan) =>
     ipcRenderer.invoke('license:register', name, email, organization, plan),
-  getMachineId: () => ipcRenderer.invoke('license:machineId')
+  getMachineId: () => ipcRenderer.invoke('license:machineId'),
+  getLicenseServerUrl: () => ipcRenderer.invoke('license:serverUrl:get'),
+  setLicenseServerUrl: (url) => ipcRenderer.invoke('license:serverUrl:set', url),
+  pingLicenseServer: (url) => ipcRenderer.invoke('license:serverUrl:ping', url)
 }
 
 // Expose APIs to renderer. Prefer contextBridge when available (recommended).

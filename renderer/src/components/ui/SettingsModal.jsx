@@ -136,7 +136,13 @@ const SettingsModal = ({ isOpen, onClose, theme, setTheme }) => {
   const [mlTestResult, setMlTestResult] = useState('')
   const [isTestingModel, setIsTestingModel] = useState(false)
 
-  // MCP Server Configurations
+  // License Server Settings
+  const [licenseServerUrl, setLicenseServerUrl] = useState(
+    () => localStorage.getItem('license_server_url') || 'https://license-server-hazel-three.vercel.app'
+  )
+  const [licenseServerPing, setLicenseServerPing] = useState(null)
+  const [isPingingLicense, setIsPingingLicense] = useState(false)
+  const [licenseStatusInfo, setLicenseStatusInfo] = useState(null)
   const [mcpServers, setMcpServers] = useState(() => {
     const saved = localStorage.getItem('mcp_servers_config')
     if (saved) {
@@ -223,7 +229,39 @@ const SettingsModal = ({ isOpen, onClose, theme, setTheme }) => {
         if (status) setLocalModelStatus(status)
       }).catch(() => {})
     }
+
+    // Load License Server URL & Status
+    if (window.api && typeof window.api.getLicenseServerUrl === 'function') {
+      window.api.getLicenseServerUrl().then((url) => {
+        if (url) setLicenseServerUrl(url)
+      }).catch(() => {})
+    }
+    if (window.api && typeof window.api.getLicenseStatus === 'function') {
+      window.api.getLicenseStatus().then((st) => {
+        if (st) setLicenseStatusInfo(st)
+      }).catch(() => {})
+    }
   }, [isOpen])
+
+  const handlePingLicenseServer = async (testUrl) => {
+    const target = testUrl || licenseServerUrl
+    setIsPingingLicense(true)
+    setLicenseServerPing({ testing: true })
+    try {
+      if (window.api && typeof window.api.pingLicenseServer === 'function') {
+        const res = await window.api.pingLicenseServer(target)
+        setLicenseServerPing(res)
+      } else {
+        const start = Date.now()
+        const resp = await fetch(`${target}/health`, { signal: AbortSignal.timeout(4000) })
+        setLicenseServerPing({ online: resp.ok, status: resp.status, latencyMs: Date.now() - start })
+      }
+    } catch (e) {
+      setLicenseServerPing({ online: false, error: e.message })
+    } finally {
+      setIsPingingLicense(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -415,6 +453,11 @@ const SettingsModal = ({ isOpen, onClose, theme, setTheme }) => {
     localStorage.setItem('lineHeight', lineHeight)
     localStorage.setItem('showMinimap', showMinimap ? 'true' : 'false')
     localStorage.setItem('localModelEnabled', localModelEnabled ? 'true' : 'false')
+    localStorage.setItem('license_server_url', licenseServerUrl)
+
+    if (window.api && typeof window.api.setLicenseServerUrl === 'function') {
+      window.api.setLicenseServerUrl(licenseServerUrl).catch(() => {})
+    }
 
     // Compiler Paths
     localStorage.setItem('user_compiler_paths', JSON.stringify(compilerPaths))
@@ -543,7 +586,8 @@ const SettingsModal = ({ isOpen, onClose, theme, setTheme }) => {
               { id: 'editor', label: '📝 Editor' },
               { id: 'localml', label: '🧠 Local ML Model' },
               { id: 'mcp', label: '🔌 MCP Servers' },
-              { id: 'devkit', label: '🛠️ Dev Kit (Paths)' }
+              { id: 'devkit', label: '🛠️ Dev Kit (Paths)' },
+              { id: 'license', label: '🔑 Licensing Server' }
             ].map((tab) => {
               const active = activeTab === tab.id
               return (
@@ -1346,6 +1390,128 @@ const SettingsModal = ({ isOpen, onClose, theme, setTheme }) => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* LICENSING SERVER SETTINGS */}
+            {activeTab === 'license' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>Vercel Cloud Licensing Server</div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                      Primary endpoint for software license validation, activations, and key issuance
+                    </div>
+                  </div>
+                  {licenseServerPing && (
+                    <span
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        background: licenseServerPing.online ? 'rgba(0, 255, 170, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        border: `1px solid ${licenseServerPing.online ? '#00ffaa' : '#ef4444'}`,
+                        color: licenseServerPing.online ? '#00ffaa' : '#ef4444'
+                      }}
+                    >
+                      {licenseServerPing.online ? `● Online (${licenseServerPing.latencyMs}ms)` : '○ Offline / Connecting'}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#00f3ff', letterSpacing: '0.04em', display: 'block', marginBottom: '8px' }}>
+                    LICENSE SERVER URL
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      value={licenseServerUrl}
+                      onChange={(e) => setLicenseServerUrl(e.target.value)}
+                      placeholder="https://license-server-hazel-three.vercel.app"
+                      style={{
+                        flex: 1,
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#fff',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        outline: 'none'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handlePingLicenseServer(licenseServerUrl)}
+                      disabled={isPingingLicense}
+                      style={{
+                        background: 'rgba(0, 243, 255, 0.12)',
+                        border: '1px solid rgba(0, 243, 255, 0.35)',
+                        color: '#00f3ff',
+                        padding: '0 14px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {isPingingLicense ? 'Testing...' : '⚡ Test Server'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLicenseServerUrl('https://license-server-hazel-three.vercel.app')
+                        handlePingLicenseServer('https://license-server-hazel-three.vercel.app')
+                      }}
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#94a3b8',
+                        padding: '0 12px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Reset Default
+                    </button>
+                  </div>
+                </div>
+
+                {/* License Status Card */}
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold' }}>Current License Status</div>
+                    <span
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        fontSize: '10px',
+                        fontWeight: '800',
+                        background: licenseStatusInfo?.status === 'licensed' ? 'rgba(0,255,170,0.15)' : 'rgba(245,158,11,0.15)',
+                        color: licenseStatusInfo?.status === 'licensed' ? '#00ffaa' : '#fbbf24',
+                        border: `1px solid ${licenseStatusInfo?.status === 'licensed' ? '#00ffaa' : '#fbbf24'}`
+                      }}
+                    >
+                      {licenseStatusInfo?.status === 'licensed' ? '● FULL LICENSE' : `TRIAL MODE (${licenseStatusInfo?.daysLeft ?? 30} days)`}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.6' }}>
+                    <div><strong>Licensed To:</strong> {licenseStatusInfo?.licensedTo || 'Unregistered Trial User'}</div>
+                    <div><strong>Edition:</strong> {licenseStatusInfo?.edition || 'Professional Edition (Trial)'}</div>
+                    {licenseStatusInfo?.machineId && (
+                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', marginTop: '4px' }}>
+                        <strong>Machine ID:</strong> {licenseStatusInfo.machineId}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(0, 243, 255, 0.05)', border: '1px solid rgba(0, 243, 255, 0.15)', borderRadius: '8px', padding: '12px', fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' }}>
+                  💡 All activations, license validation checks, and automatic license generation are routed to <code>https://license-server-hazel-three.vercel.app</code>. Changes are saved automatically upon clicking "Save Preferences".
+                </div>
               </div>
             )}
           </div>

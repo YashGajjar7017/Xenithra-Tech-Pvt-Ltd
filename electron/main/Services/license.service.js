@@ -13,12 +13,109 @@ import { app } from 'electron'
 import crypto from 'crypto'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-const LICENSE_SERVER_BASE =
+export const DEFAULT_LICENSE_SERVER_URL = 'https://license-server-hazel-three.vercel.app'
+const LICENSE_SERVER_CONFIG_FILE = 'xenithra_license_server.json'
+const GITHUB_BACKUP_BASE =
   'https://raw.githubusercontent.com/YashGajjar7017/Xenithra-Tech-Pvt-Ltd/main/licenses'
 const LICENSE_API_URL = 'https://api.github.com/repos/YashGajjar7017/Xenithra-Tech-Pvt-Ltd'
 const TRIAL_DURATION_DAYS = 30
 const LICENSE_FILE = 'xenithra_license.json'
 const LICENSE_SECRET = 'XENITHRA_SECRET_SALT_2026_V1'
+
+// ─── Server URL Helpers ───────────────────────────────────────────────────────
+
+export function cleanServerUrl(url) {
+  if (!url || typeof url !== 'string') return DEFAULT_LICENSE_SERVER_URL
+  let cleaned = url.trim().replace(/^["']|["']$/g, '')
+  if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
+    cleaned = 'https://' + cleaned
+  }
+  return cleaned.replace(/\/+$/, '')
+}
+
+export function getLicenseServerConfigPath() {
+  const userDataPath = app.getPath('userData')
+  return path.join(userDataPath, LICENSE_SERVER_CONFIG_FILE)
+}
+
+/**
+ * Get current configured License Server URL.
+ * Checks user custom override first, then .env, then default Vercel server.
+ */
+export function getLicenseServerUrl() {
+  try {
+    const configPath = getLicenseServerConfigPath()
+    if (fs.existsSync(configPath)) {
+      const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+      if (parsed && parsed.serverUrl) return cleanServerUrl(parsed.serverUrl)
+    }
+  } catch (e) {}
+
+  const envUrl = process.env.LICENSE_SERVER_URL || process.env.licenseServerURL
+  if (envUrl) {
+    return cleanServerUrl(envUrl)
+  }
+  return DEFAULT_LICENSE_SERVER_URL
+}
+
+/**
+ * Set custom License Server URL and persist to userData.
+ */
+export function setLicenseServerUrl(newUrl) {
+  try {
+    const cleaned = cleanServerUrl(newUrl || DEFAULT_LICENSE_SERVER_URL)
+    const configPath = getLicenseServerConfigPath()
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ serverUrl: cleaned, updatedAt: new Date().toISOString() }, null, 2),
+      'utf8'
+    )
+    return { success: true, serverUrl: cleaned }
+  } catch (e) {
+    return { success: false, error: e.message }
+  }
+}
+
+/**
+ * Test connectivity to the License Server.
+ */
+export async function pingLicenseServer(customUrl) {
+  const targetUrl = customUrl ? cleanServerUrl(customUrl) : getLicenseServerUrl()
+  const start = Date.now()
+  const endpoints = ['/health', '/', '/licenses/registry.json']
+
+  for (const ep of endpoints) {
+    try {
+      const resp = await fetch(`${targetUrl}${ep}`, {
+        method: 'GET',
+        headers: { 'User-Agent': 'Xenithra-IDE/1.0' },
+        signal: AbortSignal.timeout(4000)
+      })
+      const latencyMs = Date.now() - start
+      if (resp.ok) {
+        let body = {}
+        try {
+          body = await resp.json()
+        } catch {}
+        return {
+          online: true,
+          status: resp.status,
+          latencyMs,
+          url: targetUrl,
+          endpoint: ep,
+          body
+        }
+      }
+    } catch (e) {}
+  }
+
+  return {
+    online: false,
+    url: targetUrl,
+    latencyMs: Date.now() - start,
+    error: 'License server could not be reached or returned an error.'
+  }
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -219,29 +316,73 @@ export async function validateLicenseKey(licenseKey) {
 
   const machineId = getMachineFingerprint()
 
-  // 1. Try local licensing backend server if running (port 5174 or custom)
+  // 1. Try configured Vercel Licensing Server (e.g. https://license-server-hazel-three.vercel.app)
+  const serverUrl = getLicenseServerUrl()
+  const statusEndpoints = [
+    `${serverUrl}/licenses/status/${encodeURIComponent(normalizedKey)}`,
+    `${serverUrl}/api/status/${encodeURIComponent(normalizedKey)}`,
+    `http://localhost:5174/licenses/status/${encodeURIComponent(normalizedKey)}`
+  ]
+
+  for (const statusUrl of statusEndpoints) {
+    try {
+      const resp = await fetch(statusUrl, {
+        headers: { 'User-Agent': 'Xenithra-IDE/1.0', 'Cache-Control': 'no-cache' },
+        signal: AbortSignal.timeout(3500)
+      })
+      if (resp.ok) {
+        const data = await resp.json()
+        if (data.valid) {
+          return {
+            valid: true,
+            licensedTo: data.name || data.licensedTo || 'Xenithra User',
+            email: data.email || '',
+            edition: data.edition || 'Professional Edition',
+            expiryDate: data.expiryDate || null,
+            certificate: data.certificate || null,
+            features: data.features,
+            serverUrl
+          }
+        } else if (data.error) {
+          return { valid: false, error: data.error }
+        }
+      }
+    } catch {
+      // Continue to next
+    }
+  }
+
+  // 2. Try fetching registry from Vercel Server: GET /licenses/registry.json
   try {
-    const localServerUrl = `http://localhost:5174/licenses/status/${encodeURIComponent(normalizedKey)}`
-    const resp = await fetch(localServerUrl, { signal: AbortSignal.timeout(1500) })
-    if (resp.ok) {
-      const data = await resp.json()
-      if (data.valid) {
+    const regResp = await fetch(`${serverUrl}/licenses/registry.json`, {
+      headers: { 'User-Agent': 'Xenithra-IDE/1.0' },
+      signal: AbortSignal.timeout(3500)
+    })
+    if (regResp.ok) {
+      const registry = await regResp.json()
+      const keyEntry = registry.keys && registry.keys[normalizedKey]
+      if (keyEntry) {
+        if (keyEntry.status === 'revoked') {
+          return { valid: false, error: 'This license key has been revoked.' }
+        }
+        if (keyEntry.status === 'used' && keyEntry.machineId && keyEntry.machineId !== machineId) {
+          return { valid: false, error: 'This license key is already activated on another machine.' }
+        }
         return {
           valid: true,
-          licensedTo: data.name || 'Xenithra User',
-          email: data.email || '',
-          edition: data.edition || 'Professional Edition',
-          expiryDate: data.expiryDate || null,
-          certificate: data.certificate || null,
-          features: data.features
+          licensedTo: keyEntry.name || 'Xenithra User',
+          email: keyEntry.email || '',
+          edition: keyEntry.edition || 'Professional Edition',
+          expiryDate: keyEntry.expiryDate || null,
+          certificate: keyEntry.certificate || null,
+          keyEntry,
+          serverUrl
         }
       }
     }
-  } catch {
-    // Local server not running or timed out, continue to file/remote
-  }
+  } catch (err) {}
 
-  // 2. Check local workspace licenses/registry.json if present
+  // 3. Fallback: Check local workspace licenses/registry.json if present
   try {
     const localRegistryPath = path.resolve(__dirname, '../../../../licenses/registry.json')
     if (fs.existsSync(localRegistryPath)) {
@@ -266,15 +407,15 @@ export async function validateLicenseKey(licenseKey) {
     console.warn('[License] Local file check error:', err.message)
   }
 
-  // 3. Attempt to verify against GitHub-hosted registry
+  // 4. Attempt to verify against GitHub-hosted registry
   try {
-    const registryUrl = `${LICENSE_SERVER_BASE}/registry.json?t=${Date.now()}`
+    const registryUrl = `${GITHUB_BACKUP_BASE}/registry.json?t=${Date.now()}`
     const response = await fetch(registryUrl, {
       headers: {
         'Cache-Control': 'no-cache',
         'User-Agent': 'Xenithra-IDE/1.0'
       },
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(4000)
     })
 
     if (response.ok) {
@@ -308,7 +449,7 @@ export async function validateLicenseKey(licenseKey) {
       }
     }
 
-    // If GitHub is unreachable, try offline validation
+    // If online check fails, try offline validation
     return offlineValidate(normalizedKey, machineId)
   } catch (err) {
     console.warn('[License] Online validation failed, trying offline:', err.message)
@@ -414,36 +555,61 @@ export async function activateLicense(licenseKey, licensedTo, email) {
 }
 
 /**
- * Notify the license server about activation (GitHub API).
- * This is best-effort and non-blocking.
+ * Notify the license server about activation.
+ * Sends activation details to the Vercel licensing server.
  */
 async function notifyActivation(licenseKey, machineId, name, email) {
-  try {
-    const payload = {
-      title: `License Activation: ${licenseKey}`,
-      body: [
-        `**License Key:** ${licenseKey}`,
-        `**Machine ID:** ${machineId}`,
-        `**Name:** ${name || 'Unknown'}`,
-        `**Email:** ${email || 'Unknown'}`,
-        `**Date:** ${new Date().toISOString()}`,
-        `**App Version:** ${app.getVersion()}`
-      ].join('\n'),
-      labels: ['license-activation']
-    }
+  const serverUrl = getLicenseServerUrl()
+  const payload = {
+    licenseKey,
+    machineId,
+    name: name || 'Xenithra User',
+    email: email || '',
+    date: new Date().toISOString(),
+    appVersion: app.getVersion()
+  }
 
+  // 1. Post to Vercel Licensing Server
+  const activateEndpoints = [
+    `${serverUrl}/licenses/activate`,
+    `${serverUrl}/api/activate`,
+    `http://localhost:5174/licenses/activate`
+  ]
+
+  for (const ep of activateEndpoints) {
+    try {
+      const resp = await fetch(ep, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Xenithra-IDE/1.0'
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(4000)
+      })
+      if (resp.ok) {
+        console.log('[License] Activation recorded on license server:', ep)
+        return
+      }
+    } catch {}
+  }
+
+  // 2. Fallback to GitHub Issues API if reachable
+  try {
     await fetch(`${LICENSE_API_URL}/issues`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'Xenithra-IDE/1.0'
       },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(5000)
+      body: JSON.stringify({
+        title: `License Activation: ${licenseKey}`,
+        body: Object.entries(payload).map(([k, v]) => `**${k}:** ${v}`).join('\n'),
+        labels: ['license-activation']
+      }),
+      signal: AbortSignal.timeout(4000)
     })
-  } catch {
-    // Silently fail - activation is already recorded locally
-  }
+  } catch {}
 }
 
 // ─── License Deactivation ─────────────────────────────────────────────────────
@@ -479,35 +645,45 @@ export function deactivateLicense() {
 // ─── Registration ─────────────────────────────────────────────────────────────
 
 /**
- * Submit a license registration request to the GitHub-hosted server.
- * This creates a GitHub issue as a registration request.
+ * Submit a license registration request to the licensing server.
  */
 export async function submitRegistrationRequest(name, email, organization, plan) {
   const machineId = getMachineFingerprint()
+  const serverUrl = getLicenseServerUrl()
+  const regPayload = { name, email, organization, plan, machineId }
 
-  // 1. Try local licensing backend server (http://localhost:5174/licenses/register)
-  try {
-    const localResp = await fetch('http://localhost:5174/licenses/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, organization, plan, machineId }),
-      signal: AbortSignal.timeout(2000)
-    })
-    if (localResp.ok) {
-      const data = await localResp.json()
-      if (data.success) {
-        return {
-          success: true,
-          message: data.message || 'Registration approved! Your key has been generated.',
-          licenseKey: data.licenseKey,
-          certificate: data.certificate,
-          licensedTo: data.licensedTo,
-          plan: data.plan
+  // 1. Post to Vercel Licensing Server
+  const registerEndpoints = [
+    `${serverUrl}/licenses/register`,
+    `${serverUrl}/api/register`,
+    `http://localhost:5174/licenses/register`
+  ]
+
+  for (const ep of registerEndpoints) {
+    try {
+      const resp = await fetch(ep, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Xenithra-IDE/1.0' },
+        body: JSON.stringify(regPayload),
+        signal: AbortSignal.timeout(5000)
+      })
+      if (resp.ok) {
+        const data = await resp.json()
+        if (data.success) {
+          return {
+            success: true,
+            message: data.message || 'Registration approved! Your key has been generated by the server.',
+            licenseKey: data.licenseKey,
+            certificate: data.certificate,
+            licensedTo: data.licensedTo || name,
+            plan: data.plan || plan,
+            serverUrl
+          }
         }
       }
+    } catch (e) {
+      console.warn('[License] Register endpoint error:', e.message)
     }
-  } catch {
-    // Local server not running or timed out, fallback to GitHub / local registry
   }
 
   // 2. Check local workspace licenses/registry.json if present
