@@ -64,18 +64,27 @@ const ClientsPanel = () => {
         setOutboundStatus('Disconnected')
       })
     }
+
+    if (window.api && typeof window.api.onTcpCollaboratorsUpdate === 'function') {
+      window.api.onTcpCollaboratorsUpdate((collabs) => {
+        setClients(collabs || [])
+      })
+    }
   }, [])
 
-  const handleSimulateClient = async () => {
-    const name = 'Developer iPad'
+  const [newUserName, setNewUserName] = useState('')
+
+  const handleSimulateClient = async (customName) => {
+    const name = customName || newUserName.trim() || 'Dev-Alex'
     setSimulatedClient({
       name,
-      paired: false,
+      paired: true,
       tokenInput: '',
-      status: 'Connected - Unpaired'
+      status: 'Connected & Paired'
     })
     if (window.api && typeof window.api.simulateTcpClient === 'function') {
       await window.api.simulateTcpClient(name)
+      setNewUserName('')
     }
   }
 
@@ -106,7 +115,14 @@ const ClientsPanel = () => {
     if (!outboundHostIp.trim()) return
     setOutboundStatus('Connecting')
     if (window.api && typeof window.api.connectToHost === 'function') {
-      await window.api.connectToHost(outboundHostIp, 27789)
+      let host = outboundHostIp.trim()
+      let port = 6000
+      if (host.includes(':')) {
+        const parts = host.split(':')
+        host = parts[0]
+        port = parseInt(parts[1], 10) || 6000
+      }
+      await window.api.connectToHost(host, port)
       setOutboundStatus('Connected')
     }
   }
@@ -135,26 +151,25 @@ const ClientsPanel = () => {
       {/* Title */}
       <div style={styles.header}>
         <span style={styles.title}>TCP/IP PAIR PROGRAMMING</span>
-        <span style={styles.listeningBadge}>🔴 LISTENING</span>
+        <span style={styles.listeningBadge}>🔴 PORT 6000</span>
       </div>
 
       <div style={styles.statusBox}>
         <div style={styles.statusText}>
-          <strong>Local Network IP:</strong> Port 27789
+          <strong>Local Network Server:</strong> localhost:6000
         </div>
         <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Pair code editor real-time with other devices on your local network.
+          Realtime multi-user pair programming server active on port 6000.
         </div>
       </div>
 
-      {/* Detected Clients */}
-      <div style={styles.sectionHeader}>DETECTED DEVICES</div>
+      {/* Multiple Collaborators on the side */}
+      <div style={styles.sectionHeader}>CONNECTED USERS ({clients.length})</div>
 
       <div style={styles.clientList}>
         {clients.length === 0 ? (
           <div style={styles.emptyText}>
-            No client devices detected. Connect another client to port 27789 or start the simulator
-            below.
+            No client devices detected. Connect another client to localhost:6000 or add users below.
           </div>
         ) : (
           clients.map((client) => (
@@ -163,15 +178,25 @@ const ClientsPanel = () => {
               onClick={() => handleClientClick(client)}
               style={{
                 ...styles.clientItem,
-                borderColor: client.authenticated ? '#00ffaa' : 'rgba(255,255,255,0.08)'
+                borderColor: client.authenticated ? (client.color || '#00ffaa') : 'rgba(255,255,255,0.08)'
               }}
             >
               <div style={styles.clientInfo}>
                 <div style={styles.clientName}>
-                  <i className="bx bx-mobile-alt" style={{ marginRight: '6px' }}></i>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: client.color || '#00ffaa',
+                      marginRight: '6px',
+                      boxShadow: `0 0 6px ${client.color || '#00ffaa'}`
+                    }}
+                  />
                   {client.name}
                 </div>
-                <div style={styles.clientIp}>{client.ip}</div>
+                <div style={styles.clientIp}>{client.ip} • File: {client.activeFile || 'untitled'}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {client.authenticated ? (
@@ -185,6 +210,44 @@ const ClientsPanel = () => {
         )}
       </div>
 
+      {/* Add Multiple Users with custom names */}
+      <div style={styles.sectionHeader}>ADD MULTIPLE USERS</div>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+        <input
+          type="text"
+          placeholder="User name (e.g. Alex, Sarah)..."
+          value={newUserName}
+          onChange={(e) => setNewUserName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSimulateClient(newUserName)
+          }}
+          style={styles.tokenInput}
+        />
+        <button onClick={() => handleSimulateClient(newUserName)} style={styles.authBtn}>
+          + Add
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+        {['Dev-Alex', 'Sarah (Frontend)', 'Marcus (Backend)', 'iPad Pro'].map((preset) => (
+          <button
+            key={preset}
+            onClick={() => handleSimulateClient(preset)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
+              color: '#dfe1e5',
+              fontSize: '10px',
+              padding: '3px 8px',
+              cursor: 'pointer'
+            }}
+          >
+            + {preset}
+          </button>
+        ))}
+      </div>
+
       {/* Connect to Remote Host */}
       <div style={styles.sectionHeader}>CONNECT TO REMOTE HOST</div>
 
@@ -192,7 +255,7 @@ const ClientsPanel = () => {
         <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
           <input
             type="text"
-            placeholder="Host IP (e.g. 192.168.1.50)..."
+            placeholder="Host (e.g. localhost:6000 or IP)..."
             value={outboundHostIp}
             onChange={(e) => setOutboundHostIp(e.target.value)}
             style={styles.tokenInput}
@@ -232,66 +295,33 @@ const ClientsPanel = () => {
             </div>
           ) : (
             <div style={{ fontSize: '11px', color: '#00ffaa' }}>
-              ✓ Connected & Synced with Remote Editor.
+              ✓ Connected & Synced with Remote Editor on Port 6000.
             </div>
           )}
         </div>
       )}
 
-      {/* Simulator Actions */}
-      <div style={styles.sectionHeader}>CLIENT SIMULATOR</div>
-
-      {!simulatedClient ? (
-        <button onClick={handleSimulateClient} style={styles.simulateBtn}>
-          <i className="bx bx-devices" style={{ marginRight: '6px' }}></i>
-          Simulate Remote TCP Client
-        </button>
-      ) : (
+      {/* Live Sync Simulator Box */}
+      {simulatedClient && (
         <div style={styles.simContainer}>
           <div style={styles.simHeader}>
             <span>
-              📱 simulated-client: <strong>{simulatedClient.name}</strong>
+              📱 Active Simulator: <strong>{simulatedClient.name}</strong>
             </span>
             <button onClick={handleDisconnectSimulated} style={styles.disconnectBtn}>
-              Disconnect
+              Disconnect All
             </button>
           </div>
 
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-            Status:{' '}
-            <span style={{ color: simulatedClient.paired ? '#00ffaa' : '#ffb86c' }}>
-              {simulatedClient.status}
-            </span>
+          <div style={{ fontSize: '11px', color: '#00ffaa', marginBottom: '4px' }}>
+            ● Live Synchronized with Port 6000
           </div>
-
-          {!simulatedClient.paired ? (
-            <div style={styles.authBox}>
-              <input
-                type="text"
-                placeholder="Enter Pairing Token..."
-                value={simulatedClient.tokenInput}
-                onChange={(e) =>
-                  setSimulatedClient({ ...simulatedClient, tokenInput: e.target.value })
-                }
-                style={styles.tokenInput}
-              />
-              <button onClick={handleAuthSimulated} style={styles.authBtn}>
-                Pair Device
-              </button>
-            </div>
-          ) : (
-            <div style={styles.codeSyncBox}>
-              <div style={{ fontSize: '11px', color: '#00ffaa', marginBottom: '4px' }}>
-                ● Realtime pair programming active
-              </div>
-              <textarea
-                value={pairedCode}
-                onChange={handleSimulatedCodeChange}
-                placeholder="Type code here to sync live with main IDE..."
-                style={styles.simTextArea}
-              />
-            </div>
-          )}
+          <textarea
+            value={pairedCode}
+            onChange={handleSimulatedCodeChange}
+            placeholder="Type code here to sync live with main IDE..."
+            style={styles.simTextArea}
+          />
         </div>
       )}
 

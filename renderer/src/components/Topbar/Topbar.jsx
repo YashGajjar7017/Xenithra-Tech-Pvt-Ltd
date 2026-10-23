@@ -531,6 +531,31 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
     <div className="menu-bar">
       {/* Menus Group with JetBrains Hamburger & Project Selector */}
       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', zIndex: 10, flexShrink: 0 }}>
+        {/* JetBrains IDE Logo Icon */}
+        <div
+          onClick={() => {
+            window.location.hash = '#/'
+          }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '26px',
+            height: '26px',
+            borderRadius: '6px',
+            background: 'linear-gradient(135deg, #00f3ff 0%, #3574f0 50%, #9059ff 100%)',
+            boxShadow: '0 0 10px rgba(53, 116, 240, 0.4)',
+            cursor: 'pointer',
+            flexShrink: 0,
+            marginRight: '2px'
+          }}
+          title="Xenithra IDE Home"
+        >
+          <span style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '12px', fontFamily: 'Outfit, sans-serif' }}>
+            Ai
+          </span>
+        </div>
+
         {/* JetBrains Hamburger Menu Icon */}
         <div
           onClick={(e) => {
@@ -609,23 +634,6 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
         >
           <span>Version Control</span>
           <span style={{ fontSize: '9px', opacity: 0.6 }}>⌵</span>
-        </div>
-
-        {/* Gen-Z Logo - Compact */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 2px',
-            opacity: 0.8
-          }}
-        >
-          <GenZLogo
-            size={20}
-            onClick={() => {
-              window.location.hash = '#/'
-            }}
-          />
         </div>
 
         {/* FILE MENU */}

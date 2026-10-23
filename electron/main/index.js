@@ -28,12 +28,14 @@ import {
   predictInlineCompletion,
   generateLocalAIChatResponse,
   trainLocalMLModel,
-  startModelTraining
+  startModelTraining,
+  searchAvailableLocalModels
 } from './Services/localML.service.js'
 import { formatCode } from './Services/format.service.js'
 import {
   startTcpServer,
   getTcpClients,
+  getCollaborators,
   pairTcpClient,
   broadcastCodeToClients,
   simulateLocalClient,
@@ -43,7 +45,8 @@ import {
   connectToRemoteHost,
   authOutboundClient,
   disconnectOutboundClient,
-  broadcastCursorToClients
+  broadcastCursorToClients,
+  TCP_PORT
 } from './Services/tcpServer.service.js'
 import {
   getDockerContainers,
@@ -909,8 +912,9 @@ app.whenReady().then(() => {
   ipcMain.handle('ml:train', (_event, prefix, completion, lang) =>
     trainLocalMLModel(prefix, completion, lang)
   )
-  ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename) =>
-    generateLocalAIChatResponse(prompt, code, lang, filename)
+  ipcMain.handle('ml:searchModels', () => searchAvailableLocalModels())
+  ipcMain.handle('ml:chat', (_event, prompt, code, lang, filename, selectedModel) =>
+    generateLocalAIChatResponse(prompt, code, lang, filename, selectedModel)
   )
   ipcMain.handle('ml:startTraining', async (event, datasetName, extraData) => {
     const window = BrowserWindow.fromWebContents(event.sender)
@@ -931,16 +935,19 @@ app.whenReady().then(() => {
 
   // TCP Pairing IPC Handlers
   ipcMain.handle('tcp:getStatus', () => {
-    return { listening: true, port: 27789 }
+    return { listening: true, port: TCP_PORT }
   })
   ipcMain.handle('tcp:getClients', () => {
     return getTcpClients()
   })
+  ipcMain.handle('tcp:getCollaborators', () => {
+    return getCollaborators()
+  })
   ipcMain.handle('tcp:pairClient', (_event, clientId) => {
     return pairTcpClient(clientId)
   })
-  ipcMain.handle('tcp:simulateClient', (_event, name) => {
-    simulateLocalClient(name)
+  ipcMain.handle('tcp:simulateClient', (_event, name, color) => {
+    simulateLocalClient(name, color)
     return true
   })
   ipcMain.handle('tcp:authSimulatedClient', (_event, token) => {

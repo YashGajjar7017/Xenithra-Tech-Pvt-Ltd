@@ -1,26 +1,54 @@
 import net from 'net'
 
+export const TCP_PORT = 6000
+
 // Connected clients memory store
 let connectedClients = []
 let serverInstance = null
 let onClientsChangeCallback = null
 let onCodeSyncCallback = null
 
-// Simulated local client state
-let simulatedSocket = null
+// Simulated local client instances (mapped by simulatedId or name)
+let simulatedSockets = {}
 
 // Outbound client connection state
 let outboundSocket = null
 let currentWorkspaceCode = ''
 
+const CLIENT_COLORS = [
+  '#00ffaa',
+  '#58a6ff',
+  '#df73ff',
+  '#ff9f00',
+  '#ff00c8',
+  '#00f3ff',
+  '#f1fa8c',
+  '#50fa7b'
+]
+
 /**
- * Starts the TCP server on port 27789
+ * Broadcast current active collaborators list to Electron frontend
+ */
+export function broadcastCollaborators() {
+  try {
+    const { BrowserWindow } = require('electron')
+    const windows = BrowserWindow.getAllWindows()
+    if (windows.length > 0) {
+      windows[0].webContents.send('tcp:collaborators-update', getCollaborators())
+    }
+  } catch (e) {
+    // BrowserWindow may not be ready yet
+  }
+}
+
+/**
+ * Starts the TCP server on port 6000
  * @param {Function} onClientsUpdate - Callback when client list changes
  * @param {Function} onCodeSync - Callback when an authenticated client sends code
  */
 export function startTcpServer(onClientsUpdate, onCodeSync) {
   if (serverInstance) {
-    console.log('[TCP Server] Already running.')
+    console.log(`[TCP Server] Already running on port ${TCP_PORT}.`)
     return
   }
 
@@ -29,32 +57,43 @@ export function startTcpServer(onClientsUpdate, onCodeSync) {
 
   serverInstance = net.createServer((socket) => {
     const clientId = 'client_' + Math.random().toString(36).substr(2, 9)
-    const clientIp = socket.remoteAddress || '127.0.0.1'
+    const clientIp = socket.remoteAddress ? socket.remoteAddress.replace(/^.*:/, '') : '127.0.0.1'
     const pairingToken = Math.floor(100000 + Math.random() * 900000).toString()
+    const color = CLIENT_COLORS[connectedClients.length % CLIENT_COLORS.length]
 
     const newClient = {
       id: clientId,
-      name: 'TCP/IP Client',
+      name: `User ${connectedClients.length + 1}`,
+      color: color,
       ip: clientIp,
       token: pairingToken,
       authenticated: false,
-      socket: socket
+      socket: socket,
+      activeFile: 'untitled'
     }
 
     connectedClients.push(newClient)
-    console.log(`[TCP Server] Client connected from ${clientIp}. Assigned ID: ${clientId}`)
+    console.log(`[TCP Server 6000] Client connected from ${clientIp}. Assigned ID: ${clientId}`)
 
     // Notify connection
     if (onClientsChangeCallback) onClientsChangeCallback()
+    broadcastCollaborators()
 
     // Send initial status to client
-    socket.write(JSON.stringify({ type: 'hello', status: 'unauthenticated' }) + '\n')
+    socket.write(
+      JSON.stringify({
+        type: 'hello',
+        status: 'unauthenticated',
+        tokenRequired: true,
+        port: TCP_PORT,
+        assignedColor: color
+      }) + '\n'
+    )
 
     let dataBuffer = ''
     socket.on('data', (data) => {
       dataBuffer += data.toString()
       const lines = dataBuffer.split('\n')
-      // Save last unfinished line
       dataBuffer = lines.pop()
 
       for (const line of lines) {
@@ -69,9 +108,10 @@ export function startTcpServer(onClientsUpdate, onCodeSync) {
     })
 
     socket.on('close', () => {
-      console.log(`[TCP Server] Client disconnected: ${clientId}`)
+      console.log(`[TCP Server] Client disconnected: ${newClient.name} (${clientId})`)
       connectedClients = connectedClients.filter((c) => c.id !== clientId)
       if (onClientsChangeCallback) onClientsChangeCallback()
+      broadcastCollaborators()
     })
 
     socket.on('error', (err) => {
@@ -79,8 +119,12 @@ export function startTcpServer(onClientsUpdate, onCodeSync) {
     })
   })
 
-  serverInstance.listen(27789, '0.0.0.0', () => {
-    console.log('[TCP Server] listening on port 27789')
+  serverInstance.on('error', (err) => {
+    console.error(`[TCP Server] Server socket error on port ${TCP_PORT}:`, err.message)
+  })
+
+  serverInstance.listen(TCP_PORT, '0.0.0.0', () => {
+    console.log(`[TCP Server] listening on port ${TCP_PORT} (0.0.0.0) for local network coding`)
   })
 }
 
@@ -88,20 +132,36 @@ export function startTcpServer(onClientsUpdate, onCodeSync) {
  * Handle incoming messages from TCP clients
  */
 function handleClientMessage(client, message) {
-  console.log(`[TCP Server] Received from ${client.id}:`, message)
+  console.log(`[TCP Server] Received from ${client.id} (${client.name}):`, message.type)
 
   switch (message.type) {
     case 'handshake':
-      client.name = message.deviceName || client.name
+      client.name = message.username || message.deviceName || client.name
+      if (message.color) client.color = message.color
+      if (message.activeFile) client.activeFile = message.activeFile
       if (onClientsChangeCallback) onClientsChangeCallback()
+      broadcastCollaborators()
+      break
+
+    case 'profile':
+      if (message.name) client.name = message.name
+      if (message.color) client.color = message.color
+      if (message.activeFile) client.activeFile = message.activeFile
+      if (onClientsChangeCallback) onClientsChangeCallback()
+      broadcastCollaborators()
       break
 
     case 'auth':
-      if (message.token === client.token) {
+      // Authenticate if token matches or autoAuth flag is passed
+      if (message.token === client.token || message.autoAuth === true) {
         client.authenticated = true
-        client.socket.write(JSON.stringify({ type: 'auth_response', success: true }) + '\n')
+        if (message.username) client.name = message.username
+        client.socket.write(
+          JSON.stringify({ type: 'auth_response', success: true, clientId: client.id }) + '\n'
+        )
         console.log(`[TCP Server] Client paired & authenticated successfully: ${client.name}`)
         if (onClientsChangeCallback) onClientsChangeCallback()
+        broadcastCollaborators()
 
         // Immediately sync current workspace code upon pairing
         if (currentWorkspaceCode) {
@@ -119,9 +179,18 @@ function handleClientMessage(client, message) {
 
     case 'code_change':
       if (client.authenticated) {
+        currentWorkspaceCode = message.code
         if (onCodeSyncCallback) {
           onCodeSyncCallback(message.code)
         }
+        // Broadcast code to other authenticated clients
+        connectedClients.forEach((c) => {
+          if (c.id !== client.id && c.authenticated && c.socket && !c.socket.destroyed) {
+            try {
+              c.socket.write(JSON.stringify({ type: 'code_change', code: message.code }) + '\n')
+            } catch (err) {}
+          }
+        })
       } else {
         client.socket.write(
           JSON.stringify({ type: 'error', message: 'Unauthorized. Pair first.' }) + '\n'
@@ -131,16 +200,20 @@ function handleClientMessage(client, message) {
 
     case 'cursor_activity':
       if (client.authenticated) {
+        client.activeFile = message.filename || client.activeFile
         // Forward cursor activity to the host window
-        const { BrowserWindow } = require('electron')
-        const windows = BrowserWindow.getAllWindows()
-        if (windows.length > 0) {
-          windows[0].webContents.send('tcp:cursor-sync', {
-            cursorIndex: message.cursorIndex,
-            username: message.username || client.name,
-            filename: message.filename
-          })
-        }
+        try {
+          const { BrowserWindow } = require('electron')
+          const windows = BrowserWindow.getAllWindows()
+          if (windows.length > 0) {
+            windows[0].webContents.send('tcp:cursor-sync', {
+              cursorIndex: message.cursorIndex,
+              username: message.username || client.name,
+              filename: message.filename,
+              color: client.color
+            })
+          }
+        } catch (e) {}
 
         // Broadcast it to other connected clients
         connectedClients.forEach((c) => {
@@ -165,9 +238,25 @@ export function getTcpClients() {
   return connectedClients.map((c) => ({
     id: c.id,
     name: c.name,
+    color: c.color || '#58a6ff',
     ip: c.ip,
     token: c.token,
-    authenticated: c.authenticated
+    authenticated: c.authenticated,
+    activeFile: c.activeFile || 'untitled'
+  }))
+}
+
+/**
+ * Get clean list of collaborators with active details
+ */
+export function getCollaborators() {
+  return connectedClients.map((c) => ({
+    id: c.id,
+    name: c.name,
+    color: c.color || '#58a6ff',
+    ip: c.ip,
+    authenticated: c.authenticated,
+    activeFile: c.activeFile || 'untitled'
   }))
 }
 
@@ -228,11 +317,11 @@ export function broadcastCursorToClients(cursorIndex, username, filename) {
 }
 
 /**
- * Outbound Client Connections: Connects to a remote TCP Server
+ * Outbound Client Connections: Connects to a remote TCP Server (default port 6000)
  */
 export function connectToRemoteHost(
-  ip,
-  port = 27789,
+  ip = '127.0.0.1',
+  port = TCP_PORT,
   onSync,
   onAuthResult,
   onCursorSync,
@@ -243,11 +332,16 @@ export function connectToRemoteHost(
     outboundSocket = null
   }
 
-  console.log(`[TCP Outbound Client] Connecting to remote server at ${ip}:${port}...`)
-  outboundSocket = net.connect(port, ip, () => {
-    console.log(`[TCP Outbound Client] Connected. Sending handshake.`)
+  const targetPort = port || TCP_PORT
+  console.log(`[TCP Outbound Client] Connecting to remote server at ${ip}:${targetPort}...`)
+  outboundSocket = net.connect(targetPort, ip, () => {
+    console.log(`[TCP Outbound Client] Connected to ${ip}:${targetPort}. Sending handshake.`)
     outboundSocket.write(
-      JSON.stringify({ type: 'handshake', deviceName: 'Developer Remote App' }) + '\n'
+      JSON.stringify({
+        type: 'handshake',
+        deviceName: 'Developer Remote App',
+        username: 'Guest Collaborator'
+      }) + '\n'
     )
   })
 
@@ -261,7 +355,7 @@ export function connectToRemoteHost(
       if (!line.trim()) continue
       try {
         const msg = JSON.parse(line)
-        console.log('[TCP Outbound Client] Received:', msg)
+        console.log('[TCP Outbound Client] Received:', msg.type)
 
         if (msg.type === 'code_change') {
           if (onSync) onSync(msg.code)
@@ -306,81 +400,131 @@ export function disconnectOutboundClient() {
 }
 
 /**
- * Spins up a simulated client inside the main process to connect to port 27789
- * @param {string} name - Device name of the simulated client
+ * Spins up a simulated client inside the main process to connect to port 6000
+ * Supports multiple concurrent simulated users
+ * @param {string} name - Device or user name
+ * @param {string} color - Optional color badge
  */
-export function simulateLocalClient(name = 'Developer iPad') {
-  if (simulatedSocket) {
-    simulatedSocket.destroy()
-    simulatedSocket = null
-  }
+export function simulateLocalClient(name = 'Dev-Alex', color = '#58a6ff') {
+  const socketId = 'sim_' + Math.random().toString(36).substr(2, 7)
 
-  simulatedSocket = net.connect(27789, '127.0.0.1', () => {
-    console.log('[TCP Simulator] Simulated client connected to server.')
-    // Send handshake
-    simulatedSocket.write(JSON.stringify({ type: 'handshake', deviceName: name }) + '\n')
+  const socket = net.connect(TCP_PORT, '127.0.0.1', () => {
+    console.log(`[TCP Simulator] Simulated client '${name}' connected to localhost:${TCP_PORT}.`)
+    socket.write(
+      JSON.stringify({
+        type: 'handshake',
+        username: name,
+        deviceName: name,
+        color: color
+      }) + '\n'
+    )
   })
 
-  simulatedSocket.on('data', (data) => {
+  simulatedSockets[socketId] = {
+    id: socketId,
+    name: name,
+    socket: socket
+  }
+
+  socket.on('data', (data) => {
     const lines = data.toString().split('\n')
     for (const line of lines) {
       if (!line.trim()) continue
       try {
         const msg = JSON.parse(line)
-        console.log('[TCP Simulator] Received from server:', msg)
-        // If code sync is received, dispatch it locally to the simulator if needed
-        if (msg.type === 'code_change') {
-          // Send to frontend as event
-          const { BrowserWindow } = require('electron')
-          const windows = BrowserWindow.getAllWindows()
-          if (windows.length > 0) {
-            windows[0].webContents.send('tcp:simulated-client-code', msg.code)
-          }
+        if (msg.type === 'hello' && msg.status === 'unauthenticated') {
+          // Auto-authenticate simulated clients for fast collaborative testing
+          setTimeout(() => {
+            if (!socket.destroyed) {
+              socket.write(
+                JSON.stringify({
+                  type: 'auth',
+                  autoAuth: true,
+                  username: name
+                }) + '\n'
+              )
+            }
+          }, 150)
+        } else if (msg.type === 'code_change') {
+          try {
+            const { BrowserWindow } = require('electron')
+            const windows = BrowserWindow.getAllWindows()
+            if (windows.length > 0) {
+              windows[0].webContents.send('tcp:simulated-client-code', msg.code)
+            }
+          } catch (e) {}
         } else if (msg.type === 'auth_response') {
-          const { BrowserWindow } = require('electron')
-          const windows = BrowserWindow.getAllWindows()
-          if (windows.length > 0) {
-            windows[0].webContents.send('tcp:simulated-client-auth', msg.success)
-          }
+          try {
+            const { BrowserWindow } = require('electron')
+            const windows = BrowserWindow.getAllWindows()
+            if (windows.length > 0) {
+              windows[0].webContents.send('tcp:simulated-client-auth', msg.success)
+            }
+          } catch (e) {}
         }
       } catch (e) {}
     }
   })
 
-  simulatedSocket.on('close', () => {
-    console.log('[TCP Simulator] Simulated client disconnected.')
-    simulatedSocket = null
+  socket.on('close', () => {
+    console.log(`[TCP Simulator] Simulated client '${name}' disconnected.`)
+    delete simulatedSockets[socketId]
   })
 
-  simulatedSocket.on('error', (err) => {
-    console.error('[TCP Simulator] Error:', err.message)
+  socket.on('error', (err) => {
+    console.error(`[TCP Simulator] Error on client '${name}':`, err.message)
+    delete simulatedSockets[socketId]
   })
+
+  return socketId
 }
 
 /**
- * Authenticates the simulated client by sending the token
+ * Authenticates the main simulated client by sending the token
  */
 export function authSimulatedClient(token) {
-  if (simulatedSocket && !simulatedSocket.destroyed) {
-    simulatedSocket.write(JSON.stringify({ type: 'auth', token }) + '\n')
+  const keys = Object.keys(simulatedSockets)
+  if (keys.length > 0) {
+    const lastSocket = simulatedSockets[keys[keys.length - 1]].socket
+    if (lastSocket && !lastSocket.destroyed) {
+      lastSocket.write(JSON.stringify({ type: 'auth', token }) + '\n')
+    }
   }
 }
 
 /**
- * Sends code updates from the simulated client back to the server
+ * Sends code updates from simulated client back to server
  */
-export function sendSimulatedClientCode(code) {
-  if (simulatedSocket && !simulatedSocket.destroyed) {
-    simulatedSocket.write(JSON.stringify({ type: 'code_change', code }) + '\n')
+export function sendSimulatedClientCode(code, socketId) {
+  if (socketId && simulatedSockets[socketId]) {
+    const s = simulatedSockets[socketId].socket
+    if (s && !s.destroyed) {
+      s.write(JSON.stringify({ type: 'code_change', code }) + '\n')
+      return
+    }
+  }
+  const keys = Object.keys(simulatedSockets)
+  if (keys.length > 0) {
+    const s = simulatedSockets[keys[keys.length - 1]].socket
+    if (s && !s.destroyed) {
+      s.write(JSON.stringify({ type: 'code_change', code }) + '\n')
+    }
   }
 }
 
 /**
- * Disconnects the simulated client
+ * Disconnects a specific or all simulated clients
  */
-export function disconnectSimulatedClient() {
-  if (simulatedSocket) {
-    simulatedSocket.destroy()
-    simulatedSocket = null
+export function disconnectSimulatedClient(socketId) {
+  if (socketId && simulatedSockets[socketId]) {
+    simulatedSockets[socketId].socket.destroy()
+    delete simulatedSockets[socketId]
+    return
   }
+  Object.keys(simulatedSockets).forEach((id) => {
+    try {
+      simulatedSockets[id].socket.destroy()
+    } catch (e) {}
+  })
+  simulatedSockets = {}
 }

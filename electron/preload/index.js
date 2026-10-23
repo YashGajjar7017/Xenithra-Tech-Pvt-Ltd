@@ -103,8 +103,9 @@ const api = {
   predictInlineCompletion: (fullCode, lineIndex, lineContent, lang) =>
     ipcRenderer.invoke('ml:suggest', fullCode, lineIndex, lineContent, lang),
   trainML: (prefix, completion, lang) => ipcRenderer.invoke('ml:train', prefix, completion, lang),
-  generateLocalAIChat: (prompt, code, lang, filename) =>
-    ipcRenderer.invoke('ml:chat', prompt, code, lang, filename),
+  searchLocalModels: () => ipcRenderer.invoke('ml:searchModels'),
+  generateLocalAIChat: (prompt, code, lang, filename, selectedModel) =>
+    ipcRenderer.invoke('ml:chat', prompt, code, lang, filename, selectedModel),
 
   // Docker API
   getDockerContainers: () => ipcRenderer.invoke('docker:containers'),
@@ -134,14 +135,17 @@ const api = {
   // TCP Pairing API
   getTcpStatus: () => ipcRenderer.invoke('tcp:getStatus'),
   getTcpClients: () => ipcRenderer.invoke('tcp:getClients'),
+  getTcpCollaborators: () => ipcRenderer.invoke('tcp:getCollaborators'),
   pairTcpClient: (clientId) => ipcRenderer.invoke('tcp:pairClient', clientId),
-  simulateTcpClient: (name) => ipcRenderer.invoke('tcp:simulateClient', name),
+  simulateTcpClient: (name, color) => ipcRenderer.invoke('tcp:simulateClient', name, color),
   authSimulatedClient: (token) => ipcRenderer.invoke('tcp:authSimulatedClient', token),
   sendSimulatedCode: (code) => ipcRenderer.invoke('tcp:sendSimulatedCode', code),
   disconnectSimulated: () => ipcRenderer.invoke('tcp:disconnectSimulated'),
   sendTcpCodeChange: (code) => ipcRenderer.invoke('tcp:sendCodeChange', code),
   onTcpClientsUpdate: (cb) =>
     ipcRenderer.on('tcp:clients-update', (_event, clients) => cb(clients)),
+  onTcpCollaboratorsUpdate: (cb) =>
+    ipcRenderer.on('tcp:collaborators-update', (_event, users) => cb(users)),
   onTcpCodeSync: (cb) => ipcRenderer.on('tcp:code-sync', (_event, code) => cb(code)),
   onSimulatedClientCode: (cb) =>
     ipcRenderer.on('tcp:simulated-client-code', (_event, code) => cb(code)),

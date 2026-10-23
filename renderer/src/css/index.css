@@ -258,10 +258,52 @@
 }
 
 [data-theme='jetbrains'] .menu-bar,
-[data-theme='jetbrains-dark'] .menu-bar {
-  background: #2b2d30 !important;
-  border-bottom: 1px solid #393b40 !important;
-  box-shadow: none !important;
+[data-theme='jetbrains-dark'] .menu-bar,
+.menu-bar {
+  background: rgba(30, 31, 34, 0.88) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(28px) saturate(180%) brightness(1.06) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.06) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05),
+    0 4px 18px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  position: relative;
+  overflow: visible;
+}
+
+[data-theme='jetbrains'] .menu-bar::after,
+[data-theme='jetbrains-dark'] .menu-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.4) 15%,
+    rgba(168, 85, 247, 0.5) 32%,
+    rgba(236, 72, 153, 0.4) 50%,
+    rgba(74, 222, 128, 0.35) 68%,
+    rgba(251, 191, 36, 0.3) 85%,
+    transparent 100%
+  );
+  animation: prismShimmer 5s linear infinite;
+  background-size: 200% 100%;
+  pointer-events: none;
+}
+
+[data-theme='jetbrains'] .menu-bar::before,
+[data-theme='jetbrains-dark'] .menu-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 50%, rgba(56, 189, 248, 0.06) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 50%, rgba(168, 85, 247, 0.05) 0%, transparent 45%);
+  pointer-events: none;
 }
 
 [data-theme='jetbrains'] .menu-item,
@@ -278,6 +320,51 @@
   color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EXACT GUI CONTAINER BORDER CURVES & TOOLTIP ANIMATIONS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.app {
+  padding: 4px !important;
+  gap: 4px !important;
+  box-sizing: border-box !important;
+  background: #1e1f22 !important;
+}
+
+.sidebar,
+.main,
+.editor-pane,
+.code-editor-wrapper,
+.right-panel-container,
+.terminal-container {
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  overflow: hidden !important;
+}
+
+.activity-bar {
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+@keyframes tooltipPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.hover-variable-popup {
+  animation: tooltipPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

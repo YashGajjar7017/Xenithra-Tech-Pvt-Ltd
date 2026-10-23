@@ -991,6 +991,22 @@ const MainLayout = ({
             <span style={{ textTransform: 'capitalize' }}>Theme: {theme.replace('-', ' ')}</span>
             <span style={{ opacity: 0.4 }}>|</span>
             <span style={{ color: 'var(--accent-color)' }}>GLM-4 Core: Online</span>
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span
+              onClick={onOpenLicense}
+              style={{
+                color: '#62b543',
+                fontWeight: '700',
+                fontSize: '11px',
+                cursor: 'pointer',
+                padding: '1px 6px',
+                borderRadius: '3px',
+                background: 'rgba(98, 181, 67, 0.12)'
+              }}
+              title="30-day Free Trial Mode Active"
+            >
+              Trial
+            </span>
           </div>
         </div>
       )}
