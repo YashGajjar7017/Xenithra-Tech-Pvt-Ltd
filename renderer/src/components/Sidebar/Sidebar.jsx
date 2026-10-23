@@ -7,7 +7,7 @@ import FirebasePanel from './FirebasePanel'
 import ClientsPanel from './ClientsPanel'
 import WebRtcPanel from './WebRtcPanel'
 
-const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
+const Sidebar = ({ collapsed, sidebarWidth, sidebarHeight = 240, position = 'left', activeActivity }) => {
   const [loadedFolder, setLoadedFolder] = useState(null) // { name: '', path: '', tree: {} }
   const [activeFile, setActiveFile] = useState('')
   const [expandedDirs, setExpandedDirs] = useState({})
@@ -476,7 +476,12 @@ const Sidebar = ({ collapsed, sidebarWidth, activeActivity }) => {
     <div
       style={{
         ...styles.sidebar,
-        width: `${sidebarWidth}px`,
+        width: position === 'bottom' ? '100%' : `${sidebarWidth}px`,
+        height: position === 'bottom' ? `${sidebarHeight}px` : '100%',
+        maxHeight: position === 'bottom' ? `${sidebarHeight}px` : 'none',
+        borderRight: position === 'left' ? '1px solid var(--panel-border)' : 'none',
+        borderLeft: position === 'right' ? '1px solid var(--panel-border)' : 'none',
+        borderTop: position === 'bottom' ? '1px solid var(--panel-border)' : 'none',
         borderColor: isDragOver ? 'var(--accent-color)' : 'var(--panel-border)'
       }}
       onDragOver={handleDragOver}

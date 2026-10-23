@@ -4,3 +4,5 @@ out
 .DS_Store
 .eslintcache
 *.log*
+Machine_Learning_Model/qwen3-4b-thinking-2507.Q4_K_M.gguf
+Machine_Learning_Model/llamafile-0.10.5.exe

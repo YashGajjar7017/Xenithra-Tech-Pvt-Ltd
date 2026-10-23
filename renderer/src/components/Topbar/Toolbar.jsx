@@ -4,6 +4,30 @@ import CompilerLogo from '../ui/CompilerLogo'
 const Toolbar = ({ theme, setTheme }) => {
   const [isLiveServerRunning, setIsLiveServerRunning] = useState(false)
   const [liveServerPort, setLiveServerPort] = useState(5500)
+  const [modelStatus, setModelStatus] = useState('Qwen3-4B Local')
+
+  // Check Local Model Status
+  useEffect(() => {
+    const checkModel = async () => {
+      if (window.api && typeof window.api.getLocalModelStatus === 'function') {
+        try {
+          const res = await window.api.getLocalModelStatus()
+          if (res && res.status === 'ready') {
+            setModelStatus('Qwen3-4B (Active)')
+          } else if (res && res.status === 'initializing') {
+            setModelStatus('Qwen3 Loading...')
+          } else {
+            setModelStatus('Qwen3-4B Local')
+          }
+        } catch (e) {
+          setModelStatus('Qwen3-4B Local')
+        }
+      }
+    }
+    checkModel()
+    const timer = setInterval(checkModel, 7000)
+    return () => clearInterval(timer)
+  }, [])
 
   // Check initial Live Server status
   useEffect(() => {
@@ -169,6 +193,8 @@ const Toolbar = ({ theme, setTheme }) => {
       {/* Right: Quick Engine Status Pill */}
       <div className="toolbar-right-group">
         <div
+          title="Pre-trained Qwen3-4B local model in Machine_Learning_Model"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-settings'))}
           style={{
             fontSize: '10px',
             color: 'var(--text-muted)',
@@ -178,19 +204,20 @@ const Toolbar = ({ theme, setTheme }) => {
             background: 'rgba(255, 255, 255, 0.03)',
             padding: '2px 8px',
             borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.06)'
+            border: '1px solid rgba(0, 243, 255, 0.25)',
+            cursor: 'pointer'
           }}
         >
           <span
             style={{
-              width: '5px',
-              height: '5px',
+              width: '6px',
+              height: '6px',
               borderRadius: '50%',
-              background: '#d8b4fe',
-              boxShadow: '0 0 4px #d8b4fe'
+              background: '#00ffaa',
+              boxShadow: '0 0 6px #00ffaa'
             }}
           />
-          <span style={{ fontWeight: '600' }}>GLM-4 Core</span>
+          <span style={{ fontWeight: '600', color: '#00f3ff' }}>{modelStatus}</span>
         </div>
       </div>
     </div>

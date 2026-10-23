@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react'
 
 const PreferencesPage = () => {
-  const [activeTab, setActiveTab] = useState('keybindings') // 'keybindings', 'snippets'
+  const [activeTab, setActiveTab] = useState('keybindings') // 'keybindings', 'snippets', 'sidebar', 'mcp', 'localml'
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'vscode-dark')
+  const [sidebarPosition, setSidebarPosition] = useState(localStorage.getItem('sidebarPosition') || 'left')
 
   // Keybindings states
   const [shortcutSearch, setShortcutSearch] = useState('')
   const [editingCommand, setEditingCommand] = useState(null)
   const [keyComboInput, setKeyComboInput] = useState('')
+
+  const handleUpdateSidebarPos = (newPos) => {
+    setSidebarPosition(newPos)
+    localStorage.setItem('sidebarPosition', newPos)
+    window.dispatchEvent(new CustomEvent('sidebar-position-changed', { detail: newPos }))
+    window.dispatchEvent(new CustomEvent('settings-updated', { detail: { sidebarPosition: newPos } }))
+  }
 
   const initialShortcuts = [
     {
@@ -298,7 +306,55 @@ const PreferencesPage = () => {
             alignItems: 'center'
           }}
         >
-          ⚡ USER CODE SNIPPETS
+          ⚡ CODE SNIPPETS
+        </div>
+        <div
+          onClick={() => setActiveTab('sidebar')}
+          style={{
+            padding: '0 20px',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            color: activeTab === 'sidebar' ? 'var(--accent-color)' : 'var(--text-muted)',
+            borderBottom: activeTab === 'sidebar' ? '2px solid var(--accent-color)' : 'none',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          📐 SIDEBAR & LAYOUT
+        </div>
+        <div
+          onClick={() => setActiveTab('mcp')}
+          style={{
+            padding: '0 20px',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            color: activeTab === 'mcp' ? 'var(--accent-color)' : 'var(--text-muted)',
+            borderBottom: activeTab === 'mcp' ? '2px solid var(--accent-color)' : 'none',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          🔌 MCP SERVERS
+        </div>
+        <div
+          onClick={() => setActiveTab('localml')}
+          style={{
+            padding: '0 20px',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            color: activeTab === 'localml' ? 'var(--accent-color)' : 'var(--text-muted)',
+            borderBottom: activeTab === 'localml' ? '2px solid var(--accent-color)' : 'none',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          🧠 LOCAL ML MODEL
         </div>
       </div>
 
@@ -810,6 +866,114 @@ const PreferencesPage = () => {
                     No snippets defined for {selectedLang} yet. Create one!
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SIDEBAR & LAYOUT PANEL */}
+        {activeTab === 'sidebar' && (
+          <div style={{ maxWidth: '750px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <h2 style={{ fontSize: '15px', fontWeight: '700', color: '#00f3ff', marginBottom: '8px' }}>
+                SIDEBAR & ACTIVITY BAR POSITION
+              </h2>
+              <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.5', margin: 0 }}>
+                Customize the layout placement of the file explorer, panels, and activity bar according to your workspace workflow.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              {[
+                { id: 'left', label: 'Left Sidebar', icon: '⬅️', desc: 'Dock explorer and tool panels to the left side (Default)' },
+                { id: 'bottom', label: 'Bottom Panel', icon: '⬇️', desc: 'Dock panels horizontally below the editor' },
+                { id: 'right', label: 'Right Sidebar', icon: '➡️', desc: 'Dock explorer and tool panels to the right side' }
+              ].map((pos) => {
+                const isSelected = sidebarPosition === pos.id
+                return (
+                  <div
+                    key={pos.id}
+                    onClick={() => handleUpdateSidebarPos(pos.id)}
+                    style={{
+                      padding: '16px',
+                      borderRadius: '12px',
+                      background: isSelected ? 'rgba(0, 243, 255, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+                      border: `2px solid ${isSelected ? '#00f3ff' : 'rgba(255, 255, 255, 0.08)'}`,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      boxShadow: isSelected ? '0 0 20px rgba(0, 243, 255, 0.25)' : 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <div style={{ fontSize: '26px' }}>{pos.icon}</div>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: isSelected ? '#00f3ff' : '#fff' }}>
+                      {pos.label}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b', lineHeight: '1.4' }}>
+                      {pos.desc}
+                    </div>
+                    {isSelected && (
+                      <span style={{ fontSize: '10px', color: '#00ffaa', fontWeight: 'bold', marginTop: '6px' }}>
+                        ✓ Currently Selected
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* MCP SERVERS CONFIGURATION PANEL */}
+        {activeTab === 'mcp' && (
+          <div style={{ maxWidth: '850px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <h2 style={{ fontSize: '15px', fontWeight: '700', color: '#c084fc', marginBottom: '4px' }}>
+                  MODEL CONTEXT PROTOCOL (MCP) SERVERS
+                </h2>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
+                  Manage external tools, filesystem, database, and API integrations for the AI Coding Assistant.
+                </p>
+              </div>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open-settings'))}
+                style={{
+                  background: 'linear-gradient(135deg, #a855f7, #6366f1)',
+                  border: 'none',
+                  color: '#fff',
+                  fontWeight: '700',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontSize: '11px',
+                  cursor: 'pointer'
+                }}
+              >
+                ⚙️ Open Full MCP Config & Auto-Presets
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* LOCAL ML MODEL PANEL */}
+        {activeTab === 'localml' && (
+          <div style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <h2 style={{ fontSize: '15px', fontWeight: '700', color: '#00f3ff', marginBottom: '4px' }}>
+                LOCAL PRE-TRAINED ML MODEL (QWEN3-4B)
+              </h2>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
+                Loaded from <code>Machine_Learning_Model/qwen3-4b-thinking-2507.Q4_K_M.gguf</code>.
+              </p>
+            </div>
+            <div style={{ background: 'rgba(0, 243, 255, 0.05)', border: '1px solid rgba(0, 243, 255, 0.2)', padding: '16px', borderRadius: '10px' }}>
+              <div style={{ color: '#00ffaa', fontWeight: 'bold', fontSize: '13px', marginBottom: '6px' }}>
+                ● Local GGUF Engine Active (Port 11435)
+              </div>
+              <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
+                Offline AI code inference provides instant inline ghost text completions and context-aware suggestions directly on your device.
               </div>
             </div>
           </div>

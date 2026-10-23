@@ -221,9 +221,28 @@ const EditorPage = () => {
     }, 450)
   }
 
-  // Multi-tab state management - start empty like JetBrains screenshot
-  const [openTabs, setOpenTabs] = useState([])
-  const [activeTabId, setActiveTabId] = useState('')
+  const defaultInitialTab = {
+    id: 'default_1',
+    filename: 'untitled.js',
+    code: '// Welcome to Xenithra IDE\nconsole.log("Hello, Xenithra!");\n',
+    lang: 'Node.js',
+    path: ''
+  }
+
+  // Multi-tab state management — restored from sessionStorage if available (req #9)
+  const [openTabs, setOpenTabs] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('editor_open_tabs')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch (e) {}
+    return [defaultInitialTab]
+  })
+  const [activeTabId, setActiveTabId] = useState(() => {
+    return sessionStorage.getItem('editor_active_tab_id') || 'default_1'
+  })
 
   // Right editor state (for split pane)
   const [rightTab, setRightTab] = useState('untitled.js')
@@ -232,6 +251,14 @@ const EditorPage = () => {
   )
   const [rightLang, setRightLang] = useState('Node.js')
   const [rightFilePath, setRightFilePath] = useState('')
+
+  // Editor font size — supports right-click + wheel zoom (req #7)
+  const [editorFontSize, setEditorFontSize] = useState(() => {
+    return parseInt(localStorage.getItem('fontSize') || '13', 10)
+  })
+  // Whether right-click + wheel zoom is enabled (off by default per user request)
+  const rightClickWheelZoomEnabled =
+    localStorage.getItem('rightClickWheelZoom') === 'true'
 
   const activeTabObj = openTabs.find((t) => t.id === activeTabId) || openTabs[0] || null
 
@@ -406,6 +433,34 @@ const EditorPage = () => {
       setIsScanningModels(false)
     }
   }
+
+  // Persist open tabs to sessionStorage whenever they change (req #9)
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('editor_open_tabs', JSON.stringify(openTabs))
+    } catch (e) {}
+  }, [openTabs])
+
+  useEffect(() => {
+    if (activeTabId) {
+      sessionStorage.setItem('editor_active_tab_id', activeTabId)
+    }
+  }, [activeTabId])
+
+  // Listen for font-size changes from Settings (req #7)
+  useEffect(() => {
+    const handleFontSizeChange = (e) => {
+      if (e.detail && e.detail.fontSize) {
+        const fs = parseInt(e.detail.fontSize, 10)
+        if (!isNaN(fs)) setEditorFontSize(fs)
+      }
+    }
+    window.addEventListener('editor-font-size-changed', handleFontSizeChange)
+    // Also sync on mount in case Settings changed font while on another page
+    const stored = parseInt(localStorage.getItem('fontSize') || '13', 10)
+    if (!isNaN(stored)) setEditorFontSize(stored)
+    return () => window.removeEventListener('editor-font-size-changed', handleFontSizeChange)
+  }, [])
 
   // Subscribe to TCP Collaborators & scan local models on mount
   useEffect(() => {
@@ -1175,7 +1230,7 @@ const EditorPage = () => {
     }
   }
 
-  // Ctrl + Click Go-to-Definition Jump Handler
+  // Ctrl + Click Go-to-Definition Jump Handler (Redirect to where variable/symbol was declared or found)
   const handleEditorClick = (e) => {
     if (!e.ctrlKey && !e.metaKey) return
     const target = e.target
@@ -1185,40 +1240,89 @@ const EditorPage = () => {
     const text = target.value
 
     let start = pos
-    while (start > 0 && /[A-Za-z0-9_]/.test(text[start - 1])) {
+    while (start > 0 && /[A-Za-z0-9_$]/.test(text[start - 1])) {
       start--
     }
     let end = pos
-    while (end < text.length && /[A-Za-z0-9_]/.test(text[end])) {
+    while (end < text.length && /[A-Za-z0-9_$]/.test(text[end])) {
       end++
     }
 
     const clickedWord = text.slice(start, end).trim()
-    if (!clickedWord || clickedWord.length < 2) return
+    if (!clickedWord || clickedWord.length < 1) return
 
     const lines = text.split('\n')
-    const defIndex = lines.findIndex(
-      (l) =>
-        l.includes(`function ${clickedWord}`) ||
-        l.includes(`def ${clickedWord}`) ||
-        l.includes(`class ${clickedWord}`) ||
-        l.includes(`const ${clickedWord}`) ||
-        l.includes(`let ${clickedWord}`) ||
-        l.includes(`var ${clickedWord}`)
-    )
+    const currentLineIdx = text.slice(0, pos).split('\n').length - 1
+    const escaped = clickedWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+    // 1. Definition patterns: variable, function, class, type, or parameter declarations
+    const defPatterns = [
+      new RegExp(`\\b(?:var|let|const|val|auto|int|float|double|char|bool|long|short|void|string|String)\\s+[^;\\n]*?\\b${escaped}\\b`),
+      new RegExp(`\\bfunction\\s*\\*?\\s+${escaped}\\b`),
+      new RegExp(`\\bdef\\s+${escaped}\\b`),
+      new RegExp(`\\bclass\\s+${escaped}\\b`),
+      new RegExp(`\\b(?:type|interface|enum|struct)\\s+${escaped}\\b`),
+      new RegExp(`^\\s*(?:var|let|const\\s+)?${escaped}\\s*[:=]`),
+      new RegExp(`\\((?:[^)]*,\\s*)?${escaped}(?:\\s*,|\\s*\\))`)
+    ]
+
+    let defIndex = -1
+
+    // First search for formal declaration pattern
+    for (let i = 0; i < lines.length; i++) {
+      if (defPatterns.some((p) => p.test(lines[i]))) {
+        defIndex = i
+        break
+      }
+    }
+
+    // 2. If no formal declaration pattern matched, find the first line in the file where the variable was found
+    if (defIndex === -1) {
+      const wordRegex = new RegExp(`\\b${escaped}\\b`)
+      for (let i = 0; i < lines.length; i++) {
+        if (wordRegex.test(lines[i])) {
+          // If the first occurrence is the line we clicked on, search if there's another occurrence
+          if (i === currentLineIdx) {
+            continue
+          }
+          defIndex = i
+          break
+        }
+      }
+    }
+
+    // 3. Fallback: if only found on current line, keep current line
+    if (defIndex === -1 && lines[currentLineIdx] && new RegExp(`\\b${escaped}\\b`).test(lines[currentLineIdx])) {
+      defIndex = currentLineIdx
+    }
 
     if (defIndex !== -1) {
-      const charPos = lines.slice(0, defIndex).join('\n').length + (defIndex > 0 ? 1 : 0)
+      const lineStartPos = lines.slice(0, defIndex).join('\n').length + (defIndex > 0 ? 1 : 0)
+      const wordRegex = new RegExp(`\\b${escaped}\\b`)
+      const colMatch = lines[defIndex].search(wordRegex)
+      const colIndex = colMatch !== -1 ? colMatch : lines[defIndex].indexOf(clickedWord)
+      const targetCharStart = lineStartPos + (colIndex >= 0 ? colIndex : 0)
+      const targetCharEnd = targetCharStart + clickedWord.length
+
       target.focus()
-      target.setSelectionRange(charPos, charPos + lines[defIndex].length)
+      target.setSelectionRange(targetCharStart, targetCharEnd)
 
       const lineHeight = 19.5
-      target.scrollTop = defIndex * lineHeight - 50
+      const targetScrollTop = Math.max(0, defIndex * lineHeight - 60)
+      target.scrollTop = targetScrollTop
+
+      if (target === leftCodeAreaRef.current) {
+        if (leftHighlightRef.current) leftHighlightRef.current.scrollTop = targetScrollTop
+        if (leftLineNumbersRef.current) leftLineNumbersRef.current.scrollTop = targetScrollTop
+      } else if (target === rightCodeAreaRef.current) {
+        if (rightHighlightRef.current) rightHighlightRef.current.scrollTop = targetScrollTop
+        if (rightLineNumbersRef.current) rightLineNumbersRef.current.scrollTop = targetScrollTop
+      }
 
       setTerminalLines((prev) => [
         ...prev,
         {
-          text: `[NAVIGATION] Ctrl+Click redirected to definition of '${clickedWord}' at line ${defIndex + 1}`,
+          text: `[NAVIGATION] Ctrl+Click redirected to '${clickedWord}' at line ${defIndex + 1}:${colIndex + 1}`,
           className: 'success'
         },
         { text: 'xenithra@studio:~$', className: 'prompt' }
@@ -1542,6 +1646,49 @@ const EditorPage = () => {
   useEffect(() => {
     setEditorHeight(window.innerHeight * 0.55)
   }, [])
+
+  // Right-click + wheel to zoom editor font size (req #7)
+  // Only active when 'rightClickWheelZoom' localStorage flag is true (off by default)
+  useEffect(() => {
+    let rightMouseDown = false
+
+    const handleRightMouseDown = (e) => {
+      if (e.button === 2) rightMouseDown = true
+    }
+    const handleMouseUp = (e) => {
+      if (e.button === 2) rightMouseDown = false
+    }
+    const handleWheel = (e) => {
+      if (!rightMouseDown) return
+      if (localStorage.getItem('rightClickWheelZoom') !== 'true') return
+      e.preventDefault()
+      setEditorFontSize((prev) => {
+        const delta = e.deltaY < 0 ? 1 : -1
+        const next = Math.max(8, Math.min(32, prev + delta))
+        localStorage.setItem('fontSize', String(next))
+        window.dispatchEvent(new CustomEvent('editor-font-size-changed', { detail: { fontSize: next } }))
+        return next
+      })
+    }
+
+    const areas = [leftCodeAreaRef.current, rightCodeAreaRef.current].filter(Boolean)
+    areas.forEach((el) => {
+      el.addEventListener('mousedown', handleRightMouseDown)
+      el.addEventListener('mouseup', handleMouseUp)
+      el.addEventListener('wheel', handleWheel, { passive: false })
+    })
+    // Also listen at document level so mouseup is captured even if mouse leaves textarea
+    document.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      areas.forEach((el) => {
+        el.removeEventListener('mousedown', handleRightMouseDown)
+        el.removeEventListener('mouseup', handleMouseUp)
+        el.removeEventListener('wheel', handleWheel)
+      })
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [leftCodeAreaRef, rightCodeAreaRef])
 
   const formatChatMessage = (text) => {
     if (!text) return ''
@@ -2987,8 +3134,8 @@ const EditorPage = () => {
                     }}
                     style={{
                       padding: '10px',
-                      fontSize: '13px',
-                      lineHeight: '19.5px',
+                      fontSize: `${editorFontSize}px`,
+                      lineHeight: `${editorFontSize * 1.5}px`,
                       fontFamily: "'JetBrains Mono', Consolas, monospace",
                       background: 'transparent',
                       color: 'transparent',
@@ -3429,8 +3576,8 @@ const EditorPage = () => {
                   onFocus={() => setActivePane('left')}
                   style={{
                     padding: '10px',
-                    fontSize: '13px',
-                    lineHeight: '19.5px',
+                    fontSize: `${editorFontSize}px`,
+                    lineHeight: `${editorFontSize * 1.5}px`,
                     fontFamily: "'JetBrains Mono', Consolas, monospace",
                     background: 'transparent',
                     color: 'var(--text-main)',
@@ -3593,8 +3740,11 @@ const EditorPage = () => {
                       setActivePane('right')
                       handleEditorCursorActivity(e)
                     }}
+                    onClick={(e) => {
+                      handleEditorClick(e)
+                      handleEditorCursorActivity(e)
+                    }}
                     onKeyUp={handleEditorCursorActivity}
-                    onClick={handleEditorCursorActivity}
                     onScroll={handleRightScroll}
                     onContextMenu={(e) => {
                       e.preventDefault()

@@ -531,8 +531,8 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
     <div className="menu-bar">
       {/* Menus Group with JetBrains Hamburger & Project Selector */}
       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', zIndex: 10, flexShrink: 0 }}>
-        {/* JetBrains IDE Logo Icon */}
-        <div
+        {/* Commented out AI studio icon on top header */}
+        {/* <div
           onClick={() => {
             window.location.hash = '#/'
           }}
@@ -554,7 +554,7 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
           <span style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '12px', fontFamily: 'Outfit, sans-serif' }}>
             Ai
           </span>
-        </div>
+        </div> */}
 
         {/* JetBrains Hamburger Menu Icon */}
         <div

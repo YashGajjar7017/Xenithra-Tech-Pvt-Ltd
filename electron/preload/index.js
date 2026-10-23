@@ -106,6 +106,8 @@ const api = {
   searchLocalModels: () => ipcRenderer.invoke('ml:searchModels'),
   generateLocalAIChat: (prompt, code, lang, filename, selectedModel) =>
     ipcRenderer.invoke('ml:chat', prompt, code, lang, filename, selectedModel),
+  getLocalModelStatus: () => ipcRenderer.invoke('ml:status'),
+  startLocalModel: () => ipcRenderer.invoke('ml:startModel'),
 
   // Docker API
   getDockerContainers: () => ipcRenderer.invoke('docker:containers'),

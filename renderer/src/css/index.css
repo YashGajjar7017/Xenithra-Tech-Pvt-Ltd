@@ -862,6 +862,36 @@ body {
   gap: 8px;
   backdrop-filter: blur(20px);
   z-index: 10;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.activity-bar.pos-top,
+.activity-bar.pos-bottom {
+  width: 100% !important;
+  height: 48px !important;
+  flex-direction: row !important;
+  border-right: none !important;
+  padding: 0 12px !important;
+  gap: 8px !important;
+}
+
+.activity-bar.pos-top {
+  border-bottom: 1px solid var(--panel-border) !important;
+}
+
+.activity-bar.pos-bottom {
+  border-top: 1px solid var(--panel-border) !important;
+}
+
+.activity-bar.pos-right {
+  border-right: none !important;
+  border-left: 1px solid var(--panel-border) !important;
+}
+
+.activity-bar.pos-left {
+  border-right: 1px solid var(--panel-border) !important;
+  border-left: none !important;
 }
 
 .activity-icon {

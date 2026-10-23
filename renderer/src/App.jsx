@@ -528,6 +528,44 @@ const MainLayout = ({
   const [isShareGistOpen, setIsShareGistOpen] = useState(false)
   const [isLiveShareOpen, setIsLiveShareOpen] = useState(false)
   const [activeLanguage, setActiveLanguage] = useState('Node.js')
+  const [sidebarPosition, setSidebarPosition] = useState(
+    () => localStorage.getItem('sidebarPosition') || 'left'
+  )
+  const [activityBarPosition, setActivityBarPosition] = useState(
+    () => localStorage.getItem('activityBarPosition') || 'left'
+  )
+  const [sidebarHeight, setSidebarHeight] = useState(
+    () => parseInt(localStorage.getItem('sidebarHeight') || '240', 10)
+  )
+
+  useEffect(() => {
+    const handleSettingsUpdated = (e) => {
+      if (e.detail && e.detail.sidebarPosition) {
+        setSidebarPosition(e.detail.sidebarPosition)
+      }
+      if (e.detail && e.detail.activityBarPosition) {
+        setActivityBarPosition(e.detail.activityBarPosition)
+      }
+    }
+    const handleSidebarPosChanged = (e) => {
+      if (e.detail) {
+        setSidebarPosition(e.detail)
+      }
+    }
+    const handleActivityBarPosChanged = (e) => {
+      if (e.detail) {
+        setActivityBarPosition(e.detail)
+      }
+    }
+    window.addEventListener('settings-updated', handleSettingsUpdated)
+    window.addEventListener('sidebar-position-changed', handleSidebarPosChanged)
+    window.addEventListener('activity-bar-pos-changed', handleActivityBarPosChanged)
+    return () => {
+      window.removeEventListener('settings-updated', handleSettingsUpdated)
+      window.removeEventListener('sidebar-position-changed', handleSidebarPosChanged)
+      window.removeEventListener('activity-bar-pos-changed', handleActivityBarPosChanged)
+    }
+  }, [])
 
   useEffect(() => {
     const handleLangSync = (e) => {
@@ -577,14 +615,6 @@ const MainLayout = ({
     return () => window.removeEventListener('keydown', handleGlobalKeyDown)
   }, [])
 
-  // Auth Redirect Guard (Temporarily bypassed)
-  // useEffect(() => {
-  //   const user = localStorage.getItem('user')
-  //   if (!user) {
-  //     window.location.href = '/#/Account/login'
-  //   }
-  // }, [])
-
   const handleSidebarMouseDown = (e) => {
     e.preventDefault()
     setIsResizingSidebar(true)
@@ -592,9 +622,35 @@ const MainLayout = ({
     const startWidth = sidebarWidth
 
     const handleMouseMove = (moveEvent) => {
-      const newWidth = Math.max(150, Math.min(500, startWidth + (moveEvent.clientX - startX)))
+      const delta = moveEvent.clientX - startX
+      const newWidth = sidebarPosition === 'right'
+        ? Math.max(150, Math.min(600, startWidth - delta))
+        : Math.max(150, Math.min(600, startWidth + delta))
       setSidebarWidth(newWidth)
       localStorage.setItem('sidebarWidth', newWidth.toString())
+    }
+
+    const handleMouseUp = () => {
+      setIsResizingSidebar(false)
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  const handleSidebarBottomMouseDown = (e) => {
+    e.preventDefault()
+    setIsResizingSidebar(true)
+    const startY = e.clientY
+    const startHeight = sidebarHeight
+
+    const handleMouseMove = (moveEvent) => {
+      const delta = moveEvent.clientY - startY
+      const newHeight = Math.max(120, Math.min(600, startHeight - delta))
+      setSidebarHeight(newHeight)
+      localStorage.setItem('sidebarHeight', newHeight.toString())
     }
 
     const handleMouseUp = () => {
@@ -715,10 +771,11 @@ const MainLayout = ({
           </div>
         )}
 
-      <div className="app" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* LEFT ACTIVITY BAR */}
-        {!isAiColab && (
-          <div className="activity-bar">
+      {/* DYNAMIC ACTIVITY BAR ELEMENT */}
+      {(() => {
+        const isHorizontalBar = activityBarPosition === 'top' || activityBarPosition === 'bottom'
+        const activityBarElement = !isAiColab && (
+          <div className={`activity-bar pos-${activityBarPosition}`}>
             {activityOrder.map((activity, index) => {
               const isFirst = index === 0
               const isLast = index === activityOrder.length - 1
@@ -920,10 +977,12 @@ const MainLayout = ({
             {/* Visual Divider distinguishing Settings from Main Activities */}
             <div
               style={{
-                width: '32px',
-                height: '1px',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent)',
-                margin: '6px auto',
+                width: isHorizontalBar ? '1px' : '32px',
+                height: isHorizontalBar ? '24px' : '1px',
+                background: isHorizontalBar
+                  ? 'linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.25), transparent)'
+                  : 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent)',
+                margin: isHorizontalBar ? 'auto 6px' : '6px auto',
                 boxShadow: '0 0 6px rgba(0, 243, 255, 0.2)'
               }}
             />
@@ -936,40 +995,125 @@ const MainLayout = ({
               <i className="bx bx-cog" style={{ fontSize: '20px' }}></i>
             </div>
           </div>
-        )}
+        )
 
-        {/* SIDEBAR PANEL */}
-        {!isAiColab && (
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            sidebarWidth={sidebarWidth}
-            activeActivity={activeActivity}
-          />
-        )}
-
-        {/* DRAGGABLE DIVIDER (SIZING BAR) */}
-        {!isAiColab && !sidebarCollapsed && (
+        const mainWorkspaceElement = (
           <div
-            className={`resizer-v ${isResizingSidebar ? 'resizing' : ''}`}
-            onMouseDown={handleSidebarMouseDown}
-          />
-        )}
+            className="main"
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              height: isAiColab ? '100%' : 'auto',
+              width: '100%'
+            }}
+          >
+            {children}
+          </div>
+        )
 
-        {/* MAIN WORKSPACE */}
-        <div
-          className="main"
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            height: isAiColab ? '100%' : 'auto',
-            width: '100%'
-          }}
-        >
-          {children}
-        </div>
-      </div>
+        const middleWorkspace = (
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden', width: '100%', height: '100%', position: 'relative' }}>
+            {/* Left Activity Bar if position === 'left' */}
+            {activityBarPosition === 'left' && activityBarElement}
+
+            {/* 1. LEFT SIDEBAR POSITION */}
+            {sidebarPosition === 'left' && (
+              <>
+                {!isAiColab && (
+                  <Sidebar
+                    collapsed={sidebarCollapsed}
+                    sidebarWidth={sidebarWidth}
+                    sidebarHeight={sidebarHeight}
+                    position="left"
+                    activeActivity={activeActivity}
+                  />
+                )}
+                {!isAiColab && !sidebarCollapsed && (
+                  <div
+                    className={`resizer-v ${isResizingSidebar ? 'resizing' : ''}`}
+                    onMouseDown={handleSidebarMouseDown}
+                  />
+                )}
+                {mainWorkspaceElement}
+              </>
+            )}
+
+            {/* 2. RIGHT SIDEBAR POSITION */}
+            {sidebarPosition === 'right' && (
+              <>
+                {mainWorkspaceElement}
+                {!isAiColab && !sidebarCollapsed && (
+                  <div
+                    className={`resizer-v ${isResizingSidebar ? 'resizing' : ''}`}
+                    onMouseDown={handleSidebarMouseDown}
+                  />
+                )}
+                {!isAiColab && (
+                  <Sidebar
+                    collapsed={sidebarCollapsed}
+                    sidebarWidth={sidebarWidth}
+                    sidebarHeight={sidebarHeight}
+                    position="right"
+                    activeActivity={activeActivity}
+                  />
+                )}
+              </>
+            )}
+
+            {/* 3. BOTTOM SIDEBAR POSITION */}
+            {sidebarPosition === 'bottom' && (
+              <div
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                  height: '100%',
+                  width: '100%'
+                }}
+              >
+                {mainWorkspaceElement}
+                {!isAiColab && !sidebarCollapsed && (
+                  <div
+                    className={`resizer-h ${isResizingSidebar ? 'resizing' : ''}`}
+                    style={{
+                      height: '5px',
+                      cursor: 'row-resize',
+                      background: isResizingSidebar ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)',
+                      borderTop: '1px solid var(--panel-border)',
+                      zIndex: 10,
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseDown={handleSidebarBottomMouseDown}
+                  />
+                )}
+                {!isAiColab && (
+                  <Sidebar
+                    collapsed={sidebarCollapsed}
+                    sidebarWidth={sidebarWidth}
+                    sidebarHeight={sidebarHeight}
+                    position="bottom"
+                    activeActivity={activeActivity}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Right Activity Bar if position === 'right' */}
+            {activityBarPosition === 'right' && activityBarElement}
+          </div>
+        )
+
+        return (
+          <div className="app" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {activityBarPosition === 'top' && activityBarElement}
+            {middleWorkspace}
+            {activityBarPosition === 'bottom' && activityBarElement}
+          </div>
+        )
+      })()}
 
       {/* BOTTOM SLIM STATUS BAR */}
       {!isAiColab && (

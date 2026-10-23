@@ -29,7 +29,10 @@ import {
   generateLocalAIChatResponse,
   trainLocalMLModel,
   startModelTraining,
-  searchAvailableLocalModels
+  searchAvailableLocalModels,
+  startLocalModelService,
+  stopLocalModelService,
+  getLocalModelStatus
 } from './Services/localML.service.js'
 import { formatCode } from './Services/format.service.js'
 import {
@@ -442,6 +445,13 @@ app.whenReady().then(() => {
     initializeTrial()
   } catch (e) {
     console.warn('[License] Trial init failed:', e.message)
+  }
+
+  // Initialize Local GGUF Model Service (Machine_Learning_Model)
+  try {
+    startLocalModelService()
+  } catch (e) {
+    console.warn('[LocalML] Service start error:', e.message)
   }
 
   ipcMain.handle('license:status', async () => {
@@ -905,9 +915,13 @@ app.whenReady().then(() => {
     searchWorkspace(workspacePath, query, options)
   )
 
-  // Local ML IPC Handlers
-  ipcMain.handle('ml:suggest', (_event, fullCode, lineIndex, lineContent, lang) =>
-    predictInlineCompletion(fullCode, lineIndex, lineContent, lang)
+  ipcMain.handle('ml:status', async () => getLocalModelStatus())
+  ipcMain.handle('ml:startModel', async () => {
+    startLocalModelService()
+    return { success: true }
+  })
+  ipcMain.handle('ml:suggest', async (_event, fullCode, lineIndex, lineContent, lang) =>
+    await predictInlineCompletion(fullCode, lineIndex, lineContent, lang)
   )
   ipcMain.handle('ml:train', (_event, prefix, completion, lang) =>
     trainLocalMLModel(prefix, completion, lang)
@@ -1211,4 +1225,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('will-quit', () => {
+  try {
+    stopLocalModelService()
+  } catch (e) {}
 })

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import splashImage from '../../assets/splash_bg.jpg'
 
 /**
- * SplashScreen — JetBrains-style compact startup splash screen for Xenithra IDE.
- * Centered floating card with the exact WebStorm-style artwork and progress indicator.
+ * SplashScreen — Compact 10%-of-screen startup badge for Xenithra IDE.
+ * No full-screen overlay, no blur on the background, no background dimming.
+ * Just a small floating card in the bottom-center with the IDE artwork + progress bar.
  */
 const SplashScreen = ({ onDone }) => {
   const [visible, setVisible] = useState(true)
@@ -27,42 +28,35 @@ const SplashScreen = ({ onDone }) => {
   if (!visible) return null
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 999999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'rgba(0, 0, 0, 0.45)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        opacity: fading ? 0 : 1,
-        transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        pointerEvents: fading ? 'none' : 'all',
-        userSelect: 'none'
-      }}
-    >
-      {/* Floating JetBrains-style Splash Dialog Card */}
+    <>
+      {/* Compact 10%-of-screen splash card — no overlay, no blur, no background */}
       <div
         style={{
-          position: 'relative',
-          width: '640px',
-          height: '380px',
-          maxWidth: '92vw',
-          maxHeight: '90vh',
-          borderRadius: '8px',
+          position: 'fixed',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 999999,
+          opacity: fading ? 0 : 1,
+          transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          pointerEvents: fading ? 'none' : 'all',
+          userSelect: 'none',
+          // 10% of the smaller screen dimension
+          width: '10vmin',
+          height: '10vmin',
+          minWidth: '72px',
+          minHeight: '72px',
+          borderRadius: '10px',
           overflow: 'hidden',
-          boxShadow: '0 30px 90px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.14)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.12)',
           background: '#0a151d',
-          animation: 'splashPop 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+          animation: 'splashPop 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
       >
         {/* Splash artwork image */}
         <img
           src={splashImage}
-          alt="Xenithra IDE Splash"
+          alt="Xenithra IDE"
           style={{
             position: 'absolute',
             top: 0,
@@ -74,7 +68,6 @@ const SplashScreen = ({ onDone }) => {
             display: 'block'
           }}
           onError={(e) => {
-            // Fallback to public path if bundler URL fails
             e.currentTarget.src = '/Images/splash_bg.jpg'
           }}
         />
@@ -87,7 +80,7 @@ const SplashScreen = ({ onDone }) => {
             left: 0,
             right: 0,
             height: '3px',
-            background: 'rgba(0, 0, 0, 0.6)',
+            background: 'rgba(0, 0, 0, 0.5)',
             zIndex: 10
           }}
         >
@@ -97,7 +90,7 @@ const SplashScreen = ({ onDone }) => {
               background: 'linear-gradient(90deg, #00c8ff, #7c3aed, #ff007f)',
               borderRadius: '2px',
               animation: 'splashProgress 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-              boxShadow: '0 0 10px rgba(0, 200, 255, 0.9)'
+              boxShadow: '0 0 8px rgba(0, 200, 255, 0.9)'
             }}
           />
         </div>
@@ -107,11 +100,11 @@ const SplashScreen = ({ onDone }) => {
         @keyframes splashPop {
           0% {
             opacity: 0;
-            transform: scale(0.95);
+            transform: translateX(-50%) scale(0.85);
           }
           100% {
             opacity: 1;
-            transform: scale(1);
+            transform: translateX(-50%) scale(1);
           }
         }
         @keyframes splashProgress {
@@ -121,7 +114,7 @@ const SplashScreen = ({ onDone }) => {
           100% { width: 100%; }
         }
       `}</style>
-    </div>
+    </>
   )
 }
 

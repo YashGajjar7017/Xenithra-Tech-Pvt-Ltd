@@ -6,6 +6,51 @@
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
+import { spawn } from 'child_process'
+
+let localModelProcess = null
+
+export function startLocalModelService() {
+  if (localModelProcess) return
+  try {
+    const scriptPath = path.resolve(process.cwd(), 'electron/main/Services/local_model_service.py')
+    if (fs.existsSync(scriptPath)) {
+      localModelProcess = spawn('python', [scriptPath], {
+        detached: false,
+        stdio: 'ignore'
+      })
+      localModelProcess.on('error', (err) => {
+        console.warn('[LocalML] Python server spawn error:', err.message)
+      })
+      console.log('[LocalML] Local GGUF Model Server process started on http://127.0.0.1:11435')
+    }
+  } catch (e) {
+    console.warn('[LocalML] Could not start python local model server:', e.message)
+  }
+}
+
+export function stopLocalModelService() {
+  if (localModelProcess) {
+    try {
+      localModelProcess.kill()
+      localModelProcess = null
+      console.log('[LocalML] Local GGUF Model Server process stopped.')
+    } catch (e) {}
+  }
+}
+
+export async function getLocalModelStatus() {
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 1000)
+    const res = await fetch('http://127.0.0.1:11435/health', { signal: controller.signal })
+    clearTimeout(timer)
+    if (res.ok) {
+      return await res.json()
+    }
+  } catch (e) {}
+  return { status: 'offline', model: 'qwen3-4b-thinking-2507', error: 'Server not running' }
+}
 
 // Dynamically learned ML completions cache trained from user typing sessions
 const ADAPTIVE_ML_MODEL_CACHE = {}
@@ -75,7 +120,7 @@ const LANGUAGE_SNIPPETS = {
  * @param {string} lang
  * @returns {{suggestion: string, type: string}}
  */
-export function predictInlineCompletion(
+export async function predictInlineCompletion(
   fullCode = '',
   lineIndex = 0,
   lineContent = '',
@@ -143,9 +188,35 @@ export function predictInlineCompletion(
     return { suggestion: ' class="container"></div>', type: 'html' }
   }
 
-  // 3. Reinforcement Learning Identifier & Symbol Pattern Matching
+  // 3. Query Local Pre-Trained Model in Machine_Learning_Model (Qwen3 4B GGUF)
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 950)
+    const res = await fetch('http://127.0.0.1:11435/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: fullCode,
+        lineIndex,
+        lineContent,
+        lang: langKey,
+        max_tokens: 25
+      }),
+      signal: controller.signal
+    })
+    clearTimeout(timer)
+    if (res.ok) {
+      const data = await res.json()
+      if (data && data.suggestion && data.suggestion.trim()) {
+        return { suggestion: data.suggestion, type: 'local-qwen3-model' }
+      }
+    }
+  } catch (e) {
+    // Model warming up or unavailable, proceed to identifier matching
+  }
+
+  // 4. Reinforcement Learning Identifier & Symbol Pattern Matching
   const declaredSymbols = []
-  // Extract function definitions: function foo() or def bar()
   const funcMatches = fullCode.matchAll(/(?:function|def|class|const|let|var)\s+([A-Za-z0-9_]+)/g)
   for (const match of funcMatches) {
     if (match[1] && match[1] !== trimmed && match[1].startsWith(trimmed)) {
@@ -158,7 +229,7 @@ export function predictInlineCompletion(
     return { suggestion: symbol.substring(trimmed.length), type: 'symbol' }
   }
 
-  // 4. Frequency-Based Identifiers in Codebase
+  // 5. Frequency-Based Identifiers in Codebase
   const words = fullCode.match(/\b[A-Za-z_][A-Za-z0-9_]*\b/g) || []
   const wordCounts = {}
   words.forEach((w) => {
@@ -182,14 +253,23 @@ export function predictInlineCompletion(
  * Search available local models (Ollama, LM Studio, and offline built-in)
  */
 export async function searchAvailableLocalModels() {
+  const localStatus = await getLocalModelStatus()
   const models = [
+    {
+      id: 'qwen3-4b-local',
+      name: 'Qwen3 4B Thinking (Local Pre-trained)',
+      provider: 'Machine_Learning_Model',
+      status: localStatus.status === 'ready' ? 'online' : localStatus.status === 'initializing' ? 'loading' : 'offline',
+      size: '2.49 GB',
+      recommended: true
+    },
     {
       id: 'xenithra-neural-4b',
       name: 'Xenithra Neural 4B',
       provider: 'Offline Built-in',
       status: 'active',
       size: '3.8 GB',
-      recommended: true
+      recommended: false
     },
     {
       id: 'deepseek-coder:6.7b',
@@ -299,8 +379,29 @@ export async function generateLocalAIChatResponse(
 ) {
   const p = prompt.trim().toLowerCase()
 
+  // 0. Try Local GGUF Model Server (Machine_Learning_Model)
+  if (selectedModel === 'qwen3-4b-local' || !selectedModel || selectedModel === 'xenithra-neural-4b') {
+    try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 12000)
+      const res = await fetch('http://127.0.0.1:11435/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, code, lang }),
+        signal: controller.signal
+      })
+      clearTimeout(timer)
+      if (res.ok) {
+        const data = await res.json()
+        if (data && data.response && data.status === 'success') {
+          return data.response
+        }
+      }
+    } catch (e) {}
+  }
+
   // 1. Try Live Ollama daemon if running and requested
-  if (selectedModel && selectedModel !== 'xenithra-neural-4b') {
+  if (selectedModel && selectedModel !== 'xenithra-neural-4b' && selectedModel !== 'qwen3-4b-local') {
     try {
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 9000)
