@@ -112,7 +112,10 @@ import {
   getMachineId
 } from './Services/license.service.js'
 
-const icon = join(__dirname, '../../renderer/public/Images/app_logo.png')
+const icoLogoPath = join(__dirname, '../../Logo/Logo_Xenithra.ico')
+const icon = process.platform === 'win32' && fs.existsSync(icoLogoPath)
+  ? icoLogoPath
+  : join(__dirname, '../../renderer/public/Images/app_logo.png')
 
 const xmlFilePath = join(app.getPath('temp'), 'temp_extensions.xml')
 const storeXmlFilePath = join(app.getPath('temp'), 'store_extensions.xml')
