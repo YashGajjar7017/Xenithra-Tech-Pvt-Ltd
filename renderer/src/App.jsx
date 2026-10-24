@@ -22,6 +22,7 @@ import CDllStudioPage from './pages/CDllStudioPage'
 import FooterEnvSelector from './components/ui/FooterEnvSelector'
 import LicensePage from './pages/LicensePage'
 import SplashScreen from './components/ui/SplashScreen'
+import SidewayFirecrackers from './components/ui/SidewayFirecrackers'
 import { verifyServerSession } from './utils/digitalFingerprint'
 
 
@@ -167,6 +168,30 @@ const MainApp = () => {
     localStorage.setItem('theme', theme)
   }, [theme])
 
+  // Transparence / Apple Glass Mode sync
+  useEffect(() => {
+    const isTransparence = localStorage.getItem('transparence-mode') === 'true'
+    if (isTransparence) {
+      document.documentElement.setAttribute('data-transparence', 'true')
+    } else {
+      document.documentElement.removeAttribute('data-transparence')
+    }
+
+    const handleTransparenceChange = (e) => {
+      const enabled =
+        e.detail && typeof e.detail.enabled === 'boolean'
+          ? e.detail.enabled
+          : localStorage.getItem('transparence-mode') === 'true'
+      if (enabled) {
+        document.documentElement.setAttribute('data-transparence', 'true')
+      } else {
+        document.documentElement.removeAttribute('data-transparence')
+      }
+    }
+    window.addEventListener('transparence-mode-changed', handleTransparenceChange)
+    return () => window.removeEventListener('transparence-mode-changed', handleTransparenceChange)
+  }, [])
+
   // Listen to menu events
   useEffect(() => {
     if (window.api && typeof window.api.onToggleTheme === 'function') {
@@ -307,7 +332,11 @@ const MainApp = () => {
       <Router>
         <Routes>
           <Route path="/Account/login" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signin" element={<LoginPage />} />
           <Route path="/Account/signup" element={<SignupPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/register" element={<SignupPage />} />
           <Route path="/preferences" element={<PreferencesPage />} />
           <Route path="/license" element={<LicensePage onClose={() => window.history.back()} />} />
           <Route
@@ -429,6 +458,9 @@ const MainApp = () => {
           onActivated={() => setShowLicenseModal(false)}
         />
       )}
+
+      {/* Global Celebratory Particle Cannons */}
+      <SidewayFirecrackers />
     </>
   )
 }
@@ -582,19 +614,27 @@ const MainLayout = ({
     const handleOpenKeybindings = () => setIsKeybindingsOpen(true)
     const handleShareGist = () => setIsShareGistOpen(true)
     const handleLiveShare = () => setIsLiveShareOpen(true)
+    const handleGitOpen = () => {
+      setActiveActivity('git')
+      setSidebarCollapsed(false)
+    }
 
     window.addEventListener('open-settings', handleOpenSettings)
     window.addEventListener('open-keybindings', handleOpenKeybindings)
     window.addEventListener('menu-share-gist', handleShareGist)
     window.addEventListener('menu-live-share', handleLiveShare)
+    window.addEventListener('menu-git-toggle', handleGitOpen)
+    window.addEventListener('open-git-panel', handleGitOpen)
 
     return () => {
       window.removeEventListener('open-settings', handleOpenSettings)
       window.removeEventListener('open-keybindings', handleOpenKeybindings)
       window.removeEventListener('menu-share-gist', handleShareGist)
       window.removeEventListener('menu-live-share', handleLiveShare)
+      window.removeEventListener('menu-git-toggle', handleGitOpen)
+      window.removeEventListener('open-git-panel', handleGitOpen)
     }
-  }, [])
+  }, [setSidebarCollapsed])
 
   // Ctrl+K Ctrl+S shortcut listener
   useEffect(() => {

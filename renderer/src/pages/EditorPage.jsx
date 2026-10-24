@@ -400,13 +400,19 @@ const EditorPage = () => {
     'replace:foo->bar\nreplace:console.log->logger.info'
   )
 
-  // Local Model Search & Selection States
-  const [selectedModel, setSelectedModel] = useState('qwen2.5-coder:7b')
+  // Local Model Search & Selection States — defaults to original local model in Machine_Learning_Model
+  const [selectedModel, setSelectedModel] = useState('qwen3-4b-local')
   const [availableModels, setAvailableModels] = useState([
-    { id: 'ollama-qwen', name: 'qwen2.5-coder:7b', source: 'Ollama', status: 'online', details: 'localhost:11434' },
-    { id: 'ollama-deepseek', name: 'deepseek-coder:6.7b', source: 'Ollama', status: 'ready', details: 'localhost:11434' },
-    { id: 'lmstudio-local', name: 'codellama-instruct', source: 'LM Studio', status: 'ready', details: 'localhost:1234' },
-    { id: 'xenithra-pro', name: 'xenithra-code-master-local', source: 'Built-in', status: 'online', details: 'offline engine' }
+    {
+      id: 'qwen3-4b-local',
+      name: 'Qwen3 4B Thinking (Local Pre-trained)',
+      source: 'Machine_Learning_Model',
+      status: 'online',
+      details: 'qwen3-4b-thinking-2507.Q4_K_M.gguf'
+    },
+    { id: 'xenithra-pro', name: 'xenithra-code-master-local', source: 'Built-in', status: 'online', details: 'offline engine' },
+    { id: 'ollama-qwen', name: 'qwen2.5-coder:7b', source: 'Ollama', status: 'offline', details: 'localhost:11434' },
+    { id: 'ollama-deepseek', name: 'deepseek-coder:6.7b', source: 'Ollama', status: 'offline', details: 'localhost:11434' }
   ])
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false)
   const [modelSearchQuery, setModelSearchQuery] = useState('')
@@ -420,10 +426,18 @@ const EditorPage = () => {
     try {
       if (window.api && typeof window.api.searchLocalModels === 'function') {
         const res = await window.api.searchLocalModels()
-        if (res && res.models && res.models.length > 0) {
-          setAvailableModels(res.models)
-          if (!selectedModel || selectedModel === 'No models') {
-            setSelectedModel(res.models[0].name)
+        const modelList = Array.isArray(res) ? res : (res && res.models ? res.models : [])
+        if (modelList.length > 0) {
+          const formatted = modelList.map((m) => ({
+            id: m.id || m.name,
+            name: m.name || m.id,
+            source: m.provider || 'Local',
+            status: m.status || 'ready',
+            details: m.size ? `${m.size}` : ''
+          }))
+          setAvailableModels(formatted)
+          if (!selectedModel || selectedModel === 'qwen2.5-coder:7b' || selectedModel === 'No models') {
+            setSelectedModel(formatted[0].id || formatted[0].name)
           }
         }
       }

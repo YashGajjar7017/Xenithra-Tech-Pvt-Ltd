@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import '../css/LicensePage.css'
+import SidewayFirecrackers, { triggerCelebration } from '../components/ui/SidewayFirecrackers'
 
 const LicensePage = ({ onClose, onActivated }) => {
   const [activeTab, setActiveTab] = useState('status')
@@ -167,13 +168,14 @@ const LicensePage = ({ onClose, onActivated }) => {
       }
 
       if (result.success) {
+        triggerCelebration()
         setMessage({
           type: 'success',
-          text: `✅ License activated successfully! Welcome, ${result.licensedTo}!`
+          text: `🎉 License activated successfully! Welcome, ${result.licensedTo}!`
         })
         await fetchLicenseStatus()
         window.dispatchEvent(new CustomEvent('license-activated'))
-        if (onActivated) setTimeout(onActivated, 2000)
+        if (onActivated) setTimeout(onActivated, 2800)
       } else {
         setMessage({ type: 'error', text: `❌ ${result.error}` })
       }
@@ -214,6 +216,7 @@ const LicensePage = ({ onClose, onActivated }) => {
       }
 
       if (result.success && result.licenseKey) {
+        triggerCelebration()
         setLicenseKey(result.licenseKey)
         setMessage({
           type: 'success',
@@ -1174,6 +1177,7 @@ const LicensePage = ({ onClose, onActivated }) => {
           )}
         </div>
       </div>
+      <SidewayFirecrackers />
     </div>
   )
 }

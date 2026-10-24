@@ -82,6 +82,33 @@
         "validTo": "2028-04-01",
         "tier": "Team"
       }
+    },
+    "TEMP-7X9B-4KQ2-9M1L": {
+      "name": "Trial User",
+      "email": "user@example.com",
+      "edition": "Evaluation Trial Edition",
+      "status": "active",
+      "maxMachines": 1,
+      "issuedAt": "2026-10-24T00:00:00Z",
+      "expiryDate": "2026-11-01T00:00:00.000Z",
+      "features": {
+        "editor": true,
+        "terminal": true,
+        "aiColab": true,
+        "dsaStudio": true,
+        "cdllStudio": true,
+        "codeArena": true,
+        "cloudSync": true,
+        "collaboration": true
+      },
+      "certificate": {
+        "certId": "CERT-TEMP-7X9B",
+        "fingerprint": "SHA256:7a9b4kq29m1l00112233445566778899aabbccddeeff00112233445566778899",
+        "validFrom": "2026-10-24",
+        "validTo": "2026-11-01",
+        "tier": "Trial"
+      },
+      "machineId": "98929bb048af7f20c1e530c11d93554a"
     }
   }
 }

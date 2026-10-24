@@ -36,7 +36,7 @@ def load_model():
         # Optimized for fast CPU inference and code completion
         llm = Llama(
             model_path=MODEL_PATH,
-            n_ctx=1024,
+            n_ctx=2048,
             n_threads=min(os.cpu_count() or 4, 8),
             verbose=False
         )

@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": "USR-0D13C6FF",
+      "email": "admin@xenithra.tech",
+      "passwordHash": "7fd395a66f15a8d6d8204612c60b7aaf27d5c4e09411548be4e76e9cecdc4ab6",
+      "role": "admin",
+      "createdAt": "2026-10-24T05:58:03.235Z"
+    }
+  ]
+}

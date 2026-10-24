@@ -83,20 +83,7 @@ export const layoutStyles = {
   },
 
   borderNeon: {
-    position: 'absolute',
-    inset: 0,
-    borderRadius: 'inherit',
-    padding: '2px',
-    background:
-      'conic-gradient(from 180deg, rgba(255, 0, 200, 0.9), rgba(0, 229, 255, 0.9), rgba(255, 234, 0, 0.8), rgba(255, 0, 200, 0.9))',
-    WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
-    WebkitMaskComposite: 'xor',
-    mask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
-    maskComposite: 'exclude',
-    opacity: 0.8,
-    animation: 'borderFlow 16s linear infinite',
-    pointerEvents: 'none',
-    zIndex: 0
+    display: 'none'
   },
 
   shell: {

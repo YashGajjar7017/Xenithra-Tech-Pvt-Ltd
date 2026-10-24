@@ -116,6 +116,32 @@ const SettingsModal = ({ isOpen, onClose, theme, setTheme }) => {
     localStorage.getItem('rightClickWheelZoom') === 'true'
   )
 
+  // Transparence / Apple Glass Mode
+  const [transparenceMode, setTransparenceMode] = useState(
+    () => localStorage.getItem('transparence-mode') === 'true'
+  )
+  const [glassStyle, setGlassStyle] = useState(
+    () => localStorage.getItem('glass-style') || 'apple-sonoma'
+  )
+
+  const handleToggleTransparence = (enabled) => {
+    setTransparenceMode(enabled)
+    localStorage.setItem('transparence-mode', enabled ? 'true' : 'false')
+    if (enabled) {
+      document.documentElement.setAttribute('data-transparence', 'true')
+    } else {
+      document.documentElement.removeAttribute('data-transparence')
+    }
+    window.dispatchEvent(new CustomEvent('transparence-mode-changed', { detail: { enabled } }))
+  }
+
+  const handleSelectGlassStyle = (styleId) => {
+    setGlassStyle(styleId)
+    localStorage.setItem('glass-style', styleId)
+    document.documentElement.setAttribute('data-glass-style', styleId)
+    window.dispatchEvent(new CustomEvent('transparence-mode-changed', { detail: { enabled: true, style: styleId } }))
+  }
+
   // Additional Editor Settings
   const [fontFamily, setFontFamily] = useState(
     localStorage.getItem('fontFamily') || "'JetBrains Mono', 'Fira Code', monospace"
@@ -620,6 +646,128 @@ const SettingsModal = ({ isOpen, onClose, theme, setTheme }) => {
             {/* GENERAL SETTINGS */}
             {activeTab === 'general' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* TRANSPARENCE / APPLE GLASS MODE SETTING */}
+                <div
+                  style={{
+                    background: transparenceMode
+                      ? 'linear-gradient(135deg, rgba(88, 166, 255, 0.12), rgba(168, 85, 247, 0.12))'
+                      : 'rgba(255, 255, 255, 0.02)',
+                    border: `1px solid ${transparenceMode ? 'rgba(88, 166, 255, 0.4)' : 'rgba(255, 255, 255, 0.06)'}`,
+                    borderRadius: '12px',
+                    padding: '16px',
+                    boxShadow: transparenceMode ? '0 8px 32px rgba(88, 166, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div
+                        style={{
+                          width: '34px',
+                          height: '34px',
+                          borderRadius: '10px',
+                          background: 'linear-gradient(135deg, #00f3ff, #8b5cf6)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                          boxShadow: '0 0 15px rgba(0, 243, 255, 0.4)'
+                        }}
+                      >
+                        🪟
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>Apple Glass Transparence Mode</span>
+                          <span
+                            style={{
+                              fontSize: '9.5px',
+                              padding: '2px 8px',
+                              borderRadius: '12px',
+                              background: transparenceMode ? 'rgba(0, 255, 170, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+                              color: transparenceMode ? '#00ffaa' : '#888',
+                              fontWeight: '700',
+                              border: `1px solid ${transparenceMode ? 'rgba(0, 255, 170, 0.4)' : 'transparent'}`
+                            }}
+                          >
+                            {transparenceMode ? 'ACTIVE: FROSTED GLASS' : 'DISABLED'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                          Transforms every container into liquid Apple macOS Sonoma translucent frosted glass with specular reflections and soft blur.
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Toggle Switch */}
+                    <div
+                      onClick={() => handleToggleTransparence(!transparenceMode)}
+                      style={{
+                        width: '46px',
+                        height: '24px',
+                        borderRadius: '12px',
+                        background: transparenceMode ? 'linear-gradient(90deg, #00f3ff, #7c3aed)' : 'rgba(255, 255, 255, 0.15)',
+                        position: 'relative',
+                        cursor: 'pointer',
+                        padding: '2px',
+                        transition: 'background 0.3s ease',
+                        boxShadow: transparenceMode ? '0 0 12px rgba(0, 243, 255, 0.4)' : 'none',
+                        flexShrink: 0
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: '#fff',
+                          transform: transparenceMode ? 'translateX(22px)' : 'translateX(0px)',
+                          transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.4)'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Preset Glass Styles when active */}
+                  {transparenceMode && (
+                    <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      <label style={{ fontSize: '10px', fontWeight: '700', color: '#00f3ff', letterSpacing: '0.05em', display: 'block', marginBottom: '8px' }}>
+                        CHOOSE APPLE GLASS SPECIFICATION
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                        {[
+                          { id: 'apple-sonoma', name: 'macOS Sonoma Glass', desc: 'Heavy 30px frosted acrylic + specular sheen' },
+                          { id: 'apple-vision', name: 'VisionOS Pro Glass', desc: 'Hyper-translucent dynamic prism glass' },
+                          { id: 'apple-crystal', name: 'Crystal Minimal Glass', desc: 'Subtle 16px blur with crystal clarity' }
+                        ].map((spec) => {
+                          const isSel = glassStyle === spec.id
+                          return (
+                            <div
+                              key={spec.id}
+                              onClick={() => handleSelectGlassStyle(spec.id)}
+                              style={{
+                                padding: '8px 10px',
+                                borderRadius: '8px',
+                                background: isSel ? 'rgba(0, 243, 255, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                                border: `1px solid ${isSel ? '#00f3ff' : 'rgba(255, 255, 255, 0.08)'}`,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <div style={{ fontSize: '11px', fontWeight: '700', color: isSel ? '#00f3ff' : '#fff' }}>
+                                {spec.name}
+                              </div>
+                              <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>
+                                {spec.desc}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 {/* SIDEBAR POSITION SETTING */}
                 <div>
                   <label

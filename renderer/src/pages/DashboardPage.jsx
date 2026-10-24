@@ -44,7 +44,7 @@ function DashboardPage() {
 
   const handleLogout = () => {
     localStorage.removeItem('user')
-    window.location.href = '/#/Account/login'
+    window.location.hash = '#/Account/login'
   }
 
   return (

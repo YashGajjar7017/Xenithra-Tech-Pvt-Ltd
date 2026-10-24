@@ -238,9 +238,9 @@ body {
 .topbar button::before {
   content: '';
   position: absolute;
-  inset: -2px;
-  background: conic-gradient(from 180deg, #ff00c8, #ffea00, #00e5ff, #ff00c8);
-  background-size: 200% 200%;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: inherit;
   opacity: 0;
   transition: opacity 0.18s ease;
   z-index: -1;
@@ -248,29 +248,19 @@ body {
 .topbar button::after {
   content: '';
   position: absolute;
-  inset: 1px;
+  inset: 0;
   border-radius: inherit;
-  background: rgba(7, 10, 30, 0.97);
+  background: transparent;
   z-index: -1;
 }
 
 .topbar button:hover::before {
   opacity: 1;
-  animation: spinBorder 2.2s linear infinite;
 }
 .topbar button:hover {
   transform: translateY(-1px);
-  box-shadow:
-    0 0 18px rgba(255, 0, 200, 0.9),
-    0 0 26px rgba(0, 229, 255, 0.9);
-}
-@keyframes spinBorder {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btn-run {

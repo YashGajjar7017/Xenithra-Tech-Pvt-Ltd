@@ -474,6 +474,7 @@ const Sidebar = ({ collapsed, sidebarWidth, sidebarHeight = 240, position = 'lef
 
   return (
     <div
+      className="sidebar"
       style={{
         ...styles.sidebar,
         width: position === 'bottom' ? '100%' : `${sidebarWidth}px`,

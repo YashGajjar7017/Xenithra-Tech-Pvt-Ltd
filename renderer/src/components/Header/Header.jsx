@@ -44,7 +44,7 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
 
   const handleLogin = () => {
     try {
-      window.location.href = '/#/Account/login'
+      window.location.hash = '#/Account/login'
     } catch (error) {
       console.error('Error navigating to login:', error)
     }
@@ -52,7 +52,7 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
 
   const handleSignup = () => {
     try {
-      window.location.href = '/#/Account/signup'
+      window.location.hash = '#/Account/signup'
     } catch (error) {
       console.error('Error navigating to signup:', error)
     }
@@ -64,7 +64,7 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
         localStorage.removeItem('user')
         setIsLoggedIn(false)
         setUsername('User')
-        window.location.href = '/'
+        window.location.hash = '#/'
       }
     } catch (error) {
       console.error('Error during logout:', error)
@@ -73,7 +73,7 @@ const Header = ({ onToggleSidebar, title = 'Xenithra Technologies', showSidebarT
 
   const navigateToDashboard = () => {
     try {
-      window.location.href = '/#/Dashboard'
+      window.location.hash = '#/Dashboard'
     } catch (error) {
       console.error('Error navigating to dashboard:', error)
     }

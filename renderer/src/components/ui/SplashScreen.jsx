@@ -68,7 +68,8 @@ const SplashScreen = ({ onDone }) => {
             display: 'block'
           }}
           onError={(e) => {
-            e.currentTarget.src = '/Images/splash_bg.jpg'
+            e.currentTarget.onerror = null
+            e.currentTarget.src = './Images/splash_bg.jpg'
           }}
         />
 

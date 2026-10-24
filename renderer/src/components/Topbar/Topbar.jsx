@@ -34,6 +34,9 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
   const helpMenuRef = useRef(null)
   const themeMenuRef = useRef(null)
   const paletteRef = useRef(null)
+  const vcsMenuRef = useRef(null)
+  const accountsMenuRef = useRef(null)
+  const [gitBranch, setGitBranch] = useState('main')
 
   const languages = [
     'C (GCC)',
@@ -142,19 +145,38 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
     }
   ]
 
-  // Check login state on mount
+  // Check login state and listen to auth changes
   useEffect(() => {
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-      try {
-        const u = JSON.parse(userStr)
-        setIsLoggedIn(true)
-        setUsername(u.username || 'User')
-      } catch (e) {
+    const checkUser = () => {
+      const userStr = localStorage.getItem('user')
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr)
+          setIsLoggedIn(true)
+          setUsername(u.username || 'User')
+        } catch (e) {
+          setIsLoggedIn(false)
+        }
+      } else {
         setIsLoggedIn(false)
+        setUsername('')
       }
-    } else {
-      setIsLoggedIn(false)
+    }
+    checkUser()
+
+    // Listen to auth events
+    window.addEventListener('auth-token-received', checkUser)
+    window.addEventListener('auth-status-changed', checkUser)
+    window.addEventListener('storage', checkUser)
+
+    // Load active Git branch
+    if (window.api && typeof window.api.getGitInfo === 'function') {
+      const activePath = localStorage.getItem('activeWorkspacePath') || ''
+      window.api.getGitInfo(activePath).then((info) => {
+        if (info && info.currentBranch) {
+          setGitBranch(info.currentBranch)
+        }
+      }).catch(() => {})
     }
 
     // Listen to theme changed custom events
@@ -164,7 +186,13 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
       }
     }
     window.addEventListener('theme-changed', handleThemeChange)
-    return () => window.removeEventListener('theme-changed', handleThemeChange)
+
+    return () => {
+      window.removeEventListener('auth-token-received', checkUser)
+      window.removeEventListener('auth-status-changed', checkUser)
+      window.removeEventListener('storage', checkUser)
+      window.removeEventListener('theme-changed', handleThemeChange)
+    }
   }, [setTheme])
 
   // Close dropdowns and command palette when clicking outside
@@ -185,7 +213,9 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
         helpMenuRef.current &&
         !helpMenuRef.current.contains(event.target) &&
         themeMenuRef.current &&
-        !themeMenuRef.current.contains(event.target)
+        !themeMenuRef.current.contains(event.target) &&
+        (!vcsMenuRef.current || !vcsMenuRef.current.contains(event.target)) &&
+        (!accountsMenuRef.current || !accountsMenuRef.current.contains(event.target))
       ) {
         setActiveMenu(null)
       }
@@ -205,11 +235,25 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
   }
 
   const handleLogin = () => {
-    window.location.href = '/#/Account/login'
+    setActiveMenu(null)
+    window.location.hash = '#/Account/login'
   }
 
   const handleSignup = () => {
-    window.location.href = '/#/Account/signup'
+    setActiveMenu(null)
+    window.location.hash = '#/Account/signup'
+  }
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to sign out of Xenithra?')) {
+      localStorage.removeItem('user')
+      localStorage.removeItem('xenithra-session')
+      localStorage.removeItem('xenithra-session-token')
+      setIsLoggedIn(false)
+      setUsername('')
+      setActiveMenu(null)
+      window.dispatchEvent(new CustomEvent('auth-status-changed', { detail: { isLoggedIn: false } }))
+    }
   }
 
   // Hover menu behavior: once a menu is open, hovering opens adjacent menus
@@ -619,21 +663,134 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
 
         {/* Version Control Dropdown */}
         <div
-          onClick={() => {
-            window.dispatchEvent(new CustomEvent('menu-git-toggle'))
+          ref={vcsMenuRef}
+          className={`menu-item ${activeMenu === 'vcs' ? 'open' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            setActiveMenu(activeMenu === 'vcs' ? null : 'vcs')
           }}
           style={{
+            position: 'relative',
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
+            gap: '5px',
             padding: '2px 8px',
             fontSize: '12px',
-            color: '#9da0a8',
-            cursor: 'pointer'
+            color: activeMenu === 'vcs' ? '#58a6ff' : '#9da0a8',
+            cursor: 'pointer',
+            borderRadius: '4px',
+            background: activeMenu === 'vcs' ? 'rgba(88, 166, 255, 0.12)' : 'transparent',
+            transition: 'all 0.15s ease'
           }}
+          title="Version Control (Git)"
         >
-          <span>Version Control</span>
+          <i className="bx bx-git-branch" style={{ fontSize: '13px', color: '#58a6ff' }}></i>
+          <span>Git: {gitBranch}</span>
           <span style={{ fontSize: '9px', opacity: 0.6 }}>⌵</span>
+
+          {activeMenu === 'vcs' && (
+            <div
+              className="dropdown-menu"
+              style={{
+                position: 'absolute',
+                top: '28px',
+                left: 0,
+                width: '260px',
+                zIndex: 99999
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  padding: '6px 12px',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    color: '#58a6ff',
+                    letterSpacing: '0.05em'
+                  }}
+                >
+                  VERSION CONTROL
+                </span>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    color: '#7ee787',
+                    background: 'rgba(126, 231, 135, 0.1)',
+                    padding: '1px 6px',
+                    borderRadius: '4px'
+                  }}
+                >
+                  ● {gitBranch}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  window.dispatchEvent(new CustomEvent('menu-git-toggle'))
+                }}
+              >
+                <span>📂 Open Source Control Panel</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+Shift+G</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  window.dispatchEvent(new CustomEvent('menu-git-toggle'))
+                  setTimeout(() => {
+                    const commitInput = document.querySelector('.git-commit-input')
+                    if (commitInput) commitInput.focus()
+                  }, 200)
+                }}
+              >
+                <span>💾 Commit Changes...</span>
+                <span style={{ opacity: 0.4, fontSize: '10px' }}>Ctrl+K</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  window.dispatchEvent(new CustomEvent('menu-git-pull'))
+                  window.dispatchEvent(new CustomEvent('menu-git-toggle'))
+                }}
+              >
+                <span>⬇️ Pull Latest from Remote</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  window.dispatchEvent(new CustomEvent('menu-git-push'))
+                  window.dispatchEvent(new CustomEvent('menu-git-toggle'))
+                }}
+              >
+                <span>⬆️ Push to Remote...</span>
+              </button>
+              <hr />
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  window.dispatchEvent(new CustomEvent('menu-git-toggle'))
+                }}
+              >
+                <span>🔄 Refresh Git Status</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenu(null)
+                  window.dispatchEvent(new CustomEvent('menu-git-clone'))
+                  window.dispatchEvent(new CustomEvent('menu-git-toggle'))
+                }}
+              >
+                <span>📦 Clone Repository...</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* FILE MENU */}
@@ -1172,56 +1329,74 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
           zIndex: 10
         }}
       >
-        {!isLoggedIn ? (
-          <div className="auth-section" style={{ display: 'flex', gap: '6px' }}>
-            <button
-              className="btn-signup"
-              onClick={handleSignup}
+        <div
+          className="user-display"
+          onClick={(e) => {
+            e.stopPropagation()
+            setActiveMenu(activeMenu === 'accounts' ? null : 'accounts')
+          }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            cursor: 'pointer',
+            padding: '2px 8px',
+            borderRadius: '6px',
+            background: activeMenu === 'accounts' ? 'rgba(88, 166, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+            border: activeMenu === 'accounts' ? '1px solid rgba(88, 166, 255, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
+            transition: 'all 0.18s ease'
+          }}
+          title={isLoggedIn ? `Account (${username})` : 'Account & Sign In'}
+        >
+          {isLoggedIn && localStorage.getItem('cloud-sync-enabled') === 'true' && (
+            <span
               style={{
-                padding: '4px 12px',
-                height: '26px',
-                fontSize: '11px',
+                color: '#00ffaa',
+                fontSize: '10px',
                 display: 'flex',
                 alignItems: 'center',
-                fontWeight: '500'
+                gap: '4px',
+                background: 'rgba(0, 255, 170, 0.1)',
+                padding: '2px 6px',
+                borderRadius: '10px',
+                marginRight: '4px',
+                border: '1px solid rgba(0, 255, 170, 0.2)'
               }}
+              title={`Cloud storage synced via ${localStorage.getItem('cloud-provider') || 'drive'}`}
             >
-              Signup
-            </button>
-          </div>
-        ) : (
-          <div
-            className="user-display"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            {localStorage.getItem('cloud-sync-enabled') === 'true' && (
-              <span
-                style={{
-                  color: '#00ffaa',
-                  fontSize: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'rgba(0, 255, 170, 0.1)',
-                  padding: '2px 6px',
-                  borderRadius: '10px',
-                  marginRight: '6px',
-                  border: '1px solid rgba(0, 255, 170, 0.2)'
-                }}
-                title={`Cloud storage synced via ${localStorage.getItem('cloud-provider') || 'drive'}`}
-              >
-                <i className="bx bx-cloud-upload"></i> Synced
-              </span>
-            )}
-            <img className="user-logo-img" src="Images/session_logo.png" alt="Session Logo" />
-            <span
-              className="user-name"
-              style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '500' }}
-            >
-              {username}
+              <i className="bx bx-cloud-upload"></i> Synced
             </span>
+          )}
+          <div
+            style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              background: isLoggedIn
+                ? 'linear-gradient(135deg, #58a6ff, #a855f7)'
+                : 'rgba(255, 255, 255, 0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: '700'
+            }}
+          >
+            {isLoggedIn ? (
+              username ? username.charAt(0).toUpperCase() : 'U'
+            ) : (
+              <i className="bx bx-user" style={{ fontSize: '12px' }}></i>
+            )}
           </div>
-        )}
+          <span
+            className="user-name"
+            style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '500' }}
+          >
+            {isLoggedIn ? username : 'Account'}
+          </span>
+          <span style={{ fontSize: '9px', opacity: 0.6, color: 'var(--text-muted)' }}>⌵</span>
+        </div>
 
         {/* AI Colab & DSA Studio Quick Launchers (Commented out) */}
         {/*
@@ -1340,7 +1515,7 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
         )}
 
         {/* User Accounts Popover Dropdown */}
-        <div style={{ position: 'relative' }}>
+        <div ref={accountsMenuRef} style={{ position: 'relative' }}>
           <div
             className="account-circle"
             title="User Profile & Accounts"
@@ -1348,16 +1523,25 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
               e.stopPropagation()
               setActiveMenu(activeMenu === 'accounts' ? null : 'accounts')
             }}
-            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              background: activeMenu === 'accounts' ? 'rgba(88, 166, 255, 0.25)' : 'rgba(255,255,255,0.06)',
+              border: activeMenu === 'accounts' ? '1px solid rgba(88, 166, 255, 0.4)' : '1px solid rgba(255,255,255,0.1)',
+              transition: 'all 0.15s ease'
+            }}
           >
             {isLoggedIn ? (
-              <img
-                className="account-circle-img"
-                src="/Images/session_logo.png"
-                alt="Session Avatar"
-              />
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#58a6ff' }}>
+                {username ? username.charAt(0).toUpperCase() : 'U'}
+              </span>
             ) : (
-              <span style={{ fontSize: '13px' }}>👤</span>
+              <i className="bx bx-user" style={{ fontSize: '13px', color: '#c9d1d9' }}></i>
             )}
           </div>
 
@@ -1367,14 +1551,14 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
                 position: 'absolute',
                 top: '34px',
                 right: 0,
-                background: 'rgba(16, 20, 32, 0.72)',
+                background: 'rgba(16, 20, 32, 0.88)',
                 backdropFilter: 'blur(28px) saturate(180%) brightness(1.08)',
                 WebkitBackdropFilter: 'blur(28px) saturate(180%) brightness(1.08)',
-                border: '1px solid rgba(255, 255, 255, 0.10)',
-                borderRadius: '10px',
-                width: '248px',
-                padding: '6px 0',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.06) inset, 0 0 0 0.5px rgba(255,255,255,0.04) inset',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
+                borderRadius: '12px',
+                width: '260px',
+                padding: '8px 0',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.1) inset',
                 zIndex: 99999,
                 fontSize: '11.5px',
                 color: '#c9d1d9',
@@ -1383,101 +1567,142 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
               onClick={(e) => e.stopPropagation()}
             >
               {/* Glass shimmer top border */}
-              <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)',
-                pointerEvents: 'none'
-              }} />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '1px',
+                  background: 'linear-gradient(90deg, transparent, rgba(88,166,255,0.4), transparent)',
+                  pointerEvents: 'none'
+                }}
+              />
 
               {/* User header area */}
-              <div style={{
-                padding: '10px 14px 8px',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                marginBottom: '4px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px'
-              }}>
-                <div style={{
-                  width: '32px', height: '32px', borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #5793ff, #a855f7)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '14px', color: '#fff', fontWeight: '700', flexShrink: 0,
-                  boxShadow: '0 0 12px rgba(87,147,255,0.4)'
-                }}>
-                  {isLoggedIn ? username.charAt(0).toUpperCase() : '?'}
+              <div
+                style={{
+                  padding: '10px 14px 10px',
+                  borderBottom: '1px solid rgba(255,255,255,0.07)',
+                  marginBottom: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+              >
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: isLoggedIn
+                      ? 'linear-gradient(135deg, #5793ff, #a855f7)'
+                      : 'rgba(255,255,255,0.08)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '15px',
+                    color: '#fff',
+                    fontWeight: '700',
+                    flexShrink: 0,
+                    boxShadow: isLoggedIn ? '0 0 14px rgba(87,147,255,0.4)' : 'none'
+                  }}
+                >
+                  {isLoggedIn ? username.charAt(0).toUpperCase() : '👤'}
                 </div>
-                <div>
-                  <div style={{ fontWeight: '600', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.3 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontWeight: '600',
+                      color: '#e2e8f0',
+                      fontSize: '13px',
+                      lineHeight: 1.3,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
                     {isLoggedIn ? username : 'Not Signed In'}
                   </div>
-                  <div style={{ color: 'rgba(139,148,158,0.8)', fontSize: '10px' }}>
-                    {isLoggedIn ? 'Xenithra Account' : 'Sign in to sync settings'}
+                  <div style={{ color: 'rgba(139,148,158,0.8)', fontSize: '10.5px' }}>
+                    {isLoggedIn ? 'Authenticated Account' : 'Sign in to sync your IDE'}
                   </div>
                 </div>
               </div>
 
+              {/* Prominent Action Buttons if NOT logged in */}
+              {!isLoggedIn && (
+                <div style={{ padding: '4px 12px 10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <button
+                    onClick={handleLogin}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      background: 'linear-gradient(135deg, #3574f0, #2b61cc)',
+                      border: '1px solid rgba(53, 116, 240, 0.5)',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontWeight: '600',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      boxShadow: '0 4px 14px rgba(53, 116, 240, 0.35)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <i className="bx bx-log-in" style={{ fontSize: '14px' }}></i>
+                    <span>Sign In to Xenithra</span>
+                  </button>
+
+                  <button
+                    onClick={handleSignup}
+                    style={{
+                      width: '100%',
+                      padding: '6px 12px',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      borderRadius: '8px',
+                      color: '#c9d1d9',
+                      fontWeight: '500',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <i className="bx bx-user-plus"></i>
+                    <span>Create New Account</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Common Menu Items */}
               <div
                 onClick={() => {
                   setActiveMenu(null)
                   window.dispatchEvent(new CustomEvent('open-settings'))
                 }}
-                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '0', transition: 'background 0.15s' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <i className="bx bx-cloud-upload" style={{ fontSize: '13px', opacity: 0.7 }}></i>
-                Backup and Sync Settings...
-              </div>
-              <div
-                onClick={() => {
-                  setActiveMenu(null)
-                  alert('Cloud Changes sync initialized with GitHub!')
+                style={{
+                  padding: '7px 14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'background 0.15s'
                 }}
-                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                <i className="bx bx-refresh" style={{ fontSize: '13px', opacity: 0.7 }}></i>
-                Turn on Cloud Changes...
+                <i className="bx bx-cog" style={{ fontSize: '14px', color: '#58a6ff' }}></i>
+                Account Settings...
               </div>
-              <div
-                onClick={() => {
-                  setActiveMenu(null)
-                  alert('Remote Tunnel Access online: tunnel.xenithra.tech:443')
-                }}
-                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <i className="bx bx-wifi" style={{ fontSize: '13px', opacity: 0.7 }}></i>
-                Turn on Remote Tunnel Access...
-              </div>
-              <div style={{ height: '1px', background: 'rgba(255,255,255,0.07)', margin: '4px 0' }} />
-              <div
-                onClick={() => {
-                  setActiveMenu(null)
-                  alert('Extension Account Preferences loaded.')
-                }}
-                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <i className="bx bx-extension" style={{ fontSize: '13px', opacity: 0.7 }}></i>
-                Manage Extension Account Preferences...
-              </div>
-              <div
-                onClick={() => {
-                  setActiveMenu(null)
-                  alert('Language Model Access: GLM-4 & Local ML Active')
-                }}
-                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <i className="bx bx-brain" style={{ fontSize: '13px', opacity: 0.7 }}></i>
-                Manage Language Model Access...
-              </div>
+
               <div
                 onClick={() => {
                   setActiveMenu(null)
@@ -1487,26 +1712,67 @@ const Topbar = ({ onToggleSidebar, theme, setTheme, filename, setFilename, licen
                     window.dispatchEvent(new CustomEvent('open-license-manager'))
                   }
                 }}
-                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#5793ff', fontWeight: '500', transition: 'background 0.15s' }}
+                style={{
+                  padding: '7px 14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#5793ff',
+                  fontWeight: '500',
+                  transition: 'background 0.15s'
+                }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(87,147,255,0.12)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <i className="bx bx-badge-check" style={{ fontSize: '14px' }}></i>
                 <span>Manage License & Certificate...</span>
               </div>
-              <div style={{ height: '1px', background: 'rgba(255,255,255,0.07)', margin: '4px 0' }} />
+
               <div
                 onClick={() => {
                   setActiveMenu(null)
                   window.dispatchEvent(new CustomEvent('open-keybindings'))
                 }}
-                style={{ padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#58a6ff', transition: 'background 0.15s' }}
+                style={{
+                  padding: '7px 14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#c9d1d9',
+                  transition: 'background 0.15s'
+                }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <i className="bx bx-keyboard" style={{ fontSize: '13px', opacity: 0.8 }}></i>
                 Keyboard Shortcuts (Ctrl+K Ctrl+S)...
               </div>
+
+              {isLoggedIn && (
+                <>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.07)', margin: '4px 0' }} />
+                  <div
+                    onClick={handleLogout}
+                    style={{
+                      padding: '7px 14px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: '#ff6b6b',
+                      fontWeight: '500',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 107, 107, 0.12)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <i className="bx bx-log-out" style={{ fontSize: '14px' }}></i>
+                    <span>Log Out</span>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

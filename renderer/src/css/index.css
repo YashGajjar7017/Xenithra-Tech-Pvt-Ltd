@@ -329,24 +329,278 @@
   padding: 4px !important;
   gap: 4px !important;
   box-sizing: border-box !important;
-  background: #1e1f22 !important;
+  background: var(--bg-gradient, #1e1f22) !important;
 }
 
-.sidebar,
-.main,
-.editor-pane,
-.code-editor-wrapper,
-.right-panel-container,
-.terminal-container {
+.ide-container {
+  padding: 2px !important;
+  box-sizing: border-box !important;
+}
+
+.menu-bar {
   border-radius: 8px !important;
+  margin: 2px 4px 2px 4px !important;
+  overflow: visible !important;
+}
+
+.responsive-toolbar {
+  border-radius: 8px !important;
+  margin: 2px 4px !important;
+}
+
+/* Activity Bar — visible overflow so icon animations, tooltips and reorder buttons are never hidden */
+.activity-bar {
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+.activity-icon {
+  border-radius: 8px !important;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease !important;
+  position: relative !important;
+}
+
+.activity-icon:hover {
+  transform: translateY(-1px) scale(1.05) !important;
+  border-color: rgba(0, 243, 255, 0.4) !important;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.25) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NON-TRANSPARENCE MODE (Standard Sleek Pro IDE Layout)
+   Containers are seamlessly aligned, flush, and vertically synced.
+   Eliminates excessive margins and pitch-black darkness.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root:not([data-transparence='true']),
+[data-transparence='false'] {
+  --bg-gradient: #1e1f22;
+  --panel-bg: #1e1f22;
+  --sidebar-bg: #25282f;
+  --panel-border: #2d3139;
+  --text-main: #dfe1e5;
+  --text-muted: #8c9099;
+}
+
+:root:not([data-transparence='true']) .app,
+[data-transparence='false'] .app {
+  background: var(--bg-gradient, #1e1f22) !important;
+}
+
+:root:not([data-transparence='true']) .activity-bar,
+[data-transparence='false'] .activity-bar {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: var(--panel-bg, #1e1f22) !important;
+  border-right: 1px solid var(--panel-border, #2d3139) !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-transparence='true']) .sidebar,
+[data-transparence='false'] .sidebar {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: var(--sidebar-bg, #25282f) !important;
+  border-right: 1px solid var(--panel-border, #2d3139) !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-transparence='true']) .main,
+[data-transparence='false'] .main {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: var(--panel-bg, #1e1f22) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-transparence='true']) .editor-pane,
+[data-transparence='false'] .editor-pane {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: var(--panel-bg, #1e1f22) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-transparence='true']) .code-editor-wrapper,
+[data-transparence='false'] .code-editor-wrapper {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+:root:not([data-transparence='true']) .right-panel-container,
+[data-transparence='false'] .right-panel-container {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-left: 1px solid var(--panel-border, #2d3139) !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-transparence='true']) .terminal-container,
+[data-transparence='false'] .terminal-container {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-top: 1px solid var(--panel-border, #2d3139) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-transparence='true']) .status-bar,
+[data-transparence='false'] .status-bar {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-top: 1px solid var(--panel-border, #2d3139) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+}
+
+/* Modals & Dropdowns keep soft border radius */
+.dropdown-menu {
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.modal-content,
+.settings-modal,
+.keybindings-modal {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   APPLE GLASS / TRANSPARENCE MODE — macOS Sonoma / VisionOS Aesthetics
+   Every container turns into stunning frosted glass with Apple sheen
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+[data-transparence='true'] .trial-banner {
+  border-radius: 8px !important;
+  margin: 2px 4px !important;
+}
+
+[data-transparence='true'] .activity-bar {
+  border-radius: 10px !important;
+  margin: 2px 3px 2px 4px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-transparence='true'] .sidebar {
+  border-radius: 10px !important;
+  margin: 2px 3px !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
   overflow: hidden !important;
 }
 
-.activity-bar {
-  border-radius: 8px !important;
+[data-transparence='true'] .main {
+  border-radius: 10px !important;
+  margin: 2px 4px 2px 3px !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  overflow: hidden !important;
+}
+
+[data-transparence='true'] .editor-pane,
+[data-transparence='true'] .code-editor-wrapper,
+[data-transparence='true'] .right-panel-container,
+[data-transparence='true'] .terminal-container {
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden !important;
+}
+
+[data-transparence='true'] .status-bar,
+[data-transparence='true'] .footer-env-selector {
+  border-radius: 8px !important;
+  margin: 2px 4px 2px 4px !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   APPLE GLASS / TRANSPARENCE MODE — macOS Sonoma / VisionOS Aesthetics
+   Every container turns into stunning frosted glass with Apple sheen
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+[data-transparence='true'] .prism-bg {
+  display: block !important;
+  opacity: 0.85 !important;
+}
+
+[data-transparence='true'] .menu-bar,
+[data-transparence='true'] .responsive-toolbar,
+[data-transparence='true'] .activity-bar,
+[data-transparence='true'] .sidebar,
+[data-transparence='true'] .main,
+[data-transparence='true'] .editor-pane,
+[data-transparence='true'] .code-editor-wrapper,
+[data-transparence='true'] .terminal-container,
+[data-transparence='true'] .right-panel-container,
+[data-transparence='true'] .status-bar,
+[data-transparence='true'] .footer-env-selector,
+[data-transparence='true'] .dropdown-menu,
+[data-transparence='true'] .trial-banner,
+[data-transparence='true'] .git-panel,
+[data-transparence='true'] .search-panel,
+[data-transparence='true'] .chat-panel {
+  background: rgba(18, 24, 38, 0.52) !important;
+  backdrop-filter: blur(28px) saturate(190%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(1.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-transparence='true'][data-glass-style='apple-vision'] .menu-bar,
+[data-transparence='true'][data-glass-style='apple-vision'] .responsive-toolbar,
+[data-transparence='true'][data-glass-style='apple-vision'] .activity-bar,
+[data-transparence='true'][data-glass-style='apple-vision'] .sidebar,
+[data-transparence='true'][data-glass-style='apple-vision'] .main,
+[data-transparence='true'][data-glass-style='apple-vision'] .editor-pane,
+[data-transparence='true'][data-glass-style='apple-vision'] .terminal-container,
+[data-transparence='true'][data-glass-style='apple-vision'] .status-bar {
+  background: rgba(15, 20, 35, 0.38) !important;
+  backdrop-filter: blur(36px) saturate(220%) brightness(1.14) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(1.14) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow:
+    0 16px 44px rgba(0, 0, 0, 0.45),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+[data-transparence='true'][data-glass-style='apple-crystal'] .menu-bar,
+[data-transparence='true'][data-glass-style='apple-crystal'] .responsive-toolbar,
+[data-transparence='true'][data-glass-style='apple-crystal'] .activity-bar,
+[data-transparence='true'][data-glass-style='apple-crystal'] .sidebar,
+[data-transparence='true'][data-glass-style='apple-crystal'] .main,
+[data-transparence='true'][data-glass-style='apple-crystal'] .editor-pane,
+[data-transparence='true'][data-glass-style='apple-crystal'] .terminal-container,
+[data-transparence='true'][data-glass-style='apple-crystal'] .status-bar {
+  background: rgba(14, 18, 28, 0.65) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-transparence='true'] .activity-icon.active {
+  background: rgba(88, 166, 255, 0.22) !important;
+  border: 1px solid rgba(88, 166, 255, 0.45) !important;
+  box-shadow: 0 0 16px rgba(88, 166, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 @keyframes tooltipPopIn {
@@ -463,7 +717,7 @@
   overflow: visible;
 }
 
-/* Prismatic rainbow shimmer on the header border-bottom */
+/* Clean subtle border on the header border-bottom */
 [data-theme='xenithra-dark-pro'] .menu-bar::after {
   content: '';
   position: absolute;
@@ -471,24 +725,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(87, 147, 255, 0.4) 15%,
-    rgba(167, 139, 250, 0.5) 30%,
-    rgba(0, 229, 255, 0.4) 45%,
-    rgba(72, 199, 116, 0.3) 60%,
-    rgba(251, 191, 36, 0.3) 75%,
-    rgba(239, 68, 68, 0.3) 88%,
-    transparent 100%
-  );
-  animation: prismShimmer 4s linear infinite;
-  background-size: 200% 100%;
-}
-
-@keyframes prismShimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Floating ambient prism orbs in xenithra-dark-pro header */
@@ -853,8 +1090,8 @@ body {
 /* Activity Bar styling */
 .activity-bar {
   width: 52px;
-  background: rgba(4, 7, 18, 0.75);
-  border-right: 1px solid var(--panel-border);
+  background: var(--panel-bg, #1e1f22);
+  border-right: 1px solid var(--panel-border, #2d3139);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -864,6 +1101,7 @@ body {
   z-index: 10;
   flex-shrink: 0;
   box-sizing: border-box;
+  overflow: visible;
 }
 
 .activity-bar.pos-top,

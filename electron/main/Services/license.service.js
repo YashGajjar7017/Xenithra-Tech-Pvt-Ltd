@@ -294,9 +294,15 @@ function maskLicenseKey(key) {
 // ─── License Validation ───────────────────────────────────────────────────────
 
 /**
- * Validate a license key against the GitHub-hosted license registry.
- * The registry is a JSON file at:
- * https://raw.githubusercontent.com/YashGajjar7017/Xenithra-Tech-Pvt-Ltd/main/licenses/registry.json
+ * Validate a license key.
+ *
+ * Priority order:
+ *  1. POST /api/licenses/verify   (new v2 API)
+ *  2. GET  /licenses/status/:key  (legacy v1 API, backward-compat)
+ *  3. GET  /licenses/registry.json (registry lookup)
+ *  4. Local workspace registry.json
+ *  5. GitHub-hosted registry.json
+ *  6. Offline HMAC validation
  */
 export async function validateLicenseKey(licenseKey) {
   if (!licenseKey || typeof licenseKey !== 'string') {
@@ -304,23 +310,53 @@ export async function validateLicenseKey(licenseKey) {
   }
 
   const normalizedKey = licenseKey.trim().toUpperCase()
+  const machineId     = getMachineFingerprint()
+  const serverUrl     = getLicenseServerUrl()
 
-  // Basic format check: XXXX-XXXX-XXXX-XXXX
-  const keyPattern = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/
-  if (!keyPattern.test(normalizedKey)) {
-    return {
-      valid: false,
-      error: 'License key format invalid. Expected: XXXX-XXXX-XXXX-XXXX'
-    }
+  // 1. New v2 API: POST /api/licenses/verify
+  const verifyEndpoints = [
+    `${serverUrl}/api/licenses/verify`,
+    `http://localhost:5000/api/licenses/verify`,
+    `http://localhost:5174/api/licenses/verify`
+  ]
+
+  for (const ep of verifyEndpoints) {
+    try {
+      const resp = await fetch(ep, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Xenithra-IDE/1.0' },
+        body: JSON.stringify({ licenseKey: normalizedKey, machineId }),
+        signal: AbortSignal.timeout(4000)
+      })
+      if (resp.ok) {
+        const data = await resp.json()
+        if (data.valid) {
+          return {
+            valid: true,
+            licensedTo: data.licensedTo || data.name || data.licenseeName || 'Xenithra User',
+            email:       data.email || data.licenseeEmail || '',
+            edition:     data.edition || data.tier || 'Professional Edition',
+            expiryDate:  data.expiresAt || data.expiryDate || null,
+            certificate: data.certificate || null,
+            features:    data.features || null,
+            status:      data.status,
+            serverUrl
+          }
+        } else if (data.status === 'expired') {
+          return { valid: false, error: 'License has expired', status: 'expired' }
+        } else if (data.status === 'revoked') {
+          return { valid: false, error: 'License has been revoked', status: 'revoked' }
+        } else if (data.message) {
+          return { valid: false, error: data.message }
+        }
+      }
+    } catch { /* try next */ }
   }
 
-  const machineId = getMachineFingerprint()
-
-  // 1. Try configured Vercel Licensing Server (e.g. https://license-server-hazel-three.vercel.app)
-  const serverUrl = getLicenseServerUrl()
+  // 2. Legacy v1: GET /licenses/status/:key
   const statusEndpoints = [
     `${serverUrl}/licenses/status/${encodeURIComponent(normalizedKey)}`,
-    `${serverUrl}/api/status/${encodeURIComponent(normalizedKey)}`,
+    `http://localhost:5000/licenses/status/${encodeURIComponent(normalizedKey)}`,
     `http://localhost:5174/licenses/status/${encodeURIComponent(normalizedKey)}`
   ]
 
@@ -335,24 +371,22 @@ export async function validateLicenseKey(licenseKey) {
         if (data.valid) {
           return {
             valid: true,
-            licensedTo: data.name || data.licensedTo || 'Xenithra User',
-            email: data.email || '',
-            edition: data.edition || 'Professional Edition',
-            expiryDate: data.expiryDate || null,
+            licensedTo:  data.name || data.licensedTo || 'Xenithra User',
+            email:       data.email || '',
+            edition:     data.edition || 'Professional Edition',
+            expiryDate:  data.expiryDate || null,
             certificate: data.certificate || null,
-            features: data.features,
+            features:    data.features,
             serverUrl
           }
         } else if (data.error) {
           return { valid: false, error: data.error }
         }
       }
-    } catch {
-      // Continue to next
-    }
+    } catch { /* try next */ }
   }
 
-  // 2. Try fetching registry from Vercel Server: GET /licenses/registry.json
+  // 3. Registry lookup via server
   try {
     const regResp = await fetch(`${serverUrl}/licenses/registry.json`, {
       headers: { 'User-Agent': 'Xenithra-IDE/1.0' },
@@ -362,42 +396,36 @@ export async function validateLicenseKey(licenseKey) {
       const registry = await regResp.json()
       const keyEntry = registry.keys && registry.keys[normalizedKey]
       if (keyEntry) {
-        if (keyEntry.status === 'revoked') {
-          return { valid: false, error: 'This license key has been revoked.' }
-        }
-        if (keyEntry.status === 'used' && keyEntry.machineId && keyEntry.machineId !== machineId) {
+        if (keyEntry.status === 'revoked') return { valid: false, error: 'This license key has been revoked.' }
+        if (keyEntry.status === 'used' && keyEntry.machineId && keyEntry.machineId !== machineId)
           return { valid: false, error: 'This license key is already activated on another machine.' }
-        }
         return {
           valid: true,
-          licensedTo: keyEntry.name || 'Xenithra User',
-          email: keyEntry.email || '',
-          edition: keyEntry.edition || 'Professional Edition',
-          expiryDate: keyEntry.expiryDate || null,
+          licensedTo:  keyEntry.name || 'Xenithra User',
+          email:       keyEntry.email || '',
+          edition:     keyEntry.edition || 'Professional Edition',
+          expiryDate:  keyEntry.expiryDate || null,
           certificate: keyEntry.certificate || null,
-          keyEntry,
-          serverUrl
+          keyEntry, serverUrl
         }
       }
     }
-  } catch (err) {}
+  } catch {}
 
-  // 3. Fallback: Check local workspace licenses/registry.json if present
+  // 4. Local workspace registry.json
   try {
     const localRegistryPath = path.resolve(__dirname, '../../../../licenses/registry.json')
     if (fs.existsSync(localRegistryPath)) {
       const reg = JSON.parse(fs.readFileSync(localRegistryPath, 'utf8'))
       const keyEntry = reg.keys && reg.keys[normalizedKey]
       if (keyEntry) {
-        if (keyEntry.status === 'revoked') {
-          return { valid: false, error: 'This license key has been revoked' }
-        }
+        if (keyEntry.status === 'revoked') return { valid: false, error: 'This license key has been revoked' }
         return {
           valid: true,
-          licensedTo: keyEntry.name || 'Xenithra User',
-          email: keyEntry.email || '',
-          edition: keyEntry.edition || 'Professional Edition',
-          expiryDate: keyEntry.expiryDate || null,
+          licensedTo:  keyEntry.name || 'Xenithra User',
+          email:       keyEntry.email || '',
+          edition:     keyEntry.edition || 'Professional Edition',
+          expiryDate:  keyEntry.expiryDate || null,
           certificate: keyEntry.certificate || null,
           keyEntry
         }
@@ -407,49 +435,29 @@ export async function validateLicenseKey(licenseKey) {
     console.warn('[License] Local file check error:', err.message)
   }
 
-  // 4. Attempt to verify against GitHub-hosted registry
+  // 5. GitHub-hosted registry.json
   try {
-    const registryUrl = `${GITHUB_BACKUP_BASE}/registry.json?t=${Date.now()}`
-    const response = await fetch(registryUrl, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'User-Agent': 'Xenithra-IDE/1.0'
-      },
+    const response = await fetch(`${GITHUB_BACKUP_BASE}/registry.json?t=${Date.now()}`, {
+      headers: { 'Cache-Control': 'no-cache', 'User-Agent': 'Xenithra-IDE/1.0' },
       signal: AbortSignal.timeout(4000)
     })
-
     if (response.ok) {
       const registry = await response.json()
       const keyEntry = registry.keys && registry.keys[normalizedKey]
-
-      if (!keyEntry) {
-        return { valid: false, error: 'License key not found in registry' }
-      }
-
-      if (keyEntry.status === 'revoked') {
-        return { valid: false, error: 'This license key has been revoked' }
-      }
-
-      if (keyEntry.status === 'used' && keyEntry.machineId && keyEntry.machineId !== machineId) {
-        return {
-          valid: false,
-          error: 'This license key is already activated on another machine'
-        }
-      }
-
-      // Valid license found
+      if (!keyEntry) return { valid: false, error: 'License key not found in registry' }
+      if (keyEntry.status === 'revoked') return { valid: false, error: 'This license key has been revoked' }
+      if (keyEntry.status === 'used' && keyEntry.machineId && keyEntry.machineId !== machineId)
+        return { valid: false, error: 'This license key is already activated on another machine' }
       return {
         valid: true,
-        licensedTo: keyEntry.name || 'Xenithra User',
-        email: keyEntry.email || '',
-        edition: keyEntry.edition || 'Professional',
-        expiryDate: keyEntry.expiryDate || null,
+        licensedTo:  keyEntry.name || 'Xenithra User',
+        email:       keyEntry.email || '',
+        edition:     keyEntry.edition || 'Professional',
+        expiryDate:  keyEntry.expiryDate || null,
         certificate: keyEntry.certificate || null,
         keyEntry
       }
     }
-
-    // If online check fails, try offline validation
     return offlineValidate(normalizedKey, machineId)
   } catch (err) {
     console.warn('[License] Online validation failed, trying offline:', err.message)
@@ -646,16 +654,92 @@ export function deactivateLicense() {
 
 /**
  * Submit a license registration request to the licensing server.
+ *
+ * Priority order:
+ *  1. New v2 API: POST /api/auth/register → POST /api/licenses
+ *  2. Legacy v1:  POST /licenses/register
+ *  3. GitHub Issues API
  */
 export async function submitRegistrationRequest(name, email, organization, plan) {
   const machineId = getMachineFingerprint()
   const serverUrl = getLicenseServerUrl()
   const regPayload = { name, email, organization, plan, machineId }
 
-  // 1. Post to Vercel Licensing Server
+  // 0. Try new v2 API: register account → generate license
+  const v2Servers = [serverUrl, 'http://localhost:5174']
+  for (const base of v2Servers) {
+    try {
+      // Register (or login if already exists)
+      let accessToken = null
+      const tempPassword = `XnthUser-${machineId.substring(0, 8)}-2026`
+      const regRes = await fetch(`${base}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Xenithra-IDE/1.0' },
+        body: JSON.stringify({ email, password: tempPassword, name }),
+        signal: AbortSignal.timeout(5000)
+      })
+      const regJson = regRes.ok ? await regRes.json() : {}
+      if (regJson.accessToken) {
+        accessToken = regJson.accessToken
+      } else {
+        // Account may already exist – try login
+        const loginRes = await fetch(`${base}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'User-Agent': 'Xenithra-IDE/1.0' },
+          body: JSON.stringify({ email, password: tempPassword }),
+          signal: AbortSignal.timeout(5000)
+        })
+        if (loginRes.ok) {
+          const loginJson = await loginRes.json()
+          accessToken = loginJson.accessToken
+        }
+      }
+
+      if (accessToken) {
+        const expiresAt = null // no expiry by default for registration
+        const createRes = await fetch(`${base}/api/licenses`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'User-Agent': 'Xenithra-IDE/1.0'
+          },
+          body: JSON.stringify({
+            productName:    'Xenithra IDE',
+            tier:           plan.toLowerCase().includes('enterprise') ? 'enterprise' : 'professional',
+            edition:        `${plan} Edition`,
+            keyPrefix:      plan.substring(0, 4).toUpperCase(),
+            keyChunks:      4,
+            keyChunkLen:    4,
+            maxActivations: plan.toLowerCase().includes('enterprise') ? 10 : 3,
+            expiresAt,
+            notes:          `Registered via Xenithra IDE — Org: ${organization || 'Individual'}`
+          }),
+          signal: AbortSignal.timeout(5000)
+        })
+        if (createRes.ok) {
+          const created = await createRes.json()
+          if (created.success && created.licenseKey) {
+            return {
+              success:    true,
+              message:    created.message || 'Registration approved! Your license key has been generated.',
+              licenseKey: created.licenseKey,
+              certificate: created.license?.certificate || null,
+              licensedTo: name,
+              plan,
+              serverUrl: base
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[License] v2 register error:', e.message)
+    }
+  }
+
+  // 1. Fallback: Legacy POST /licenses/register
   const registerEndpoints = [
     `${serverUrl}/licenses/register`,
-    `${serverUrl}/api/register`,
     `http://localhost:5174/licenses/register`
   ]
 

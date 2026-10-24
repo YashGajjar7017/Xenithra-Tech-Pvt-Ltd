@@ -15,13 +15,27 @@ export function startLocalModelService() {
   try {
     const scriptPath = path.resolve(process.cwd(), 'electron/main/Services/local_model_service.py')
     if (fs.existsSync(scriptPath)) {
-      localModelProcess = spawn('python', [scriptPath], {
-        detached: false,
-        stdio: 'ignore'
-      })
-      localModelProcess.on('error', (err) => {
-        console.warn('[LocalML] Python server spawn error:', err.message)
-      })
+      const trySpawn = (cmd) => {
+        try {
+          const proc = spawn(cmd, [scriptPath], {
+            detached: false,
+            stdio: 'pipe'
+          })
+          proc.stdout?.on('data', (d) => console.log(`[LocalML Python] ${d}`.trim()))
+          proc.stderr?.on('data', (d) => console.warn(`[LocalML Python Log] ${d}`.trim()))
+          proc.on('error', (err) => {
+            console.warn(`[LocalML] ${cmd} spawn error:`, err.message)
+            if (cmd === 'python') {
+              localModelProcess = trySpawn('py')
+            }
+          })
+          return proc
+        } catch (e) {
+          if (cmd === 'python') return trySpawn('py')
+          return null
+        }
+      }
+      localModelProcess = trySpawn('python')
       console.log('[LocalML] Local GGUF Model Server process started on http://127.0.0.1:11435')
     }
   } catch (e) {
@@ -375,15 +389,26 @@ export async function generateLocalAIChatResponse(
   code = '',
   lang = 'Node.js',
   filename = '',
-  selectedModel = 'xenithra-neural-4b'
+  selectedModel = 'qwen3-4b-local'
 ) {
   const p = prompt.trim().toLowerCase()
 
-  // 0. Try Local GGUF Model Server (Machine_Learning_Model)
-  if (selectedModel === 'qwen3-4b-local' || !selectedModel || selectedModel === 'xenithra-neural-4b') {
+  // 0. Try Local GGUF Model Server (Machine_Learning_Model / qwen3-4b-thinking-2507)
+  const isLocalModelTarget =
+    !selectedModel ||
+    selectedModel.toLowerCase().includes('qwen') ||
+    selectedModel.toLowerCase().includes('local') ||
+    selectedModel.toLowerCase().includes('machine_learning') ||
+    selectedModel === 'xenithra-neural-4b' ||
+    selectedModel === 'qwen3-4b-local'
+
+  if (isLocalModelTarget) {
     try {
+      if (!localModelProcess) {
+        startLocalModelService()
+      }
       const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 12000)
+      const timer = setTimeout(() => controller.abort(), 20000)
       const res = await fetch('http://127.0.0.1:11435/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -393,11 +418,13 @@ export async function generateLocalAIChatResponse(
       clearTimeout(timer)
       if (res.ok) {
         const data = await res.json()
-        if (data && data.response && data.status === 'success') {
+        if (data && data.response) {
           return data.response
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[LocalML] GGUF local model chat probe:', e.message)
+    }
   }
 
   // 1. Try Live Ollama daemon if running and requested
